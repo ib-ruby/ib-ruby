@@ -599,6 +599,24 @@ module IB
     ALLOWED_HISTORICAL_TYPES = [:trades, :midpoint, :bid, :ask]
 
     class RequestHistoricalData < AbstractMessage
+      # Enumeration of bar size types for convenience. These are passed to TWS as the (one-based!) index into the array.
+      # Bar sizes less than 30 seconds do not work for some securities.
+      BarSizes = [
+                 :invalid, # zero is not a valid barsize
+                 :second,
+                 :five_seconds,
+                 :fifteen_seconds,
+                 :thirty_seconds,
+                 :minute,
+                 :two_minutes,
+                 :five_minutes,
+                 :fifteen_minutes,
+                 :thirty_minutes,
+                 :hour,
+                 :day,
+                 ]
+
+
       def self.message_id
         20
       end

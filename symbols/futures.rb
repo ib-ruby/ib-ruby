@@ -17,8 +17,12 @@
 # 02110-1301 USA
 #
 
-# These futures will likely have expired by the time you read this, but they can serve as examples.
-# TODO: auto-generate a front-month contract object.
+
+# The Futures constant is currently for testing purposes. It guesses the front month
+# currency future using a crude algorithm that does not take into account expiry/rollover day.
+# This will be valid most of the time, but near/after expiry day the next quarter's contract
+# takes over as the volume leader.
+#
 #
 # Note that the :description field is particular to ib-ruby, and is NOT part of the standard TWS API.
 # It is never transmitted to IB. It's purely used clientside, and you can store any arbitrary string that
@@ -32,11 +36,36 @@ require 'datatypes'
 
 module IB
   module Symbols
+
+    # Get the next valid quarter month >= today, for finding the
+    # front month of quarterly futures.
+    #
+    # N.B. This will not work as expected near/after expiration during that month, as
+    # volume rolls over to the next quarter even though the current month is still valid!
+    #
+
+
+    def self.next_quarter_month(time)
+      sprintf("%02d", [3, 6, 9, 12].find{|month| month >= time.month })
+    end
+
+    def self.next_quarter_year(time)
+      if self.next_quarter_month(time).to_i < time.month
+        time.year + 1
+      else
+        time.year
+      end
+    end
+
+    def self.next_expiry(time)
+      "#{ self.next_quarter_year(time) }#{ self.next_quarter_month(time) }"
+    end
+
     Futures =
      {
       :es => Datatypes::Contract.new({
                                        :symbol => "ES",
-                                       :expiry => "200809", # <---- Change this date!!
+                                       :expiry => self.next_expiry(Time.now),
                                        :exchange => "GLOBEX",
                                        :currency => "USD",
                                        :sec_type => Datatypes::Contract::SECURITY_TYPES[:future],
@@ -46,7 +75,7 @@ module IB
 
       :gbp => Datatypes::Contract.new({
                                        :symbol => "GBP",
-                                       :expiry => "200809", # <---- Change this date!!
+                                       :expiry => self.next_expiry(Time.now),
                                        :exchange => "GLOBEX",
                                        :currency => "USD",
                                        :sec_type => Datatypes::Contract::SECURITY_TYPES[:future],
@@ -55,7 +84,7 @@ module IB
                                      }),
       :eur => Datatypes::Contract.new({
                                        :symbol => "EUR",
-                                       :expiry => "200809", # <---- Change this date!!
+                                       :expiry => self.next_expiry(Time.now),
                                        :exchange => "GLOBEX",
                                        :currency => "USD",
                                        :sec_type => Datatypes::Contract::SECURITY_TYPES[:future],
@@ -64,7 +93,7 @@ module IB
                                      }),
       :jpy => Datatypes::Contract.new({
                                        :symbol => "JPY",
-                                       :expiry => "200809", # <---- Change this date!!
+                                       :expiry => self.next_expiry(Time.now),
                                        :exchange => "GLOBEX",
                                        :currency => "USD",
                                        :sec_type => Datatypes::Contract::SECURITY_TYPES[:future],
@@ -73,7 +102,7 @@ module IB
                                      }),
       :hsi => Datatypes::Contract.new({
                                        :symbol => "HSI",
-                                       :expiry => "200808", # <---- Change this date!!
+                                       :expiry => self.next_expiry(Time.now),
                                        :exchange => "HKFE",
                                        :currency => "HKD",
                                        :sec_type => Datatypes::Contract::SECURITY_TYPES[:future],
