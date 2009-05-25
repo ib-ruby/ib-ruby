@@ -1,0 +1,2 @@
+- Do nonblocking socket i/o between TWS and the Ruby library, so
+  Thread#join can be used.
