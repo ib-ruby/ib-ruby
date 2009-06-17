@@ -1,0 +1,9 @@
+History.txt
+Manifest.txt
+README.txt
+Rakefile
+bin/ib-ruby
+lib/ib-ruby.rb
+spec/ib-ruby_spec.rb
+spec/spec_helper.rb
+test/test_ib-ruby.rb

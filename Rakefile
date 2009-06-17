@@ -1,30 +1,33 @@
-#
-# Copyright (C) 2006 Blue Voodoo Magic LLC.
-#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation; either
-# version 2.1 of the License, or (at your option) any later version.
-#
-# This library is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public
-# License along with this library; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-#
+# License see README.txt for more details 
 
-require 'rake'
-require 'rake/rdoctask'
+# Look in the tasks/setup.rb file for the various options that can be
+# configured in this Rakefile. The .rake files in the tasks directory
+# are where the options are used.
 
-desc 'Generate documentation.'
-Rake::RDocTask.new(:rdoc) do |rdoc|
-  rdoc.rdoc_dir = 'rdoc'
-  rdoc.title    = 'ib-ruby'
-  rdoc.options << '--line-numbers' << '--inline-source'
-  rdoc.rdoc_files.include('README')
-  rdoc.rdoc_files.include('LICENSE')
-  rdoc.rdoc_files.include('*.rb')
+begin
+  require 'bones'
+  Bones.setup
+rescue LoadError
+  begin
+    load 'tasks/setup.rb'
+  rescue LoadError
+    raise RuntimeError, '### please install the "bones" gem ###'
+  end
 end
+
+ensure_in_path 'lib'
+require 'ib-ruby'
+
+task :default => 'spec:run'
+
+PROJ.name = 'ib-ruby'
+PROJ.authors = 'Wes Devauld'
+PROJ.email = 'wes@devauld.ca'
+PROJ.url = 'http://github.com/wdevauld/ib-ruby/tree/master'
+PROJ.version = IbRuby::VERSION
+
+PROJ.spec.opts << '--color'
+
+# EOF

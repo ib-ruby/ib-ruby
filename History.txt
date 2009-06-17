@@ -1,0 +1,5 @@
+== 0.1 / 2006-11-12
+* Initial version - Paul Legato
+
+== 0.2 / 2007-02-14
+* Alpha Release - Paul Legato
