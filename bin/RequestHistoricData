@@ -21,12 +21,8 @@
 # >> IT MAY CONTAIN POTENTIALLY COSTLY BUGS, ERRORS, ETC., BOTH KNOWN AND UNKNOWN. <<
 #
 
-$:.push(File.dirname(__FILE__) + "/../")
-
-# IB-Ruby libraries
-require 'ib'
-require 'datatypes'
-require 'symbols/futures'
+require File.expand_path(
+    File.join(File.dirname(__FILE__), '..', 'lib', 'ib-ruby'))
 
 # Stdlib
 require 'time' # for extended time parsing
@@ -245,13 +241,13 @@ ib = IB::IB.new
 
 
 # Default level is quiet, only warnings printed.
-IB::IBLogger.level = Logger::Severity::ERROR
+# IB::IBLogger.level = Logger::Severity::ERROR
 
 # For verbose printing of each message:
-IB::IBLogger.level = Logger::Severity::INFO if VERBOSE
+# IB::IBLogger.level = Logger::Severity::INFO if VERBOSE
 
 # For very verbose debug messages:
-IB::IBLogger.level = Logger::Severity::DEBUG if VERYVERBOSE
+# IB::IBLogger.level = Logger::Severity::DEBUG if VERYVERBOSE
 
 puts "datetime,open,high,low,close,volume,wap,has_gaps" if !opt["header"].nil?
 

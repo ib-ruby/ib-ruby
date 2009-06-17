@@ -18,11 +18,8 @@
 # 02110-1301 USA
 #
 
-$:.push(File.dirname(__FILE__) + "/../")
-
-require 'ib'
-require 'datatypes'
-require 'symbols/forex'
+require File.expand_path(
+    File.join(File.dirname(__FILE__), '..', 'lib', 'ib-ruby'))
 
 #
 # Definition of what we want market data for.  We have to keep track

@@ -34,12 +34,8 @@
 # program terminated.
 #
 
-$:.push(File.dirname(__FILE__) + "/../")
-
-require 'ib'
-require 'datatypes'
-require 'symbols/futures'
-
+require File.expand_path(
+    File.join(File.dirname(__FILE__), '..', 'lib', 'ib-ruby'))
 
 ### Configurable Options
 
