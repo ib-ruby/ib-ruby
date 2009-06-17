@@ -18,11 +18,10 @@
 # 02110-1301 USA
 #
 
-$:.push(File.dirname(__FILE__) + "/../")
+require File.expand_path(
+    File.join(File.dirname(__FILE__), '..', 'lib', 'ib-ruby'))
 
 require 'test/unit'
-require 'ib'
-require 'datatypes'
 
 class ContractTests < Test::Unit::TestCase
   def test_plain_instantiation
