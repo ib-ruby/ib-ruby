@@ -21,10 +21,11 @@
 # TODO: Implement equals() according to the criteria in IB's Java client.
 #
 
+require 'Logger'
 
 module IB
 
-  IBLogger = Logger.new(STDERR) unless defined? IBLogger
+  logger = Logger.new(STDERR)
 
   module Datatypes
     attr_reader :created_at

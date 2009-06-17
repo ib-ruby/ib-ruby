@@ -15,7 +15,7 @@ Copyright (C) 2009 Wes Devauld
 
 * This is a ALPHA release, and should not be used for live trading.  Any features contained with are AS-IS and may not work in all conditions
 * This code is not sanctioned by Interactive Brokers
-
+* TODO Deal with Logging properly
 == SYNOPSIS:
  
 First, start up Interactive Broker's Trader Work Station.  Ensure it is configured to allow API connections on localhost

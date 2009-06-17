@@ -22,9 +22,9 @@
 # These fields are initialized to this MAX_VALUE.
 # This has been implemented with nils in Ruby to represent the case where an EOL should be sent.
 
-require 'iblogger'
-
 module IB
+
+  #logger = Logger.new(STDERR)
 
   class ExtremelyAbstractMessage
     attr_reader :created_at
@@ -816,7 +816,7 @@ end # module OutgoingMessages
 
       def initialize(socket, server_version)
         raise Exception.new("Don't use AbstractMessage directly; use the subclass for your specific message type") if self.class.name == "AbstractMessage"
-        IBLogger.debug(" * loading #{self.class.name}")
+        #logger.debug(" * loading #{self.class.name}")
         @created_at = Time.now
 
         @data = Hash.new
@@ -828,7 +828,7 @@ end # module OutgoingMessages
         @socket = nil
 
 
-        IBLogger.debug(" * New #{self.class.name}: #{ self.to_human }")
+        #logger.debug(" * New #{self.class.name}: #{ self.to_human }")
       end
 
       def AbstractMessage.inherited(by)
@@ -849,7 +849,7 @@ end # module OutgoingMessages
       # type identifiers must have a corresponding read_type method on socket (read_int, etc.).
       #
       def autoload(*map)
-        #IBLogger.debug("autoloading map: " + map.inspect)
+        ##logger.debug("autoloading map: " + map.inspect)
         map.each { |spec|
           @data[spec[0]] = @socket.__send__(("read_" + spec[1].to_s).to_sym)
         }
@@ -1437,7 +1437,7 @@ end # module OutgoingMessages
       Table[msg_class.message_id] = msg_class
     }
 
-    IBLogger.debug("Incoming message class table is #{Table.inspect}")
+    #logger.debug("Incoming message class table is #{Table.inspect}")
 
   end # module IncomingMessages
   ################################################################
