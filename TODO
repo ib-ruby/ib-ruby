@@ -1,5 +1,0 @@
-- Do nonblocking socket i/o between TWS and the Ruby library, so
-  Thread#join can be used.
-
-- Fix the front-month contract auto-generate function to take into
-  account the contract expiry date and volume rollover
