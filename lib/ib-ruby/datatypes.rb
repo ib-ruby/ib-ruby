@@ -21,8 +21,6 @@
 # TODO: Implement equals() according to the criteria in IB's Java client.
 #
 
-require 'Logger'
-
 module IB
 
   logger = Logger.new(STDERR)
