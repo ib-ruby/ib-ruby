@@ -21,16 +21,21 @@ Copyright (C) 2009 Wes Devauld
 First, start up Interactive Broker's Trader Work Station.  Ensure it is configured to allow API connections on localhost
 
 >> require 'ib-ruby'
->> ib_connection = IB:IB.new()
+>> ib_connection = IB::IB.new()
 
 == REQUIREMENTS:
 
 * FIXME List all the requirements 
 
 == INSTALL:
+=== From Gem ===
 
 * Ensure that http://gems.github.com is in your gem sources
 * sudo gem install wdevauld-ib-ruby
+
+=== From Source ===
+* git clone http://github.com/wdevauld/ib-ruby 
+* cd ib-ruby; rake gem:install
 
 == LICENSE:
 
