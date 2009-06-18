@@ -23,8 +23,6 @@
 
 module IB
 
-  logger = Logger.new(STDERR)
-
   module Datatypes
     attr_reader :created_at
 

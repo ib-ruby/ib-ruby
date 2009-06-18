@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2006 Blue Voodoo Magic LLC.
+# Copyright (C) 2009 Wes Devauld 
 # 
 # This library is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as
@@ -22,11 +22,6 @@
 # It is never transmitted to IB. It's purely used clientside, and you can store any arbitrary string that
 # you may find useful there.
 #
-
-$:.push(File.dirname(__FILE__) + "/../")
-
-require 'ib'
-require 'datatypes'
 
 module IB
   module Symbols
