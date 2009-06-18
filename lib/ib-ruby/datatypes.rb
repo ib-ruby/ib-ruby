@@ -191,13 +191,13 @@ module IB
       def right=(x)
         x.upcase! if x.is_a?(String)
         x = nil if !x.nil? && x.empty?
-        raise(ArgumentError.new("Invalid right \"#{x}\" (must be one of PUT, CALL, P, C)"))  unless x.nil? || [ "PUT", "CALL", "P", "C"].include?(x)
+        raise(ArgumentError.new("Invalid right \"#{x}\" (must be one of PUT, CALL, P, C)"))  unless x.nil? || [ "PUT", "CALL", "P", "C", "0"].include?(x)
         @right = x
       end
 
       def expiry=(x)
 	x = x.to_s
-	if x.nil? || ! (x =~ /\d{6,8}/) then
+	if (x.nil? || ! (x =~ /\d{6,8}/)) and !x.empty? then
 		raise ArgumentError.new("Invalid expiry \"#{x}\" (must be in format YYYYMM or YYYYMMDD)")
 	end
  	@expiry = x	

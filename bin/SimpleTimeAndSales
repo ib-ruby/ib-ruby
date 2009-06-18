@@ -41,7 +41,7 @@ MIN_SIZE = 0
 
 def showSales(msg)
   return if msg.data[:type] != :last || msg.data[:size] < MIN_SIZE
-  puts @market[msg.data[:ticker_id]].description + ": " + msg.data[:size].to_s + " at " + msg.data[:price].to_s
+  puts @market[msg.data[:ticker_id]].description + ": " + msg.data[:size].to_s("F") + " at " + msg.data[:price].to_s("F")
 end
 
 def showSize(msg)

@@ -942,11 +942,11 @@ end # module OutgoingMessages
       end # load
 
       def inspect
-        "Tick (" + @data[:type].to_s + " at "  + @data[:price].to_s + ") " + super.inspect
+        "Tick (" + @data[:type].to_s('F') + " at "  + @data[:price].to_s('F') + ") " + super.inspect
       end
 
       def to_human
-        @data[:size].to_s + " " + @data[:type].to_s + " at " + @data[:price].to_s
+        @data[:size].to_s + " " + @data[:type].to_s + " at " + @data[:price].to_s('F')
       end
 
     end # TickPrice
@@ -1173,9 +1173,9 @@ end # module OutgoingMessages
       end
 
       def to_human
-        "<PortfolioValue: update for #{@contract.to_human}: market price #{@data[:market_price].to_s}; market value " +
-          "#{@data[:market_value].to_s}; position #{@data[:position]}; unrealized PnL #{@data[:unrealized_pnl].to_s}; " +
-          "realized PnL #{@data[:realized_pnl].to_s}; account #{@data[:account_name]}>"
+        "<PortfolioValue: update for #{@contract.to_human}: market price #{@data[:market_price].to_s('F')}; market value " +
+          "#{@data[:market_value].to_s('F')}; position #{@data[:position]}; unrealized PnL #{@data[:unrealized_pnl].to_s('F')}; " +
+          "realized PnL #{@data[:realized_pnl].to_s('F')}; account #{@data[:account_name]}>"
       end
 
     end # PortfolioValue

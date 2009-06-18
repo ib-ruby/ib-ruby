@@ -257,14 +257,14 @@ lastMessageTime = Queue.new # for communicating with the reader thread.
 # The incoming message packet from TWS just identifies it by ticker id.
 #
 ib.subscribe(IB::IncomingMessages::HistoricalData, lambda {|msg|
-               STDERR.puts @market[msg.data[:req_id]].description + ": " + msg.data[:item_count].to_s + " items:" if VERBOSE
+               STDERR.puts @market[msg.data[:req_id]].description + ": " + msg.data[:item_count].to_s("F") + " items:" if VERBOSE
 
                msg.data[:history].each { |datum|
                  puts(if VERBOSE
                         datum.to_s
                       else
-                        "#{datum.date},#{datum.open.to_s},#{datum.high.to_s},#{datum.low.to_s}," +
-                          "#{datum.close.to_s},#{datum.volume},#{datum.wap.to_s},#{datum.has_gaps}"
+                        "#{datum.date},#{datum.open.to_s("F")},#{datum.high.to_s("F")},#{datum.low.to_s("F")}," +
+                          "#{datum.close.to_s("F")},#{datum.volume},#{datum.wap.to_s("F")},#{datum.has_gaps}"
                       end
                       )
                }

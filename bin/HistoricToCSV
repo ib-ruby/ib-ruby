@@ -30,9 +30,9 @@ Quiet = false
 
 # How long to wait when no messages are received from TWS before
 # exiting, in seconds
-Timeout = 2
+Timeout = 10 
 
-SymbolToRequest = IB::Symbols::Futures[:eur]
+SymbolToRequest = IB::Symbols::Forex[:gbpusd]
 
 ### end options
 
@@ -48,7 +48,7 @@ SymbolToRequest = IB::Symbols::Futures[:eur]
 #
 @market =
   {
-    123 => SymbolToRequest
+    123 => SymbolToRequest 
   }
 
 # To determine when the timeout has passed.
@@ -75,14 +75,14 @@ ib = IB::IB.new
 
 ib.subscribe(IB::IncomingMessages::HistoricalData, lambda {|msg|
 
-               STDERR.puts @market[msg.data[:req_id]].description + ": " + msg.data[:item_count].to_s + " items:" unless Quiet
+               STDERR.puts @market[msg.data[:req_id]].description + ": " + msg.data[:item_count].to_s("F") + " items:" unless Quiet
 
                msg.data[:history].each { |datum|
 
                  @last_msg_time = Time.now.to_i
 
-                 STDERR.puts "   " + datum.to_s unless Quiet
-                 STDOUT.puts "#{datum.date},#{datum.open.to_s},#{datum.high.to_s},#{datum.low.to_s},#{datum.close.to_s},#{datum.volume}"
+                 STDERR.puts "   " + datum.to_s("F") unless Quiet
+                 STDOUT.puts "#{datum.date},#{datum.open.to_s("F")},#{datum.high.to_s("F")},#{datum.low.to_s("F")},#{datum.close.to_s("F")},#{datum.volume}"
                }
              })
 
@@ -95,8 +95,8 @@ ib.subscribe(IB::IncomingMessages::HistoricalData, lambda {|msg|
                                                           :ticker_id => id,
                                                           :contract => contract,
                                                           :end_date_time => Time.now.to_ib,
-                                                          :duration => (60 * 60 * 24).to_s, # how long before end_date_time to request in seconds - this means 1 day
-                                                          :bar_size => IB::OutgoingMessages::RequestHistoricalData::BarSizes.index(:five_minutes),
+                                                          :duration => (360).to_s, # how long before end_date_time to request in seconds - this means 1 day
+                                                          :bar_size => IB::OutgoingMessages::RequestHistoricalData::BarSizes.index(:hour),
                                                           :what_to_show => :trades,
                                                           :use_RTH => 0,
                                                           :format_date => 2
