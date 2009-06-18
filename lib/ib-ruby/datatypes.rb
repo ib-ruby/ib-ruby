@@ -56,7 +56,7 @@ module IB
       attr_accessor :date, :open, :high, :low, :close, :volume, :wap, :has_gaps
 
       def to_s
-        "<Bar: #{@date}; OHLC: #{@open.to_digits}, #{@high.to_digits}, #{@low.to_digits}, #{@close.to_digits}; volume: #{@volume}; wap: #{@wap.to_digits}; has_gaps: #{@has_gaps}>"
+        "<Bar: #{@date}; OHLC: #{@open.to_s}, #{@high.to_s}, #{@low.to_s}, #{@close.to_s}; volume: #{@volume}; wap: #{@wap.to_s}; has_gaps: #{@has_gaps}>"
       end
 
     end # Bar
