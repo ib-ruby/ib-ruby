@@ -196,9 +196,11 @@ module IB
       end
 
       def expiry=(x)
-        x = nil if !x.nil? && x.empty?
-        raise(ArgumentError.new("Invalid expiry \"#{x}\" (must be in format YYYYMM or YYYYMMDD)"))  unless x.nil? || x.to_s =~ /^\d\d\d\d\d\d(\d\d)?$/
-        @expiry = x.to_s
+	x = x.to_s
+	if x.nil? || ! (x =~ /\d{6,8}/) then
+		raise ArgumentError.new("Invalid expiry \"#{x}\" (must be in format YYYYMM or YYYYMMDD)")
+	end
+ 	@expiry = x	
       end
 
       def sec_type=(x)
