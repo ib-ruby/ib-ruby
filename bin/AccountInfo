@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby -w
 #
-# Copyright (C) 2007 Paul Legato.
+# Copyright (C) 2009 Wes Devauld 
 # 
 # This library is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as
@@ -16,7 +16,6 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
-#
 
 require File.expand_path(
     File.join(File.dirname(__FILE__), '..', 'lib', 'ib-ruby'))

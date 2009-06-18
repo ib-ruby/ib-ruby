@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby -w
 #
-# Copyright (C) 2007 Paul Legato.
+# Copyright (C) 2009 Wes Devauld 
 #
 # This library is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as
@@ -17,21 +17,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 #
-#####################################################################
-#
-# This program demonstrates how to download historic data and write it
-# to a CSV file.
-#
-# To use, set CSV_FILE to the file you want to write (which will be
-# overwritten automatically if it already exists), set the contract
-# data, duration, data type (trades, bid, ask, midpoint), etc. as you
-# like, and run the program.
-#
-# Note that it does not detect when the historic data from the server
-# has stopped arriving automatically. This limitation will be
-# addressed soon. For now, just press <Enter> when the data stream on
-# the console stops, and the output file will be closed and the
-# program terminated.
+# TODO Fix the Historical command line client
 #
 
 require File.expand_path(

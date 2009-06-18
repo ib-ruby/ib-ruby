@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby -w
 #
-# Copyright (C) 2007-8 Paul Legato. pjlegato at gmail dot com.
+# Copyright (C) 2009 Wes Devauld 
 #
 # This library is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as
@@ -17,24 +17,17 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 #
-# >>         YOUR USE OF THIS PROGRAM IS ENTIRELY AT YOUR OWN RISK.                <<
-# >> IT MAY CONTAIN POTENTIALLY COSTLY BUGS, ERRORS, ETC., BOTH KNOWN AND UNKNOWN. <<
-#
 
 require File.expand_path(
     File.join(File.dirname(__FILE__), '..', 'lib', 'ib-ruby'))
 
-# Stdlib
-require 'time' # for extended time parsing
-
-# Gems - requires duration and getopt.
 require 'rubygems'
+require 'time'
 require 'duration'
 require 'getopt/long'
 
-
-require "getopt/long"
 include Getopt
+
 opt = Getopt::Long.getopts(
    ["--help", BOOLEAN],
    ["--end", REQUIRED],
