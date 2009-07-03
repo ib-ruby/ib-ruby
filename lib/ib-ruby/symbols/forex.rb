@@ -25,14 +25,44 @@
 
 module IB
   module Symbols
-    Forex = 
-     {
+    Forex = {
+      :audusd => Datatypes::Contract.new({
+                                           :symbol => "AUD",
+                                           :exchange => "IDEALPRO",
+                                           :currency => "USD",
+                                           :sec_type => Datatypes::Contract::SECURITY_TYPES[:forex],
+                                           :description => "AUDUSD"
+                                         }),
       :gbpusd => Datatypes::Contract.new({
                                            :symbol => "GBP",
                                            :exchange => "IDEALPRO",
                                            :currency => "USD",
                                            :sec_type => Datatypes::Contract::SECURITY_TYPES[:forex],
                                            :description => "GBPUSD"
+                                         }),
+
+      :euraud => Datatypes::Contract.new({
+                                           :symbol => "EUR",
+                                           :exchange => "IDEALPRO",
+                                           :currency => "AUD",
+                                           :sec_type => Datatypes::Contract::SECURITY_TYPES[:forex],
+                                           :description => "EURAUD"
+                                         }),
+
+      :eurgbp => Datatypes::Contract.new({
+                                           :symbol => "EUR",
+                                           :exchange => "IDEALPRO",
+                                           :currency => "GBP",
+                                           :sec_type => Datatypes::Contract::SECURITY_TYPES[:forex],
+                                           :description => "EURGBP"
+                                         }),
+
+      :eurjpy => Datatypes::Contract.new({
+                                           :symbol => "EUR",
+                                           :exchange => "IDEALPRO",
+                                           :currency => "JPY",
+                                           :sec_type => Datatypes::Contract::SECURITY_TYPES[:forex],
+                                           :description => "EURJPY"
                                          }),
 
       :eurusd => Datatypes::Contract.new({
@@ -43,12 +73,20 @@ module IB
                                            :description => "EURUSD"
                                          }),
 
-      :usdjpy => Datatypes::Contract.new({
+      :eurcad => Datatypes::Contract.new({
+                                           :symbol => "EUR",
+                                           :exchange => "IDEALPRO",
+                                           :currency => "CAD",
+                                           :sec_type => Datatypes::Contract::SECURITY_TYPES[:forex],
+                                           :description => "EURCAD"
+                                         }),
+
+      :usdchf => Datatypes::Contract.new({
                                            :symbol => "USD",
                                            :exchange => "IDEALPRO",
-                                           :currency => "JPY",
+                                           :currency => "CHF",
                                            :sec_type => Datatypes::Contract::SECURITY_TYPES[:forex],
-                                           :description => "USDJPY"
+                                           :description => "USDCHF"
                                          }),
 
       :usdcad => Datatypes::Contract.new({
@@ -57,6 +95,14 @@ module IB
                                            :currency => "CAD",
                                            :sec_type => Datatypes::Contract::SECURITY_TYPES[:forex],
                                            :description => "USDCAD"
+                                         }),
+
+      :usdjpy => Datatypes::Contract.new({
+                                           :symbol => "USD",
+                                           :exchange => "IDEALPRO",
+                                           :currency => "JPY",
+                                           :sec_type => Datatypes::Contract::SECURITY_TYPES[:forex],
+                                           :description => "USDJPY"
                                          })
      } 
   end # Contracts
