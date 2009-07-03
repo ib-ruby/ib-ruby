@@ -33,25 +33,31 @@ module IB
                                            :currency => "USD",
                                            :sec_type => Datatypes::Contract::SECURITY_TYPES[:forex],
                                            :description => "GBPUSD"
-                                           
                                          }),
+
       :eurusd => Datatypes::Contract.new({
                                            :symbol => "EUR",
                                            :exchange => "IDEALPRO",
                                            :currency => "USD",
                                            :sec_type => Datatypes::Contract::SECURITY_TYPES[:forex],
                                            :description => "EURUSD"
-
                                          }),
+
       :usdjpy => Datatypes::Contract.new({
                                            :symbol => "USD",
                                            :exchange => "IDEALPRO",
                                            :currency => "JPY",
                                            :sec_type => Datatypes::Contract::SECURITY_TYPES[:forex],
                                            :description => "USDJPY"
+                                         }),
 
+      :usdcad => Datatypes::Contract.new({
+                                           :symbol => "USD",
+                                           :exchange => "IDEALPRO",
+                                           :currency => "CAD",
+                                           :sec_type => Datatypes::Contract::SECURITY_TYPES[:forex],
+                                           :description => "USDCAD"
                                          })
-
      } 
   end # Contracts
 end

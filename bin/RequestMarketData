@@ -31,7 +31,8 @@ require File.expand_path(
 @market = 
   {
     123 => IB::Symbols::Forex[:gbpusd],
-    456 => IB::Symbols::Forex[:eurusd]
+    456 => IB::Symbols::Forex[:eurusd],
+    789 => IB::Symbols::Forex[:usdcad]
   }
 
 
