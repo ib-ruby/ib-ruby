@@ -1,9 +1,9 @@
-= mix
+= ib-ruby
 by:: Arvicco
 url:: http://github.com/arvicco/ib-ruby
 
-    This is a fork of http://github.com/wdevauld/ib-ruby by Wes Devauld,
-    that is in turn forked from http://github.com/pjlegato/ib-ruby by Paul Legato
+This is a fork of http://github.com/wdevauld/ib-ruby by Wes Devauld,
+that is in turn forked from http://github.com/pjlegato/ib-ruby by Paul Legato.
 
 == DESCRIPTION:
 

@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<project name="APIExamples" basedir="." default="ex2">
+    
+    <property name="library.name" value="api-examples"/>
+    <property name="source.dir" value="src"/>
+    <property name="build.dir" value="build"/>        
+    <property name="lib.dir" value="lib"/>
+    
+    <!-- runtime classpath -->
+    <path id="run.classpath">
+        <pathelement location="${lib.dir}/${library.name}.jar"/>
+    </path>
+    
+    <!-- clean -->  
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+        <mkdir dir="${build.dir}"/>
+    </target>  
+    
+    <!-- make -->
+    <target name="make" depends="clean">
+        <javac deprecation='on'
+               source="1.5"
+               target="1.5"
+               debug='on'
+               srcdir="${source.dir}"
+               destdir="${build.dir}"
+               includes="**/*.java" />  
+        
+        <jar jarfile="${build.dir}/${library.name}.jar" compress="no">
+            <zipfileset dir="${build.dir}" excludes="*.jar" includes="com/ib/client/**/*.class"/>                
+        </jar>
+        
+        <move file="${build.dir}/${library.name}.jar" todir="${lib.dir}"/>
+    </target>
+    
+    <target name="ex1" depends="make">
+        <java classname="com.ib.client.examples.Example1" fork="true">
+            <classpath refid="run.classpath"/>
+            <arg value="IBKR"/>
+        </java>
+    </target>        
+
+    <target name="ex2" depends="make">
+        <java classname="com.ib.client.examples.Example2" fork="true">
+            <classpath refid="run.classpath"/>
+            <arg value="C"/>
+            <arg value="125"/>
+            <arg value="2"/>
+        </java>
+    </target>        
+    
+</project>
