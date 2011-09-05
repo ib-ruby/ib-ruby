@@ -1,33 +1,25 @@
-# This library is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License see README.txt for more details 
-
-# Look in the tasks/setup.rb file for the various options that can be
-# configured in this Rakefile. The .rake files in the tasks directory
-# are where the options are used.
-
 begin
-  require 'bones'
-  Bones.setup
+  require 'rake'
 rescue LoadError
-  begin
-    load 'tasks/setup.rb'
-  rescue LoadError
-    raise RuntimeError, '### please install the "bones" gem ###'
-  end
+  require 'rubygems'
+  gem 'rake', '~> 0.8.3.1'
+  require 'rake'
 end
 
-ensure_in_path 'lib'
-require 'ib-ruby'
+require 'pathname'
 
-task :default => 'spec:run'
+BASE_PATH = Pathname.new(__FILE__).dirname
+LIB_PATH = BASE_PATH + 'lib'
+PKG_PATH = BASE_PATH + 'pkg'
+DOC_PATH = BASE_PATH + 'rdoc'
 
-PROJ.name = 'ib-ruby'
-PROJ.authors = 'Wes Devauld'
-PROJ.email = 'wes@devauld.ca'
-PROJ.url = 'http://github.com/wdevauld/ib-ruby/tree/master'
-PROJ.version = IbRuby::VERSION
+$LOAD_PATH.unshift LIB_PATH.to_s
+require 'version'
 
-PROJ.spec.opts << '--color'
+NAME = 'ib-ruby'
+CLASS_NAME = IbRuby
 
-# EOF
+# Load rakefile tasks
+Dir['tasks/*.rake'].sort.each { |file| load file }
+
+# Project-specific tasks

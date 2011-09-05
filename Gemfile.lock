@@ -1,0 +1,9 @@
+GEM
+  remote: http://rubygems.org/
+  specs:
+
+PLATFORMS
+  java
+
+DEPENDENCIES
+  bundler (>= 1.0.13)

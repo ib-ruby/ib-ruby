@@ -1,0 +1,47 @@
+= mix
+by:: Arvicco
+url:: http://github.com/arvicco/ib-ruby
+
+    This is a fork of http://github.com/wdevauld/ib-ruby by Wes Devauld,
+    that is in turn forked from http://github.com/pjlegato/ib-ruby by Paul Legato
+
+== DESCRIPTION:
+
+Ruby Implementation of the Interactive Broker' TWS API
+
+The goal of this fork is to modernize library structure (Bundler/Gemfile/etc) and
+then roll out a new version based on latest IB TWS API.
+
+== FEATURES/PROBLEMS:
+
+* This is a ALPHA release, and should not be used for live trading.
+  Any features contained with are AS-IS and may not work in all conditions
+* This code is not sanctioned or supported by Interactive Brokers
+
+== REQUIREMENTS:
+
+Interactive Broker's Trader Work Station installed and configured to allow API
+connections on localhost.
+
+== INSTALL:
+
+=== From Gem
+
+  $ sudo gem install ib
+
+=== From Source
+
+  $ git clone http://github.com/arvicco/ib-ruby
+  $ cd ib-ruby; rake gem:install
+
+== SYNOPSIS:
+
+First, start up Interactive Broker's Trader Work Station.
+Ensure it is configured to allow API connections on localhost.
+
+>> require 'ib-ruby'
+>> ib_connection = IB::IB.new()
+
+== LICENSE:
+
+Copyright (c) 2011 Arvicco. See LICENSE for details.
