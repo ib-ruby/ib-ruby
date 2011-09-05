@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 Gem::Specification.new do |gem|
-  gem.name = "ib"
+  gem.name = "ib-ruby"
   gem.version = File.open('VERSION').read.strip # = ::Mix::VERSION # - conflicts with Bundler
   gem.summary = "Ruby Implementation of the Interactive Broker' TWS API"
   gem.description = "Ruby Implementation of the Interactive Broker' TWS API"

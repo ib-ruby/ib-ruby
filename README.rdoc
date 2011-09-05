@@ -27,7 +27,7 @@ connections on localhost.
 
 === From Gem
 
-  $ sudo gem install ib
+  $ sudo gem install ib-ruby
 
 === From Source
 
