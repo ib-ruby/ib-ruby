@@ -27,6 +27,7 @@ module IB
     attr_reader :created_at
 
     class AbstractDatum
+
       def init
         @created_at = Time.now
       end
@@ -41,8 +42,8 @@ module IB
         if attributeHash.nil?
           init
         else
-          raise(ArgumentError.new("Argument must be a Hash")) unless attributeHash.is_a?(Hash)
-          attributeHash.keys.each {|key|
+          raise ArgumentError.new("Argument must be a Hash") unless attributeHash.is_a?(Hash)
+          attributeHash.keys.each { |key|
             self.send((key.to_s + "=").to_sym, attributeHash[key])
           }
         end
@@ -76,13 +77,13 @@ module IB
       Opt_Specialist = 'y'
 
       # Main order fields
-      attr_accessor(:id, :client_id, :perm_id, :action, :total_quantity, :order_type, :limit_price,
-                    :aux_price, :shares_allocation)
+      attr_accessor(:id, :client_id, :perm_id, :action, :total_quantity, :order_type,
+                    :limit_price, :aux_price, :shares_allocation)
 
       # Extended order fields
       attr_accessor(:tif, :oca_group, :account, :open_close, :origin, :order_ref,
-                    :transmit,   # if false, order will be created but not transmitted.
-                    :parent_id,  # Parent order id, to associate auto STP or TRAIL orders with the original order.
+                    :transmit, # if false, order will be created but not transmitted.
+                    :parent_id, # Parent order id, to associate auto STP or TRAIL orders with the original order.
                     :block_order,
                     :sweep_to_fill,
                     :display_size,
@@ -98,19 +99,23 @@ module IB
       OCA_Reduce_non_block = 3
 
       # No idea what the fa_* attributes are for, nor many of the others.
-      attr_accessor(:fa_group, :fa_profile, :fa_method, :fa_profile, :fa_method, :fa_percentage, :primary_exchange,
-                    :short_sale_slot,     # 1 or 2, says Order.java. (No idea what the difference is.)
+      attr_accessor(:fa_group, :fa_profile, :fa_method, :fa_profile, :fa_method, :fa_percentage,
+                    :primary_exchange,
+                    :short_sale_slot, # 1 or 2, says Order.java. What's the difference?
                     :designated_location, # "when slot=2 only"
                     :oca_type, # 1 = CANCEL_WITH_BLOCK, 2 = REDUCE_WITH_BLOCK, 3 = REDUCE_NON_BLOCK
-                    :rth_only, :override_percentage_constraints, :rule_80a, :settling_firm, :all_or_none,
-                    :min_quantity, :percent_offset, :etrade_only, :firm_quote_only, :nbbo_price_cap)
+                    :rth_only, :override_percentage_constraints, :rule_80a, :settling_firm,
+                    :all_or_none, :min_quantity, :percent_offset, :etrade_only,
+                    :firm_quote_only, :nbbo_price_cap)
 
       # Box orders only:
       Box_Auction_Match = 1
       Box_Auction_Improvement = 2
       Box_Auction_Transparent = 3
-      attr_accessor(:auction_strategy,  # Box_* constants above
-                    :starting_price, :stock_ref_price, :delta, :stock_range_lower, :stock_range_upper)
+
+      attr_accessor(:auction_strategy, # Box_* constants above
+                    :starting_price, :stock_ref_price, :delta,
+                    :stock_range_lower, :stock_range_upper)
 
       # Volatility orders only:
       Volatility_Type_Daily = 1
@@ -126,7 +131,8 @@ module IB
                     :delta_neutral_order_type,
                     :delta_neutral_aux_price)
 
-      Max_value = 99999999 # I don't know why IB uses a very large number as the default for certain fields
+      Max_value = 99999999 # No idea why IB uses a large number as the default for some fields
+
       def init
         super
 
@@ -153,28 +159,26 @@ module IB
 
       # Valid security types (sec_type attribute)
       SECURITY_TYPES =
-        {
-          :stock => "STK",
-          :option => "OPT",
-          :future => "FUT",
-          :index => "IND",
-          :futures_option => "FOP",
-          :forex => "CASH",
-          :bag => "BAG"
-        }
+          {
+              :stock => "STK",
+              :option => "OPT",
+              :future => "FUT",
+              :index => "IND",
+              :futures_option => "FOP",
+              :forex => "CASH",
+              :bag => "BAG"
+          }
 
       # note that the :description field is entirely local to ib-ruby, and not part of TWS.
       # You can use it to store whatever arbitrary data you want.
-
       attr_accessor(:symbol, :strike, :multiplier, :exchange, :currency,
                     :local_symbol, :combo_legs, :description)
 
       # Bond values
-      attr_accessor(:cusip, :ratings, :desc_append, :bond_type, :coupon_type, :callable, :puttable,
-                    :coupon, :convertible, :maturity, :issue_date)
+      attr_accessor(:cusip, :ratings, :desc_append, :bond_type, :coupon_type, :callable,
+                    :puttable, :coupon, :convertible, :maturity, :issue_date)
 
       attr_reader :sec_type, :expiry, :right, :primary_exchange
-
 
 
       # some protective filters
@@ -191,21 +195,21 @@ module IB
       def right=(x)
         x.upcase! if x.is_a?(String)
         x = nil if !x.nil? && x.empty?
-        raise(ArgumentError.new("Invalid right \"#{x}\" (must be one of PUT, CALL, P, C)"))  unless x.nil? || [ "PUT", "CALL", "P", "C", "0"].include?(x)
+        raise(ArgumentError.new("Invalid right \"#{x}\" (must be one of PUT, CALL, P, C)")) unless x.nil? || ["PUT", "CALL", "P", "C", "0"].include?(x)
         @right = x
       end
 
       def expiry=(x)
-	x = x.to_s
-	if (x.nil? || ! (x =~ /\d{6,8}/)) and !x.empty? then
-		raise ArgumentError.new("Invalid expiry \"#{x}\" (must be in format YYYYMM or YYYYMMDD)")
-	end
- 	@expiry = x	
+        x = x.to_s
+        if (x.nil? || !(x =~ /\d{6,8}/)) and !x.empty? then
+          raise ArgumentError.new("Invalid expiry \"#{x}\" (must be in format YYYYMM or YYYYMMDD)")
+        end
+        @expiry = x
       end
 
       def sec_type=(x)
         x = nil if !x.nil? && x.empty?
-        raise(ArgumentError.new("Invalid security type \"#{x}\" (see SECURITY_TYPES constant in Contract class for valid types)"))  unless x.nil? || SECURITY_TYPES.values.include?(x)
+        raise(ArgumentError.new("Invalid security type \"#{x}\" (see SECURITY_TYPES constant in Contract class for valid types)")) unless x.nil? || SECURITY_TYPES.values.include?(x)
         @sec_type = x
       end
 
@@ -216,32 +220,34 @@ module IB
 
       # Different messages serialize contracts differently. Go figure.
       def serialize_short(version)
-        q = [ self.symbol,
-              self.sec_type,
-              self.expiry,
-              self.strike,
-              self.right ]
+        q = [self.symbol,
+             self.sec_type,
+             self.expiry,
+             self.strike,
+             self.right]
 
         q.push(self.multiplier) if version >= 15
         q.concat([
-                  self.exchange,
-                  self.currency,
-                  self.local_symbol
+                     self.exchange,
+                     self.currency,
+                     self.local_symbol
                  ])
 
         q
-      end # serialize
+      end
+
+      # serialize
 
       # This returns an Array of data from the given contract, in standard format.
       # Note that it does not include the combo legs.
       def serialize_long(version)
         queue = [
-                  self.symbol,
-                  self.sec_type,
-                  self.expiry,
-                  self.strike,
-                  self.right
-                ]
+            self.symbol,
+            self.sec_type,
+            self.expiry,
+            self.strike,
+            self.right
+        ]
 
         queue.push(self.multiplier) if version >= 15
         queue.push(self.exchange)
@@ -250,22 +256,21 @@ module IB
         queue.push(self.local_symbol) if version >= 2
 
         queue
-      end # serialize_long
 
-      #
+      end
+
       # This produces a string uniquely identifying this contract, in the format used
       # for command line arguments in the IB-Ruby examples. The format is:
       #
       #    symbol:security_type:expiry:strike:right:multiplier:exchange:primary_exchange:currency:local_symbol
       #
-      # Fields not needed for a particular security should be left blank (e.g. strike and right are only relevant for options.)
+      # Fields not needed for a particular security should be left blank
+      # (e.g. strike and right are only relevant for options.)
       #
-      # For example, to query the British pound futures contract trading on Globex expiring in September, 2008,
-      # the string is:
+      # For example, to query the British pound futures contract trading on Globex
+      # expiring in September, 2008, the string is:
       #
       #    GBP:FUT:200809:::62500:GLOBEX::USD:
-      #
-
       def serialize_ib_ruby(version)
         serialize_long(version).join(":")
       end
@@ -273,8 +278,8 @@ module IB
       # This returns a Contract initialized from the serialize_ib_ruby format string.
       def self.from_ib_ruby(string)
         c = Contract.new
-        c.symbol, c.sec_type, c.expiry, c.strike, c.right, c.multiplier, c.exchange, c.primary_exchange, c.currency, c.local_symbol = string.split(":")
-
+        c.symbol, c.sec_type, c.expiry, c.strike, c.right, c.multiplier,
+            c.exchange, c.primary_exchange, c.currency, c.local_symbol = string.split(":")
         c
       end
 
@@ -283,7 +288,7 @@ module IB
         if self.combo_legs.nil?
           [0]
         else
-          [ self.combo_legs.size ].concat(self.combo_legs.serialize(include_open_close))
+          [self.combo_legs.size].concat(self.combo_legs.serialize(include_open_close))
         end
       end
 
@@ -309,9 +314,9 @@ module IB
 
     end # class Contract
 
-
     class ContractDetails < AbstractDatum
-      attr_accessor :summary, :market_name, :trading_class, :con_id, :min_tick, :multiplier, :price_magnifier, :order_types, :valid_exchanges
+      attr_accessor :summary, :market_name, :trading_class, :con_id, :min_tick,
+                    :multiplier, :price_magnifier, :order_types, :valid_exchanges
 
       def init
         super
@@ -322,9 +327,9 @@ module IB
       end
     end # class ContractDetails
 
-
     class Execution < AbstractDatum
-      attr_accessor :order_id, :client_id, :exec_id, :time, :account_number, :exchange, :side, :shares, :price, :perm_id, :liquidation
+      attr_accessor :order_id, :client_id, :exec_id, :time, :account_number, :exchange,
+                    :side, :shares, :price, :perm_id, :liquidation
 
       def init
         super
@@ -338,7 +343,7 @@ module IB
       end
     end # Execution
 
-    # EClientSocket.java tells us: 'Note that the valid format for m_time is "yyyymmdd-hh:mm:ss"'
+    # From EClientSocket.java: Note that the valid format for m_time is "yyyymmdd-hh:mm:ss"
     class ExecutionFilter < AbstractDatum
       attr_accessor :client_id, :acct_code, :time, :symbol, :sec_type, :exchange, :side
 
@@ -365,23 +370,27 @@ module IB
       # Some messages include open_close, some don't. wtf.
       def serialize(include_open_close = false)
         self.collect { |leg|
-          [ leg.con_id, leg.ratio, leg.action, leg.exchange, (include_open_close ? leg.open_close : [] )]
+          [leg.con_id, leg.ratio, leg.action, leg.exchange, (include_open_close ? leg.open_close : [])]
         }.flatten
       end
     end # ComboLeg
 
 
     class ScannerSubscription < AbstractDatum
-      attr_accessor :number_of_rows, :instrument, :location_code, :scan_code, :above_price, :below_price,
-                    :above_volume, :average_option_volume_above, :market_cap_above, :market_cap_below, :moody_rating_above,
-                    :moody_rating_below, :sp_rating_above, :sp_rating_below, :maturity_date_above, :maturity_date_below,
-                    :coupon_rate_above, :coupon_rate_below, :exclude_convertible, :scanner_setting_pairs, :stock_type_filter
+
+      attr_accessor :number_of_rows, :instrument, :location_code, :scan_code, :above_price,
+                    :below_price, :above_volume, :average_option_volume_above,
+                    :market_cap_above, :market_cap_below, :moody_rating_above,
+                    :moody_rating_below, :sp_rating_above, :sp_rating_below,
+                    :maturity_date_above, :maturity_date_below, :coupon_rate_above,
+                    :coupon_rate_below, :exclude_convertible, :scanner_setting_pairs,
+                    :stock_type_filter
 
       def init
         super
 
-        @coupon_rate_above = @coupon_rate_below = @market_cap_below = @market_cap_above = @average_option_volume_above =
-          @above_volume = @below_price = @above_price = nil
+        @coupon_rate_above = @coupon_rate_below = @market_cap_below = @market_cap_above =
+            @average_option_volume_above = @above_volume = @below_price = @above_price = nil
         @number_of_rows = -1 # none specified, per ScannerSubscription.java
       end
     end # ScannerSubscription
@@ -390,7 +399,7 @@ module IB
     # Just like a Hash, but throws an exception if you try to access a key that doesn't exist.
     class StringentHash < Hash
       def initialize(hash)
-        super() {|hash,key| raise Exception.new("key #{key.inspect} not found!") }
+        super() { |hash, key| raise Exception.new("key #{key.inspect} not found!") }
         self.merge!(hash) unless hash.nil?
       end
     end

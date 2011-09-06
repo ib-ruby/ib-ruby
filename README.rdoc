@@ -39,8 +39,8 @@ connections on localhost.
 First, start up Interactive Broker's Trader Work Station.
 Ensure it is configured to allow API connections on localhost.
 
->> require 'ib-ruby'
->> ib_connection = IB::IB.new()
+  >> require 'ib-ruby'
+  >> ib_connection = IB::IB.new()
 
 == LICENSE:
 

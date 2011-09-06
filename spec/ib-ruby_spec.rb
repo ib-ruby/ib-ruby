@@ -2,106 +2,109 @@ require File.join(File.dirname(__FILE__), %w[spec_helper])
 
 describe IB::Datatypes::Contract do
 
-  it 'instantiates without options' do
-    x = IB::Datatypes::Contract.new
-    x.should_not be_nil
-  end
+  context "instantiation" do
 
-  it 'allows setting attributes' do
-    expect {
+    it 'instantiates without options' do
       x = IB::Datatypes::Contract.new
-      x.symbol = "TEST"
-      x.sec_type = IB::Datatypes::Contract::SECURITY_TYPES[:stock]
-      x.expiry = 200609
-      x.strike = 1234
-      x.right = "put"
-      x.multiplier = 123
-      x.exchange = "SMART"
-      x.currency = "USD"
-      x.local_symbol = "baz"
-    }.to_not raise_error
-  end
+      x.should_not be_nil
+    end
 
-  it 'raises on wrong security type' do
-    expect {
-      x = IB::Datatypes::Contract.new({:sec_type => "asdf"})
-    }.to raise_error ArgumentError
-
-    expect {
-      x = IB::Datatypes::Contract.new
-      x.sec_type = "asdf"
-    }.to raise_error ArgumentError
-
-  end
-
-  it 'accepts pre-determined security types' do
-    IB::Datatypes::Contract::SECURITY_TYPES.values.each do |type|
+    it 'allows setting attributes' do
       expect {
-        x = IB::Datatypes::Contract.new({:sec_type => type})
+        x = IB::Datatypes::Contract.new
+        x.symbol = "TEST"
+        x.sec_type = IB::Datatypes::Contract::SECURITY_TYPES[:stock]
+        x.expiry = 200609
+        x.strike = 1234
+        x.right = "put"
+        x.multiplier = 123
+        x.exchange = "SMART"
+        x.currency = "USD"
+        x.local_symbol = "baz"
+      }.to_not raise_error
+    end
+
+    it 'raises on wrong security type' do
+      expect {
+        x = IB::Datatypes::Contract.new({:sec_type => "asdf"})
+      }.to raise_error ArgumentError
+
+      expect {
+        x = IB::Datatypes::Contract.new
+        x.sec_type = "asdf"
+      }.to raise_error ArgumentError
+
+    end
+
+    it 'accepts pre-determined security types' do
+      IB::Datatypes::Contract::SECURITY_TYPES.values.each do |type|
+        expect {
+          x = IB::Datatypes::Contract.new({:sec_type => type})
+        }.to_not raise_error
+
+        expect {
+          x = IB::Datatypes::Contract.new
+          x.sec_type = type
+        }.to_not raise_error
+      end
+    end
+
+    it 'raises on wrong expiry' do
+      expect {
+        x = IB::Datatypes::Contract.new({:expiry => "foo"})
+      }.to raise_error ArgumentError
+
+      expect {
+        x = IB::Datatypes::Contract.new
+        x.expiry = "foo"
+      }.to raise_error ArgumentError
+    end
+
+    it 'accepts correct expiry' do
+      expect {
+        x = IB::Datatypes::Contract.new({:expiry => "200607"})
       }.to_not raise_error
 
       expect {
         x = IB::Datatypes::Contract.new
-        x.sec_type = type
+        x.expiry = "200607"
       }.to_not raise_error
-    end
-  end
 
-  it 'raises on wrong expiry' do
-    expect {
-      x = IB::Datatypes::Contract.new({:expiry => "foo"})
-    }.to raise_error ArgumentError
-
-    expect {
-      x = IB::Datatypes::Contract.new
-      x.expiry = "foo"
-    }.to raise_error ArgumentError
-  end
-
-  it 'accepts correct expiry' do
-    expect {
-      x = IB::Datatypes::Contract.new({:expiry => "200607"})
-    }.to_not raise_error
-
-    expect {
-      x = IB::Datatypes::Contract.new
-      x.expiry = "200607"
-    }.to_not raise_error
-
-    expect {
-      x = IB::Datatypes::Contract.new({:expiry => 200607})
-    }.to_not raise_error
-
-    expect {
-      x = IB::Datatypes::Contract.new
-      x.expiry = 200607
-      x.expiry.should == "200607" # converted to a string
-    }.to_not raise_error
-
-  end
-
-  it 'raises on incorrect right (option type)' do
-    expect {
-      x = IB::Datatypes::Contract.new({:right => "foo"})
-    }.to raise_error ArgumentError
-    expect {
-      x = IB::Datatypes::Contract.new
-      x.right = "foo"
-    }.to raise_error ArgumentError
-  end
-
-  it 'accepts all correct values for right (option type)' do
-    ["PUT", "put", "P", "p", "CALL", "call", "C", "c"].each do |right|
       expect {
-        x = IB::Datatypes::Contract.new({:right => right})
+        x = IB::Datatypes::Contract.new({:expiry => 200607})
       }.to_not raise_error
 
       expect {
         x = IB::Datatypes::Contract.new
-        x.right = right
+        x.expiry = 200607
+        x.expiry.should == "200607" # converted to a string
       }.to_not raise_error
+
     end
-  end
+
+    it 'raises on incorrect right (option type)' do
+      expect {
+        x = IB::Datatypes::Contract.new({:right => "foo"})
+      }.to raise_error ArgumentError
+      expect {
+        x = IB::Datatypes::Contract.new
+        x.right = "foo"
+      }.to raise_error ArgumentError
+    end
+
+    it 'accepts all correct values for right (option type)' do
+      ["PUT", "put", "P", "p", "CALL", "call", "C", "c"].each do |right|
+        expect {
+          x = IB::Datatypes::Contract.new({:right => right})
+        }.to_not raise_error
+
+        expect {
+          x = IB::Datatypes::Contract.new
+          x.right = right
+        }.to_not raise_error
+      end
+    end
+  end #instantiation
 
   context "serialization" do
     let(:stock) do
@@ -127,5 +130,7 @@ describe IB::Datatypes::Contract do
       stock.serialize_short(20).should ==
           ["TEST", IB::Datatypes::Contract::SECURITY_TYPES[:stock], "200609", 1234, "PUT", 123, "SMART", "USD", "baz"]
     end
+
   end #serialization
+
 end # describe IB::Datatypes::Contract

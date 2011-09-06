@@ -15,8 +15,8 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
-#
-#
+
+
 # EClientSocket.java uses sendMax() rather than send() for a number of these.
 # It sends an EOL rather than a number if the value == Integer.MAX_VALUE (or Double.MAX_VALUE).
 # These fields are initialized to this MAX_VALUE.
@@ -51,11 +51,11 @@ module IB
       def initialize(data=nil)
         @created_at = Time.now
         @data = Datatypes::StringentHash.new(data)
-      end # initialize
-
+      end
 
       # This causes the message to send itself over the server socket in server[:socket].
-      # "server" is the @server instance variable from the IB object. You can also use this to e.g. get the server version number.
+      # "server" is the @server instance variable from the IB object.
+      # You can also use this to e.g. get the server version number.
       #
       # Subclasses can either override this method for precise control
       # over how stuff gets sent to the server, or else define a
@@ -64,15 +64,14 @@ module IB
       # postpending a '\0'.
       #
       def send(server)
-        self.queue(server).each {|datum|
+        self.queue(server).each { |datum|
 
-          # TWS wants to receive booleans as 1 or 0... rewrite as
-          # necessary.
+          # TWS wants to receive booleans as 1 or 0... rewrite as necessary.
           datum = "1" if datum == true
           datum = "0" if datum == false
 
-         server[:socket].syswrite(datum.to_s + "\0")
-       }
+          server[:socket].syswrite(datum.to_s + "\0")
+        }
       end
 
       def queue
@@ -86,8 +85,9 @@ module IB
         raise(Exception.new("TWS version >= #{version} required.")) if server[:version] < version
       end
 
-      # Returns EOL instead of datum if datum is nil, providing the same functionality as sendMax() in the Java version,
-      # which uses Double.MAX_VALUE to mean "item not set" in a variable, and replaces that with EOL on send.
+      # Returns EOL instead of datum if datum is nil, providing the same functionality
+      # as sendMax() in the Java version, which uses Double.MAX_VALUE to mean "item not set"
+      # in a variable, and replaces that with EOL on send.
       def nilFilter(datum)
         datum.nil? ? EOL : datum
       end
@@ -102,14 +102,14 @@ module IB
       end
 
       def queue(server)
-        queue = [ self.class.message_id,
-                  5, # message version number
-                  @data[:ticker_id]
-                ].concat(@data[:contract].serialize_long(server[:version]))
+        queue = [self.class.message_id,
+                 5, # message version number
+                 @data[:ticker_id]
+        ].concat(@data[:contract].serialize_long(server[:version]))
 
+        # No idea what "BAG" means. Copied from the Java code.
         queue.concat(@data[:contract].serialize_combo_legs
-                     ) if server[:version] >= 8 && @data[:contract].sec_type == "BAG" # I have no idea what "BAG" means. Copied from the Java code.
-
+        ) if server[:version] >= 8 && @data[:contract].sec_type == "BAG"
 
         queue
       end # queue
@@ -120,10 +120,11 @@ module IB
       def self.message_id
         2
       end
+
       def queue(server)
-        [ self.class.message_id,
-          1, # message version number
-          @data[:ticker_id] ]
+        [self.class.message_id,
+         1, # message version number
+         @data[:ticker_id]]
       end # queue
     end # CancelMarketData
 
@@ -134,44 +135,45 @@ module IB
       end
 
       def queue(server)
-        queue = [ self.class.message_id,
-                  20, # version
-                  @data[:order_id],
-                  @data[:contract].symbol,
-                  @data[:contract].sec_type,
-                  @data[:contract].expiry,
-                  @data[:contract].strike,
-                  @data[:contract].right
-                ]
+        queue = [self.class.message_id,
+                 20, # version
+                 @data[:order_id],
+                 @data[:contract].symbol,
+                 @data[:contract].sec_type,
+                 @data[:contract].expiry,
+                 @data[:contract].strike,
+                 @data[:contract].right
+        ]
         queue.push(@data[:contract].multiplier) if server[:version] >= 15
         queue.push(@data[:contract].exchange) if server[:version] >= 14
         queue.push(@data[:contract].currency)
         queue.push(@data[:contract].local_symbol) if server[:version] >= 2
 
         queue.concat([
-                      @data[:order].tif,
-                      @data[:order].oca_group,
-                      @data[:order].account,
-                      @data[:order].open_close,
-                      @data[:order].origin,
-                      @data[:order].order_ref,
-                      @data[:order].transmit
-                      ])
+                         @data[:order].tif,
+                         @data[:order].oca_group,
+                         @data[:order].account,
+                         @data[:order].open_close,
+                         @data[:order].origin,
+                         @data[:order].order_ref,
+                         @data[:order].transmit
+                     ])
 
         queue.push(@data[:contract].parent_id) if server[:version] >= 4
 
         queue.concat([
-                      @data[:order].block_order,
-                      @data[:order].sweep_to_fill,
-                      @data[:order].display_size,
-                      @data[:order].trigger_method,
-                      @data[:order].ignore_rth
+                         @data[:order].block_order,
+                         @data[:order].sweep_to_fill,
+                         @data[:order].display_size,
+                         @data[:order].trigger_method,
+                         @data[:order].ignore_rth
                      ]) if server[:version] >= 5
 
         queue.push(@data[:order].hidden) if server[:version] >= 7
 
 
-        queue.concat(@data[:contract].serialize_combo_legs(true)) if server[:version] >= 8 && @data[:contract].sec_type.upcase == "BAG" # "BAG" is defined as a constant in EClientSocket.java, line 45
+        queue.concat(@data[:contract].serialize_combo_legs(true)) if server[:version] >= 8 &&
+            @data[:contract].sec_type.upcase == "BAG" # "BAG" is defined as a constant in EClientSocket.java, line 45
 
         queue.push(@data[:order].shares_allocation) if server[:version] >= 9 # EClientSocket.java says this is deprecated. No idea.
         queue.push(@data[:order].discretionary_amount) if server[:version] >= 10
@@ -179,39 +181,39 @@ module IB
         queue.push(@data[:order].good_till_date) if server[:version] >= 12
 
         queue.concat([
-                      @data[:order].fa_group,
-                      @data[:order].fa_method,
-                      @data[:order].fa_percentage,
-                      @data[:order].fa_profile
+                         @data[:order].fa_group,
+                         @data[:order].fa_method,
+                         @data[:order].fa_percentage,
+                         @data[:order].fa_profile
                      ]) if server[:version] >= 13
 
         queue.concat([
-                      @data[:order].short_sale_slot,
-                      @data[:order].designated_location
+                         @data[:order].short_sale_slot,
+                         @data[:order].designated_location
                      ]) if server[:version] >= 18
 
         queue.concat([
-                      @data[:order].oca_type,
-                      @data[:order].rth_only,
-                      @data[:order].rule_80a,
-                      @data[:order].settling_firm,
-                      @data[:order].all_or_none,
-                      nilFilter(@data[:order].min_quantity),
-                      nilFilter(@data[:order].percent_offset),
-                      @data[:order].etrade_only,
-                      @data[:order].firm_quote_only,
-                      nilFilter(@data[:order].nbbo_price_cap),
-                      nilFilter(@data[:order].auction_strategy),
-                      nilFilter(@data[:order].starting_price),
-                      nilFilter(@data[:order].stock_ref_price),
-                      nilFilter(@data[:order].delta),
+                         @data[:order].oca_type,
+                         @data[:order].rth_only,
+                         @data[:order].rule_80a,
+                         @data[:order].settling_firm,
+                         @data[:order].all_or_none,
+                         nilFilter(@data[:order].min_quantity),
+                         nilFilter(@data[:order].percent_offset),
+                         @data[:order].etrade_only,
+                         @data[:order].firm_quote_only,
+                         nilFilter(@data[:order].nbbo_price_cap),
+                         nilFilter(@data[:order].auction_strategy),
+                         nilFilter(@data[:order].starting_price),
+                         nilFilter(@data[:order].stock_ref_price),
+                         nilFilter(@data[:order].delta),
 
-                      # Says the Java here:
-                      # "// Volatility orders had specific watermark price attribs in server version 26"
-                      # I have no idea what this means.
+                         # Says the Java here:
+                         # "// Volatility orders had specific watermark price attribs in server version 26"
+                         # I have no idea what this means.
 
-                      ((server[:version] == 26 && @data[:order].order_type.upcase == "VOL") ? EOL : @data[:order].stock_range_lower),
-                      ((server[:version] == 26 && @data[:order].order_type.upcase == "VOL") ? EOL : @data[:order].stock_range_upper),
+                         ((server[:version] == 26 && @data[:order].order_type.upcase == "VOL") ? EOL : @data[:order].stock_range_lower),
+                         ((server[:version] == 26 && @data[:order].order_type.upcase == "VOL") ? EOL : @data[:order].stock_range_upper),
 
                      ]) if server[:version] >= 19
 
@@ -220,20 +222,20 @@ module IB
         # Volatility orders
         if server[:version] >= 26
           queue.concat([nilFilter(@data[:order].volatility),
-                        nilFilter(@data[:order].volatility_type) ])
+                        nilFilter(@data[:order].volatility_type)])
 
           if server[:version] < 28
             queue.push(@data[:order].delta_neutral_order_type.upcase == "MKT")
           else
             queue.concat([@data[:order].delta_neutral_order_type,
                           nilFilter(@data[:order].delta_neutral_aux_price)
-                          ])
+                         ])
           end
 
           queue.push(@data[:order].continuous_update)
           queue.concat([
-                        (@data[:order].order_type.upcase == "VOL" ? @data[:order].stock_range_lower : EOL),
-                        (@data[:order].order_type.upcase == "VOL" ? @data[:order].stock_range_upper : EOL)
+                           (@data[:order].order_type.upcase == "VOL" ? @data[:order].stock_range_lower : EOL),
+                           (@data[:order].order_type.upcase == "VOL" ? @data[:order].stock_range_upper : EOL)
                        ]) if server[:version] == 26
 
           queue.push(@data[:order].reference_price_type)
@@ -253,9 +255,9 @@ module IB
 
       def queue(server)
         [
-         self.class.message_id,
-         1,  # version
-         @data[:id]
+            self.class.message_id,
+            1, # version
+            @data[:id]
         ]
       end # queue
     end # CancelOrder
@@ -264,9 +266,10 @@ module IB
       def self.message_id
         5
       end
+
       def queue(server)
-        [ self.class.message_id,
-          1 # version
+        [self.class.message_id,
+         1 # version
         ]
       end
     end # RequestOpenOrders
@@ -280,11 +283,12 @@ module IB
       def self.message_id
         6
       end
+
       def queue(server)
-        queue = [ self.class.message_id,
-                  2, # version
-                  @data[:subscribe]
-                ]
+        queue = [self.class.message_id,
+                 2, # version
+                 @data[:subscribe]
+        ]
         queue.push(@data[:account_code]) if server[:version] >= 9
         queue
       end
@@ -296,21 +300,22 @@ module IB
       def self.message_id
         7
       end
+
       def queue(server)
-        queue = [ self.class.message_id,
-                  2 # version
-                ]
+        queue = [self.class.message_id,
+                 2 # version
+        ]
 
         queue.concat([
-                      @data[:filter].client_id,
-                      @data[:filter].acct_code,
+                         @data[:filter].client_id,
+                         @data[:filter].acct_code,
 
-                      # The Java says: 'Note that the valid format for m_time is "yyyymmdd-hh:mm:ss"'
-                      @data[:filter].time,
-                      @data[:filter].symbol,
-                      @data[:filter].sec_type,
-                      @data[:filter].exchange,
-                      @data[:filter].side
+                         # The Java says: 'Note that the valid format for m_time is "yyyymmdd-hh:mm:ss"'
+                         @data[:filter].time,
+                         @data[:filter].symbol,
+                         @data[:filter].sec_type,
+                         @data[:filter].exchange,
+                         @data[:filter].side
                      ]) if server[:version] >= 9
 
         queue
@@ -325,9 +330,9 @@ module IB
       end
 
       def queue(server)
-        [ self.class.message_id,
-          1, # version
-          @data[:number_of_ids]
+        [self.class.message_id,
+         1, # version
+         @data[:number_of_ids]
         ]
       end
     end # RequestIds
@@ -343,20 +348,20 @@ module IB
         requireVersion(server, 4)
 
         queue = [
-                 self.class.message_id,
-                 2, # version
-                 @data[:contract].symbol,
-                 @data[:contract].sec_type,
-                 @data[:contract].expiry,
-                 @data[:contract].strike,
-                 @data[:contract].right
-                ]
+            self.class.message_id,
+            2, # version
+            @data[:contract].symbol,
+            @data[:contract].sec_type,
+            @data[:contract].expiry,
+            @data[:contract].strike,
+            @data[:contract].right
+        ]
         queue.push(@data[:contract].multiplier) if server[:version] >= 15
 
         queue.concat([
-                      @data[:contract].exchange,
-                      @data[:contract].currency,
-                      @data[:contract].local_symbol,
+                         @data[:contract].exchange,
+                         @data[:contract].currency,
+                         @data[:contract].local_symbol,
                      ])
 
         queue
@@ -372,10 +377,10 @@ module IB
       def queue(server)
         requireVersion(server, 6)
 
-        queue = [ self.class.message_id,
-                  3, # version
-                  @data[:ticker_id]
-                ]
+        queue = [self.class.message_id,
+                 3, # version
+                 @data[:ticker_id]
+        ]
         queue.concat(@data[:contract].serialize_short(server[:version]))
         queue.push(@data[:num_rows]) if server[:version] >= 19
 
@@ -389,12 +394,13 @@ module IB
       def self.message_id
         11
       end
+
       def queue(server)
         requireVersion(self, 6)
 
-        [ self.class.message_id,
-          1, # version
-          @data[:ticker_id]
+        [self.class.message_id,
+         1, # version
+         @data[:ticker_id]
         ]
       end
     end # CancelMarketDepth
@@ -407,9 +413,9 @@ module IB
       end
 
       def queue(server)
-        [ self.class.message_id,
-          1, # version
-          @data[:all_messages]
+        [self.class.message_id,
+         1, # version
+         @data[:all_messages]
         ]
       end
     end # RequestNewsBulletins
@@ -420,8 +426,8 @@ module IB
       end
 
       def queue(server)
-        [ self.class.message_id,
-          1 # version
+        [self.class.message_id,
+         1 # version
         ]
       end
     end # CancelNewsBulletins
@@ -433,9 +439,9 @@ module IB
       end
 
       def queue(server)
-        [ self.class.message_id,
-          1, # version
-          @data[:loglevel]
+        [self.class.message_id,
+         1, # version
+         @data[:loglevel]
         ]
       end
     end # SetServerLoglevel
@@ -447,9 +453,9 @@ module IB
       end
 
       def queue(server)
-        [ self.class.message_id,
-          1, # version
-          @data[:auto_bind]
+        [self.class.message_id,
+         1, # version
+         @data[:auto_bind]
         ]
       end
     end # RequestAutoOpenOrders
@@ -461,8 +467,8 @@ module IB
       end
 
       def queue(server)
-        [ self.class.message_id,
-          1 # version
+        [self.class.message_id,
+         1 # version
         ]
       end
     end # RequestAllOpenOrders
@@ -473,8 +479,8 @@ module IB
       end
 
       def queue(server)
-        [ self.class.message_id,
-          1 # version
+        [self.class.message_id,
+         1 # version
         ]
       end
     end # RequestManagedAccounts
@@ -489,9 +495,9 @@ module IB
       def queue(server)
         requireVersion(server, 13)
 
-        [ self.class.message_id,
-          1, # version
-          @data[:fa_data_type]
+        [self.class.message_id,
+         1, # version
+         @data[:fa_data_type]
         ]
       end
     end # RequestFA
@@ -506,10 +512,10 @@ module IB
       def queue(server)
         requireVersion(server, 13)
 
-        [ self.class.message_id,
-          1, # version
-          @data[:fa_data_type],
-          @data[:xml]
+        [self.class.message_id,
+         1, # version
+         @data[:fa_data_type],
+         @data[:xml]
         ]
       end
     end # ReplaceFA
@@ -526,22 +532,25 @@ module IB
     #
     # Note that as of 4/07 there is no historical data available for forex spot.
     #
-    # data[:contract] may either be a Contract object or a String. A String should be in serialize_ib_ruby format;
-    # that is, it should be a colon-delimited string in the format:
+    # data[:contract] may either be a Contract object or a String. A String should be
+    # in serialize_ib_ruby format; that is, it should be a colon-delimited string in
+    # the format:
     #
     #    symbol:security_type:expiry:strike:right:multiplier:exchange:primary_exchange:currency:local_symbol
     #
-    # Fields not needed for a particular security should be left blank (e.g. strike and right are only relevant for options.)
+    # Fields not needed for a particular security should be left blank (e.g. strike
+    # and right are only relevant for options.)
     #
-    # For example, to query the British pound futures contract trading on Globex expiring in September, 2008,
-    # the correct string is:
+    # For example, to query the British pound futures contract trading on Globex expiring
+    # in September, 2008, the correct string is:
     #
     #    GBP:FUT:200809:::62500:GLOBEX::USD:
     #
     # A Contract object will be automatically serialized into the required format.
     #
     # See also http://chuckcaplan.com/twsapi/index.php/void%20reqIntradayData%28%29
-    # for general information about how TWS handles historic data requests, whence the following has been adapted:
+    # for general information about how TWS handles historic data requests, whence
+    # the following has been adapted:
     #
     # The server providing historical prices appears to not always be
     # available outside of market hours. If you call it outside of its
@@ -555,8 +564,7 @@ module IB
     #
     # The ticker id needs to be different than the reqMktData ticker
     # id. If you use the same ticker ID you used for the symbol when
-    # you did ReqMktData, nothing comes back for the historical data
-    # call.
+    # you did ReqMktData, nothing comes back for the historical data call.
     #
     # Possible :bar_size values:
     # 1 = 1 sec
@@ -602,19 +610,19 @@ module IB
       # Enumeration of bar size types for convenience. These are passed to TWS as the (one-based!) index into the array.
       # Bar sizes less than 30 seconds do not work for some securities.
       BarSizes = [
-                 :invalid, # zero is not a valid barsize
-                 :second,
-                 :five_seconds,
-                 :fifteen_seconds,
-                 :thirty_seconds,
-                 :minute,
-                 :two_minutes,
-                 :five_minutes,
-                 :fifteen_minutes,
-                 :thirty_minutes,
-                 :hour,
-                 :day,
-                 ]
+          :invalid, # zero is not a valid barsize
+          :second,
+          :five_seconds,
+          :fifteen_seconds,
+          :thirty_seconds,
+          :minute,
+          :two_minutes,
+          :five_minutes,
+          :fifteen_minutes,
+          :thirty_minutes,
+          :hour,
+          :day,
+      ]
 
 
       def self.message_id
@@ -631,24 +639,24 @@ module IB
 
         raise ArgumentError("RequestHistoricalData: @data[:what_to_show] must be one of #{ALLOWED_HISTORICAL_TYPES.inspect}.") unless ALLOWED_HISTORICAL_TYPES.include?(@data[:what_to_show])
 
-        queue = [ self.class.message_id,
-                  3, # version
-                  @data[:ticker_id]
-                ]
+        queue = [self.class.message_id,
+                 3, # version
+                 @data[:ticker_id]
+        ]
 
         contract = @data[:contract].is_a?(Datatypes::Contract) ? @data[:contract] : Datatypes::Contract.from_ib_ruby(@data[:contract])
         queue.concat(contract.serialize_long(server[:version]))
 
         queue.concat([
-                      @data[:end_date_time],
-                      @data[:bar_size]
+                         @data[:end_date_time],
+                         @data[:bar_size]
                      ]) if server[:version] > 20
 
 
         queue.concat([
-                      @data[:duration],
-                      @data[:use_RTH],
-                      @data[:what_to_show].to_s.upcase
+                         @data[:duration],
+                         @data[:use_RTH],
+                         @data[:what_to_show].to_s.upcase
                      ])
 
         queue.push(@data[:format_date]) if server[:version] > 16
@@ -679,13 +687,13 @@ module IB
         q = [self.class.message_id,
              1, # version
              @data[:ticker_id]
-            ]
+        ]
         q.concat(@data[:contract].serialize_long(server[:version]))
         q.concat([
-                  @data[:exercise_action],
-                  @data[:exercise_quantity],
-                  @data[:account],
-                  @data[:override]
+                     @data[:exercise_action],
+                     @data[:exercise_quantity],
+                     @data[:account],
+                     @data[:override]
                  ])
         q
       end # queue
@@ -703,31 +711,31 @@ module IB
         requireVersion(server, 24)
 
         [
-         self.class.message_id,
-         3, # version
-         @data[:ticker_id],
-         @data[:subscription].number_of_rows,
-         nilFilter(@data[:subscription].number_of_rows),
-         @data[:subscription].instrument,
-         @data[:subscription].location_code,
-         @data[:subscription].scan_code,
-         nilFilter(@data[:subscription].above_price),
-         nilFilter(@data[:subscription].below_price),
-         nilFilter(@data[:subscription].above_volume),
-         nilFilter(@data[:subscription].market_cap_above),
-         @data[:subscription].moody_rating_above,
-         @data[:subscription].moody_rating_below,
-         @data[:subscription].sp_rating_above,
-         @data[:subscription].sp_rating_below,
-         @data[:subscription].maturity_date_above,
-         @data[:subscription].maturity_date_below,
-         nilFilter(@data[:subscription].coupon_rate_above),
-         nilFilter(@data[:subscription].coupon_rate_below),
-         @data[:subscription].exclude_convertible,
-         (server[:version] >= 25 ? [ @data[:subscription].average_option_volume_above,
-                                     @data[:subscription].scanner_setting_pairs ] : []),
+            self.class.message_id,
+            3, # version
+            @data[:ticker_id],
+            @data[:subscription].number_of_rows,
+            nilFilter(@data[:subscription].number_of_rows),
+            @data[:subscription].instrument,
+            @data[:subscription].location_code,
+            @data[:subscription].scan_code,
+            nilFilter(@data[:subscription].above_price),
+            nilFilter(@data[:subscription].below_price),
+            nilFilter(@data[:subscription].above_volume),
+            nilFilter(@data[:subscription].market_cap_above),
+            @data[:subscription].moody_rating_above,
+            @data[:subscription].moody_rating_below,
+            @data[:subscription].sp_rating_above,
+            @data[:subscription].sp_rating_below,
+            @data[:subscription].maturity_date_above,
+            @data[:subscription].maturity_date_below,
+            nilFilter(@data[:subscription].coupon_rate_above),
+            nilFilter(@data[:subscription].coupon_rate_below),
+            @data[:subscription].exclude_convertible,
+            (server[:version] >= 25 ? [@data[:subscription].average_option_volume_above,
+                                       @data[:subscription].scanner_setting_pairs] : []),
 
-         (server[:version] >= 27 ? [ @data[:subscription].stock_type_filter ] : []),
+            (server[:version] >= 27 ? [@data[:subscription].stock_type_filter] : []),
         ].flatten
 
       end
@@ -758,8 +766,8 @@ module IB
       def queue(server)
         requireVersion(server, 24)
 
-        [ self.class.message_id,
-          1 # version
+        [self.class.message_id,
+         1 # version
         ]
       end
     end # RequestScannerParameters
@@ -773,19 +781,18 @@ module IB
 
       def queue(server)
         requireVersion(server, 24)
-        [ self.class.message_id,
-          1, # version
-          @data[:ticker_id]
+        [self.class.message_id,
+         1, # version
+         @data[:ticker_id]
         ]
       end
     end # CancelHistoricalData
 
-end # module OutgoingMessages
+  end # module OutgoingMessages
 
   ################################################################
   #### end outgoing messages
   ################################################################
-
 
 
   ################################################################
@@ -858,7 +865,7 @@ end # module OutgoingMessages
       # version_load loads map only if @data[:version] is >= required_version.
       def version_load(required_version, *map)
         if @data[:version] >= required_version
-          map.each {|item|
+          map.each { |item|
             autoload(item)
           }
         end
@@ -922,27 +929,29 @@ end # module OutgoingMessages
         if @data[:version] >= 2
           # the IB code translates these into 0, 3, and 5, respectively, and wraps them in a TICK_SIZE-type wrapper.
           @data[:type] = case @data[:tick_type]
-                         when 1
-                           :bid
-                         when 2
-                           :ask
-                         when 4
-                           :last
-                         when 6
-                           :high
-                         when 7
-                           :low
-                         when 9
-                           :close
-                         else
-                           nil
+                           when 1
+                             :bid
+                           when 2
+                             :ask
+                           when 4
+                             :last
+                           when 6
+                             :high
+                           when 7
+                             :low
+                           when 9
+                             :close
+                           else
+                             nil
                          end
         end
 
-      end # load
+      end
+
+      # load
 
       def inspect
-        "Tick (" + @data[:type].to_s('F') + " at "  + @data[:price].to_s('F') + ") " + super.inspect
+        "Tick (" + @data[:type].to_s('F') + " at " + @data[:price].to_s('F') + ") " + super.inspect
       end
 
       def to_human
@@ -950,7 +959,6 @@ end # module OutgoingMessages
       end
 
     end # TickPrice
-
 
 
     class TickSize < AbstractMessage
@@ -961,24 +969,23 @@ end # module OutgoingMessages
       def load
         autoload([:version, :int], [:ticker_id, :int], [:tick_type, :int], [:size, :int])
         @data[:type] = case @data[:tick_type]
-                       when 0
-                         :bid
-                       when 3
-                         :ask
-                       when 5
-                         :last
-                       when 8
-                         :volume
-                       else
-                         nil
+                         when 0
+                           :bid
+                         when 3
+                           :ask
+                         when 5
+                           :last
+                         when 8
+                           :volume
+                         else
+                           nil
                        end
       end
 
       def to_human
-        @data[:type].to_s + " size: " +  @data[:size].to_s
+        @data[:type].to_s + " size: " + @data[:size].to_s
       end
     end # TickSize
-
 
 
     class OrderStatus < AbstractMessage
@@ -1114,7 +1121,7 @@ end # module OutgoingMessages
           @order.volatility_type = @socket.read_int
 
           if @data[:version] == 11
-            @order.delta_neutral_order_type = ( @socket.read_int == 0 ? "NONE" : "MKT" )
+            @order.delta_neutral_order_type = (@socket.read_int == 0 ? "NONE" : "MKT")
           else
             @order.delta_neutral_order_type = @socket.read_string
             @order.delta_neutral_aux_price = @socket.read_decimal
@@ -1174,8 +1181,8 @@ end # module OutgoingMessages
 
       def to_human
         "<PortfolioValue: update for #{@contract.to_human}: market price #{@data[:market_price].to_s('F')}; market value " +
-          "#{@data[:market_value].to_s('F')}; position #{@data[:position]}; unrealized PnL #{@data[:unrealized_pnl].to_s('F')}; " +
-          "realized PnL #{@data[:realized_pnl].to_s('F')}; account #{@data[:account_name]}>"
+            "#{@data[:market_value].to_s('F')}; position #{@data[:position]}; unrealized PnL #{@data[:unrealized_pnl].to_s('F')}; " +
+            "realized PnL #{@data[:realized_pnl].to_s('F')}; account #{@data[:account_name]}>"
       end
 
     end # PortfolioValue
@@ -1342,16 +1349,16 @@ end # module OutgoingMessages
         @data[:completed_indicator] = "finished-" + @data[:start_date_str] + "-" + @data[:end_date_str] if @data[:version] >= 2
 
         autoload([:item_count, :int])
-        @data[:history] = Array.new(@data[:item_count]) {|index|
+        @data[:history] = Array.new(@data[:item_count]) { |index|
           attrs = {
-            :date => @socket.read_string,
-            :open => @socket.read_decimal,
-            :high => @socket.read_decimal,
-            :low => @socket.read_decimal,
-            :close => @socket.read_decimal,
-            :volume => @socket.read_int,
-            :wap => @socket.read_decimal,
-            :has_gaps => @socket.read_string
+              :date => @socket.read_string,
+              :open => @socket.read_decimal,
+              :high => @socket.read_decimal,
+              :low => @socket.read_decimal,
+              :close => @socket.read_decimal,
+              :volume => @socket.read_int,
+              :wap => @socket.read_decimal,
+              :has_gaps => @socket.read_string
           }
 
           Datatypes::Bar.new(attrs)
@@ -1366,6 +1373,7 @@ end # module OutgoingMessages
 
     class BondContractData < AbstractMessage
       attr_accessor :contract_details
+
       def self.message_id
         18
       end
@@ -1410,6 +1418,7 @@ end # module OutgoingMessages
 
     class ScannerData < AbstractMessage
       attr_accessor :contract_details
+
       def self.message_id
         20
       end
@@ -1418,8 +1427,8 @@ end # module OutgoingMessages
         autoload([:version, :int], [:ticker_id, :int], [:number_of_elements, :int])
         @data[:results] = Array.new(@data[:number_of_elements]) { |index|
           {
-            :rank => @socket.read_int
-            ## TODO: Pick up here.
+              :rank => @socket.read_int
+              ## TODO: Pick up here.
           }
         }
 
@@ -1445,5 +1454,4 @@ end # module OutgoingMessages
   ################################################################
 
 
-
-end  # module IB
+end # module IB
