@@ -11,6 +11,8 @@
     <orderEntry type="library" scope="PROVIDED" name="rspec (v2.6.0, JRuby SDK 1.6.1-p330) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="bundler (v1.0.13, JRuby SDK 1.6.1-p330) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="duration (v0.1.0, JRuby SDK 1.6.1-p330) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="diff-lcs (v1.1.2, JRuby SDK 1.6.1-p330) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="rspec-core (v2.6.2, JRuby SDK 1.6.1-p330) [gem]" level="application" />
   </component>
 </module>
 
