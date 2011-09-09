@@ -7,12 +7,11 @@
 #
 
 require 'pathname'
-require 'rubygems'
-require 'bundler/setup'
-
 LIB_DIR = (Pathname.new(__FILE__).dirname + '../lib/').realpath.to_s
 $LOAD_PATH.unshift LIB_DIR unless $LOAD_PATH.include?(LIB_DIR)
 
+require 'rubygems'
+require 'bundler/setup'
 require 'ib-ruby'
 
 ### Configurable Options

@@ -40,9 +40,6 @@ end # Time
 
 module IB
 
-  TWS_IP_ADDRESS = "127.0.0.1"
-  TWS_PORT = "7496"
-
   #logger = Logger.new(STDERR)
 
   class IBSocket < TCPSocket
@@ -71,17 +68,21 @@ module IB
 
   end # class IBSocket
 
-
   class IB
-    Tws_client_version = 27
+
+    # Please note, we are realizing only the most current TWS protocol versions,
+    # thus improving performance at the expense of backwards compatibility.
+    # Older protocol versions can be found in older gem versions.
+
+    CLIENT_VERSION = 27 # 48 drops dead # Was 27 in original Ruby code
+    SERVER_VERSION = 53 # Minimal server version. Latest, was 38 in current Java code.
+    TWS_IP_ADDRESS = "127.0.0.1"
+    TWS_PORT = "7496"
 
     attr_reader :next_order_id
 
     def initialize(options_in = {})
-      @options = {
-          :ip => TWS_IP_ADDRESS,
-          :port => TWS_PORT,
-      }.merge(options_in)
+      @options = {:ip => TWS_IP_ADDRESS, :port => TWS_PORT, }.merge(options_in)
 
       @connected = false
       @next_order_id = nil
@@ -105,10 +106,7 @@ module IB
     def open(options_in = {})
       raise Exception.new("Already connected!") if @connected
 
-      opts = {
-          :ip => "127.0.0.1",
-          :port => "7496"
-      }.merge(options_in)
+      opts = @options.merge(options_in)
 
       # Subscribe to the NextValidID message from TWS that is always
       # sent at connect, and save the id.
@@ -117,38 +115,31 @@ module IB
         #logger.info { "Got next valid order id #{@next_order_id}." }
       end
 
-      @server[:socket] = IBSocket.open(@options[:ip], @options[:port])
+      @server[:socket] = IBSocket.open(opts[:ip], opts[:port])
       #logger.info("* TWS socket connected to #{@options[:ip]}:#{@options[:port]}.")
 
-      # Sekrit handshake.
-      #logger.debug("\tSending client version #{Tws_client_version}..")
-
-      @server[:socket].send(Tws_client_version)
+      # Secret handshake.
+      @server[:socket].send(CLIENT_VERSION)
       @server[:version] = @server[:socket].read_int
       @@server_version = @server[:version]
       @server[:local_connect_time] = Time.now()
 
+      puts "\tGot server version: #{@server[:version]}."
       #logger.debug("\tGot server version: #{@server[:version]}.")
 
-      # Server version >= 20 sends the server time back.
-      if @server[:version] >= 20
-        @server[:remote_connect_time] = @server[:socket].read_string
-        #logger.debug("\tServer connect time: #{@server[:remote_connect_time]}.")
-      end
+      # Server version >= 20 sends the server time back. Our min server version is 38
+      @server[:remote_connect_time] = @server[:socket].read_string
+      #logger.debug("\tServer connect time: #{@server[:remote_connect_time]}.")
 
-      # Server version >= 3 wants an arbitrary client ID at this point. This can be used
+      # Server wants an arbitrary client ID at this point. This can be used
       # to identify subsequent communications.
-      if @server[:version] >= 3
-        @server[:client_id] = SHA1.digest(Time.now.to_s + $$.to_s).unpack("C*").join.to_i % 999999999
-        @server[:socket].send(@server[:client_id])
-        #logger.debug("\tSent client id # #{@server[:client_id]}.")
-      end
+      @server[:client_id] = SHA1.digest(Time.now.to_s + $$.to_s).unpack("C*").join.to_i % 999999999
+      @server[:socket].send(@server[:client_id])
+      #logger.debug("\tSent client id # #{@server[:client_id]}.")
 
       #logger.debug("Starting reader thread..")
       Thread.abort_on_exception = true
-      @server[:reader_thread] = Thread.new {
-        self.reader
-      }
+      @server[:reader_thread] = Thread.new { self.reader }
 
       @connected = true
     end
@@ -166,7 +157,6 @@ module IB
     def to_s
       "IB Connector: #{ @connected ? "connected." : "disconnected."}"
     end
-
 
     # Subscribe to incoming message events of type message_class.
     # code is a Proc that will be called with the message instance as its argument.
@@ -189,7 +179,6 @@ module IB
       message.send(@server)
     end
 
-
     protected
 
     def reader
@@ -202,6 +191,7 @@ module IB
         #logger.debug { "Reader: got message id #{msg_id}.\n" }
 
         # create a new instance of the appropriate message type, and have it read the message.
+        # NB: Failure here usually means unsupported message type received
         msg = IncomingMessages::Table[msg_id].new(@server[:socket], @server[:version])
 
         @listeners[msg.class].each { |listener|
@@ -228,8 +218,6 @@ module IB
 
         # #logger.debug("Reader done with message id #{msg_id}.")
       end # while
-
-      #logger.debug("Reader done.")
     end # reader
 
   end # class IB

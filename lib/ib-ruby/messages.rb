@@ -834,7 +834,6 @@ module IB
 
         @socket = nil
 
-
         #logger.debug(" * New #{self.class.name}: #{ self.to_human }")
       end
 

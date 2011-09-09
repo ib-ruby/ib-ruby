@@ -4,12 +4,11 @@
 # messages received from IB (update every 3 minute or so)
 
 require 'pathname'
-require 'rubygems'
-require 'bundler/setup'
-
 LIB_DIR = (Pathname.new(__FILE__).dirname + '../lib/').realpath.to_s
 $LOAD_PATH.unshift LIB_DIR unless $LOAD_PATH.include?(LIB_DIR)
 
+require 'rubygems'
+require 'bundler/setup'
 require 'ib-ruby'
 
 # First, connect to IB TWS.
@@ -18,9 +17,7 @@ ib = IB::IB.new
 # Uncomment this for verbose debug messages:
 # IB::IBLogger.level = Logger::Severity::DEBUG
 
-## Subscribe to the messages that TWS sends in response to a request
-## for account data.
-
+## Subscribe to the messages that TWS sends in response to account data request
 ib.subscribe(IB::IncomingMessages::AccountValue) { |msg|  puts msg.to_human }
 
 ib.subscribe(IB::IncomingMessages::PortfolioValue) { |msg|  puts msg.to_human }
@@ -30,7 +27,6 @@ ib.subscribe(IB::IncomingMessages::AccountUpdateTime) { |msg|  puts msg.to_human
 ib.dispatch(IB::OutgoingMessages::RequestAccountData.new(:subscribe => true,
                                                          :account_code => ''))
 
-
 puts "\nSubscribing to IB account data"
 puts "\n******** Press <Enter> to cancel... *********\n\n"
 gets
@@ -38,5 +34,3 @@ puts "Cancelling account data subscription.."
 
 ib.dispatch(IB::OutgoingMessages::RequestAccountData.new(:subscribe => false,
                                                          :account_code => ''))
-puts "Done."
-
