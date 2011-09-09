@@ -87,22 +87,15 @@ module IB
       @next_order_id = nil
       @server = Hash.new # information about server and server connection state
 
-      # Message listeners.
-      # Key is the message class to listen for.
+      # Message listeners. Key is the message class to listen for.
       # Value is an Array of Procs. The proc will be called with the populated message
       # instance as its argument when a message of that type is received.
-      @listeners = Hash.new { |hash, key|
-        hash[key] = Array.new
-      }
-
+      @listeners = Hash.new { |hash, key| hash[key] = Array.new }
 
       #logger.debug("IB#init: Initializing...")
 
       self.open(@options)
-
     end
-
-    # init
 
     def server_version
       @server[:version]
@@ -117,13 +110,12 @@ module IB
           :port => "7496"
       }.merge(options_in)
 
-
       # Subscribe to the NextValidID message from TWS that is always
       # sent at connect, and save the id.
-      self.subscribe(IncomingMessages::NextValidID, lambda { |msg|
+      self.subscribe(IncomingMessages::NextValidID) do |msg|
         @next_order_id = msg.data[:order_id]
         #logger.info { "Got next valid order id #{@next_order_id}." }
-      })
+      end
 
       @server[:socket] = IBSocket.open(@options[:ip], @options[:port])
       #logger.info("* TWS socket connected to #{@options[:ip]}:#{@options[:port]}.")
@@ -176,15 +168,18 @@ module IB
     end
 
 
-    # Subscribe to incoming message events of type messageClass.
+    # Subscribe to incoming message events of type message_class.
     # code is a Proc that will be called with the message instance as its argument.
-    def subscribe(messageClass, code)
-      raise(Exception.new("Invalid argument type (#{messageClass}, #{code.class}) - " +
-                              " must be (IncomingMessages::AbstractMessage, Proc)")) unless messageClass <= IncomingMessages::AbstractMessage && code.is_a?(Proc)
+    def subscribe(message_class, code = nil, &block)
+      code ||= block
 
-      @listeners[messageClass].push(code)
+      raise ArgumentError.new "Need listener proc or block" unless code.is_a? Proc
+      unless message_class < IncomingMessages::AbstractMessage
+        raise ArgumentError.new "#{message_class} must be an IB message class"
+      end
+
+      @listeners[message_class].push(code)
     end
-
 
     # Send an outgoing message.
     def dispatch(message)

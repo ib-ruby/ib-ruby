@@ -21,17 +21,11 @@ ib = IB::IB.new
 ## Subscribe to the messages that TWS sends in response to a request
 ## for account data.
 
-ib.subscribe(IB::IncomingMessages::AccountValue, lambda { |msg|
-  puts msg.to_human
-})
+ib.subscribe(IB::IncomingMessages::AccountValue) { |msg|  puts msg.to_human }
 
-ib.subscribe(IB::IncomingMessages::PortfolioValue, lambda { |msg|
-  puts msg.to_human
-})
+ib.subscribe(IB::IncomingMessages::PortfolioValue) { |msg|  puts msg.to_human }
 
-ib.subscribe(IB::IncomingMessages::AccountUpdateTime, lambda { |msg|
-  puts msg.to_human
-})
+ib.subscribe(IB::IncomingMessages::AccountUpdateTime) { |msg|  puts msg.to_human }
 
 ib.dispatch(IB::OutgoingMessages::RequestAccountData.new(:subscribe => true,
                                                          :account_code => ''))
