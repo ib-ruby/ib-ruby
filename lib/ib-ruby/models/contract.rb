@@ -174,12 +174,12 @@ module IB::Models
     end
 
     # Some messages send open_close too, some don't. WTF.
-    def serialize_combo_legs(include_open_close = false)
+    def serialize_combo_legs(type = :short)
       # No idea what "BAG" means. Copied from the Java code.
       return [] unless sec_type.upcase == "BAG"
-      return [0] if combo_legs.nil?
+      return [0] if combo_legs.empty? || combo_legs.nil?
       [combo_legs.size,
-       combo_legs.map { |leg| leg.serialize(include_open_close) }]
+       combo_legs.map { |leg| leg.serialize(type) }]
     end
 
     def to_human
@@ -276,13 +276,15 @@ module IB::Models
       end
 
       # Some messages include open_close, some don't. wtf.
-      def serialize(include_open_close = false)
+      def serialize(type = :short)
         [con_id,
          ratio,
          action,
-         exchange,
-         include_open_close ? leg.open_close : []
-        ].flatten
+         exchange] +
+            type == :short ? [] : [open_close,
+                                   short_sale_slot,
+                                   designated_location,
+                                   exempt_code]
       end
     end # ComboLeg
 

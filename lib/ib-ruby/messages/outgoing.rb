@@ -279,19 +279,18 @@ module IB
       # Enumeration of bar size types for convenience. These are passed to TWS as the
       # (one-based!) index into the array.
       # Bar sizes less than 30 seconds do not work for some securities.
-      BAR_SIZES = [
-          :invalid, # zero is not a valid barsize
-          :second,
-          :five_seconds,
-          :fifteen_seconds,
-          :thirty_seconds,
-          :minute,
-          :two_minutes,
-          :five_minutes,
-          :fifteen_minutes,
-          :thirty_minutes,
-          :hour,
-          :day]
+      BAR_SIZES = [:invalid, # zero is not a valid barsize
+                   :second,
+                   :five_seconds,
+                   :fifteen_seconds,
+                   :thirty_seconds,
+                   :minute,
+                   :two_minutes,
+                   :five_minutes,
+                   :fifteen_minutes,
+                   :thirty_minutes,
+                   :hour,
+                   :day]
 
       class RequestHistoricalData < AbstractMessage
         @message_id = 20
@@ -440,7 +439,7 @@ module IB
            @data[:order].trigger_method,
            @data[:order].outside_rth, # was: ignore_rth
            @data[:order].hidden,
-           @data[:contract].serialize_combo_legs,
+           @data[:contract].serialize_combo_legs(:long),
            '', # send deprecated shares_allocation field
            @data[:order].discretionary_amount,
            @data[:order].good_after_time,
