@@ -36,7 +36,7 @@ module IB
           self.inspect
         end
 
-       # This causes the message to send itself over the server socket in server[:socket].
+        # This causes the message to send itself over the server socket in server[:socket].
         # "server" is the @server instance variable from the IB object.
         # You can also use this to e.g. get the server version number.
         #
@@ -632,7 +632,7 @@ module IB
       CalculateImpliedVolatility = RequestImpliedVolatility
       RequestCalculateImpliedVolatility = RequestImpliedVolatility
 
-    # data = { :request_id => int, :contract => Contract,
+      # data = { :request_id => int, :contract => Contract,
       #          :volatility => double, :under_price => double }
       class RequestOptionPrice < AbstractMessage
         @message_id = 55
@@ -651,6 +651,8 @@ module IB
 
     end # module Outgoing
   end # module Messages
+  OutgoingMessages = Messages::Outgoing # Legacy alias
+
 end # module IB
 
 __END__
