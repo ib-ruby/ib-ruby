@@ -76,62 +76,109 @@ module IB
       Opt_Farmm = 'n'
       Opt_Specialist = 'y'
 
-      # Main order fields
-      attr_accessor(:id, :client_id, :perm_id, :action, :total_quantity, :order_type,
-                    :limit_price, :aux_price, :shares_allocation)
-
-      # Extended order fields
-      attr_accessor(:tif, :oca_group, :account, :open_close, :origin, :order_ref,
-                    :transmit, # if false, order will be created but not transmitted.
-                    :parent_id, # Parent order id, to associate auto STP or TRAIL orders with the original order.
-                    :block_order,
-                    :sweep_to_fill,
-                    :display_size,
-                    :trigger_method,
-                    :ignore_rth,
-                    :hidden,
-                    :discretionary_amount,
-                    :good_after_time,
-                    :good_till_date)
-
       OCA_Cancel_with_block = 1
       OCA_Reduce_with_block = 2
       OCA_Reduce_non_block = 3
 
-      # No idea what the fa_* attributes are for, nor many of the others.
-      attr_accessor(:fa_group, :fa_profile, :fa_method, :fa_profile, :fa_method, :fa_percentage,
-                    :primary_exchange,
-                    :short_sale_slot, # 1 or 2, says Order.java. What's the difference?
-                    :designated_location, # "when slot=2 only"
-                    :oca_type, # 1 = CANCEL_WITH_BLOCK, 2 = REDUCE_WITH_BLOCK, 3 = REDUCE_NON_BLOCK
-                    :rth_only, :override_percentage_constraints, :rule_80a, :settling_firm,
-                    :all_or_none, :min_quantity, :percent_offset, :etrade_only,
-                    :firm_quote_only, :nbbo_price_cap)
-
-      # Box orders only:
+      # Box orders consts:
       Box_Auction_Match = 1
       Box_Auction_Improvement = 2
       Box_Auction_Transparent = 3
 
-      attr_accessor(:auction_strategy, # Box_* constants above
-                    :starting_price, :stock_ref_price, :delta,
-                    :stock_range_lower, :stock_range_upper)
-
-      # Volatility orders only:
+      # Volatility orders consts:
       Volatility_Type_Daily = 1
       Volatility_Type_Annual = 2
-
       Volatility_Ref_Price_Average = 1
       Volatility_Ref_Price_BidOrAsk = 2
 
-      attr_accessor(:volatility,
-                    :volatility_type, # 1 = daily, 2 = annual, as above
-                    :continuous_update,
-                    :reference_price_type, # 1 = average, 2 = BidOrAsk
-                    :delta_neutral_order_type,
-                    :delta_neutral_aux_price)
+      # No idea why IB uses a large number as the default for some fields
+      Max_Value = 99999999
 
-      Max_value = 99999999 # No idea why IB uses a large number as the default for some fields
+      # Main order fields
+      attr_accessor :id, #              int 		m_orderId; ?
+                    :client_id, #       int
+                    :perm_id, #         int
+                    :action, #          String
+                    :total_quantity, #  int
+                    :order_type, #      String
+                    :limit_price, #     double
+                    :aux_price, #       double
+
+                    :shares_allocation, # ?
+
+                    # Extended order fields
+                    :tif, #         String: Time in Force - DAY, GTC, etc.
+                    :oca_group, #   String: one cancels all group name
+                    :oca_type, #    1 = CANCEL_WITH_BLOCK, 2 = REDUCE_WITH_BLOCK, 3 = REDUCE_NON_BLOCK
+                    :order_ref, #   String
+                    :transmit, #    bool:if false, order will be created but not transmitted.
+                    :parent_id, #   int: Parent order id, to associate auto STP or TRAIL orders with the original order.
+                    :block_order, #    bool
+                    :sweep_to_fill, #  bool
+                    :display_size, #   int
+                    :trigger_method, # 0=Default, 1=Double_Bid_Ask, 2=Last, 3=Double_Last,
+                    #                  4=Bid_Ask, 7=Last_or_Bid_Ask, 8=Mid-point
+                    :outside_rth, #    bool: WAS ignore_rth
+                    :hidden, #         bool
+                    :good_after_time, # FORMAT: 20060505 08:00:00 {time zone}
+                    :good_till_date, #  FORMAT: 20060505 08:00:00 {time zone}
+                    :override_percentage_constraints, # bool
+                    :rule_80a, # Individual = 'I', Agency = 'A', AgentOtherMember = 'W',
+                    #            IndividualPTIA = 'J', AgencyPTIA = 'U', AgentOtherMemberPTIA = 'M',
+                    #            IndividualPT = 'K', AgencyPT = 'Y', AgentOtherMemberPT = 'N'
+                    :all_or_none, #      bool
+                    :min_quantity, #     int
+                    :percent_offset, #   double: REL orders only
+                    :trail_stop_price, # double: for TRAILLIMIT orders only
+
+                    # Financial advisors only, all Strings
+                    :fa_group, :fa_profile, :fa_method, :fa_percentage,
+
+                    # Institutional orders only
+                    :open_close, #          String: O=Open, C=Close
+                    :origin, #              int: 0=Customer, 1=Firm
+                    :short_sale_slot, # 1 - you hold the shares, 2 - they will be delivered from elsewhere.  Only for Action="SSHORT
+                    :designated_location, # String: set when slot==2 only
+                    :exempt_code, #         int
+
+                    # SMART routing only
+                    :discretionary_amount, #  double
+                    :etrade_only, #           bool
+                    :firm_quote_only, #       bool
+                    :nbbo_price_cap, #        double
+
+                    # BOX or VOL ORDERS ONLY
+                    :auction_strategy, # 1=AUCTION_MATCH, 2=AUCTION_IMPROVEMENT, 3=AUCTION_TRANSPARENT
+                    :starting_price, #   double, BOX ORDERS ONLY
+                    :stock_ref_price, #  double, BOX ORDERS ONLY
+                    :delta, #            double, BOX ORDERS ONLY
+
+                    # Pegged to stock or VOL orders
+                    :stock_range_lower, #   double
+                    :stock_range_upper, #   double
+
+                    # VOLATILITY ORDERS ONLY
+                    :volatility, #               double
+                    :volatility_type, #          int: 1=daily, 2=annual
+                    :continuous_update, #        int
+                    :reference_price_type, #     int: 1=Average, 2 = BidOrAsk
+                    :delta_neutral_order_type, # String
+                    :delta_neutral_aux_price, #  double
+
+                    # COMBO ORDERS ONLY
+                    :basis_points, #      double: EFP orders only
+                    :basis_points_type, # double: EFP orders only
+
+                    # SCALE ORDERS ONLY
+                    :scale_init_level_size, # int
+                    :scale_subs_level_size, # int
+                    :scale_price_increment, # double
+
+                    #  Clearing info
+                    :account, #          String: IB account
+                    :settling_firm, #    String
+                    :clearing_account, # String: True beneficiary of the order
+                    :clearing_intent #   "" (Default), "IB", "Away", "PTA" (PostTrade)
 
       def init
         super
@@ -141,15 +188,15 @@ module IB
         @transmit = true
         @primary_exchange = ''
         @designated_location = ''
-        @min_quantity = Max_value
-        @percent_offset = Max_value
-        @nbba_price_cap = Max_value
-        @starting_price = Max_value
-        @stock_ref_price = Max_value
-        @delta = Max_value
+        @min_quantity = Max_Value
+        @percent_offset = Max_Value
+        @nbba_price_cap = Max_Value
+        @starting_price = Max_Value
+        @stock_ref_price = Max_Value
+        @delta = Max_Value
         @delta_neutral_order_type = ''
-        @delta_neutral_aux_price = Max_value
-        @reference_price_type = Max_value
+        @delta_neutral_aux_price = Max_Value
+        @reference_price_type = Max_Value
       end # init
 
     end # class Order
@@ -171,8 +218,8 @@ module IB
 
       # note that the :description field is entirely local to ib-ruby, and not part of TWS.
       # You can use it to store whatever arbitrary data you want.
-      attr_accessor(:symbol, :strike, :multiplier, :exchange, :currency,
-                    :local_symbol, :combo_legs, :description)
+      attr_accessor :symbol, :strike, :multiplier, :exchange, :currency,
+                    :local_symbol, :combo_legs, :description
 
       # Bond values
       attr_accessor(:cusip, :ratings, :desc_append, :bond_type, :coupon_type, :callable,
@@ -182,7 +229,6 @@ module IB
 
 
       # some protective filters
-
       def primary_exchange=(x)
         x.upcase! if x.is_a?(String)
 
@@ -218,45 +264,30 @@ module IB
         @strike = 0
       end
 
+      # This returns an Array of data from the given contract, in standard format.
       # Different messages serialize contracts differently. Go figure.
-      def serialize_short(version)
-        q = [self.symbol,
-             self.sec_type,
-             self.expiry,
-             self.strike,
-             self.right]
-
-        q.push(self.multiplier) if version >= 15
-        q.concat([
-                     self.exchange,
-                     self.currency,
-                     self.local_symbol
-                 ])
-
-        q
+      # Note that it does not include the combo legs.
+      def serialize(type = :long)
+        [self.symbol,
+         self.sec_type,
+         self.expiry,
+         self.strike,
+         self.right,
+         self.multiplier,
+         self.exchange] +
+            (type == :long ? [self.primary_exchange] : []) +
+            [self.currency,
+             self.local_symbol]
       end
 
-      # serialize
-
-      # This returns an Array of data from the given contract, in standard format.
-      # Note that it does not include the combo legs.
+      # @Legacy
       def serialize_long(version)
-        queue = [
-            self.symbol,
-            self.sec_type,
-            self.expiry,
-            self.strike,
-            self.right
-        ]
+        serialize(:long)
+      end
 
-        queue.push(self.multiplier) if version >= 15
-        queue.push(self.exchange)
-        queue.push(self.primary_exchange) if version >= 14
-        queue.push(self.currency)
-        queue.push(self.local_symbol) if version >= 2
-
-        queue
-
+      # @Legacy
+      def serialize_short(version)
+        serialize(:short)
       end
 
       # This produces a string uniquely identifying this contract, in the format used
@@ -272,7 +303,7 @@ module IB
       #
       #    GBP:FUT:200809:::62500:GLOBEX::USD:
       def serialize_ib_ruby(version)
-        serialize_long(version).join(":")
+        serialize.join(":")
       end
 
       # This returns a Contract initialized from the serialize_ib_ruby format string.
@@ -281,6 +312,19 @@ module IB
         c.symbol, c.sec_type, c.expiry, c.strike, c.right, c.multiplier,
             c.exchange, c.primary_exchange, c.currency, c.local_symbol = string.split(":")
         c
+      end
+
+      def serialize_under_comp(*args)
+        raise "Unimplemented"
+        # EClientSocket.java, line 471:
+        #if (m_serverVersion >= MIN_SERVER_VER_UNDER_COMP) {
+        # 	   if (contract.m_underComp != null) {
+        # 		   UnderComp underComp = contract.m_underComp;
+        # 		   send( true);
+        # 		   send( underComp.m_conId);
+        # 		   send( underComp.m_delta);
+        # 		   send( underComp.m_price);
+        # 	   }
       end
 
       # Some messages send open_close too, some don't. WTF.
@@ -369,8 +413,12 @@ module IB
 
       # Some messages include open_close, some don't. wtf.
       def serialize(include_open_close = false)
-        self.collect { |leg|
-          [leg.con_id, leg.ratio, leg.action, leg.exchange, (include_open_close ? leg.open_close : [])]
+        self.map { |leg|
+          [leg.con_id,
+           leg.ratio,
+           leg.action,
+           leg.exchange,
+           (include_open_close ? leg.open_close : [])]
         }.flatten
       end
     end # ComboLeg

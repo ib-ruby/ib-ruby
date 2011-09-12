@@ -626,7 +626,9 @@ public class EClientSocket {
         }
     }
 
-    public synchronized void reqRealTimeBars(int tickerId, Contract contract, int barSize, String whatToShow, boolean useRTH) {
+    public synchronized void reqRealTimeBars(int tickerId, Contract contract,
+                                             int barSize, String whatToShow,
+                                             boolean useRTH) {
         // not connected?
         if (!m_connected ) {
             error(EClientErrors.NO_VALID_ID, EClientErrors.NOT_CONNECTED, "");

@@ -166,7 +166,7 @@ module IB
                          @data[:order].sweep_to_fill,
                          @data[:order].display_size,
                          @data[:order].trigger_method,
-                         @data[:order].ignore_rth
+                         @data[:order].outside_rth
                      ]) if server[:version] >= 5
 
         queue.push(@data[:order].hidden) if server[:version] >= 7
@@ -1069,7 +1069,7 @@ module IB
 
         if @data[:version] >= 4
           @order.perm_id = @socket.read_int
-          @order.ignore_rth = (@socket.read_int == 1)
+          @order.outside_rth = (@socket.read_int == 1)
           @order.hidden = (@socket.read_int == 1)
           @order.discretionary_amount = @socket.read_decimal
         end

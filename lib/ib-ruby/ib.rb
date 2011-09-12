@@ -1,22 +1,3 @@
-#
-# Copyright (C) 2006 Blue Voodoo Magic LLC.
-#
-# This library is free software; you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as
-# published by the Free Software Foundation; either version 2.1 of the
-# License, or (at your option) any later version.
-#
-# This library is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public
-# License along with this library; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-# 02110-1301 USA
-#
-
 require 'socket'
 require 'logger'
 require 'bigdecimal'
@@ -121,8 +102,9 @@ module IB
       # Secret handshake.
       @server[:socket].send(CLIENT_VERSION)
       @server[:version] = @server[:socket].read_int
-      @@server_version = @server[:version]
       @server[:local_connect_time] = Time.now()
+      @@server_version = @server[:version]
+      raise(Exception.new("TWS version >= #{SERVER_VERSION} required.")) if @@server_version < SERVER_VERSION
 
       puts "\tGot server version: #{@server[:version]}."
       #logger.debug("\tGot server version: #{@server[:version]}.")
@@ -190,7 +172,7 @@ module IB
 
         #logger.debug { "Reader: got message id #{msg_id}.\n" }
 
-        # create a new instance of the appropriate message type, and have it read the message.
+        # Create a new instance of the appropriate message type, and have it read the message.
         # NB: Failure here usually means unsupported message type received
         msg = IncomingMessages::Table[msg_id].new(@server[:socket], @server[:version])
 
@@ -198,10 +180,10 @@ module IB
           listener.call(msg)
         }
 
-        #logger.debug { " Listeners: " + @listeners.inspect + " inclusion: #{ @listeners.include?(msg.class)}" }
+        #logger.debug { " Listeners: #{@listeners.inspect} inclusion: #{ @listeners.include?(msg.class)}" }
 
-        # Log the message if it's an error.
-        # Make an exception for the "successfully connected" messages, which, for some reason, come back from IB as errors.
+        # Log the error messages. Make an exception for the "successfully connected"
+        # messages, which, for some reason, come back from IB as errors.
         if msg.is_a?(IncomingMessages::Error)
           # connect strings
           if msg.code == 2104 || msg.code == 2106

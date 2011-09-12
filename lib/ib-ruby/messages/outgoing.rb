@@ -57,17 +57,12 @@ module IB
           }
         end
 
-        # At minimum, Outgoing message contains message_id and version
+        # At minimum, Outgoing message contains message_id and version (default version is 1)
         def queue(server)
-          [self.class.message_id, self.class.version]
+          [self.class.message_id, self.class.version || 1]
         end
 
         protected
-
-        # TODO: Move this into protocol handshake phase
-        #def requireVersion(server, version)
-        #  raise(Exception.new("TWS version >= #{version} required.")) if server[:version] < version
-        #end
 
         # TODO: Get rid of this, if possible
         # Returns EOL instead of datum if datum is nil, providing the same functionality
@@ -78,80 +73,334 @@ module IB
         end
       end # AbstractMessage
 
+      # Most IB Cancel... messages follow the same format
+      # data = { :ticker_id => int }
+      class CancelMessage < AbstractMessage
+        def queue(server)
+          [self.class.message_id, self.class.version || 1, @data[:ticker_id]]
+        end
+      end # CancelMessage
 
-      # Data format is { :ticker_id => int, :contract => Datatypes::Contract }
-      #String genericTickList, boolean snapshot) {
+      class CancelScannerSubscription < CancelMessage
+        @message_id = 23
+      end # CancelScannerSubscription
 
+      class CancelMarketData < CancelMessage
+        @message_id = 2
+      end # CancelMarketData
+
+      class CancelHistoricalData < CancelMessage
+        @message_id = 25
+      end # CancelHistoricalData
+
+      class CancelRealTimeBars < CancelMessage
+        @message_id = 51
+      end # CancelRealTimeBars
+
+      # data = { :ticker_id => int }
+      class CancelMarketDepth < CancelMessage
+        @message_id = 11
+      end # CancelMarketDepth
+
+      class RequestScannerParameters
+        @message_id = 24
+      end # RequestScannerParameters
+
+      # data = { :ticker_id => int, :subscription => ScannerSubscription}
+      class RequestScannerSubscription < AbstractMessage
+        @message_id = 22
+        @version = 3
+
+        def queue(server)
+          super +
+              [@data[:ticker_id],
+               @data[:subscription].number_of_rows || EOL,
+               @data[:subscription].instrument,
+               @data[:subscription].location_code,
+               @data[:subscription].scan_code,
+               @data[:subscription].above_price || EOL,
+               @data[:subscription].below_price || EOL,
+               @data[:subscription].above_volume || EOL,
+               @data[:subscription].market_cap_above || EOL,
+               @data[:subscription].market_cap_below || EOL,
+               @data[:subscription].moody_rating_above,
+               @data[:subscription].moody_rating_below,
+               @data[:subscription].sp_rating_above,
+               @data[:subscription].sp_rating_below,
+               @data[:subscription].maturity_date_above,
+               @data[:subscription].maturity_date_below,
+               @data[:subscription].coupon_rate_above || EOL,
+               @data[:subscription].coupon_rate_below || EOL,
+               @data[:subscription].exclude_convertible,
+               @data[:subscription].average_option_volume_above,
+               @data[:subscription].scanner_setting_pairs,
+               @data[:subscription].stock_type_filter
+              ] #.flatten ?
+        end
+      end # RequestScannerSubscription
+
+      # Data format is { :ticker_id => int, :contract => Datatypes::Contract,
+      #                  :generic_tick_list => String, :snapshot =>  boolean }
       class RequestMarketData < AbstractMessage
         @message_id = 1
-        @version = 5 # message version number
+        @version = 9 # message version number
 
         def queue(server)
-          queue = super + [@data[:ticker_id],
-                           @data[:contract].serialize_long(server[:version])]
-
-
-          # No idea what "BAG" means. Copied from the Java code.
-          queue.concat(@data[:contract].serialize_combo_legs
-          ) if server[:version] >= 8 && @data[:contract].sec_type == "BAG"
-
-          queue
-        end # queue
+          super +
+              [@data[:ticker_id],
+               @data[:contract].con_id] + # part of serialize?
+              @data[:contract].serialize +
+              # No idea what "BAG" means. Copied from the Java code.
+              (@data[:contract].sec_type.upcase == "BAG" ? @data[:contract].serialize_combo_legs : []) +
+              @data[:contract].under_comp ? @data[:contract].serialize_under_comp : []
+        end
       end # RequestMarketData
 
-      # Data format is { :ticker_id => int }
-      class CancelMarketData < AbstractMessage
-        def self.message_id
-          2
-        end
+      # data = { :ticker_id => int,
+      #          :contract => Contract,
+      #          :end_date_time => string,
+      #          :duration => string, # this specifies an integer number of seconds
+      #          :bar_size => int,
+      #          :what_to_show => symbol, # one of :trades, :midpoint, :bid, or :ask
+      #          :use_RTH => int,
+      #          :format_date => int    }
+      #
+      # Note that as of 4/07 there is no historical data available for forex spot.
+      #
+      # data[:contract] may either be a Contract object or a String. A String should be
+      # in serialize_ib_ruby format; that is, it should be a colon-delimited string in
+      # the format (e.g. for Globex British pound futures contract expiring in Sep-2008):
+      #
+      #    symbol:security_type:expiry:strike:right:multiplier:exchange:primary_exchange:currency:local_symbol
+      #    GBP:FUT:200809:::62500:GLOBEX::USD:
+      #
+      # Fields not needed for a particular security should be left blank (e.g. strike
+      # and right are only relevant for options.)
+      #
+      # A Contract object will be automatically serialized into the required format.
+      #
+      # See also http://chuckcaplan.com/twsapi/index.php/void%20reqIntradayData%28%29
+      # for general information about how TWS handles historic data requests, whence
+      # the following has been adapted:
+      #
+      # The server providing historical prices appears to not always be
+      # available outside of market hours. If you call it outside of its
+      # supported time period, or if there is otherwise a problem with
+      # it, you will receive error #162 "Historical Market Data Service
+      # query failed.:HMDS query returned no data."
+      #
+      # The "endDateTime" parameter accepts a string in the form
+      # "yyyymmdd HH:mm:ss", with a time zone optionally allowed after a
+      # space at the end of the string; e.g. "20050701 18:26:44 GMT"
+      #
+      # The ticker id needs to be different than the reqMktData ticker
+      # id. If you use the same ticker ID you used for the symbol when
+      # you did ReqMktData, nothing comes back for the historical data call.
+      #
+      # Possible :bar_size values:
+      # 1 = 1 sec
+      # 2 = 5 sec
+      # 3 = 15 sec
+      # 4 = 30 sec
+      # 5 = 1 minute
+      # 6 = 2 minutes
+      # 7 = 5 minutes
+      # 8 = 15 minutes
+      # 9 = 30 minutes
+      # 10 = 1 hour
+      # 11 = 1 day
+      #
+      # Values less than 4 do not appear to work for certain securities.
+      #
+      # The nature of the data extracted is governed by sending a string
+      # having a value of "TRADES," "MIDPOINT," "BID," or "ASK." Here,
+      # we require a symbol argument of :trades, :midpoint, :bid, or
+      # :ask to be passed as data[:what_to_show].
+      #
+      # If data[:use_RTH] is set to 0, all data available during the time
+      # span requested is returned, even data bars covering time
+      # intervals where the market in question was illiquid. If useRTH
+      # has a non-zero value, only data within the "Regular Trading
+      # Hours" of the product in question is returned, even if the time
+      # span requested falls partially or completely outside of them.
+      #
+      # Using a :format_date of 1 will cause the dates in the returned
+      # messages with the historic data to be in a text format, like
+      # "20050307 11:32:16". If you set :format_date to 2 instead, you
+      # will get an offset in seconds from the beginning of 1970, which
+      # is the same format as the UNIX epoch time.
+      #
+      # For backfill on futures data, you may need to leave the Primary
+      # Exchange field of the Contract structure blank; see
+      # http://www.interactivebrokers.com/discus/messages/2/28477.html?1114646754
+      # [This message does not appear to exist anymore as of 4/07.]
+
+      HISTORICAL_TYPES = [:trades, :midpoint, :bid, :ask]
+
+      # Enumeration of bar size types for convenience. These are passed to TWS as the
+      # (one-based!) index into the array.
+      # Bar sizes less than 30 seconds do not work for some securities.
+      BAR_SIZES = [
+          :invalid, # zero is not a valid barsize
+          :second,
+          :five_seconds,
+          :fifteen_seconds,
+          :thirty_seconds,
+          :minute,
+          :two_minutes,
+          :five_minutes,
+          :fifteen_minutes,
+          :thirty_minutes,
+          :hour,
+          :day]
+
+      class RequestHistoricalData < AbstractMessage
+        @message_id = 20
+        @version = 4
 
         def queue(server)
-          [self.class.message_id,
-           1, # message version number
-           @data[:ticker_id]]
-        end # queue
-      end # CancelMarketData
+          if @data.has_key?(:what_to_show) && @data[:what_to_show].is_a?(String)
+            @data[:what_to_show] = @data[:what_to_show].downcase.to_sym
+          end
+
+          if @data.has_key?(:bar_size) && @data[:bar_size].is_a?(Symbol)
+            @data[:bar_size] = BAR_SIZES[@data[:bar_size]]
+          end
+
+          raise ArgumentError("@data[:what_to_show] must be one of #{HISTORICAL_TYPES}.") unless HISTORICAL_TYPES.include?(@data[:what_to_show])
+          raise ArgumentError("@data[:bar_size] must be one of #{BAR_SIZES}.") unless BAR_SIZES.include?(@data[:bar_size])
+
+          contract = @data[:contract].is_a?(Datatypes::Contract) ?
+              @data[:contract] :
+              Datatypes::Contract.from_ib_ruby(@data[:contract])
+
+          super +
+              [@data[:ticker_id]] +
+              contract.serialize +
+              [contract.include_expired ? 1 : 0,
+               @data[:end_date_time],
+               @data[:bar_size],
+               @data[:duration],
+               @data[:use_RTH],
+               @data[:what_to_show].to_s.upcase,
+               @data[:format_date]] +
+              contract.sec_type.upcase == "BAG" ? contract.serialize_combo_legs : []
+        end
+      end # RequestHistoricalData
+
+      #  data = { :tickerId => int,
+      #           :contract => Contract ,
+      #           :bar_size => int/Symbol,
+      #           :what_to_show => String/Symbol,
+      #           :use_RTH => bool }
+      class RequestRealTimeBars < AbstractMessage
+        @message_id = 50
+
+        def queue(server)
+          if @data.has_key?(:what_to_show) && @data[:what_to_show].is_a?(String)
+            @data[:what_to_show] = @data[:what_to_show].downcase.to_sym
+          end
+
+          if @data.has_key?(:bar_size) && @data[:bar_size].is_a?(Symbol)
+            @data[:bar_size] = BAR_SIZES[@data[:bar_size]]
+          end
+
+          raise ArgumentError("@data[:what_to_show] must be one of #{HISTORICAL_TYPES}.") unless HISTORICAL_TYPES.include?(@data[:what_to_show])
+          raise ArgumentError("@data[:bar_size] must be one of #{BAR_SIZES}.") unless BAR_SIZES.include?(@data[:bar_size])
+
+          contract = @data[:contract].is_a?(Datatypes::Contract) ?
+              @data[:contract] :
+              Datatypes::Contract.from_ib_ruby(@data[:contract])
+
+          super +
+              [@data[:ticker_id]] +
+              contract.serialize +
+              [@data[:bar_size],
+               @data[:what_to_show].to_s.upcase,
+               @data[:use_RTH]]
+        end
+      end # RequestRealTimeBars
+
+      # data => { :req_id => int, :contract => Contract }
+      class RequestContractData < AbstractMessage
+        @message_id = 9
+        @version = 6
+
+        def queue(server)
+          super +
+              [@data[:req_id],
+               @data[:contract].con_id] + # part of serialize?
+              @data[:contract].serialize(:short) +
+              [@data[:contract].include_expired ? 1 : 0,
+               @data[:contract].sec_id_type, # Unimplemented?
+               @data[:contract].sec_id] # Unimplemented?
+        end
+      end # RequestContractData
+      RequestContractDetails = RequestContractData # alias
+
+      # data = { :ticker_id => int, :contract => Contract, :num_rows => int }
+      class RequestMarketDepth < AbstractMessage
+        @message_id = 10
+        @version = 3
+
+        def queue(server)
+          super + [@data[:ticker_id]] +
+              @data[:contract].serialize(:short) +
+              [@data[:num_rows]]
+        end
+      end # RequestMarketDepth
+
+      # data = { :ticker_id => int,
+      #          :contract => Contract,
+      #          :exercise_action => int,
+      #          :exercise_quantity => int,
+      #          :account => string,
+      #          :override => int } ## override? override what?
+      class ExerciseOptions < AbstractMessage
+        @message_id = 21
+
+        def queue(server)
+          super + [@data[:ticker_id]] +
+              @data[:contract].serialize(:short) +
+              [@data[:exercise_action],
+               @data[:exercise_quantity],
+               @data[:account],
+               @data[:override]]
+        end
+      end # ExerciseOptions
 
       # Data format is { :order_id => int, :contract => Contract, :order => Order }
       class PlaceOrder < AbstractMessage
-        def self.message_id
-          3
-        end
+        @message_id = 3
+        @version = 31
+        # int VERSION = (m_serverVersion < MIN_SERVER_VER_NOT_HELD) ? 27 : 31;
 
         def queue(server)
-          queue = [self.class.message_id,
-                   20, # version
-                   @data[:order_id],
-                   @data[:contract].symbol,
-                   @data[:contract].sec_type,
-                   @data[:contract].expiry,
-                   @data[:contract].strike,
-                   @data[:contract].right
-          ]
-          queue.push(@data[:contract].multiplier) if server[:version] >= 15
-          queue.push(@data[:contract].exchange) if server[:version] >= 14
-          queue.push(@data[:contract].currency)
-          queue.push(@data[:contract].local_symbol) if server[:version] >= 2
+          super +
+              [@data[:order_id]] +
+              @data[:contract].serialize(:long) +
+              [@data[:contract].sec_id_type, # Unimplemented?
+               @data[:contract].sec_id, # Unimplemented?
 
-          queue.concat([
-                           @data[:order].tif,
-                           @data[:order].oca_group,
-                           @data[:order].account,
-                           @data[:order].open_close,
-                           @data[:order].origin,
-                           @data[:order].order_ref,
-                           @data[:order].transmit
-                       ])
-
-          queue.push(@data[:contract].parent_id) if server[:version] >= 4
-
-          queue.concat([
-                           @data[:order].block_order,
-                           @data[:order].sweep_to_fill,
-                           @data[:order].display_size,
-                           @data[:order].trigger_method,
-                           @data[:order].ignore_rth
-                       ]) if server[:version] >= 5
+               @data[:order].action,
+               @data[:order].total_quantity,
+               @data[:order].order_type,
+               @data[:order].limit_price,
+               @data[:order].aux_price,
+               @data[:order].tif,
+               @data[:order].oca_group,
+               @data[:order].account,
+               @data[:order].open_close,
+               @data[:order].origin,
+               @data[:order].order_ref,
+               @data[:order].transmit,
+               @data[:order].parent_id,
+               @data[:order].block_order,
+               @data[:order].sweep_to_fill,
+               @data[:order].display_size,
+               @data[:order].trigger_method,
+               @data[:order].outside_rth, # was: ignore_rth
+              ]
 
           queue.push(@data[:order].hidden) if server[:version] >= 7
 
@@ -322,74 +571,6 @@ module IB
       end # RequestIds
 
 
-      # data => { :contract => Contract }
-      class RequestContractData < AbstractMessage
-        def self.message_id
-          9
-        end
-
-        def queue(server)
-          requireVersion(server, 4)
-
-          queue = [
-              self.class.message_id,
-              2, # version
-              @data[:contract].symbol,
-              @data[:contract].sec_type,
-              @data[:contract].expiry,
-              @data[:contract].strike,
-              @data[:contract].right
-          ]
-          queue.push(@data[:contract].multiplier) if server[:version] >= 15
-
-          queue.concat([
-                           @data[:contract].exchange,
-                           @data[:contract].currency,
-                           @data[:contract].local_symbol,
-                       ])
-
-          queue
-        end # send
-      end # RequestContractData
-
-      # data = { :ticker_id => int, :contract => Contract, :num_rows => int }
-      class RequestMarketDepth < AbstractMessage
-        def self.message_id
-          10
-        end
-
-        def queue(server)
-          requireVersion(server, 6)
-
-          queue = [self.class.message_id,
-                   3, # version
-                   @data[:ticker_id]
-          ]
-          queue.concat(@data[:contract].serialize_short(server[:version]))
-          queue.push(@data[:num_rows]) if server[:version] >= 19
-
-          queue
-
-        end # queue
-      end # RequestMarketDepth
-
-      # data = { :ticker_id => int }
-      class CancelMarketDepth < AbstractMessage
-        def self.message_id
-          11
-        end
-
-        def queue(server)
-          requireVersion(self, 6)
-
-          [self.class.message_id,
-           1, # version
-           @data[:ticker_id]
-          ]
-        end
-      end # CancelMarketDepth
-
-
       # data = { :all_messages => boolean }
       class RequestNewsBulletins < AbstractMessage
         def self.message_id
@@ -504,273 +685,6 @@ module IB
         end
       end # ReplaceFA
 
-      # data = { :ticker_id => int,
-      #          :contract => Contract,
-      #          :end_date_time => string,
-      #          :duration => string, # this specifies an integer number of seconds
-      #          :bar_size => int,
-      #          :what_to_show => symbol, # one of :trades, :midpoint, :bid, or :ask
-      #          :use_RTH => int,
-      #          :format_date => int
-      #        }
-      #
-      # Note that as of 4/07 there is no historical data available for forex spot.
-      #
-      # data[:contract] may either be a Contract object or a String. A String should be
-      # in serialize_ib_ruby format; that is, it should be a colon-delimited string in
-      # the format:
-      #
-      #    symbol:security_type:expiry:strike:right:multiplier:exchange:primary_exchange:currency:local_symbol
-      #
-      # Fields not needed for a particular security should be left blank (e.g. strike
-      # and right are only relevant for options.)
-      #
-      # For example, to query the British pound futures contract trading on Globex expiring
-      # in September, 2008, the correct string is:
-      #
-      #    GBP:FUT:200809:::62500:GLOBEX::USD:
-      #
-      # A Contract object will be automatically serialized into the required format.
-      #
-      # See also http://chuckcaplan.com/twsapi/index.php/void%20reqIntradayData%28%29
-      # for general information about how TWS handles historic data requests, whence
-      # the following has been adapted:
-      #
-      # The server providing historical prices appears to not always be
-      # available outside of market hours. If you call it outside of its
-      # supported time period, or if there is otherwise a problem with
-      # it, you will receive error #162 "Historical Market Data Service
-      # query failed.:HMDS query returned no data."
-      #
-      # The "endDateTime" parameter accepts a string in the form
-      # "yyyymmdd HH:mm:ss", with a time zone optionally allowed after a
-      # space at the end of the string; e.g. "20050701 18:26:44 GMT"
-      #
-      # The ticker id needs to be different than the reqMktData ticker
-      # id. If you use the same ticker ID you used for the symbol when
-      # you did ReqMktData, nothing comes back for the historical data call.
-      #
-      # Possible :bar_size values:
-      # 1 = 1 sec
-      # 2 = 5 sec
-      # 3 = 15 sec
-      # 4 = 30 sec
-      # 5 = 1 minute
-      # 6 = 2 minutes
-      # 7 = 5 minutes
-      # 8 = 15 minutes
-      # 9 = 30 minutes
-      # 10 = 1 hour
-      # 11 = 1 day
-      #
-      # Values less than 4 do not appear to work for certain securities.
-      #
-      # The nature of the data extracted is governed by sending a string
-      # having a value of "TRADES," "MIDPOINT," "BID," or "ASK." Here,
-      # we require a symbol argument of :trades, :midpoint, :bid, or
-      # :asked to be passed as data[:what_to_show].
-      #
-      # If data[:use_RTH] is set to 0, all data available during the time
-      # span requested is returned, even data bars covering time
-      # intervals where the market in question was illiquid. If useRTH
-      # has a non-zero value, only data within the "Regular Trading
-      # Hours" of the product in question is returned, even if the time
-      # span requested falls partially or completely outside of them.
-      #
-      # Using a :format_date of 1 will cause the dates in the returned
-      # messages with the historic data to be in a text format, like
-      # "20050307 11:32:16". If you set :format_date to 2 instead, you
-      # will get an offset in seconds from the beginning of 1970, which
-      # is the same format as the UNIX epoch time.
-      #
-      # For backfill on futures data, you may need to leave the Primary
-      # Exchange field of the Contract structure blank; see
-      # http://www.interactivebrokers.com/discus/messages/2/28477.html?1114646754
-      # [This message does not appear to exist anymore as of 4/07.]
-
-      ALLOWED_HISTORICAL_TYPES = [:trades, :midpoint, :bid, :ask]
-
-      class RequestHistoricalData < AbstractMessage
-        # Enumeration of bar size types for convenience. These are passed to TWS as the (one-based!) index into the array.
-        # Bar sizes less than 30 seconds do not work for some securities.
-        BarSizes = [
-            :invalid, # zero is not a valid barsize
-            :second,
-            :five_seconds,
-            :fifteen_seconds,
-            :thirty_seconds,
-            :minute,
-            :two_minutes,
-            :five_minutes,
-            :fifteen_minutes,
-            :thirty_minutes,
-            :hour,
-            :day,
-        ]
-
-
-        def self.message_id
-          20
-        end
-
-        def queue(server)
-          requireVersion(server, 16)
-
-          if @data.has_key?(:what_to_show) && @data[:what_to_show].is_a?(String)
-            @data[:what_to_show].downcase!
-            @data[:what_to_show] = @data[:what_to_show].to_sym
-          end
-
-          raise ArgumentError("RequestHistoricalData: @data[:what_to_show] must be one of #{ALLOWED_HISTORICAL_TYPES.inspect}.") unless ALLOWED_HISTORICAL_TYPES.include?(@data[:what_to_show])
-
-          queue = [self.class.message_id,
-                   3, # version
-                   @data[:ticker_id]
-          ]
-
-          contract = @data[:contract].is_a?(Datatypes::Contract) ? @data[:contract] : Datatypes::Contract.from_ib_ruby(@data[:contract])
-          queue.concat(contract.serialize_long(server[:version]))
-
-          queue.concat([
-                           @data[:end_date_time],
-                           @data[:bar_size]
-                       ]) if server[:version] > 20
-
-
-          queue.concat([
-                           @data[:duration],
-                           @data[:use_RTH],
-                           @data[:what_to_show].to_s.upcase
-                       ])
-
-          queue.push(@data[:format_date]) if server[:version] > 16
-
-          if contract.sec_type.upcase == "BAG"
-            queue.concat(contract.serialize_combo_legs)
-          end
-
-          queue
-        end
-      end # RequestHistoricalData
-
-      # data = { :ticker_id => int,
-      #          :contract => Contract,
-      #          :exercise_action => int,
-      #          :exercise_quantity => int,
-      #          :account => string,
-      #          :override => int } ## override? override what?
-      class ExerciseOptions < AbstractMessage
-        def self.message_id
-          21
-        end
-
-        def queue(server)
-
-          requireVersion(server, 21)
-
-          q = [self.class.message_id,
-               1, # version
-               @data[:ticker_id]
-          ]
-          q.concat(@data[:contract].serialize_long(server[:version]))
-          q.concat([
-                       @data[:exercise_action],
-                       @data[:exercise_quantity],
-                       @data[:account],
-                       @data[:override]
-                   ])
-          q
-        end # queue
-      end # ExerciseOptions
-
-      # data = { :ticker_id => int,
-      #          :scanner_subscription => ScannerSubscription
-      #        }
-      class RequestScannerSubscription < AbstractMessage
-        def self.message_id
-          22
-        end
-
-        def queue(server)
-          requireVersion(server, 24)
-
-          [
-              self.class.message_id,
-              3, # version
-              @data[:ticker_id],
-              @data[:subscription].number_of_rows,
-              nilFilter(@data[:subscription].number_of_rows),
-              @data[:subscription].instrument,
-              @data[:subscription].location_code,
-              @data[:subscription].scan_code,
-              nilFilter(@data[:subscription].above_price),
-              nilFilter(@data[:subscription].below_price),
-              nilFilter(@data[:subscription].above_volume),
-              nilFilter(@data[:subscription].market_cap_above),
-              @data[:subscription].moody_rating_above,
-              @data[:subscription].moody_rating_below,
-              @data[:subscription].sp_rating_above,
-              @data[:subscription].sp_rating_below,
-              @data[:subscription].maturity_date_above,
-              @data[:subscription].maturity_date_below,
-              nilFilter(@data[:subscription].coupon_rate_above),
-              nilFilter(@data[:subscription].coupon_rate_below),
-              @data[:subscription].exclude_convertible,
-              (server[:version] >= 25 ? [@data[:subscription].average_option_volume_above,
-                                         @data[:subscription].scanner_setting_pairs] : []),
-
-              (server[:version] >= 27 ? [@data[:subscription].stock_type_filter] : []),
-          ].flatten
-
-        end
-      end # RequestScannerSubscription
-
-
-      # data = { :ticker_id => int }
-      class CancelScannerSubscription
-        def self.message_id
-          23
-        end
-
-        def queue(server)
-          requireVersion(server, 24)
-          [self.class.message_id,
-           1, # version
-           @data[:ticker_id]
-          ]
-        end
-      end # CancelScannerSubscription
-
-
-      class RequestScannerParameters
-        def self.message_id
-          24
-        end
-
-        def queue(server)
-          requireVersion(server, 24)
-
-          [self.class.message_id,
-           1 # version
-          ]
-        end
-      end # RequestScannerParameters
-
-
-      # data = { :ticker_id => int }
-      class CancelHistoricalData
-        def self.message_id
-          25
-        end
-
-        def queue(server)
-          requireVersion(server, 24)
-          [self.class.message_id,
-           1, # version
-           @data[:ticker_id]
-          ]
-        end
-      end # CancelHistoricalData
 
     end # module Outgoing
   end # module Messages
