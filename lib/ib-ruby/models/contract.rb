@@ -14,6 +14,8 @@ module IB::Models
                       :forex => "CASH",
                       :bag => "BAG"}
 
+    BAG_SEC_TYPE = "BAG"
+
     # Fields are Strings unless noted otherwise
     attr_accessor :con_id, # int
                   :symbol,
@@ -173,11 +175,11 @@ module IB::Models
 
     # Some messages send open_close too, some don't. WTF.
     def serialize_combo_legs(include_open_close = false)
-      if self.combo_legs.nil?
-        [0]
-      else
-        [self.combo_legs.size].concat(self.combo_legs.serialize(include_open_close))
-      end
+      # No idea what "BAG" means. Copied from the Java code.
+      return [] unless sec_type.upcase == "BAG"
+      return [0] if combo_legs.nil?
+      [combo_legs.size,
+       combo_legs.map { |leg| leg.serialize(include_open_close) }]
     end
 
     def to_human
@@ -243,5 +245,46 @@ module IB::Models
         super opts
       end
     end # class Details
+
+    # ComboLeg is an internal class of Contract, as it should be
+    class ComboLeg < Model
+      # // open/close leg value is same as combo
+      SAME = 0
+      OPEN = 1
+      CLOSE = 2
+      UNKNOWN = 3
+
+      attr_accessor :con_id, # int
+                    :ratio, # int
+                    :action, # String:  BUY/SELL/SSHORT/SSHORTX
+                    :exchange, # String
+                    :open_close, # int
+
+                    # For stock legs when doing short sale
+                    :short_sale_slot, # int: 1 = clearing broker, 2 = third party
+                    :designated_location, # String
+                    :exempt_code # int
+
+      def initialize opts = {}
+        @con_id = 0
+        @ratio = 0
+        @open_close = 0
+        @short_sale_slot = 0
+        @exempt_code = -1
+
+        super opts
+      end
+
+      # Some messages include open_close, some don't. wtf.
+      def serialize(include_open_close = false)
+        [con_id,
+         ratio,
+         action,
+         exchange,
+         include_open_close ? leg.open_close : []
+        ].flatten
+      end
+    end # ComboLeg
+
   end # class Contract
 end # module IB::Models

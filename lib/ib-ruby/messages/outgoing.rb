@@ -8,7 +8,6 @@ module IB
     module Outgoing
 
       EOL = "\0"
-      BAG_SEC_TYPE = "BAG"
 
       FaMsgTypeName = {1 => "GROUPS",
                        2 => "PROFILES",
@@ -41,23 +40,22 @@ module IB
         # You can also use this to e.g. get the server version number.
         #
         # Subclasses can either override this method for precise control over how
-        # stuff gets sent to the server, or else define a method queue() that returns
+        # stuff gets sent to the server, or else define a method encode() that returns
         # an Array of elements that ought to be sent to the server by calling to_s on
         # each one and postpending a '\0'.
         #
         def send(server)
-          self.queue(server).each { |datum|
-
+          self.encode.flatten.each do |datum|
             # TWS wants to receive booleans as 1 or 0... rewrite as necessary.
             datum = "1" if datum == true
             datum = "0" if datum == false
 
             server[:socket].syswrite(datum.to_s + "\0")
-          }
+          end
         end
 
         # At minimum, Outgoing message contains message_id and version (default version is 1)
-        def queue(server)
+        def encode
           [self.class.message_id, self.class.version || 1]
         end
 
@@ -75,8 +73,8 @@ module IB
       # Most IB Cancel... messages follow the same format
       # data = { :ticker_id => int }
       class CancelMessage < AbstractMessage
-        def queue(server)
-          [self.class.message_id, self.class.version || 1, @data[:ticker_id]]
+        def encode
+          [super, @data[:ticker_id]]
         end
       end # CancelMessage
 
@@ -106,7 +104,7 @@ module IB
       class CancelOrder < AbstractMessage
         @message_id = 4
 
-        def queue(server)
+        def encode
           super << @data[:id]
         end
       end # CancelOrder
@@ -115,7 +113,7 @@ module IB
       class CancelFundamentalData < AbstractMessage
         @message_id = 53
 
-        def queue(server)
+        def encode
           super << @data[:request_id]
         end
       end # CancelFundamentalData
@@ -124,7 +122,7 @@ module IB
       class CancelImpliedVolatility < AbstractMessage
         @message_id = 56
 
-        def queue(server)
+        def encode
           super << @data[:request_id]
         end
       end # CancelImpliedVolatility
@@ -134,7 +132,7 @@ module IB
       class CancelOptionPrice < AbstractMessage
         @message_id = 57
 
-        def queue(server)
+        def encode
           super << @data[:request_id]
         end
       end # CancelOptionPrice
@@ -153,31 +151,31 @@ module IB
         @message_id = 22
         @version = 3
 
-        def queue(server)
-          super +
-              [@data[:ticker_id],
-               @data[:subscription].number_of_rows || EOL,
-               @data[:subscription].instrument,
-               @data[:subscription].location_code,
-               @data[:subscription].scan_code,
-               @data[:subscription].above_price || EOL,
-               @data[:subscription].below_price || EOL,
-               @data[:subscription].above_volume || EOL,
-               @data[:subscription].market_cap_above || EOL,
-               @data[:subscription].market_cap_below || EOL,
-               @data[:subscription].moody_rating_above,
-               @data[:subscription].moody_rating_below,
-               @data[:subscription].sp_rating_above,
-               @data[:subscription].sp_rating_below,
-               @data[:subscription].maturity_date_above,
-               @data[:subscription].maturity_date_below,
-               @data[:subscription].coupon_rate_above || EOL,
-               @data[:subscription].coupon_rate_below || EOL,
-               @data[:subscription].exclude_convertible,
-               @data[:subscription].average_option_volume_above,
-               @data[:subscription].scanner_setting_pairs,
-               @data[:subscription].stock_type_filter
-              ] #.flatten ?
+        def encode
+          [super,
+           @data[:ticker_id],
+           @data[:subscription].number_of_rows || EOL,
+           @data[:subscription].instrument,
+           @data[:subscription].location_code,
+           @data[:subscription].scan_code,
+           @data[:subscription].above_price || EOL,
+           @data[:subscription].below_price || EOL,
+           @data[:subscription].above_volume || EOL,
+           @data[:subscription].market_cap_above || EOL,
+           @data[:subscription].market_cap_below || EOL,
+           @data[:subscription].moody_rating_above,
+           @data[:subscription].moody_rating_below,
+           @data[:subscription].sp_rating_above,
+           @data[:subscription].sp_rating_below,
+           @data[:subscription].maturity_date_above,
+           @data[:subscription].maturity_date_below,
+           @data[:subscription].coupon_rate_above || EOL,
+           @data[:subscription].coupon_rate_below || EOL,
+           @data[:subscription].exclude_convertible,
+           @data[:subscription].average_option_volume_above,
+           @data[:subscription].scanner_setting_pairs,
+           @data[:subscription].stock_type_filter
+          ]
         end
       end # RequestScannerSubscription
 
@@ -187,14 +185,13 @@ module IB
         @message_id = 1
         @version = 9 # message version number
 
-        def queue(server)
-          super +
-              [@data[:ticker_id],
-               @data[:contract].con_id] + # part of serialize?
-              @data[:contract].serialize +
-              # No idea what "BAG" means. Copied from the Java code.
-              (@data[:contract].sec_type.upcase == "BAG" ? @data[:contract].serialize_combo_legs : []) +
-              @data[:contract].serialize_under_comp
+        def encode
+          [super,
+           @data[:ticker_id],
+           @data[:contract].con_id, # part of serialize?
+           @data[:contract].serialize,
+           @data[:contract].serialize_combo_legs,
+           @data[:contract].serialize_under_comp]
         end
       end # RequestMarketData
 
@@ -300,7 +297,7 @@ module IB
         @message_id = 20
         @version = 4
 
-        def queue(server)
+        def encode
           if @data.has_key?(:what_to_show) && @data[:what_to_show].is_a?(String)
             @data[:what_to_show] = @data[:what_to_show].downcase.to_sym
           end
@@ -313,20 +310,19 @@ module IB
           raise ArgumentError("@data[:bar_size] must be one of #{BAR_SIZES}.") unless BAR_SIZES.include?(@data[:bar_size])
 
           contract = @data[:contract].is_a?(Datatypes::Contract) ?
-              @data[:contract] :
-              Datatypes::Contract.from_ib_ruby(@data[:contract])
+              @data[:contract] : Datatypes::Contract.from_ib_ruby(@data[:contract])
 
-          super +
-              [@data[:ticker_id]] +
-              contract.serialize +
-              [contract.include_expired ? 1 : 0,
-               @data[:end_date_time],
-               @data[:bar_size],
-               @data[:duration],
-               @data[:use_RTH],
-               @data[:what_to_show].to_s.upcase,
-               @data[:format_date]] +
-              contract.sec_type.upcase == "BAG" ? contract.serialize_combo_legs : []
+          [super,
+           @data[:ticker_id],
+           contract.serialize,
+           contract.include_expired,
+           @data[:end_date_time],
+           @data[:bar_size],
+           @data[:duration],
+           @data[:use_RTH],
+           @data[:what_to_show].to_s.upcase,
+           @data[:format_date],
+           contract.serialize_combo_legs]
         end
       end # RequestHistoricalData
 
@@ -338,7 +334,7 @@ module IB
       class RequestRealTimeBars < AbstractMessage
         @message_id = 50
 
-        def queue(server)
+        def encode
           if @data.has_key?(:what_to_show) && @data[:what_to_show].is_a?(String)
             @data[:what_to_show] = @data[:what_to_show].downcase.to_sym
           end
@@ -351,15 +347,14 @@ module IB
           raise ArgumentError("@data[:bar_size] must be one of #{BAR_SIZES}.") unless BAR_SIZES.include?(@data[:bar_size])
 
           contract = @data[:contract].is_a?(Datatypes::Contract) ?
-              @data[:contract] :
-              Datatypes::Contract.from_ib_ruby(@data[:contract])
+              @data[:contract] : Datatypes::Contract.from_ib_ruby(@data[:contract])
 
-          super +
-              [@data[:ticker_id]] +
-              contract.serialize +
-              [@data[:bar_size],
-               @data[:what_to_show].to_s.upcase,
-               @data[:use_RTH]]
+          [super,
+           @data[:ticker_id],
+           contract.serialize,
+           @data[:bar_size],
+           @data[:what_to_show].to_s.upcase,
+           @data[:use_RTH]]
         end
       end # RequestRealTimeBars
 
@@ -368,14 +363,14 @@ module IB
         @message_id = 9
         @version = 6
 
-        def queue(server)
-          super +
-              [@data[:req_id],
-               @data[:contract].con_id] + # part of serialize?
-              @data[:contract].serialize(:short) +
-              [@data[:contract].include_expired ? 1 : 0,
-               @data[:contract].sec_id_type, # Unimplemented?
-               @data[:contract].sec_id] # Unimplemented?
+        def encode
+          [super,
+           @data[:req_id],
+           @data[:contract].con_id, # part of serialize?
+           @data[:contract].serialize(:short),
+           @data[:contract].include_expired,
+           @data[:contract].sec_id_type,
+           @data[:contract].sec_id]
         end
       end # RequestContractData
       RequestContractDetails = RequestContractData # alias
@@ -385,10 +380,11 @@ module IB
         @message_id = 10
         @version = 3
 
-        def queue(server)
-          super + [@data[:ticker_id]] +
-              @data[:contract].serialize(:short) +
-              [@data[:num_rows]]
+        def encode
+          [super,
+           @data[:ticker_id],
+           @data[:contract].serialize(:short),
+           @data[:num_rows]]
         end
       end # RequestMarketDepth
 
@@ -401,13 +397,14 @@ module IB
       class ExerciseOptions < AbstractMessage
         @message_id = 21
 
-        def queue(server)
-          super + [@data[:ticker_id]] +
-              @data[:contract].serialize(:short) +
-              [@data[:exercise_action],
-               @data[:exercise_quantity],
-               @data[:account],
-               @data[:override]]
+        def encode
+          [super,
+           @data[:ticker_id],
+           @data[:contract].serialize(:short),
+           @data[:exercise_action],
+           @data[:exercise_quantity],
+           @data[:account],
+           @data[:override]]
         end
       end # ExerciseOptions
 
@@ -417,76 +414,76 @@ module IB
         @version = 31
         # int VERSION = (m_serverVersion < MIN_SERVER_VER_NOT_HELD) ? 27 : 31;
 
-        def queue(server)
-          super +
-              [@data[:order_id]] +
-              @data[:contract].serialize(:long) +
-              [@data[:contract].sec_id_type, # Unimplemented?
-               @data[:contract].sec_id, # Unimplemented?
+        def encode
+          [super,
+           @data[:order_id],
+           @data[:contract].serialize,
+           @data[:contract].sec_id_type, # Unimplemented?
+           @data[:contract].sec_id, # Unimplemented?
 
-               @data[:order].action, # send main order fields
-               @data[:order].total_quantity,
-               @data[:order].order_type,
-               @data[:order].limit_price,
-               @data[:order].aux_price,
-               @data[:order].tif, # send extended order fields
-               @data[:order].oca_group,
-               @data[:order].account,
-               @data[:order].open_close,
-               @data[:order].origin,
-               @data[:order].order_ref,
-               @data[:order].transmit,
-               @data[:order].parent_id,
-               @data[:order].block_order,
-               @data[:order].sweep_to_fill,
-               @data[:order].display_size,
-               @data[:order].trigger_method,
-               @data[:order].outside_rth, # was: ignore_rth
-               @data[:order].hidden] +
-              (@data[:contract].sec_type.upcase == "BAG" ? @data[:contract].serialize_combo_legs : []) +
-              ['', # send deprecated shares_allocation field
-               @data[:order].discretionary_amount,
-               @data[:order].good_after_time,
-               @data[:order].good_till_date,
-               @data[:order].fa_group,
-               @data[:order].fa_method,
-               @data[:order].fa_percentage,
-               @data[:order].fa_profile,
-               #                                    Institutional short sale slot fields:
-               @data[:order].short_sale_slot, #     0 only for retail, 1 or 2 for institution
-               @data[:order].designated_location, # only populate when short_sale_slot == 2
-               @data[:order].oca_type,
-               @data[:order].rule_80a,
-               @data[:order].settling_firm,
-               @data[:order].all_or_none,
-               @data[:order].min_quantity || EOL,
-               @data[:order].percent_offset || EOL,
-               @data[:order].etrade_only,
-               @data[:order].firm_quote_only,
-               @data[:order].nbbo_price_cap || EOL,
-               @data[:order].auction_strategy || EOL,
-               @data[:order].starting_price || EOL,
-               @data[:order].stock_ref_price || EOL,
-               @data[:order].delta || EOL,
-               @data[:order].stock_range_lower || EOL,
-               @data[:order].stock_range_upper || EOL,
-               @data[:order].override_percentage_constraints,
-               @data[:order].volatility || EOL, #              Volatility orders
-               @data[:order].volatility_type || EOL, #         Volatility orders
-               @data[:order].delta_neutral_order_type, #       Volatility orders
-               @data[:order].delta_neutral_aux_price || EOL, # Volatility orders
-               @data[:order].continuous_update, #              Volatility orders
-               @data[:order].reference_price_type || EOL, #    Volatility orders
-               @data[:order].trail_stop_price || EOL, # TRAIL_STOP_LIMIT stop price
-               @data[:order].scale_init_level_size || EOL, # Scale Orders
-               @data[:order].scale_subs_level_size || EOL, # Scale Orders
-               @data[:order].scale_price_increment || EOL, # Scale Orders
-               @data[:order].clearing_account,
-               @data[:order].clearing_intent,
-               @data[:order].not_held] +
-              @data[:contract].serialize_under_comp +
-              @data[:contract].serialize_algo +
-              [@data[:order].what_if]
+           @data[:order].action, # send main order fields
+           @data[:order].total_quantity,
+           @data[:order].order_type,
+           @data[:order].limit_price,
+           @data[:order].aux_price,
+           @data[:order].tif, # send extended order fields
+           @data[:order].oca_group,
+           @data[:order].account,
+           @data[:order].open_close,
+           @data[:order].origin,
+           @data[:order].order_ref,
+           @data[:order].transmit,
+           @data[:order].parent_id,
+           @data[:order].block_order,
+           @data[:order].sweep_to_fill,
+           @data[:order].display_size,
+           @data[:order].trigger_method,
+           @data[:order].outside_rth, # was: ignore_rth
+           @data[:order].hidden,
+           @data[:contract].serialize_combo_legs,
+           '', # send deprecated shares_allocation field
+           @data[:order].discretionary_amount,
+           @data[:order].good_after_time,
+           @data[:order].good_till_date,
+           @data[:order].fa_group,
+           @data[:order].fa_method,
+           @data[:order].fa_percentage,
+           @data[:order].fa_profile,
+           #                                    Institutional short sale slot fields:
+           @data[:order].short_sale_slot, #     0 only for retail, 1 or 2 for institution
+           @data[:order].designated_location, # only populate when short_sale_slot == 2
+           @data[:order].oca_type,
+           @data[:order].rule_80a,
+           @data[:order].settling_firm,
+           @data[:order].all_or_none,
+           @data[:order].min_quantity || EOL,
+           @data[:order].percent_offset || EOL,
+           @data[:order].etrade_only,
+           @data[:order].firm_quote_only,
+           @data[:order].nbbo_price_cap || EOL,
+           @data[:order].auction_strategy || EOL,
+           @data[:order].starting_price || EOL,
+           @data[:order].stock_ref_price || EOL,
+           @data[:order].delta || EOL,
+           @data[:order].stock_range_lower || EOL,
+           @data[:order].stock_range_upper || EOL,
+           @data[:order].override_percentage_constraints,
+           @data[:order].volatility || EOL, #              Volatility orders
+           @data[:order].volatility_type || EOL, #         Volatility orders
+           @data[:order].delta_neutral_order_type, #       Volatility orders
+           @data[:order].delta_neutral_aux_price || EOL, # Volatility orders
+           @data[:order].continuous_update, #              Volatility orders
+           @data[:order].reference_price_type || EOL, #    Volatility orders
+           @data[:order].trail_stop_price || EOL, # TRAIL_STOP_LIMIT stop price
+           @data[:order].scale_init_level_size || EOL, # Scale Orders
+           @data[:order].scale_subs_level_size || EOL, # Scale Orders
+           @data[:order].scale_price_increment || EOL, # Scale Orders
+           @data[:order].clearing_account,
+           @data[:order].clearing_intent,
+           @data[:order].not_held,
+           @data[:contract].serialize_under_comp,
+           @data[:contract].serialize_algo,
+           @data[:order].what_if]
         end
       end # PlaceOrder
 
@@ -499,9 +496,10 @@ module IB
         @message_id = 6
         @version = 2
 
-        def queue(server)
-          super + [@data[:subscribe],
-                   @data[:account_code]] # \\ '' TODO: Get rid of StringentHash
+        def encode
+          [super,
+           @data[:subscribe],
+           @data[:account_code]] # \\ '' TODO: Get rid of StringentHash
         end
       end # RequestAccountData
       RequestAccountUpdates = RequestAccountData
@@ -511,15 +509,16 @@ module IB
         @message_id = 7
         @version = 3
 
-        def queue(server)
-          super + [@data[:filter].client_id,
-                   @data[:filter].acct_code,
-                   @data[:filter].time, # Valid format for time is "yyyymmdd-hh:mm:ss"
-                   @data[:filter].symbol,
-                   @data[:filter].sec_type,
-                   @data[:filter].exchange,
-                   @data[:filter].side]
-        end # queue
+        def encode
+          [super,
+           @data[:filter].client_id,
+           @data[:filter].acct_code,
+           @data[:filter].time, # Valid format for time is "yyyymmdd-hh:mm:ss"
+           @data[:filter].symbol,
+           @data[:filter].sec_type,
+           @data[:filter].exchange,
+           @data[:filter].side]
+        end # encode
       end # RequestExecutions
 
       class RequestOpenOrders < AbstractMessage # TODO: ShortMessage ?
@@ -530,7 +529,7 @@ module IB
       class RequestIds < AbstractMessage # TODO: ShortMessage ?
         @message_id = 8
 
-        def queue(server)
+        def encode
           super << @data[:number_of_ids]
         end
       end # RequestIds
@@ -539,7 +538,7 @@ module IB
       class RequestNewsBulletins < AbstractMessage
         @message_id = 12
 
-        def queue(server)
+        def encode
           super << @data[:all_messages]
         end
       end # RequestNewsBulletins
@@ -552,7 +551,7 @@ module IB
       class SetServerLoglevel < AbstractMessage # TODO: ShortMessage ?
         @message_id = 14
 
-        def queue(server)
+        def encode
           super << @data[:log_level]
         end
       end # SetServerLoglevel
@@ -561,7 +560,7 @@ module IB
       class RequestAutoOpenOrders < AbstractMessage # TODO: ShortMessage ?
         @message_id = 15
 
-        def queue(server)
+        def encode
           super << @data[:auto_bind]
         end
       end # RequestAutoOpenOrders
@@ -580,7 +579,7 @@ module IB
       class RequestFA < AbstractMessage # TODO: ShortMessage ?
         @message_id = 18
 
-        def queue(server)
+        def encode
           super << @data[:fa_data_type]
         end
       end # RequestFA
@@ -590,9 +589,10 @@ module IB
       class ReplaceFA < AbstractMessage
         @message_id = 19
 
-        def queue(server)
-          super + [@data[:fa_data_type],
-                   @data[:xml]]
+        def encode
+          [super,
+           @data[:fa_data_type],
+           @data[:xml]]
         end
       end # ReplaceFA
 
@@ -604,15 +604,16 @@ module IB
       class RequestFundamentalData < AbstractMessage
         @message_id = 52
 
-        def queue(server)
-          super + [@data[:request_id],
-                   @data[:contract].symbol, # Yet another Contract serialization!
-                   @data[:contract].sec_type,
-                   @data[:contract].exchange,
-                   @data[:contract].primary_exchange,
-                   @data[:contract].currency,
-                   @data[:contract].local_symbol,
-                   @data[:report_type]]
+        def encode
+          [super,
+           @data[:request_id],
+           @data[:contract].symbol, # Yet another Contract serialization!
+           @data[:contract].sec_type,
+           @data[:contract].exchange,
+           @data[:contract].primary_exchange,
+           @data[:contract].currency,
+           @data[:contract].local_symbol,
+           @data[:report_type]]
         end
       end # RequestFundamentalData
 
@@ -621,12 +622,13 @@ module IB
       class RequestImpliedVolatility < AbstractMessage
         @message_id = 54
 
-        def queue(server)
-          super + [@data[:request_id],
-                   @data[:contract].con_id] + # part of serialize?
-              @data[:contract].serialize(:long) +
-              [@data[:option_price],
-               @data[:under_price]]
+        def encode
+          [super,
+           @data[:request_id],
+           @data[:contract].con_id, # part of serialize?
+           @data[:contract].serialize,
+           @data[:option_price],
+           @data[:under_price]]
         end
       end # RequestImpliedVolatility
       CalculateImpliedVolatility = RequestImpliedVolatility
@@ -637,17 +639,17 @@ module IB
       class RequestOptionPrice < AbstractMessage
         @message_id = 55
 
-        def queue(server)
-          super + [@data[:request_id],
-                   @data[:contract].con_id] + # part of serialize?
-              @data[:contract].serialize(:long) +
-              [@data[:volatility],
-               @data[:under_price]]
+        def encode
+          [super,
+           @data[:request_id],
+           @data[:contract].con_id, # part of serialize?
+           @data[:contract].serialize,
+           @data[:volatility],
+           @data[:under_price]]
         end
       end # RequestOptionPrice
       CalculateOptionPrice = RequestOptionPrice
       RequestCalculateOptionPrice = RequestOptionPrice
-
 
     end # module Outgoing
   end # module Messages
