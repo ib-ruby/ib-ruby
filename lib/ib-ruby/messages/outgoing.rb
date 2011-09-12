@@ -102,6 +102,49 @@ module IB
         @message_id = 11
       end # CancelMarketDepth
 
+      # Data format is { :id => id-to-cancel }
+      # TODO: Use :id instead of :order_id, :ticker_id?
+      class CancelOrder < AbstractMessage
+        @message_id = 4
+
+        def queue(server)
+          super << @data[:id]
+        end
+      end # CancelOrder
+
+      # data = { :request_id => int}
+      class CancelFundamentalData < AbstractMessage
+        @message_id = 53
+
+        def queue(server)
+          super << @data[:request_id]
+        end
+      end # CancelFundamentalData
+
+      # data = { :request_id => int}
+      class CancelImpliedVolatility < AbstractMessage
+        @message_id = 56
+
+        def queue(server)
+          super << @data[:request_id]
+        end
+      end # CancelImpliedVolatility
+      CancelCalculateImpliedVolatility = CancelImpliedVolatility
+
+      # data = { :request_id => int}
+      class CancelOptionPrice < AbstractMessage
+        @message_id = 57
+
+        def queue(server)
+          super << @data[:request_id]
+        end
+      end # CancelOptionPrice
+      CancelCalculateOptionPrice = CancelOptionPrice
+
+      class RequestGlobalCancel
+        @message_id = 58
+      end # RequestGlobalCancel
+
       class RequestScannerParameters
         @message_id = 24
       end # RequestScannerParameters
@@ -152,7 +195,7 @@ module IB
               @data[:contract].serialize +
               # No idea what "BAG" means. Copied from the Java code.
               (@data[:contract].sec_type.upcase == "BAG" ? @data[:contract].serialize_combo_legs : []) +
-              @data[:contract].under_comp ? @data[:contract].serialize_under_comp : []
+              @data[:contract].serialize_under_comp
         end
       end # RequestMarketData
 
@@ -382,12 +425,12 @@ module IB
               [@data[:contract].sec_id_type, # Unimplemented?
                @data[:contract].sec_id, # Unimplemented?
 
-               @data[:order].action,
+               @data[:order].action, # send main order fields
                @data[:order].total_quantity,
                @data[:order].order_type,
                @data[:order].limit_price,
                @data[:order].aux_price,
-               @data[:order].tif,
+               @data[:order].tif, # send extended order fields
                @data[:order].oca_group,
                @data[:order].account,
                @data[:order].open_close,
@@ -400,112 +443,53 @@ module IB
                @data[:order].display_size,
                @data[:order].trigger_method,
                @data[:order].outside_rth, # was: ignore_rth
-              ]
-
-          queue.push(@data[:order].hidden) if server[:version] >= 7
-
-
-          queue.concat(@data[:contract].serialize_combo_legs(true)) if server[:version] >= 8 &&
-              @data[:contract].sec_type.upcase == "BAG" # "BAG" is defined as a constant in EClientSocket.java, line 45
-
-          queue.push(@data[:order].shares_allocation) if server[:version] >= 9 # EClientSocket.java says this is deprecated. No idea.
-          queue.push(@data[:order].discretionary_amount) if server[:version] >= 10
-          queue.push(@data[:order].good_after_time) if server[:version] >= 11
-          queue.push(@data[:order].good_till_date) if server[:version] >= 12
-
-          queue.concat([
-                           @data[:order].fa_group,
-                           @data[:order].fa_method,
-                           @data[:order].fa_percentage,
-                           @data[:order].fa_profile
-                       ]) if server[:version] >= 13
-
-          queue.concat([
-                           @data[:order].short_sale_slot,
-                           @data[:order].designated_location
-                       ]) if server[:version] >= 18
-
-          queue.concat([
-                           @data[:order].oca_type,
-                           @data[:order].rth_only,
-                           @data[:order].rule_80a,
-                           @data[:order].settling_firm,
-                           @data[:order].all_or_none,
-                           nilFilter(@data[:order].min_quantity),
-                           nilFilter(@data[:order].percent_offset),
-                           @data[:order].etrade_only,
-                           @data[:order].firm_quote_only,
-                           nilFilter(@data[:order].nbbo_price_cap),
-                           nilFilter(@data[:order].auction_strategy),
-                           nilFilter(@data[:order].starting_price),
-                           nilFilter(@data[:order].stock_ref_price),
-                           nilFilter(@data[:order].delta),
-
-                           # Says the Java here:
-                           # "// Volatility orders had specific watermark price attribs in server version 26"
-                           # I have no idea what this means.
-
-                           ((server[:version] == 26 && @data[:order].order_type.upcase == "VOL") ? EOL : @data[:order].stock_range_lower),
-                           ((server[:version] == 26 && @data[:order].order_type.upcase == "VOL") ? EOL : @data[:order].stock_range_upper),
-
-                       ]) if server[:version] >= 19
-
-          queue.push(@data[:order].override_percentage_constraints) if server[:version] >= 22
-
-          # Volatility orders
-          if server[:version] >= 26
-            queue.concat([nilFilter(@data[:order].volatility),
-                          nilFilter(@data[:order].volatility_type)])
-
-            if server[:version] < 28
-              queue.push(@data[:order].delta_neutral_order_type.upcase == "MKT")
-            else
-              queue.concat([@data[:order].delta_neutral_order_type,
-                            nilFilter(@data[:order].delta_neutral_aux_price)
-                           ])
-            end
-
-            queue.push(@data[:order].continuous_update)
-            queue.concat([
-                             (@data[:order].order_type.upcase == "VOL" ? @data[:order].stock_range_lower : EOL),
-                             (@data[:order].order_type.upcase == "VOL" ? @data[:order].stock_range_upper : EOL)
-                         ]) if server[:version] == 26
-
-            queue.push(@data[:order].reference_price_type)
-
-          end # if version >= 26
-
-          queue
-        end # queue()
-
+               @data[:order].hidden] +
+              (@data[:contract].sec_type.upcase == "BAG" ? @data[:contract].serialize_combo_legs : []) +
+              ['', # send deprecated shares_allocation field
+               @data[:order].discretionary_amount,
+               @data[:order].good_after_time,
+               @data[:order].good_till_date,
+               @data[:order].fa_group,
+               @data[:order].fa_method,
+               @data[:order].fa_percentage,
+               @data[:order].fa_profile,
+               #                                    Institutional short sale slot fields:
+               @data[:order].short_sale_slot, #     0 only for retail, 1 or 2 for institution
+               @data[:order].designated_location, # only populate when short_sale_slot == 2
+               @data[:order].oca_type,
+               @data[:order].rule_80a,
+               @data[:order].settling_firm,
+               @data[:order].all_or_none,
+               @data[:order].min_quantity || EOL,
+               @data[:order].percent_offset || EOL,
+               @data[:order].etrade_only,
+               @data[:order].firm_quote_only,
+               @data[:order].nbbo_price_cap || EOL,
+               @data[:order].auction_strategy || EOL,
+               @data[:order].starting_price || EOL,
+               @data[:order].stock_ref_price || EOL,
+               @data[:order].delta || EOL,
+               @data[:order].stock_range_lower || EOL,
+               @data[:order].stock_range_upper || EOL,
+               @data[:order].override_percentage_constraints,
+               @data[:order].volatility || EOL, #              Volatility orders
+               @data[:order].volatility_type || EOL, #         Volatility orders
+               @data[:order].delta_neutral_order_type, #       Volatility orders
+               @data[:order].delta_neutral_aux_price || EOL, # Volatility orders
+               @data[:order].continuous_update, #              Volatility orders
+               @data[:order].reference_price_type || EOL, #    Volatility orders
+               @data[:order].trail_stop_price || EOL, # TRAIL_STOP_LIMIT stop price
+               @data[:order].scale_init_level_size || EOL, # Scale Orders
+               @data[:order].scale_subs_level_size || EOL, # Scale Orders
+               @data[:order].scale_price_increment || EOL, # Scale Orders
+               @data[:order].clearing_account,
+               @data[:order].clearing_intent,
+               @data[:order].not_held] +
+              @data[:contract].serialize_under_comp +
+              @data[:contract].serialize_algo +
+              [@data[:order].what_if]
+        end
       end # PlaceOrder
-
-      # Data format is { :id => id-to-cancel }
-      class CancelOrder < AbstractMessage
-        def self.message_id
-          4
-        end
-
-        def queue(server)
-          [
-              self.class.message_id,
-              1, # version
-              @data[:id]
-          ]
-        end # queue
-      end # CancelOrder
-
-      class RequestOpenOrders < AbstractMessage
-        def self.message_id
-          5
-        end
-
-        def queue(server)
-          [self.class.message_id,
-           1 # version
-          ]
-        end
-      end # RequestOpenOrders
 
       # Data is { :subscribe => boolean, :account_code => string }
       #
@@ -513,179 +497,197 @@ module IB
       # empty ('') for a standard account.
       #
       class RequestAccountData < AbstractMessage
-        def self.message_id
-          6
-        end
+        @message_id = 6
+        @version = 2
 
         def queue(server)
-          queue = [self.class.message_id,
-                   2, # version
-                   @data[:subscribe]
-          ]
-          queue.push(@data[:account_code]) if server[:version] >= 9
-          queue
+          super + [@data[:subscribe],
+                   @data[:account_code]] # \\ '' TODO: Get rid of StringentHash
         end
       end # RequestAccountData
-
+      RequestAccountUpdates = RequestAccountData
 
       # data = { :filter => ExecutionFilter ]
       class RequestExecutions < AbstractMessage
-        def self.message_id
-          7
-        end
+        @message_id = 7
+        @version = 3
 
         def queue(server)
-          queue = [self.class.message_id,
-                   2 # version
-          ]
-
-          queue.concat([
-                           @data[:filter].client_id,
-                           @data[:filter].acct_code,
-
-                           # The Java says: 'Note that the valid format for m_time is "yyyymmdd-hh:mm:ss"'
-                           @data[:filter].time,
-                           @data[:filter].symbol,
-                           @data[:filter].sec_type,
-                           @data[:filter].exchange,
-                           @data[:filter].side
-                       ]) if server[:version] >= 9
-
-          queue
+          super + [@data[:filter].client_id,
+                   @data[:filter].acct_code,
+                   @data[:filter].time, # Valid format for time is "yyyymmdd-hh:mm:ss"
+                   @data[:filter].symbol,
+                   @data[:filter].sec_type,
+                   @data[:filter].exchange,
+                   @data[:filter].side]
         end # queue
       end # RequestExecutions
 
+      class RequestOpenOrders < AbstractMessage # TODO: ShortMessage ?
+        @message_id = 5
+      end # RequestOpenOrders
 
       # data = { :number_of_ids => int }
-      class RequestIds < AbstractMessage
-        def self.message_id
-          8
-        end
+      class RequestIds < AbstractMessage # TODO: ShortMessage ?
+        @message_id = 8
 
         def queue(server)
-          [self.class.message_id,
-           1, # version
-           @data[:number_of_ids]
-          ]
+          super << @data[:number_of_ids]
         end
       end # RequestIds
 
-
       # data = { :all_messages => boolean }
       class RequestNewsBulletins < AbstractMessage
-        def self.message_id
-          12
-        end
+        @message_id = 12
 
         def queue(server)
-          [self.class.message_id,
-           1, # version
-           @data[:all_messages]
-          ]
+          super << @data[:all_messages]
         end
       end # RequestNewsBulletins
 
-      class CancelNewsBulletins < AbstractMessage
-        def self.message_id
-          13
-        end
-
-        def queue(server)
-          [self.class.message_id,
-           1 # version
-          ]
-        end
+      class CancelNewsBulletins < AbstractMessage # TODO: ShortMessage ?
+        @message_id = 13
       end # CancelNewsBulletins
 
-      # data = { :loglevel => int }
-      class SetServerLoglevel < AbstractMessage
-        def self.message_id
-          14
-        end
+      # data = { :log_level => int }
+      class SetServerLoglevel < AbstractMessage # TODO: ShortMessage ?
+        @message_id = 14
 
         def queue(server)
-          [self.class.message_id,
-           1, # version
-           @data[:loglevel]
-          ]
+          super << @data[:log_level]
         end
       end # SetServerLoglevel
 
       # data = { :auto_bind => boolean }
-      class RequestAutoOpenOrders < AbstractMessage
-        def self.message_id
-          15
-        end
+      class RequestAutoOpenOrders < AbstractMessage # TODO: ShortMessage ?
+        @message_id = 15
 
         def queue(server)
-          [self.class.message_id,
-           1, # version
-           @data[:auto_bind]
-          ]
+          super << @data[:auto_bind]
         end
       end # RequestAutoOpenOrders
 
 
-      class RequestAllOpenOrders < AbstractMessage
-        def self.message_id
-          16
-        end
-
-        def queue(server)
-          [self.class.message_id,
-           1 # version
-          ]
-        end
+      class RequestAllOpenOrders < AbstractMessage # TODO: ShortMessage ?
+        @message_id = 16
       end # RequestAllOpenOrders
 
-      class RequestManagedAccounts < AbstractMessage
-        def self.message_id
-          17
-        end
-
-        def queue(server)
-          [self.class.message_id,
-           1 # version
-          ]
-        end
+      class RequestManagedAccounts < AbstractMessage # TODO: ShortMessage ?
+        @message_id = 17
       end # RequestManagedAccounts
 
       # No idea what this is.
       # data = { :fa_data_type => int }
-      class RequestFA < AbstractMessage
-        def self.message_id
-          18
-        end
+      class RequestFA < AbstractMessage # TODO: ShortMessage ?
+        @message_id = 18
 
         def queue(server)
-          requireVersion(server, 13)
-
-          [self.class.message_id,
-           1, # version
-           @data[:fa_data_type]
-          ]
+          super << @data[:fa_data_type]
         end
       end # RequestFA
 
       # No idea what this is.
       # data = { :fa_data_type => int, :xml => string }
       class ReplaceFA < AbstractMessage
-        def self.message_id
-          19
-        end
+        @message_id = 19
 
         def queue(server)
-          requireVersion(server, 13)
-
-          [self.class.message_id,
-           1, # version
-           @data[:fa_data_type],
-           @data[:xml]
-          ]
+          super + [@data[:fa_data_type],
+                   @data[:xml]]
         end
       end # ReplaceFA
+
+      class RequestCurrentTime < AbstractMessage # TODO: ShortMessage ?
+        @message_id = 49
+      end
+
+      # data = { :request_id => int, :contract => Contract, :report_type => String }
+      class RequestFundamentalData < AbstractMessage
+        @message_id = 52
+
+        def queue(server)
+          super + [@data[:request_id],
+                   @data[:contract].symbol, # Yet another Contract serialization!
+                   @data[:contract].sec_type,
+                   @data[:contract].exchange,
+                   @data[:contract].primary_exchange,
+                   @data[:contract].currency,
+                   @data[:contract].local_symbol,
+                   @data[:report_type]]
+        end
+      end # RequestFundamentalData
+
+      # data = { :request_id => int, :contract => Contract,
+      #          :option_price => double, :under_price => double }
+      class RequestImpliedVolatility < AbstractMessage
+        @message_id = 54
+
+        def queue(server)
+          super + [@data[:request_id],
+                   @data[:contract].con_id] + # part of serialize?
+              @data[:contract].serialize(:long) +
+              [@data[:option_price],
+               @data[:under_price]]
+        end
+      end # RequestImpliedVolatility
+      CalculateImpliedVolatility = RequestImpliedVolatility
+      RequestCalculateImpliedVolatility = RequestImpliedVolatility
+
+    # data = { :request_id => int, :contract => Contract,
+      #          :volatility => double, :under_price => double }
+      class RequestOptionPrice < AbstractMessage
+        @message_id = 55
+
+        def queue(server)
+          super + [@data[:request_id],
+                   @data[:contract].con_id] + # part of serialize?
+              @data[:contract].serialize(:long) +
+              [@data[:volatility],
+               @data[:under_price]]
+        end
+      end # RequestOptionPrice
+      CalculateOptionPrice = RequestOptionPrice
+      RequestCalculateOptionPrice = RequestOptionPrice
 
 
     end # module Outgoing
   end # module Messages
 end # module IB
+
+__END__
+    // outgoing msg id's
+    private static final int REQ_MKT_DATA = 1;
+    private static final int CANCEL_MKT_DATA = 2;
+    private static final int PLACE_ORDER = 3;
+    private static final int CANCEL_ORDER = 4;
+    private static final int REQ_OPEN_ORDERS = 5;
+    private static final int REQ_ACCOUNT_DATA = 6;
+    private static final int REQ_EXECUTIONS = 7;
+    private static final int REQ_IDS = 8;
+    private static final int REQ_CONTRACT_DATA = 9;
+    private static final int REQ_MKT_DEPTH = 10;
+    private static final int CANCEL_MKT_DEPTH = 11;
+    private static final int REQ_NEWS_BULLETINS = 12;
+    private static final int CANCEL_NEWS_BULLETINS = 13;
+    private static final int SET_SERVER_LOGLEVEL = 14;
+    private static final int REQ_AUTO_OPEN_ORDERS = 15;
+    private static final int REQ_ALL_OPEN_ORDERS = 16;
+    private static final int REQ_MANAGED_ACCTS = 17;
+    private static final int REQ_FA = 18;
+    private static final int REPLACE_FA = 19;
+    private static final int REQ_HISTORICAL_DATA = 20;
+    private static final int EXERCISE_OPTIONS = 21;
+    private static final int REQ_SCANNER_SUBSCRIPTION = 22;
+    private static final int CANCEL_SCANNER_SUBSCRIPTION = 23;
+    private static final int REQ_SCANNER_PARAMETERS = 24;
+    private static final int CANCEL_HISTORICAL_DATA = 25;
+    private static final int REQ_CURRENT_TIME = 49;
+    private static final int REQ_REAL_TIME_BARS = 50;
+    private static final int CANCEL_REAL_TIME_BARS = 51;
+    private static final int REQ_FUNDAMENTAL_DATA = 52;
+    private static final int CANCEL_FUNDAMENTAL_DATA = 53;
+    private static final int REQ_CALC_IMPLIED_VOLAT = 54;
+    private static final int REQ_CALC_OPTION_PRICE = 55;
+    private static final int CANCEL_CALC_IMPLIED_VOLAT = 56;
+    private static final int CANCEL_CALC_OPTION_PRICE = 57;
+    private static final int REQ_GLOBAL_CANCEL = 58;

@@ -33,3 +33,7 @@
 == 0.4.6 / 2011-09-07
 
 * CSV Downloader Java examples added
+
+== 0.4.7 / 2011-09-12
+
+* Datatypes turned into Models

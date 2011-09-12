@@ -103,8 +103,7 @@ module IB
                     :order_type, #      String
                     :limit_price, #     double
                     :aux_price, #       double
-
-                    :shares_allocation, # ?
+                    #:shares_allocation, # deprecated sharesAllocation field
 
                     # Extended order fields
                     :tif, #         String: Time in Force - DAY, GTC, etc.
@@ -178,7 +177,15 @@ module IB
                     :account, #          String: IB account
                     :settling_firm, #    String
                     :clearing_account, # String: True beneficiary of the order
-                    :clearing_intent #   "" (Default), "IB", "Away", "PTA" (PostTrade)
+                    :clearing_intent, #   "" (Default), "IB", "Away", "PTA" (PostTrade)
+
+                    # ALGO ORDERS ONLY
+                    :algo_strategy, # String
+                    :algo_params, # public Vector<TagValue> m_algoParams; ?!
+
+                    # WTF?!
+                    :what_if, #public boolean  m_whatIf; // What-if
+                    :not_held #public boolean  m_notHeld; // Not Held
 
       def init
         super
@@ -188,15 +195,16 @@ module IB
         @transmit = true
         @primary_exchange = ''
         @designated_location = ''
-        @min_quantity = Max_Value
-        @percent_offset = Max_Value
-        @nbba_price_cap = Max_Value
-        @starting_price = Max_Value
-        @stock_ref_price = Max_Value
+        @min_quantity = Max_Value # TODO: Initialize with nil instead of Max_Value, or change
+                                  # Order sending code in IB::Messages::Outgoing::PlaceOrder
+        @percent_offset = Max_Value # -"-
+        @nbba_price_cap = Max_Value # -"-
+        @starting_price = Max_Value # -"-
+        @stock_ref_price = Max_Value # -"-
         @delta = Max_Value
         @delta_neutral_order_type = ''
-        @delta_neutral_aux_price = Max_Value
-        @reference_price_type = Max_Value
+        @delta_neutral_aux_price = Max_Value # -"-
+        @reference_price_type = Max_Value # -"-
       end # init
 
     end # class Order
@@ -325,6 +333,25 @@ module IB
         # 		   send( underComp.m_delta);
         # 		   send( underComp.m_price);
         # 	   }
+      end
+
+      def serialize_algo(*args)
+        raise "Unimplemented"
+        #if (m_serverVersion >= MIN_SERVER_VER_ALGO_ORDERS) {
+        #  send( order.m_algoStrategy);
+        #  if( !IsEmpty(order.m_algoStrategy)) {
+        #    java.util.Vector algoParams = order.m_algoParams;
+        #    int algoParamsCount = algoParams == null ? 0 : algoParams.size();
+        #    send( algoParamsCount);
+        #    if( algoParamsCount > 0) {
+        #      for( int i = 0; i < algoParamsCount; ++i) {
+        #        TagValue tagValue = (TagValue)algoParams.get(i);
+        #        send( tagValue.m_tag);
+        #        send( tagValue.m_value);
+        #      }
+        #    }
+        #  }
+        #}
       end
 
       # Some messages send open_close too, some don't. WTF.
