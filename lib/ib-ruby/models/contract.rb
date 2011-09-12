@@ -95,16 +95,16 @@ module IB::Models
     # Different messages serialize contracts differently. Go figure.
     # Note that it does not include the combo legs.
     def serialize(type = :long)
-      [self.symbol,
-       self.sec_type,
-       self.expiry,
-       self.strike,
-       self.right,
-       self.multiplier,
-       self.exchange] +
-          (type == :long ? [self.primary_exchange] : []) +
-          [self.currency,
-           self.local_symbol]
+      [symbol,
+       sec_type,
+       expiry,
+       strike,
+       right,
+       multiplier,
+       exchange] +
+          (type == :long ? [primary_exchange] : []) +
+          [currency,
+           local_symbol]
     end
 
     # @Legacy

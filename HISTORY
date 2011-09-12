@@ -37,3 +37,7 @@
 == 0.4.7 / 2011-09-12
 
 * Datatypes turned into Models
+
+== 0.4.8 / 2011-09-12
+
+* IB::Messages::Outgoing code compacted using macros

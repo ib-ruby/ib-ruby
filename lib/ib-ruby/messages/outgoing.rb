@@ -13,6 +13,24 @@ module IB
                        2 => "PROFILES",
                        3 =>"ALIASES"}
 
+      HISTORICAL_TYPES = [:trades, :midpoint, :bid, :ask]
+
+      # Enumeration of bar size types for convenience. These are passed to TWS as the
+      # (one-based!) index into the array.
+      # Bar sizes less than 30 seconds do not work for some securities.
+      BAR_SIZES = [:invalid, # zero is not a valid barsize
+                   :second,
+                   :five_seconds,
+                   :fifteen_seconds,
+                   :thirty_seconds,
+                   :minute,
+                   :two_minutes,
+                   :five_minutes,
+                   :fifteen_minutes,
+                   :thirty_minutes,
+                   :hour,
+                   :day]
+
       class AbstractMessage
         # Class methods
         def self.message_id
@@ -23,12 +41,12 @@ module IB
           @version
         end
 
-        attr_reader :created_at
+        attr_reader :created_at, :data
 
         # data is a Hash?
-        def initialize(data=nil)
+        def initialize(data = {})
+          @data = data # WTF? Datatypes::StringentHash.new(data)
           @created_at = Time.now
-          @data = Datatypes::StringentHash.new(data)
         end
 
         def to_human
@@ -54,106 +72,85 @@ module IB
           end
         end
 
-        # At minimum, Outgoing message contains message_id and version (default version is 1)
+        # At minimum, Outgoing message contains message_id and version.
+        # Most messages also contain (ticker, request or order) :id.
         def encode
-          [self.class.message_id, self.class.version || 1]
-        end
-
-        protected
-
-        # TODO: Get rid of this, if possible
-        # Returns EOL instead of datum if datum is nil, providing the same functionality
-        # as sendMax() in the Java version, which uses Double.MAX_VALUE to mean "item not set"
-        # in a variable, and replaces that with EOL on send.
-        def nilFilter(datum)
-          datum.nil? ? EOL : datum
+          [self.class.message_id,
+           self.class.version,
+           @data[:id] || []]
         end
       end # AbstractMessage
 
-      # Most IB Cancel... messages follow the same format
-      # data = { :ticker_id => int }
-      class CancelMessage < AbstractMessage
-        def encode
-          [super, @data[:ticker_id]]
+      # Macro that defines short message classes using a one-liner
+      def self.def_message message_id, version=1, *keys
+        Class.new(AbstractMessage) do
+          @message_id = message_id
+          @version = version
+
+          define_method :encode do
+            [super, keys.map { |key| @data[key] }]
+          end unless keys.empty?
         end
-      end # CancelMessage
+      end
 
-      class CancelScannerSubscription < CancelMessage
-        @message_id = 23
-      end # CancelScannerSubscription
+      ### Defining (short) Outgoing Message classes for IB:
 
-      class CancelMarketData < CancelMessage
-        @message_id = 2
-      end # CancelMarketData
+      # Empty messages (no data)
+      RequestOpenOrders = def_message 5
+      CancelNewsBulletins = def_message 13
+      RequestAllOpenOrders = def_message 16
+      RequestManagedAccounts = def_message 17
+      RequestScannerParameters = def_message 24
+      RequestCurrentTime = def_message 49
+      RequestGlobalCancel = def_message 58
 
-      class CancelHistoricalData < CancelMessage
-        @message_id = 25
-      end # CancelHistoricalData
+      # Data format is: @data = { :id => ticker_id}
+      CancelScannerSubscription = def_message 23
+      CancelMarketData = def_message 2
+      CancelHistoricalData = def_message 25
+      CancelRealTimeBars = def_message 51
+      CancelMarketDepth = def_message 11
 
-      class CancelRealTimeBars < CancelMessage
-        @message_id = 51
-      end # CancelRealTimeBars
-
-      # data = { :ticker_id => int }
-      class CancelMarketDepth < CancelMessage
-        @message_id = 11
-      end # CancelMarketDepth
-
-      # Data format is { :id => id-to-cancel }
-      # TODO: Use :id instead of :order_id, :ticker_id?
-      class CancelOrder < AbstractMessage
-        @message_id = 4
-
-        def encode
-          super << @data[:id]
-        end
-      end # CancelOrder
-
-      # data = { :request_id => int}
-      class CancelFundamentalData < AbstractMessage
-        @message_id = 53
-
-        def encode
-          super << @data[:request_id]
-        end
-      end # CancelFundamentalData
-
-      # data = { :request_id => int}
-      class CancelImpliedVolatility < AbstractMessage
-        @message_id = 56
-
-        def encode
-          super << @data[:request_id]
-        end
-      end # CancelImpliedVolatility
+      # Data format is: @data = { :id => request_id }
+      CancelFundamentalData = def_message 53
+      CancelImpliedVolatility = def_message 56
       CancelCalculateImpliedVolatility = CancelImpliedVolatility
-
-      # data = { :request_id => int}
-      class CancelOptionPrice < AbstractMessage
-        @message_id = 57
-
-        def encode
-          super << @data[:request_id]
-        end
-      end # CancelOptionPrice
+      CancelOptionPrice = def_message 57
       CancelCalculateOptionPrice = CancelOptionPrice
 
-      class RequestGlobalCancel
-        @message_id = 58
-      end # RequestGlobalCancel
+      # Data format is: @data ={ :id => order-id-to-cancel }
+      CancelOrder = def_message 4
 
-      class RequestScannerParameters
-        @message_id = 24
-      end # RequestScannerParameters
+      # These messages contain just one or two keys, shown in the end of definition
+      # @data = { :number_of_ids => int }
+      RequestIds = def_message 8, 1, :number_of_ids
+      # data = { :all_messages => boolean }
+      RequestNewsBulletins = def_message 12, 1, :all_messages
+      # data = { :log_level => int }
+      SetServerLoglevel = def_message 14, 1, :log_level
+      # data = { :auto_bind => boolean }
+      RequestAutoOpenOrders = def_message 15, 1, :auto_bind
+      # data = { :fa_data_type => int }
+      RequestFA = def_message 18, 1, :fa_data_type
+      # data = { :fa_data_type => int, :xml => String }
+      ReplaceFA = def_message 19, 1, :fa_data_type, :xml
 
-      # data = { :ticker_id => int, :subscription => ScannerSubscription}
+      # Data is { :subscribe => boolean, :account_code => String }
+      # :account_code is only necessary for advisor accounts. Set it to
+      # empty ('') for a standard account.
+      RequestAccountData = def_message 6, 2, :subscribe, :account_code
+      RequestAccountUpdates = RequestAccountData
+
+
+      ### Defining (complex) Outgoing Message classes for IB:
+
+      # data = { :id => ticker_id (int), :subscription => ScannerSubscription}
       class RequestScannerSubscription < AbstractMessage
         @message_id = 22
         @version = 3
 
         def encode
           [super,
-           @data[:ticker_id],
            @data[:subscription].number_of_rows || EOL,
            @data[:subscription].instrument,
            @data[:subscription].location_code,
@@ -179,7 +176,7 @@ module IB
         end
       end # RequestScannerSubscription
 
-      # Data format is { :ticker_id => int, :contract => Datatypes::Contract,
+      # Data format is { :id => ticker_id (int), :contract => Datatypes::Contract,
       #                  :generic_tick_list => String, :snapshot =>  boolean }
       class RequestMarketData < AbstractMessage
         @message_id = 1
@@ -187,7 +184,6 @@ module IB
 
         def encode
           [super,
-           @data[:ticker_id],
            @data[:contract].con_id, # part of serialize?
            @data[:contract].serialize,
            @data[:contract].serialize_combo_legs,
@@ -195,13 +191,13 @@ module IB
         end
       end # RequestMarketData
 
-      # data = { :ticker_id => int,
+      # data = { :id => ticker_id (int),
       #          :contract => Contract,
       #          :end_date_time => string,
       #          :duration => string, # this specifies an integer number of seconds
       #          :bar_size => int,
       #          :what_to_show => symbol, # one of :trades, :midpoint, :bid, or :ask
-      #          :use_RTH => int,
+      #          :use_rth => int,
       #          :format_date => int    }
       #
       # Note that as of 4/07 there is no historical data available for forex spot.
@@ -274,24 +270,6 @@ module IB
       # http://www.interactivebrokers.com/discus/messages/2/28477.html?1114646754
       # [This message does not appear to exist anymore as of 4/07.]
 
-      HISTORICAL_TYPES = [:trades, :midpoint, :bid, :ask]
-
-      # Enumeration of bar size types for convenience. These are passed to TWS as the
-      # (one-based!) index into the array.
-      # Bar sizes less than 30 seconds do not work for some securities.
-      BAR_SIZES = [:invalid, # zero is not a valid barsize
-                   :second,
-                   :five_seconds,
-                   :fifteen_seconds,
-                   :thirty_seconds,
-                   :minute,
-                   :two_minutes,
-                   :five_minutes,
-                   :fifteen_minutes,
-                   :thirty_minutes,
-                   :hour,
-                   :day]
-
       class RequestHistoricalData < AbstractMessage
         @message_id = 20
         @version = 4
@@ -312,24 +290,23 @@ module IB
               @data[:contract] : Datatypes::Contract.from_ib_ruby(@data[:contract])
 
           [super,
-           @data[:ticker_id],
            contract.serialize,
            contract.include_expired,
            @data[:end_date_time],
            @data[:bar_size],
            @data[:duration],
-           @data[:use_RTH],
+           @data[:use_rth],
            @data[:what_to_show].to_s.upcase,
            @data[:format_date],
            contract.serialize_combo_legs]
         end
       end # RequestHistoricalData
 
-      #  data = { :tickerId => int,
+      #  data = { :id => ticker_id (int),
       #           :contract => Contract ,
       #           :bar_size => int/Symbol,
       #           :what_to_show => String/Symbol,
-      #           :use_RTH => bool }
+      #           :use_rth => bool }
       class RequestRealTimeBars < AbstractMessage
         @message_id = 50
 
@@ -349,22 +326,20 @@ module IB
               @data[:contract] : Datatypes::Contract.from_ib_ruby(@data[:contract])
 
           [super,
-           @data[:ticker_id],
            contract.serialize,
            @data[:bar_size],
            @data[:what_to_show].to_s.upcase,
-           @data[:use_RTH]]
+           @data[:use_rth]]
         end
       end # RequestRealTimeBars
 
-      # data => { :req_id => int, :contract => Contract }
+      # data => { :id => request_id (int), :contract => Contract }
       class RequestContractData < AbstractMessage
         @message_id = 9
         @version = 6
 
         def encode
           [super,
-           @data[:req_id],
            @data[:contract].con_id, # part of serialize?
            @data[:contract].serialize(:short),
            @data[:contract].include_expired,
@@ -374,20 +349,19 @@ module IB
       end # RequestContractData
       RequestContractDetails = RequestContractData # alias
 
-      # data = { :ticker_id => int, :contract => Contract, :num_rows => int }
+      # data = { :id => ticker_id (int), :contract => Contract, :num_rows => int }
       class RequestMarketDepth < AbstractMessage
         @message_id = 10
         @version = 3
 
         def encode
           [super,
-           @data[:ticker_id],
            @data[:contract].serialize(:short),
            @data[:num_rows]]
         end
       end # RequestMarketDepth
 
-      # data = { :ticker_id => int,
+      # data = { :id => ticker_id (int),
       #          :contract => Contract,
       #          :exercise_action => int,
       #          :exercise_quantity => int,
@@ -398,7 +372,6 @@ module IB
 
         def encode
           [super,
-           @data[:ticker_id],
            @data[:contract].serialize(:short),
            @data[:exercise_action],
            @data[:exercise_quantity],
@@ -407,7 +380,7 @@ module IB
         end
       end # ExerciseOptions
 
-      # Data format is { :order_id => int, :contract => Contract, :order => Order }
+      # Data format is { :id => order_id (int), :contract => Contract, :order => Order }
       class PlaceOrder < AbstractMessage
         @message_id = 3
         @version = 31
@@ -415,11 +388,9 @@ module IB
 
         def encode
           [super,
-           @data[:order_id],
            @data[:contract].serialize,
            @data[:contract].sec_id_type, # Unimplemented?
            @data[:contract].sec_id, # Unimplemented?
-
            @data[:order].action, # send main order fields
            @data[:order].total_quantity,
            @data[:order].order_type,
@@ -486,23 +457,6 @@ module IB
         end
       end # PlaceOrder
 
-      # Data is { :subscribe => boolean, :account_code => string }
-      #
-      # :account_code is only necessary for advisor accounts. Set it to
-      # empty ('') for a standard account.
-      #
-      class RequestAccountData < AbstractMessage
-        @message_id = 6
-        @version = 2
-
-        def encode
-          [super,
-           @data[:subscribe],
-           @data[:account_code]] # \\ '' TODO: Get rid of StringentHash
-        end
-      end # RequestAccountData
-      RequestAccountUpdates = RequestAccountData
-
       # data = { :filter => ExecutionFilter ]
       class RequestExecutions < AbstractMessage
         @message_id = 7
@@ -519,85 +473,6 @@ module IB
            @data[:filter].side]
         end # encode
       end # RequestExecutions
-
-      class RequestOpenOrders < AbstractMessage # TODO: ShortMessage ?
-        @message_id = 5
-      end # RequestOpenOrders
-
-      # data = { :number_of_ids => int }
-      class RequestIds < AbstractMessage # TODO: ShortMessage ?
-        @message_id = 8
-
-        def encode
-          super << @data[:number_of_ids]
-        end
-      end # RequestIds
-
-      # data = { :all_messages => boolean }
-      class RequestNewsBulletins < AbstractMessage
-        @message_id = 12
-
-        def encode
-          super << @data[:all_messages]
-        end
-      end # RequestNewsBulletins
-
-      class CancelNewsBulletins < AbstractMessage # TODO: ShortMessage ?
-        @message_id = 13
-      end # CancelNewsBulletins
-
-      # data = { :log_level => int }
-      class SetServerLoglevel < AbstractMessage # TODO: ShortMessage ?
-        @message_id = 14
-
-        def encode
-          super << @data[:log_level]
-        end
-      end # SetServerLoglevel
-
-      # data = { :auto_bind => boolean }
-      class RequestAutoOpenOrders < AbstractMessage # TODO: ShortMessage ?
-        @message_id = 15
-
-        def encode
-          super << @data[:auto_bind]
-        end
-      end # RequestAutoOpenOrders
-
-
-      class RequestAllOpenOrders < AbstractMessage # TODO: ShortMessage ?
-        @message_id = 16
-      end # RequestAllOpenOrders
-
-      class RequestManagedAccounts < AbstractMessage # TODO: ShortMessage ?
-        @message_id = 17
-      end # RequestManagedAccounts
-
-      # No idea what this is.
-      # data = { :fa_data_type => int }
-      class RequestFA < AbstractMessage # TODO: ShortMessage ?
-        @message_id = 18
-
-        def encode
-          super << @data[:fa_data_type]
-        end
-      end # RequestFA
-
-      # No idea what this is.
-      # data = { :fa_data_type => int, :xml => string }
-      class ReplaceFA < AbstractMessage
-        @message_id = 19
-
-        def encode
-          [super,
-           @data[:fa_data_type],
-           @data[:xml]]
-        end
-      end # ReplaceFA
-
-      class RequestCurrentTime < AbstractMessage # TODO: ShortMessage ?
-        @message_id = 49
-      end
 
       # data = { :request_id => int, :contract => Contract, :report_type => String }
       class RequestFundamentalData < AbstractMessage
@@ -652,7 +527,7 @@ module IB
 
     end # module Outgoing
   end # module Messages
-  OutgoingMessages = Messages::Outgoing # Legacy alias
+      OutgoingMessages = Messages::Outgoing # Legacy alias
 
 end # module IB
 
