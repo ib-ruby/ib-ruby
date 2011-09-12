@@ -48,15 +48,15 @@ module IB::Models
     # You can use it to store whatever arbitrary data you want.
     attr_accessor :description
 
-    def initialize opts = nil
-      super
+    def initialize opts = {}
+      # Assign defaults to properties first!
+      @con_id = 0
+      @strike = 0
+      @sec_type = ''
+      @include_expired = false
+      @combo_legs = Array.new
 
-      @created_at ||= Time.now
-      @con_id ||= 0
-      @strike ||= 0
-      @sec_type ||= ''
-      @include_expired ||= false
-      @combo_legs ||= Array.new
+      super opts
     end
 
     # some protective filters

@@ -36,8 +36,7 @@ module IB
           self.inspect
         end
 
-
-        # This causes the message to send itself over the server socket in server[:socket].
+       # This causes the message to send itself over the server socket in server[:socket].
         # "server" is the @server instance variable from the IB object.
         # You can also use this to e.g. get the server version number.
         #

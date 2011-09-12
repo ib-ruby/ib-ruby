@@ -150,7 +150,6 @@ describe IB::Models::Contract do
       subject.serialize(:short).should ==
           ["TEST", IB::Models::Contract::SECURITY_TYPES[:stock], "200609", 1234, "PUT", 123, "SMART", "USD", "baz"]
     end
-
   end #serialization
 
 end # describe IB::Models::Contract
