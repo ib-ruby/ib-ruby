@@ -36,13 +36,7 @@ module IB::Models
                   :combo_legs_description, # received in open order for all combos
                   :combo_legs, # public Vector m_comboLegs = new Vector()
 
-
                   :under_comp # public UnderComp m_underComp // delta neutral
-
-
-    ## Bond values: WTF?! Where did it come from into original ib-ruby?
-    #attr_accessor(:cusip, :ratings, :desc_append, :bond_type, :coupon_type, :callable,
-    #              :puttable, :coupon, :convertible, :maturity, :issue_date)
 
     # NB :description field is entirely local to ib-ruby, and not part of TWS.
     # You can use it to store whatever arbitrary data you want.
