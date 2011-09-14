@@ -3,6 +3,8 @@
 # These fields are initialized to this MAX_VALUE.
 # This has been implemented with nils in Ruby to represent the case where an EOL should be sent.
 
+# TODO: Don't instantiate messages, use their classes as just namespace for .encode/decode
+
 module IB
   module Messages
     module Outgoing

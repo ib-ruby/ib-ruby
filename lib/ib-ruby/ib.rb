@@ -38,6 +38,11 @@ module IB
       self.read_string.to_i
     end
 
+    def read_int_max
+      str = self.read_string
+      str.nil? || str.empty? ? nil : str.to_i
+    end
+
     def read_boolean
       self.read_string.to_i != 0
     end
@@ -47,6 +52,10 @@ module IB
       self.read_string.to_d
     end
 
+    def read_decimal_max
+      str = self.read_string
+      str.nil? || str.empty? ? nil : str.to_d
+    end
   end # class IBSocket
 
   class IB

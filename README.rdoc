@@ -10,7 +10,7 @@ that is in turn forked from http://github.com/pjlegato/ib-ruby by Paul Legato.
 Ruby Implementation of the Interactive Broker' TWS API
 
 The goal of this fork is to modernize library structure (Bundler/Gemfile/etc) and
-then roll out a new version based on latest IB TWS API.
+then roll out a new version based on latest IB TWS API v.965.
 
 == FEATURES/PROBLEMS:
 

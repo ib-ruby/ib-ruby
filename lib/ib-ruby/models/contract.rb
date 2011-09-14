@@ -17,26 +17,44 @@ module IB::Models
     BAG_SEC_TYPE = "BAG"
 
     # Fields are Strings unless noted otherwise
-    attr_accessor :con_id, # int
-                  :symbol,
-                  :sec_type,
-                  :expiry,
-                  :strike, # double
-                  :right,
-                  :multiplier,
-                  :exchange,
-                  :currency,
-                  :local_symbol,
+    attr_accessor :con_id, # int: The unique contract identifier.
+                  :symbol, # This is the symbol of the underlying asset.
+                  :sec_type, # Security type. Valid values are: SECURITY_TYPES
+                  :expiry, # The expiration date. Use the format YYYYMM.
+                  :strike, # double: The strike price.
+                  :right, # Specifies a Put or Call. Valid values are: P, PUT, C, CALL
+                  :multiplier, # Specifies a future or option contract multiplier
+                  #              (only necessary when multiple possibilities exist)
+
+                  :exchange, # The order destination, such as Smart.
+                  :currency, # Ambiguities MAY require that currency field be specified,
+                  #            for example, when SMART is the exchange and IBM is being
+                  #            requested (IBM can trade in GBP or USD).
+
+                  :local_symbol, # Local exchange symbol of the underlying asset
                   :primary_exchange, # pick a non-aggregate (ie not the SMART) exchange
                   #                    that the contract trades on.  DO NOT SET TO SMART.
-                  :include_expired, # can not be set to true for orders
 
-                  :sec_id_type, #  CUSIP;SEDOL;ISIN;RIC
-                  :sec_id,
+                  :include_expired, # If set to true, contract details requests and historical
+                  #         data queries can be performed pertaining to expired contracts.
+                  #         Note: Historical data queries on expired contracts are
+                  #         limited to the last year of the contracts life, and are
+                  #         only supported for expired futures contracts.
+                  #         This field can NOT be set to true for orders.
+
+                  :sec_id_type, # Security identifier, when querying contract details or
+                  #               when placing orders. Supported identifiers are:
+                  #               -  ISIN (Example: Apple: US0378331005)
+                  #               -  CUSIP (Example: Apple: 037833100)
+                  #               -  SEDOL (6-AN + check digit. Example: BAE: 0263494)
+                  #               -  RIC (exchange-independent RIC Root and exchange-
+                  #                  identifying suffix. Example: AAPL.O for Apple on NASDAQ.)
+                  :sec_id, # Unique identifier of the given secIdType.
 
                   # COMBOS
                   :combo_legs_description, # received in open order for all combos
-                  :combo_legs, # public Vector m_comboLegs = new Vector()
+                  :combo_legs, # Dynamic memory structure used to store the leg
+                  #              definitions for this contract.
 
                   :under_comp # public UnderComp m_underComp // delta neutral
 
@@ -199,38 +217,49 @@ module IB::Models
 
       # All fields Strings, unless specified otherwise
       attr_accessor :summary, # Contract: reference!
-                    :market_name,
-                    :trading_class,
-                    :min_tick, # double
-                    :price_magnifier, # int
-                    :order_types,
-                    :valid_exchanges,
-                    :under_con_id, # int
-                    :long_name,
-                    :contract_month,
-                    :industry,
-                    :category,
-                    :subcategory,
-                    :time_zone,
-                    :trading_hours,
-                    :liquid_hours,
+                    :market_name, # The market name for this contract.
+                    :trading_class, # The trading class name for this contract.
+                    :min_tick, # double: The minimum price tick.
+                    :price_magnifier, # int: Allows execution and strike prices to be
+                    #     reported consistently with market data, historical data and the
+                    #     order price: Z on LIFFE is reported in index points, not GBP.
+
+                    :order_types, #     The list of valid order types for this contract.
+                    :valid_exchanges, # The list of exchanges this contract is traded on.
+                    :under_con_id, # int: The underlying contract ID.
+                    :long_name, #         Descriptive name of the asset.
+                    :contract_month, # Typically the contract month of the underlying for a futures contract.
+
+                    # The industry classification of the underlying/product:
+                    :industry, #    Wide industry. For example, Financial.
+                    :category, #    Industry category. For example, InvestmentSvc.
+                    :subcategory, # Subcategory. For example, Brokerage.
+                    :time_zone, # The ID of the time zone for the trading hours of the
+                    #             product. For example, EST.
+                    :trading_hours, # The trading hours of the product. For example:
+                    #                 20090507:0700-1830,1830-2330;20090508:CLOSED.
+                    :liquid_hours, #  The liquid trading hours of the product. For example,
+                    #                 20090507:0930-1600;20090508:CLOSED.
 
                     # Bond values:
-                    :cusip,
-                    :ratings,
-                    :desc_append,
-                    :bond_type,
-                    :coupon_type,
-                    :callable, # bool, default false
-                    :puttable, # bool, default false
-                    :coupon, # double, default 0
-                    :convertible, # bool, default false
-                    :maturity,
-                    :issue_date,
-                    :next_option_date,
-                    :next_option_type,
-                    :next_option_partial, # bool, default false
-                    :notes;
+                    :cusip, # The nine-character bond CUSIP or the 12-character SEDOL.
+                    :ratings, # Credit rating of the issuer. Higher credit rating generally
+                    #           indicates a less risky investment. Bond ratings are from
+                    #           Moody's and S&P respectively.
+                    :desc_append, # Additional descriptive information about the bond.
+                    :bond_type, #   The type of bond, such as "CORP."
+                    :coupon_type, # The type of bond coupon.
+                    :callable, # bool: Can be called by the issuer under certain conditions. default false
+                    :puttable, # bool: Can be sold back to the issuer under certain conditions. default false
+                    :coupon, # double: The interest rate used to calculate the amount you
+                    #          will receive in interest payments over the year. default 0
+                    :convertible, # bool: Can be converted to stock under certain conditions. default false
+                    :maturity, # The date on which the issuer must repay bond face value
+                    :issue_date, # The date the bond was issued.
+                    :next_option_date, # only if bond has embedded options.
+                    :next_option_type, # only if bond has embedded options.
+                    :next_option_partial, # bool: # only if bond has embedded options. default false
+                    :notes # Additional notes, if populated for the bond in IB's database
 
       def initialize opts = {}
         @summary = Contract.new
@@ -249,27 +278,38 @@ module IB::Models
     # ComboLeg is an internal class of Contract, as it should be
     class ComboLeg < Model
       # // open/close leg value is same as combo
-      SAME = 0
-      OPEN = 1
-      CLOSE = 2
+      # Specifies whether the order is an open or close order. Valid values are:
+      SAME = 0 #  Same as the parent security. The only option for retail customers.
+      OPEN = 1 #  Open. This value is only valid for institutional customers.
+      CLOSE = 2 # Close. This value is only valid for institutional customers.
       UNKNOWN = 3
 
-      attr_accessor :con_id, # int
-                    :ratio, # int
-                    :action, # String:  BUY/SELL/SSHORT/SSHORTX
-                    :exchange, # String
-                    :open_close, # int
 
-                    # For stock legs when doing short sale
-                    :short_sale_slot, # int: 1 = clearing broker, 2 = third party
-                    :designated_location, # String
-                    :exempt_code # int
+      attr_accessor :con_id, # int: The unique contract identifier specifying the security.
+                    :ratio, # int: Select the relative number of contracts for the leg you
+                    #              are constructing. To help determine the ratio for a
+                    #              specific combination order, refer to the Interactive
+                    #              Analytics section of the User's Guide.
+
+                    :action, # String: BUY/SELL/SSHORT/SSHORTX
+                    #          The side (buy or sell) for the leg you are constructing.
+                    :exchange, # String: exchange to which the complete combination
+                    #            order will be routed.
+                    :open_close, # int: Specifies whether the order is an open or close order.
+                    #              Valid values: ComboLeg::SAME/OPEN/CLOSE/UNKNOWN
+
+                    # For institutional customers only! For stock legs when doing short sale
+                    :short_sale_slot, # int: 0 - retail, 1 = clearing broker, 2 = third party
+                    :designated_location, # String: Only for shortSaleSlot == 2.
+                    #                    Otherwise leave blank or orders will be rejected.
+                    :exempt_code # int: ?
 
       def initialize opts = {}
         @con_id = 0
         @ratio = 0
         @open_close = 0
         @short_sale_slot = 0
+        @designated_location = ''
         @exempt_code = -1
 
         super opts
