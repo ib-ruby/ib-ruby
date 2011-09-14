@@ -198,6 +198,24 @@ module IB::Models
                   # back via the OrderState() object for the openOrder() callback.
                   :not_held #public boolean  m_notHeld; // Not Held
 
+    # Some Order properties (received back from IB)are separated into
+    # OrderState object. Here, they are lumped into Order proper: see OrderState.java
+    attr_accessor :status, # String: Displays the order status.
+                  :init_margin, # String: Shows the impact the order would have on your
+                  #                       initial margin.
+                  :maint_margin, # String: Shows the impact the order would have on your
+                  #                        maintenance margin.
+                  :equity_with_loan, # String: Shows the impact the order would have on
+                  #                            your equity with loan value.
+                  :commission, # double: Shows the commission amount on the order.
+                  :commission_currency, # String: Shows the currency of the commissio.
+
+                  #These fields define the possible range of the actual order commission:
+                  :min_commission,
+                  :max_commission,
+
+                  :warning_text # String: Displays a warning message if warranted.
+
     def initialize opts = {}
       # Assign defaults first!
       @outside_rth = false
@@ -238,5 +256,8 @@ module IB::Models
       super opts
     end
 
+    class State
+
+    end
   end # class Order
 end # module IB::Models
