@@ -55,11 +55,11 @@ module IB
     # Instantiate with a Hash of attributes, to be auto-set via initialize in AbstractDatum.
     class Bar < AbstractDatum
       attr_accessor :date, :open, :high, :low, :close, :volume, :wap, :has_gaps
+      # :bar_count => @socket.read_int
 
       def to_s
         "<Bar: #{@date}; OHLC: #{@open.to_s}, #{@high.to_s}, #{@low.to_s}, #{@close.to_s}; volume: #{@volume}; wap: #{@wap.to_s}; has_gaps: #{@has_gaps}>"
       end
-
     end # Bar
 
 

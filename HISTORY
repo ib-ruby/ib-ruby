@@ -41,3 +41,7 @@
 == 0.4.8 / 2011-09-12
 
 * IB::Messages::Outgoing code compacted using macros
+
+== 0.4.9 / 2011-09-15
+
+* IB::Messages::Incoming rewritten

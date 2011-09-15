@@ -256,8 +256,5 @@ module IB::Models
       super opts
     end
 
-    class State
-
-    end
   end # class Order
 end # module IB::Models
