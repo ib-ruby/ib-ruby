@@ -81,7 +81,7 @@ module IB
           define_method(:load) do
             super
             load_map *keys
-          end unless keys.empty?
+          end
         end
       end
 
@@ -153,8 +153,18 @@ module IB
                                  [:value, :string],
                                  [:currency, :string],
                                  [:account_name, :string]
+      class AccountValue
+        def to_human
+          "<AccountValue: #{@data[:account_name]}, #{@data[:key]}=#{@data[:value]} #{@data[:currency]}>"
+        end
+      end
 
       AccountUpdateTime = def_message 8, [:time_stamp, :string]
+      class AccountUpdateTime
+        def to_human
+          "<AccountUpdateTime: #{@data[:time_stamp]}>"
+        end
+      end
 
       # This message is always sent by TWS automatically at connect.
       # The IB class subscribes to it automatically and stores the order id in
@@ -187,11 +197,17 @@ module IB
 
       ScannerParameters = def_message 19, [:xml, :string]
 
-      # Error message has additional accessors, derived from @data
-      Error = def_message 4, [:id, :int],
-                          [:code, :int],
-                          [:message, :string]
-      class Error < AbstractMessage
+      OpenOrderEnd = def_message 53
+
+      AccountDownloadEnd = def_message 54, [:account_name, :string]
+
+      ExecutionDataEnd = def_message 55, [:id, :int] # request_id
+
+      # Called Error in Java code, but in fact this type of messages also
+      # deliver system alerts and additional (non-error) info from TWS.
+      # It has additional accessors: #code and #message, derived from @data
+      Alert = def_message 4, [:id, :int], [:code, :int], [:message, :string]
+      class Alert < AbstractMessage
         def code
           @data && @data[:code]
         end
@@ -200,11 +216,28 @@ module IB
           @data && @data[:message]
         end
 
+        # Is it an Error message?
+        def error?
+          code < 1000
+        end
+
+        # Is it a System message?
+        def system?
+          code > 1000 && code < 2000
+        end
+
+        # Is it a Warning message?
+        def warning?
+          code > 2000
+        end
+
         def to_human
-          "TWS Error #{@data[:code]}: #{@data[:message]}"
+          "TWS #{ error? ? 'Error' : system? ? 'System' : 'Warning'
+          } Message #{@data[:code]}: #{@data[:message]}"
         end
       end # class ErrorMessage
-      ErrorMessage = Error
+      Error = Alert
+      ErrorMessage = Alert
 
       class OpenOrder < AbstractMessage
         @message_id = 5
@@ -345,7 +378,6 @@ module IB
                                            :primary_exchange => @socket.read_string,
                                            :currency => @socket.read_string,
                                            :local_symbol => @socket.read_string
-
           load_map [:position, :int],
                    [:market_price, :decimal],
                    [:market_value, :decimal],
@@ -356,9 +388,9 @@ module IB
         end
 
         def to_human
-          "<PortfolioValue: update for #{@contract.to_human}: market price #{@data[:market_price].to_s('F')}; market value " +
-              "#{@data[:market_value].to_s('F')}; position #{@data[:position]}; unrealized PnL #{@data[:unrealized_pnl].to_s('F')}; " +
-              "realized PnL #{@data[:realized_pnl].to_s('F')}; account #{@data[:account_name]}>"
+          "<PortfolioValue: #{@contract.to_human} (#{@data[:position]}): Market #{@data[:market_price]}" +
+              " price #{@data[:market_value]} value; PnL: #{@data[:unrealized_pnl]} unrealized," +
+              " #{@data[:realized_pnl]} realized; account #{@data[:account_name]}>"
         end
 
       end # PortfolioValue
@@ -602,8 +634,8 @@ __END__
     static final int REAL_TIME_BARS = 50;
     static final int FUNDAMENTAL_DATA = 51;
     static final int CONTRACT_DATA_END = 52;
-    static final int OPEN_ORDER_END = 53;
-    static final int ACCT_DOWNLOAD_END = 54;
-    static final int EXECUTION_DATA_END = 55;
+    static final int OPEN_ORDER_END = 53;   *
+    static final int ACCT_DOWNLOAD_END = 54; *
+    static final int EXECUTION_DATA_END = 55; *
     static final int DELTA_NEUTRAL_VALIDATION = 56;
     static final int TICK_SNAPSHOT_END = 57;

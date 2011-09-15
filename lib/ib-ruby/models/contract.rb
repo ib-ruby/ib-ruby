@@ -24,7 +24,7 @@ module IB::Models
                   :strike, # double: The strike price.
                   :right, # Specifies a Put or Call. Valid values are: P, PUT, C, CALL
                   :multiplier, # Specifies a future or option contract multiplier
-                  #              (only necessary when multiple possibilities exist)
+                  #  String?    (only necessary when multiple possibilities exist)
 
                   :exchange, # The order destination, such as Smart.
                   :currency, # Ambiguities MAY require that currency field be specified,
@@ -259,7 +259,7 @@ module IB::Models
     end
 
     def to_human
-      "<IB-Contract: " + [symbol, expiry, sec_type, strike, right, exchange, currency].join("-") + "}>"
+      "<Contract: " + [symbol, expiry, sec_type, strike, right, exchange, currency].join("-") + ">"
     end
 
     def to_short

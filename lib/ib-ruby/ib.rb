@@ -47,14 +47,19 @@ module IB
       self.read_string.to_i != 0
     end
 
-    # Floating-point numbers shouldn't be used to store money.
     def read_decimal
-      self.read_string.to_d
+    # Floating-point numbers shouldn't be used to store money...
+    # ...but BigDecimals are too unwieldy to use in this case... maybe later
+    #  self.read_string.to_d
+      self.read_string.to_f
     end
 
     def read_decimal_max
       str = self.read_string
-      str.nil? || str.empty? ? nil : str.to_d
+    # Floating-point numbers shouldn't be used to store money...
+    # ...but BigDecimals are too unwieldy to use in this case... maybe later
+    #  str.nil? || str.empty? ? nil : str.to_d
+      str.nil? || str.empty? ? nil : str.to_f
     end
   end # class IBSocket
 
@@ -64,7 +69,7 @@ module IB
     # thus improving performance at the expense of backwards compatibility.
     # Older protocol versions can be found in older gem versions.
 
-    CLIENT_VERSION = 27 # 48 drops dead # Was 27 in original Ruby code
+    CLIENT_VERSION = 48 # 48 drops dead # Was 27 in original Ruby code
     SERVER_VERSION = 53 # Minimal server version. Latest, was 38 in current Java code.
     TWS_IP_ADDRESS = "127.0.0.1"
     TWS_PORT = "7496"
@@ -179,7 +184,7 @@ module IB
         # this blocks, so Thread#join is useless.
         msg_id = @server[:socket].read_int
 
-        #logger.debug { "Reader: got message id #{msg_id}.\n" }
+        p "Reader: got message id #{msg_id}." unless [4,6,7,8,53].include? msg_id
 
         # Create a new instance of the appropriate message type, and have it read the message.
         # NB: Failure here usually means unsupported message type received
