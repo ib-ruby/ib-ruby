@@ -53,10 +53,8 @@ module IB::Models
 
                   # COMBOS
                   :combo_legs_description, # received in open order for all combos
-                  :combo_legs, # Dynamic memory structure used to store the leg
-                  #              definitions for this contract.
-
-                  :under_comp # public UnderComp m_underComp // delta neutral
+                  :combo_legs # Dynamic memory structure used to store the leg
+    #              definitions for this contract.
 
     # ContractDetails fields are bundled into Contract proper, as it should be
     # All fields Strings, unless specified otherwise:
@@ -105,6 +103,13 @@ module IB::Models
                   :next_option_partial, # bool: # only if bond has embedded options. default false
                   :notes # Additional notes, if populated for the bond in IB's database
 
+    # Used for Delta-Neutral Combo contracts only!
+    # UnderComp fields are bundled into Contract proper, as it should be.
+    # Already defined
+    attr_accessor :under_comp, # if not nil, attributes below are sent to server
+                  #:under_con_id is is already defined in ContractDetails section
+                  :under_delta, # double: The underlying stock or future delta.
+                  :under_price #  double: The price of the underlying.
 
     # NB :description field is entirely local to ib-ruby, and not part of TWS.
     # You can use it to store whatever arbitrary data you want.
@@ -217,17 +222,17 @@ module IB::Models
       c
     end
 
+    # Serialize under_comp parameters
     def serialize_under_comp(*args)
-      raise "Unimplemented"
       # EClientSocket.java, line 471:
-      #if (m_serverVersion >= MIN_SERVER_VER_UNDER_COMP) {
-      # 	   if (contract.m_underComp != null) {
-      # 		   UnderComp underComp = contract.m_underComp;
-      # 		   send( true);
-      # 		   send( underComp.m_conId);
-      # 		   send( underComp.m_delta);
-      # 		   send( underComp.m_price);
-      # 	   }
+      if under_comp
+        [true,
+         under_con_id,
+         under_delta,
+         under_price]
+      else
+        [false]
+      end
     end
 
     def serialize_algo(*args)

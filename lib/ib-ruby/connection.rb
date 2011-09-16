@@ -1,7 +1,7 @@
 require 'socket'
 require 'logger'
-require 'bigdecimal'
-require 'bigdecimal/util'
+#require 'bigdecimal'
+#require 'bigdecimal/util'
 
 if RUBY_VERSION < "1.9"
   require 'sha1'
@@ -55,13 +55,17 @@ module IB
 
     def read_decimal
       # Floating-point numbers shouldn't be used to store money...
-      self.read_string.to_d
+      # ...but BigDecimals are too unwieldy to use in this case... maybe later
+      #  self.read_string.to_d
+      self.read_string.to_f
     end
 
     def read_decimal_max
       str = self.read_string
       # Floating-point numbers shouldn't be used to store money...
-      str.nil? || str.empty? ? nil : str.to_d
+      # ...but BigDecimals are too unwieldy to use in this case... maybe later
+      #  str.nil? || str.empty? ? nil : str.to_d
+      str.nil? || str.empty? ? nil : str.to_f
     end
   end
 
@@ -73,7 +77,7 @@ module IB
     # thus improving performance at the expense of backwards compatibility.
     # Older protocol versions can be found in older gem versions.
 
-    CLIENT_VERSION = 27 # 48 drops dead # Was 27 in original Ruby code
+    CLIENT_VERSION = 48 # 48 drops dead # Was 27 in original Ruby code
     SERVER_VERSION = 53 # Minimal server version. Latest, was 38 in current Java code.
     TWS_IP_ADDRESS = "127.0.0.1"
     TWS_PORT = "7496"
@@ -109,7 +113,7 @@ module IB
 
       # Subscribe to the NextValidID message from TWS that is always
       # sent at connect, and save the id.
-      self.subscribe(IncomingMessages::NextValidID) do |msg|
+      self.subscribe(Messages::Incoming::NextValidID) do |msg|
         @next_order_id = msg.data[:id]
         p "Got next valid order id #{@next_order_id}."
       end
@@ -163,7 +167,7 @@ module IB
       code ||= block
 
       raise ArgumentError.new "Need listener proc or block" unless code.is_a? Proc
-      unless message_class < IncomingMessages::AbstractMessage
+      unless message_class < Messages::Incoming::AbstractMessage
         raise ArgumentError.new "#{message_class} must be an IB message class"
       end
 
@@ -187,14 +191,14 @@ module IB
         # this blocks, so Thread#join is useless.
         msg_id = @server[:socket].read_int
 
-        p "Reader: got message id #{msg_id}." unless [4, 6, 7, 8, 53].include? msg_id
+        p "Reader: got message id #{msg_id}." unless [1, 2, 4, 6, 7, 8, 53].include? msg_id
 
         if msg_id == 0
           p "Zero msg id! Must be a nil passed in... Ignoring..."
         else
           # Create a new instance of the appropriate message type, and have it read the message.
           # NB: Failure here usually means unsupported message type received
-          msg = IncomingMessages::Table[msg_id].new(@server[:socket], @server[:version])
+          msg = Messages::Incoming::Table[msg_id].new(@server[:socket], @server[:version])
 
           @listeners[msg.class].each { |listener|
             listener.call(msg)
@@ -204,7 +208,7 @@ module IB
 
           # Log the error messages. Make an exception for the "successfully connected"
           # messages, which, for some reason, come back from IB as errors.
-          if msg.is_a?(IncomingMessages::Error)
+          if msg.is_a?(Messages::Incoming::Error)
             # connect strings
             if msg.code == 2104 || msg.code == 2106
               #logger.info(msg.to_human)

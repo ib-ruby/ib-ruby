@@ -79,7 +79,7 @@ module IB
           @message_id = message_id
 
           define_method(:load) do
-            super
+            super()
             load_map *keys
           end
         end
@@ -133,10 +133,21 @@ module IB
                               [:price, :decimal],
                               [:size, :int],
                               [:can_auto_execute, :int]
+      class TickPrice
+        def to_human
+          "<Tick (type #{@data[:tick_type]}) price #{@data[:price]} size #{@data[:size]}>"
+        end
+      end
+
 
       TickSize = def_message 2, [:id, :int], # ticker_id
                              [:tick_type, :int],
                              [:size, :int]
+      class TickSize
+        def to_human
+          "<TickSize (type #{@data[:tick_type]}) size #{@data[:size]}>"
+        end
+      end
 
       OrderStatus = def_message 3, [:id, :int],
                                 [:status, :string],

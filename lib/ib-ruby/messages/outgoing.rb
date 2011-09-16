@@ -70,6 +70,8 @@ module IB
             datum = "1" if datum == true
             datum = "0" if datum == false
 
+            #print 'SENDING: '
+            #p datum
             server[:socket].syswrite(datum.to_s + "\0")
           end
         end
@@ -90,7 +92,7 @@ module IB
           @version = version
 
           define_method :encode do
-            [super, keys.map { |key| @data[key] }]
+            [super(), keys.map { |key| @data[key] }]
           end unless keys.empty?
         end
       end
@@ -178,18 +180,47 @@ module IB
         end
       end # RequestScannerSubscription
 
-      # Data format is { :id => ticker_id (int), :contract => Datatypes::Contract,
-      #                  :generic_tick_list => String, :snapshot =>  boolean }
+      # @data={:id => int: ticker_id - Must be a unique value. When the market data
+      #                                returns, it will be identified by this tag,
+      #        :contract => Datatypes::Contract, requested contract.
+      #        :tick_list => String: comma delimited list of requested tick groups:
+      #           Group ID - Description - Requested Tick Types
+      #           100 - Option Volume (currently for stocks) - 29, 30
+      #           101 - Option Open Interest (currently for stocks) - 27, 28
+      #           104 - Historical Volatility (currently for stocks) - 23
+      #           106 - Option Implied Volatility (currently for stocks) - 24
+      #           162 - Index Future Premium - 31
+      #           165 - Miscellaneous Stats - 15, 16, 17, 18, 19, 20, 21
+      #           221 - Mark Price (used in TWS P&L computations) - 37
+      #           225 - Auction values (volume, price and imbalance) - 34, 35, 36
+      #           233 - RTVolume - 48
+      #           236 - Shortable - 46
+      #           256 - Inventory - ?
+      #           258 - Fundamental Ratios - 47
+      #           411 - Realtime Historical Volatility - 58
+      #        :snapshot => bool: Check to return a single snapshot of market data and
+      #                     have the market data subscription canceled. Do not enter any
+      #                     :tick_list values if you use snapshot. }
       class RequestMarketData < AbstractMessage
         @message_id = 1
         @version = 9 # message version number
 
         def encode
+          tick_list = case @data[:tick_list]
+                        when nil
+                          ''
+                        when Array
+                          @data[:tick_list].join ','
+                        when String
+                          @data[:tick_list]
+                      end
           [super,
            @data[:contract].con_id, # part of serialize?
            @data[:contract].serialize,
            @data[:contract].serialize_combo_legs,
-           @data[:contract].serialize_under_comp]
+           @data[:contract].serialize_under_comp,
+           tick_list,
+           @data[:snapshot] || false]
         end
       end # RequestMarketData
 
@@ -529,7 +560,7 @@ module IB
 
     end # module Outgoing
   end # module Messages
-      OutgoingMessages = Messages::Outgoing # Legacy alias
+  OutgoingMessages = Messages::Outgoing # Legacy alias
 
 end # module IB
 

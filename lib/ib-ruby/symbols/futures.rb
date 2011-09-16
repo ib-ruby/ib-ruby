@@ -1,23 +1,3 @@
-#
-# Copyright (C) 2009 Wes Devauld 
-#
-# This library is free software; you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as
-# published by the Free Software Foundation; either version 2.1 of the
-# License, or (at your option) any later version.
-#
-# This library is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public
-# License along with this library; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-# 02110-1301 USA
-#
-
-
 # The Futures constant is currently for testing purposes. It guesses the front month
 # currency future using a crude algorithm that does not take into account expiry/rollover day.
 # This will be valid most of the time, but near/after expiry day the next quarter's contract
@@ -58,49 +38,49 @@ module IB
 
     Futures =
      {
-      :es => Datatypes::Contract.new({
+      :es => Models::Contract.new({
                                        :symbol => "ES",
                                        :expiry => self.next_expiry(Time.now),
                                        :exchange => "GLOBEX",
                                        :currency => "USD",
-                                       :sec_type => Datatypes::Contract::SECURITY_TYPES[:future],
+                                       :sec_type => Models::Contract::SECURITY_TYPES[:future],
                                        :multiplier => 50,
                                        :description => "E-Mini S&P 500"
                                      }),
 
-      :gbp => Datatypes::Contract.new({
+      :gbp => Models::Contract.new({
                                        :symbol => "GBP",
                                        :expiry => self.next_expiry(Time.now),
                                        :exchange => "GLOBEX",
                                        :currency => "USD",
-                                       :sec_type => Datatypes::Contract::SECURITY_TYPES[:future],
+                                       :sec_type => Models::Contract::SECURITY_TYPES[:future],
                                        :multiplier => 62500,
                                        :description => "British Pounds"
                                      }),
-      :eur => Datatypes::Contract.new({
+      :eur => Models::Contract.new({
                                        :symbol => "EUR",
                                        :expiry => self.next_expiry(Time.now),
                                        :exchange => "GLOBEX",
                                        :currency => "USD",
-                                       :sec_type => Datatypes::Contract::SECURITY_TYPES[:future],
+                                       :sec_type => Models::Contract::SECURITY_TYPES[:future],
                                        :multiplier => 12500,
                                        :description => "Euro FX"
                                      }),
-      :jpy => Datatypes::Contract.new({
+      :jpy => Models::Contract.new({
                                        :symbol => "JPY",
                                        :expiry => self.next_expiry(Time.now),
                                        :exchange => "GLOBEX",
                                        :currency => "USD",
-                                       :sec_type => Datatypes::Contract::SECURITY_TYPES[:future],
+                                       :sec_type => Models::Contract::SECURITY_TYPES[:future],
                                        :multiplier => 12500000,
                                        :description => "Japanese Yen"
                                      }),
-      :hsi => Datatypes::Contract.new({
+      :hsi => Models::Contract.new({
                                        :symbol => "HSI",
                                        :expiry => self.next_expiry(Time.now),
                                        :exchange => "HKFE",
                                        :currency => "HKD",
-                                       :sec_type => Datatypes::Contract::SECURITY_TYPES[:future],
+                                       :sec_type => Models::Contract::SECURITY_TYPES[:future],
                                        :multiplier => 50,
                                        :description => "Hang Seng Index"
                                      })

@@ -4,7 +4,6 @@ module IbRuby
 end  # module IbRuby
 
 require 'ib-ruby/datatypes'
-require 'ib-ruby/models'
 require 'ib-ruby/ib'
 require 'ib-ruby/messages'
 require 'ib-ruby/symbols/forex'

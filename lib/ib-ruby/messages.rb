@@ -69,7 +69,9 @@ module IB
           # TWS wants to receive booleans as 1 or 0... rewrite as necessary.
           datum = "1" if datum == true
           datum = "0" if datum == false
-
+          #
+          #print 'SENDING: '
+          #p datum
           server[:socket].syswrite(datum.to_s + "\0")
         }
       end

@@ -480,5 +480,6 @@ module IB
     end
 
   end # module Datatypes
+  Models = Datatypes
 
 end # module
