@@ -17,21 +17,19 @@ module IB
 
       HISTORICAL_TYPES = [:trades, :midpoint, :bid, :ask]
 
-      # Enumeration of bar size types for convenience. These are passed to TWS as the
-      # (one-based!) index into the array.
+      # Enumeration of bar size types for convenience.
       # Bar sizes less than 30 seconds do not work for some securities.
-      BAR_SIZES = [:invalid, # zero is not a valid barsize
-                   :second,
-                   :five_seconds,
-                   :fifteen_seconds,
-                   :thirty_seconds,
-                   :minute,
-                   :two_minutes,
-                   :five_minutes,
-                   :fifteen_minutes,
-                   :thirty_minutes,
-                   :hour,
-                   :day]
+      BAR_SIZES = {1 => :second,
+                   2 => :five_seconds,
+                   3 => :fifteen_seconds,
+                   4 => :thirty_seconds,
+                   5 => :minute,
+                   6 => :two_minutes,
+                   7 => :five_minutes,
+                   8 => :fifteen_minutes,
+                   9 => :thirty_minutes,
+                   10 => :hour,
+                   11 => :day}
 
       class AbstractMessage
         # Class methods
@@ -139,10 +137,19 @@ module IB
       # data = { :fa_data_type => int, :xml => String }
       ReplaceFA = def_message 19, 1, :fa_data_type, :xml
 
-      # Data is { :subscribe => boolean, :account_code => String }
-      # :account_code is only necessary for advisor accounts. Set it to
-      # empty ('') for a standard account.
-      RequestAccountData = def_message 6, 2, :subscribe, :account_code
+      # Data is { :subscribe => boolean,
+      #           :account_code => String: only necessary for advisor accounts. Set it
+      #                            to empty ('') for a standard account. }
+      class RequestAccountData < AbstractMessage
+        @message_id = 6
+        @version = 2
+
+        def encode
+          [super,
+           @data[:subscribe],
+           @data[:account_code] || '']
+        end
+      end
       RequestAccountUpdates = RequestAccountData
 
 
@@ -224,14 +231,32 @@ module IB
         end
       end # RequestMarketData
 
-      # data = { :id => ticker_id (int),
+      # data = { :id => ticker_id (int), needs to be different than the reqMktData ticker
+      #                 id. If you use the same ticker ID you used for the symbol when
+      #                 you did ReqMktData, nothing comes back for the historical data call.
       #          :contract => Contract,
-      #          :end_date_time => string,
-      #          :duration => string, # this specifies an integer number of seconds
-      #          :bar_size => int,
-      #          :what_to_show => symbol, # one of :trades, :midpoint, :bid, or :ask
-      #          :use_rth => int,
-      #          :format_date => int    }
+      #          :end_date_time => String, "yyyymmdd HH:mm:ss", with a time zone optionally
+      #                            allowed after a space at the end: "20050701 18:26:44 GMT"
+      #          :duration => String, time span the request will cover, and is specified
+      #                  using the format: <integer> <unit>, eg: '1 D', valid units are:
+      #                        '1 S' (seconds, default if no unit is specified)
+      #                        '1 D' (days)
+      #                        '1 W' (weeks)
+      #                        '1 M' (months)
+      #                        '1 Y' (years, currently limited to one)
+      #          :bar_size => int, key from BAR_SIZES
+      #          :what_to_show => symbol, one of :trades, :midpoint, :bid, or :ask -
+      #                           converts to "TRADES," "MIDPOINT," "BID," or "ASK."
+      #          :use_rth => int: 0 - all data available during the time span requested
+      #                     is returned, even data bars covering time intervals where the
+      #                     market in question was illiquid. 1 - only data within the
+      #                     "Regular Trading Hours" of the product in question is returned,
+      #                     even if the time span requested falls partially or completely
+      #                     outside of them.
+      #          :format_date => int: 1 - text format, like "20050307 11:32:16".
+      #                               2 - offset in seconds from the beginning of 1970,
+      #                                   which is the same format as the UNIX epoch time.
+      #         }
       #
       # Note that as of 4/07 there is no historical data available for forex spot.
       #
@@ -257,52 +282,9 @@ module IB
       # it, you will receive error #162 "Historical Market Data Service
       # query failed.:HMDS query returned no data."
       #
-      # The "endDateTime" parameter accepts a string in the form
-      # "yyyymmdd HH:mm:ss", with a time zone optionally allowed after a
-      # space at the end of the string; e.g. "20050701 18:26:44 GMT"
-      #
-      # The ticker id needs to be different than the reqMktData ticker
-      # id. If you use the same ticker ID you used for the symbol when
-      # you did ReqMktData, nothing comes back for the historical data call.
-      #
-      # Possible :bar_size values:
-      # 1 = 1 sec
-      # 2 = 5 sec
-      # 3 = 15 sec
-      # 4 = 30 sec
-      # 5 = 1 minute
-      # 6 = 2 minutes
-      # 7 = 5 minutes
-      # 8 = 15 minutes
-      # 9 = 30 minutes
-      # 10 = 1 hour
-      # 11 = 1 day
-      #
-      # Values less than 4 do not appear to work for certain securities.
-      #
-      # The nature of the data extracted is governed by sending a string
-      # having a value of "TRADES," "MIDPOINT," "BID," or "ASK." Here,
-      # we require a symbol argument of :trades, :midpoint, :bid, or
-      # :ask to be passed as data[:what_to_show].
-      #
-      # If data[:use_RTH] is set to 0, all data available during the time
-      # span requested is returned, even data bars covering time
-      # intervals where the market in question was illiquid. If useRTH
-      # has a non-zero value, only data within the "Regular Trading
-      # Hours" of the product in question is returned, even if the time
-      # span requested falls partially or completely outside of them.
-      #
-      # Using a :format_date of 1 will cause the dates in the returned
-      # messages with the historic data to be in a text format, like
-      # "20050307 11:32:16". If you set :format_date to 2 instead, you
-      # will get an offset in seconds from the beginning of 1970, which
-      # is the same format as the UNIX epoch time.
-      #
       # For backfill on futures data, you may need to leave the Primary
       # Exchange field of the Contract structure blank; see
       # http://www.interactivebrokers.com/discus/messages/2/28477.html?1114646754
-      # [This message does not appear to exist anymore as of 4/07.]
-
       class RequestHistoricalData < AbstractMessage
         @message_id = 20
         @version = 4
@@ -319,8 +301,8 @@ module IB
           raise ArgumentError("@data[:what_to_show] must be one of #{HISTORICAL_TYPES}.") unless HISTORICAL_TYPES.include?(@data[:what_to_show])
           raise ArgumentError("@data[:bar_size] must be one of #{BAR_SIZES}.") unless BAR_SIZES.include?(@data[:bar_size])
 
-          contract = @data[:contract].is_a?(Datatypes::Contract) ?
-              @data[:contract] : Datatypes::Contract.from_ib_ruby(@data[:contract])
+          contract = @data[:contract].is_a?(Models::Contract) ?
+              @data[:contract] : Models::Contract.from_ib_ruby(@data[:contract])
 
           [super,
            contract.serialize,
@@ -355,8 +337,8 @@ module IB
           raise ArgumentError("@data[:what_to_show] must be one of #{HISTORICAL_TYPES}.") unless HISTORICAL_TYPES.include?(@data[:what_to_show])
           raise ArgumentError("@data[:bar_size] must be one of #{BAR_SIZES}.") unless BAR_SIZES.include?(@data[:bar_size])
 
-          contract = @data[:contract].is_a?(Datatypes::Contract) ?
-              @data[:contract] : Datatypes::Contract.from_ib_ruby(@data[:contract])
+          contract = @data[:contract].is_a?(Models::Contract) ?
+              @data[:contract] : Models::Contract.from_ib_ruby(@data[:contract])
 
           [super,
            contract.serialize,

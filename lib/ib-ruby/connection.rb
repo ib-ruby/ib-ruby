@@ -1,4 +1,4 @@
-require 'socket'
+require 'ib-ruby/socket'
 require 'logger'
 #require 'bigdecimal'
 #require 'bigdecimal/util'
@@ -18,74 +18,23 @@ class Time
   end
 end # Time
 
-
 module IB
-
-  #logger = Logger.new(STDERR)
-
-  class IBSocket < TCPSocket
-
-    # send nice null terminated binary data
-    def send(data)
-      self.syswrite(data.to_s + "\0")
-    end
-
-    def read_string
-      str = self.gets("\0").chop
-      #if str.nil?
-      #  p 'NIL! FReaking NILLLLLLLLLLLLLLLLLLLLLLLL!'
-      #  ''
-      #else
-      #  str.chop
-      #end
-    end
-
-    def read_int
-      self.read_string.to_i
-    end
-
-    def read_int_max
-      str = self.read_string
-      str.nil? || str.empty? ? nil : str.to_i
-    end
-
-    def read_boolean
-      self.read_string.to_i != 0
-    end
-
-    def read_decimal
-      # Floating-point numbers shouldn't be used to store money...
-      # ...but BigDecimals are too unwieldy to use in this case... maybe later
-      #  self.read_string.to_d
-      self.read_string.to_f
-    end
-
-    def read_decimal_max
-      str = self.read_string
-      # Floating-point numbers shouldn't be used to store money...
-      # ...but BigDecimals are too unwieldy to use in this case... maybe later
-      #  str.nil? || str.empty? ? nil : str.to_d
-      str.nil? || str.empty? ? nil : str.to_f
-    end
-  end
-
-  # class IBSocket
-
-  class IB
+  # Encapsulates API connection to TWS
+  class Connection
 
     # Please note, we are realizing only the most current TWS protocol versions,
     # thus improving performance at the expense of backwards compatibility.
-    # Older protocol versions can be found in older gem versions.
+    # Older protocol versions support can be found in older gem versions.
 
-    CLIENT_VERSION = 48 # 48 drops dead # Was 27 in original Ruby code
+    CLIENT_VERSION = 48 # # Was 27 in original Ruby code
     SERVER_VERSION = 53 # Minimal server version. Latest, was 38 in current Java code.
     TWS_IP_ADDRESS = "127.0.0.1"
     TWS_PORT = "7496"
 
     attr_reader :next_order_id
 
-    def initialize(options_in = {})
-      @options = {:ip => TWS_IP_ADDRESS, :port => TWS_PORT, }.merge(options_in)
+    def initialize(opts = {})
+      @options = {:ip => TWS_IP_ADDRESS, :port => TWS_PORT, }.merge(opts)
 
       @connected = false
       @next_order_id = nil
@@ -105,11 +54,10 @@ module IB
       @server[:version]
     end
 
-
-    def open(options_in = {})
+    def open(opts = {})
       raise Exception.new("Already connected!") if @connected
 
-      opts = @options.merge(options_in)
+      opts = @options.merge(opts)
 
       # Subscribe to the NextValidID message from TWS that is always
       # sent at connect, and save the id.
@@ -125,8 +73,7 @@ module IB
       @server[:socket].send(CLIENT_VERSION)
       @server[:version] = @server[:socket].read_int
       @server[:local_connect_time] = Time.now()
-      @@server_version = @server[:version]
-      raise(Exception.new("TWS version >= #{SERVER_VERSION} required.")) if @@server_version < SERVER_VERSION
+      raise(Exception.new("TWS version >= #{SERVER_VERSION} required.")) if @server[:version] < SERVER_VERSION
 
       puts "\tGot server version: #{@server[:version]}."
       #logger.debug("\tGot server version: #{@server[:version]}.")
@@ -175,25 +122,24 @@ module IB
     end
 
     # Send an outgoing message.
-    def dispatch(message)
-      raise Exception.new("dispatch() must be given an OutgoingMessages::AbstractMessage subclass") unless message.is_a?(OutgoingMessages::AbstractMessage)
+    def send(message)
+      raise Exception.new("only sending Messages::Outgoing") unless message.is_a? Messages::Outgoing::AbstractMessage
 
-      #logger.info("Sending message " + message.inspect)
       message.send(@server)
     end
 
     protected
 
     def reader
-      #logger.debug("Reader started.")
-
-      while true
+      loop do
         # this blocks, so Thread#join is useless.
         msg_id = @server[:socket].read_int
 
-        p "Reader: got message id #{msg_id}." unless [1, 2, 4, 6, 7, 8, 53].include? msg_id
+        # Debug:
+        p "Got message #{msg_id} (#{Messages::Incoming::Table[msg_id]})" unless [1, 2, 4, 6, 7, 8, 9, 53].include? msg_id
 
         if msg_id == 0
+          # Debug:
           p "Zero msg id! Must be a nil passed in... Ignoring..."
         else
           # Create a new instance of the appropriate message type, and have it read the message.
@@ -203,8 +149,6 @@ module IB
           @listeners[msg.class].each { |listener|
             listener.call(msg)
           }
-
-          #logger.debug { " Listeners: #{@listeners.inspect} inclusion: #{ @listeners.include?(msg.class)}" }
 
           # Log the error messages. Make an exception for the "successfully connected"
           # messages, which, for some reason, come back from IB as errors.
@@ -223,8 +167,8 @@ module IB
           end
         end
         # #logger.debug("Reader done with message id #{msg_id}.")
-      end # while
+      end # loop
     end # reader
-
-  end # class IB
+  end # class Connection
+  IB = Connection
 end # module IB

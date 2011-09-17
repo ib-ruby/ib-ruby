@@ -1,0 +1,89 @@
+#!/usr/bin/env ruby
+#
+# This script downloads historic data for specific symbol from IB
+#
+# TODO: Fix the script (not working currently)
+# TODO: Fix the Historical command line client
+#
+
+require 'pathname'
+LIB_DIR = (Pathname.new(__FILE__).dirname + '../lib/').realpath.to_s
+$LOAD_PATH.unshift LIB_DIR unless $LOAD_PATH.include?(LIB_DIR)
+
+require 'rubygems'
+require 'bundler/setup'
+require 'ib-ruby'
+
+### Configurable Options
+
+# if Quiet == false, status data will be printed to STDERR
+Quiet = false
+
+# How long to wait when no messages are received from TWS before exiting, in seconds
+Timeout = 10
+
+SymbolToRequest = IB::Symbols::Forex[:gbpusd]
+
+
+# Definition of what we want market data for.  We have to keep track
+# of what ticker id corresponds to what symbol ourselves, because the
+# ticks don't include any other identifying information.
+#
+# The choice of ticker ids is, as far as I can tell, arbitrary.
+#
+# Note that as of 4/07 there is no historical data available for forex spot.
+#
+@market = {123 => SymbolToRequest}
+
+# To determine when the timeout has passed.
+@last_msg_time = Time.now.to_i + 2
+
+# Connect to IB TWS.
+ib = IB::IB.new
+
+# Uncomment this for verbose debug messages:
+# IB::IBLogger.level = Logger::Severity::DEBUG
+
+# Now, subscribe to HistoricalData incoming events.  The code passed in the block
+# will be executed when a message of that type is received, with the received
+# message as its argument. In this case, we just print out the data.
+#
+# Note that we have to look the ticker id of each incoming message
+# up in local memory to figure out what it's for.
+#
+# (N.B. The description field is not from IB TWS. It is defined
+#  locally in forex.rb, and is just arbitrary text.)
+
+ib.subscribe(IB::IncomingMessages::HistoricalData, lambda { |msg|
+
+  STDERR.puts @market[msg.data[:req_id]].description + ": " + msg.data[:item_count].to_s("F") + " items:" unless Quiet
+
+  msg.data[:history].each { |datum|
+
+    @last_msg_time = Time.now.to_i
+
+    STDERR.puts "   " + datum.to_s("F") unless Quiet
+    STDOUT.puts "#{datum.date},#{datum.open.to_s("F")},#{datum.high.to_s("F")},#{datum.low.to_s("F")},#{datum.close.to_s("F")},#{datum.volume}"
+  }
+})
+
+# Now we actually request historical data for the symbols we're
+# interested in.  TWS will respond with a HistoricalData message,
+# which will be received by the code above.
+
+@market.each_pair do |id, contract|
+  msg = IB::OutgoingMessages::RequestHistoricalData.new(:ticker_id => id,
+                                                        :contract => contract,
+                                                        :end_date_time => Time.now.to_ib,
+                                                        :duration => (360).to_s, # how long before end_date_time to request in seconds - this means 1 day
+                                                        :bar_size => IB::OutgoingMessages::RequestHistoricalData::BarSizes.index(:hour),
+                                                        :what_to_show => :trades,
+                                                        :use_RTH => 0,
+                                                        :format_date => 2)
+  ib.dispatch(msg)
+end
+
+while true
+  exit(0) if Time.now.to_i > @last_msg_time + Timeout
+  sleep 1
+end

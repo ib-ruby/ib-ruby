@@ -2,13 +2,14 @@
 #
 # This script connects to IB API, subscribes to market data for specific symbols
 
+require 'rubygems'
 require 'pathname'
+require 'bundler/setup'
+
 LIB_DIR = (Pathname.new(__FILE__).dirname + '../lib/').realpath.to_s
 $LOAD_PATH.unshift LIB_DIR unless $LOAD_PATH.include?(LIB_DIR)
 
-require 'rubygems'
-require 'bundler/setup'
-require 'ib-ruby2'
+require 'ib-ruby'
 
 # Definition of what we want market data for.  We have to keep track
 # of what ticker id corresponds to what symbol ourselves, because the
@@ -23,9 +24,6 @@ require 'ib-ruby2'
 # First, connect to IB TWS.
 ib = IB::IB.new
 
-## Subscribe to TWS alerts/errors
-ib.subscribe(IB::Messages::Incoming::Alert) { |msg| puts msg.to_human }
-
 # Now, subscribe to TickerPrice and TickerSize events.  The code
 # passed in the block will be executed when a message of that type is
 # received, with the received message as its argument. In this case,
@@ -37,21 +35,22 @@ ib.subscribe(IB::Messages::Incoming::Alert) { |msg| puts msg.to_human }
 # (N.B. The description field is not from IB TWS. It is defined
 #  locally in forex.rb, and is just arbitrary text.)
 
-ib.subscribe(IB::Messages::Incoming::TickPrice, lambda { |msg|
-  puts @market[msg.data[:id]].description + ": " + msg.to_human
+ib.subscribe(IB::IncomingMessages::TickPrice, lambda { |msg|
+  puts @market[msg.data[:ticker_id]].description + ": " + msg.to_human
 })
 
-ib.subscribe(IB::Messages::Incoming::TickSize, lambda { |msg|
-  puts @market[msg.data[:id]].description + ": " + msg.to_human
+ib.subscribe(IB::IncomingMessages::TickSize, lambda { |msg|
+  puts @market[msg.data[:ticker_id]].description + ": " + msg.to_human
 })
 
 
 # Now we actually request market data for the symbols we're interested in.
 
 @market.each_pair { |id, contract|
-  msg = IB::Messages::Outgoing::RequestMarketData.new :id => id,
-                                                      :contract => contract
-  p msg
+  msg = IB::OutgoingMessages::RequestMarketData.new({
+                                                        :ticker_id => id,
+                                                        :contract => contract
+                                                    })
   ib.dispatch(msg)
 }
 
@@ -61,7 +60,9 @@ gets
 puts "Cancelling market data subscription.."
 
 @market.each_pair { |id, contract|
-  msg = IB::Messages::Outgoing::CancelMarketData.new :id => id,
-                                                         :contract => contract
+  msg = IB::OutgoingMessages::CancelMarketData.new({
+                                                       :ticker_id => id,
+                                                       :contract => contract
+                                                   })
   ib.dispatch(msg)
 }

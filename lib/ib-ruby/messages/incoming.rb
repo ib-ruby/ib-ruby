@@ -85,6 +85,79 @@ module IB
         end
       end
 
+      # Tick types received in TickPrice and TickSize messages (enumeration)
+      TICK_TYPES = {
+          # int id => :Description #  Corresponding API Event/Function/Method
+          0 => :BID_SIZE, #               tickSize()
+          1 => :BID_PRICE, #              tickPrice()
+          2 => :ASK_PRICE, #              tickPrice()
+          3 => :ASK_SIZE, #               tickSize()
+          4 => :LAST_PRICE, #             tickPrice()
+          5 => :LAST_SIZE, #              tickSize()
+          6 => :HIGH, #                   tickPrice()
+          7 => :LOW, #                    tickPrice()
+          8 => :VOLUME, #                 tickSize()
+          9 => :CLOSE_PRICE, #            tickPrice()
+          10 => :BID_OPTION_COMPUTATION, #  tickOptionComputation() See Note 1 below
+          11 => :ASK_OPTION_COMPUTATION, #  tickOptionComputation() See => :Note 1 below
+          12 => :LAST_OPTION_COMPUTATION, # tickOptionComputation()  See Note 1 below
+          13 => :MODEL_OPTION_COMPUTATION, #tickOptionComputation() See Note 1 below
+          14 => :OPEN_TICK, #             tickPrice()
+          15 => :LOW_13_WEEK, #           tickPrice()
+          16 => :HIGH_13_WEEK, #          tickPrice()
+          17 => :LOW_26_WEEK, #           tickPrice()
+          18 => :HIGH_26_WEEK, #          tickPrice()
+          19 => :LOW_52_WEEK, #           tickPrice()
+          20 => :HIGH_52_WEEK, #          tickPrice()
+          21 => :AVG_VOLUME, #            tickSize()
+          22 => :OPEN_INTEREST, #         tickSize()
+          23 => :OPTION_HISTORICAL_VOL, # tickGeneric()
+          24 => :OPTION_IMPLIED_VOL, #    tickGeneric()
+          25 => :OPTION_BID_EXCH, #   NOT USED
+          26 => :OPTION_ASK_EXCH, #   NOT USED
+          27 => :OPTION_CALL_OPEN_INTEREST, # tickSize()
+          28 => :OPTION_PUT_OPEN_INTEREST, #  tickSize()
+          29 => :OPTION_CALL_VOLUME, #        tickSize()
+          30 => :OPTION_PUT_VOLUME, #         tickSize()
+          31 => :INDEX_FUTURE_PREMIUM, #      tickGeneric()
+          32 => :BID_EXCH, #                  tickString()
+          33 => :ASK_EXCH, #                  tickString()
+          34 => :AUCTION_VOLUME, #    NOT USED
+          35 => :AUCTION_PRICE, #     NOT USED
+          36 => :AUCTION_IMBALANCE, # NOT USED
+          37 => :MARK_PRICE, #              tickPrice()
+          38 => :BID_EFP_COMPUTATION, #     tickEFP()
+          39 => :ASK_EFP_COMPUTATION, #     tickEFP()
+          40 => :LAST_EFP_COMPUTATION, #    tickEFP()
+          41 => :OPEN_EFP_COMPUTATION, #    tickEFP()
+          42 => :HIGH_EFP_COMPUTATION, #    tickEFP()
+          43 => :LOW_EFP_COMPUTATION, #     tickEFP()
+          44 => :CLOSE_EFP_COMPUTATION, #   tickEFP()
+          45 => :LAST_TIMESTAMP, #          tickString()
+          46 => :SHORTABLE, #               tickGeneric()
+          47 => :FUNDAMENTAL_RATIOS, #      tickString()
+          48 => :RT_VOLUME, #               tickGeneric()
+          49 => :HALTED, #      See Note 2 below.
+          50 => :BIDYIELD, #                tickPrice() See Note 3 below
+          51 => :ASKYIELD, #                tickPrice() See Note 3 below
+          52 => :LASTYIELD, #               tickPrice() See Note 3 below
+          53 => :CUST_OPTION_COMPUTATION, # tickOptionComputation()
+          54 => :TRADE_COUNT, #             tickGeneric()
+          55 => :TRADE_RATE, #              tickGeneric()
+          56 => :VOLUME_RATE, #             tickGeneric()
+          #   Note 1: Tick types BID_OPTION_COMPUTATION, ASK_OPTION_COMPUTATION,
+          #           LAST_OPTION_COMPUTATION, and MODEL_OPTION_COMPUTATION return all
+          #           Greeks (delta, gamma, vega, theta), the underlying price and the
+          #           stock and option reference price when requested.
+          #           MODEL_OPTION_COMPUTATION also returns model implied volatility.
+          #   Note 2: When trading is halted for a contract, TWS receives a special tick:
+          #           haltedLast=1. When trading is resumed, TWS receives haltedLast=0.
+          #           A tick type, HALTED, tick ID= 49, is now available in regular market
+          #           data via the API to indicate this halted state. Possible values for
+          #           this new tick type are: 0 = Not halted, 1 = Halted.
+          #   Note 3: Applies to bond contracts only.
+      }
+
       ### Actual message classes
 
       # The IB code seems to dispatch up to two wrapped objects for this message, a tickPrice
@@ -135,7 +208,7 @@ module IB
                               [:can_auto_execute, :int]
       class TickPrice
         def to_human
-          "<Tick (type #{@data[:tick_type]}) price #{@data[:price]} size #{@data[:size]}>"
+          "<Tick #{TICK_TYPES[@data[:tick_type]]}: price #{@data[:price]} size #{@data[:size]}>"
         end
       end
 
@@ -145,7 +218,7 @@ module IB
                              [:size, :int]
       class TickSize
         def to_human
-          "<TickSize (type #{@data[:tick_type]}) size #{@data[:size]}>"
+          "<TickSize #{TICK_TYPES[@data[:tick_type]]}: size #{@data[:size]}>"
         end
       end
 
@@ -207,6 +280,8 @@ module IB
       ReceiveFA = def_message 16, [:fa_data_type, :int], [:xml, :string]
 
       ScannerParameters = def_message 19, [:xml, :string]
+
+      ContractDataEnd = def_message 52, [:id, :int] # request_id
 
       OpenOrderEnd = def_message 53
 
@@ -445,7 +520,6 @@ module IB
                                    :liquid_hours => @socket.read_string
         end
       end # ContractData
-
 
       class ExecutionData < AbstractMessage
         @message_id = 11
