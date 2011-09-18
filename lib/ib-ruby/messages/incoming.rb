@@ -88,63 +88,63 @@ module IB
       # Tick types received in TickPrice and TickSize messages (enumeration)
       TICK_TYPES = {
           # int id => :Description #  Corresponding API Event/Function/Method
-          0 => :BID_SIZE, #               tickSize()
-          1 => :BID_PRICE, #              tickPrice()
-          2 => :ASK_PRICE, #              tickPrice()
-          3 => :ASK_SIZE, #               tickSize()
-          4 => :LAST_PRICE, #             tickPrice()
-          5 => :LAST_SIZE, #              tickSize()
-          6 => :HIGH, #                   tickPrice()
-          7 => :LOW, #                    tickPrice()
-          8 => :VOLUME, #                 tickSize()
-          9 => :CLOSE_PRICE, #            tickPrice()
-          10 => :BID_OPTION_COMPUTATION, #  tickOptionComputation() See Note 1 below
-          11 => :ASK_OPTION_COMPUTATION, #  tickOptionComputation() See => :Note 1 below
-          12 => :LAST_OPTION_COMPUTATION, # tickOptionComputation()  See Note 1 below
-          13 => :MODEL_OPTION_COMPUTATION, #tickOptionComputation() See Note 1 below
-          14 => :OPEN_TICK, #             tickPrice()
-          15 => :LOW_13_WEEK, #           tickPrice()
-          16 => :HIGH_13_WEEK, #          tickPrice()
-          17 => :LOW_26_WEEK, #           tickPrice()
-          18 => :HIGH_26_WEEK, #          tickPrice()
-          19 => :LOW_52_WEEK, #           tickPrice()
-          20 => :HIGH_52_WEEK, #          tickPrice()
-          21 => :AVG_VOLUME, #            tickSize()
-          22 => :OPEN_INTEREST, #         tickSize()
-          23 => :OPTION_HISTORICAL_VOL, # tickGeneric()
-          24 => :OPTION_IMPLIED_VOL, #    tickGeneric()
-          25 => :OPTION_BID_EXCH, #   NOT USED
-          26 => :OPTION_ASK_EXCH, #   NOT USED
-          27 => :OPTION_CALL_OPEN_INTEREST, # tickSize()
-          28 => :OPTION_PUT_OPEN_INTEREST, #  tickSize()
-          29 => :OPTION_CALL_VOLUME, #        tickSize()
-          30 => :OPTION_PUT_VOLUME, #         tickSize()
-          31 => :INDEX_FUTURE_PREMIUM, #      tickGeneric()
-          32 => :BID_EXCH, #                  tickString()
-          33 => :ASK_EXCH, #                  tickString()
-          34 => :AUCTION_VOLUME, #    NOT USED
-          35 => :AUCTION_PRICE, #     NOT USED
-          36 => :AUCTION_IMBALANCE, # NOT USED
-          37 => :MARK_PRICE, #              tickPrice()
-          38 => :BID_EFP_COMPUTATION, #     tickEFP()
-          39 => :ASK_EFP_COMPUTATION, #     tickEFP()
-          40 => :LAST_EFP_COMPUTATION, #    tickEFP()
-          41 => :OPEN_EFP_COMPUTATION, #    tickEFP()
-          42 => :HIGH_EFP_COMPUTATION, #    tickEFP()
-          43 => :LOW_EFP_COMPUTATION, #     tickEFP()
-          44 => :CLOSE_EFP_COMPUTATION, #   tickEFP()
-          45 => :LAST_TIMESTAMP, #          tickString()
-          46 => :SHORTABLE, #               tickGeneric()
-          47 => :FUNDAMENTAL_RATIOS, #      tickString()
-          48 => :RT_VOLUME, #               tickGeneric()
-          49 => :HALTED, #      See Note 2 below.
-          50 => :BIDYIELD, #                tickPrice() See Note 3 below
-          51 => :ASKYIELD, #                tickPrice() See Note 3 below
-          52 => :LASTYIELD, #               tickPrice() See Note 3 below
-          53 => :CUST_OPTION_COMPUTATION, # tickOptionComputation()
-          54 => :TRADE_COUNT, #             tickGeneric()
-          55 => :TRADE_RATE, #              tickGeneric()
-          56 => :VOLUME_RATE, #             tickGeneric()
+          0 => :bid_size, #               tickSize()
+          1 => :bid_price, #              tickPrice()
+          2 => :ask_price, #              tickPrice()
+          3 => :ask_size, #               tickSize()
+          4 => :last_price, #             tickPrice()
+          5 => :last_size, #              tickSize()
+          6 => :high, #                   tickPrice()
+          7 => :low, #                    tickPrice()
+          8 => :volume, #                 tickSize()
+          9 => :close_price, #            tickPrice()
+          10 => :bid_option_computation, #  tickOptionComputation() See Note 1 below
+          11 => :ask_option_computation, #  tickOptionComputation() See => :Note 1 below
+          12 => :last_option_computation, # tickOptionComputation()  See Note 1 below
+          13 => :model_option_computation, #tickOptionComputation() See Note 1 below
+          14 => :open_tick, #             tickPrice()
+          15 => :low_13_week, #           tickPrice()
+          16 => :high_13_week, #          tickPrice()
+          17 => :low_26_week, #           tickPrice()
+          18 => :high_26_week, #          tickPrice()
+          19 => :low_52_week, #           tickPrice()
+          20 => :high_52_week, #          tickPrice()
+          21 => :avg_volume, #            tickSize()
+          22 => :open_interest, #         tickSize()
+          23 => :option_historical_vol, # tickGeneric()
+          24 => :option_implied_vol, #    tickGeneric()
+          25 => :option_bid_exch, #   not USED
+          26 => :option_ask_exch, #   not USED
+          27 => :option_call_open_interest, # tickSize()
+          28 => :option_put_open_interest, #  tickSize()
+          29 => :option_call_volume, #        tickSize()
+          30 => :option_put_volume, #         tickSize()
+          31 => :index_future_premium, #      tickGeneric()
+          32 => :bid_exch, #                  tickString()
+          33 => :ask_exch, #                  tickString()
+          34 => :auction_volume, #    not USED
+          35 => :auction_price, #     not USED
+          36 => :auction_imbalance, # not USED
+          37 => :mark_price, #              tickPrice()
+          38 => :bid_efp_computation, #     tickEFP()
+          39 => :ask_efp_computation, #     tickEFP()
+          40 => :last_efp_computation, #    tickEFP()
+          41 => :open_efp_computation, #    tickEFP()
+          42 => :high_efp_computation, #    tickEFP()
+          43 => :low_efp_computation, #     tickEFP()
+          44 => :close_efp_computation, #   tickEFP()
+          45 => :last_timestamp, #          tickString()
+          46 => :shortable, #               tickGeneric()
+          47 => :fundamental_ratios, #      tickString()
+          48 => :rt_volume, #               tickGeneric()
+          49 => :halted, #      see note 2 below.
+          50 => :bidyield, #                tickPrice() See Note 3 below
+          51 => :askyield, #                tickPrice() See Note 3 below
+          52 => :lastyield, #               tickPrice() See Note 3 below
+          53 => :cust_option_computation, # tickOptionComputation()
+          54 => :trade_count, #             tickGeneric()
+          55 => :trade_rate, #              tickGeneric()
+          56 => :volume_rate, #             tickGeneric()
           #   Note 1: Tick types BID_OPTION_COMPUTATION, ASK_OPTION_COMPUTATION,
           #           LAST_OPTION_COMPUTATION, and MODEL_OPTION_COMPUTATION return all
           #           Greeks (delta, gamma, vega, theta), the underlying price and the
@@ -158,69 +158,7 @@ module IB
           #   Note 3: Applies to bond contracts only.
       }
 
-      ### Actual message classes
-
-      # The IB code seems to dispatch up to two wrapped objects for this message, a tickPrice
-      # and sometimes a tickSize, which seems to be identical to the TICK_SIZE object.
-      #
-      # Important note from
-      # http://chuckcaplan.com/twsapi/index.php/void%20tickPrice%28%29 :
-      #
-      # "The low you get is NOT the low for the day as you'd expect it
-      # to be. It appears IB calculates the low based on all
-      # transactions after 4pm the previous day. The most inaccurate
-      # results occur when the stock moves up in the 4-6pm aftermarket
-      # on the previous day and then gaps open upward in the
-      # morning. The low you receive from TWS can be easily be several
-      # points different from the actual 9:30am-4pm low for the day in
-      # cases like this. If you require a correct traded low for the
-      # day, you can't get it from the TWS API. One possible source to
-      # help build the right data would be to compare against what Yahoo
-      # lists on finance.yahoo.com/q?s=ticker under the "Day's Range"
-      # statistics (be careful here, because Yahoo will use anti-Denial
-      # of Service techniques to hang your connection if you try to
-      # request too many bytes in a short period of time from them). For
-      # most purposes, a good enough approach would start by replacing
-      # the TWS low for the day with Yahoo's day low when you first
-      # start watching a stock ticker; let's call this time T. Then,
-      # update your internal low if the bid or ask tick you receive is
-      # lower than that for the remainder of the day. You should check
-      # against Yahoo again at time T+20min to handle the occasional
-      # case where the stock set a new low for the day in between
-      # T-20min (the real time your original quote was from, taking into
-      # account the delay) and time T. After that you should have a
-      # correct enough low for the rest of the day as long as you keep
-      # updating based on the bid/ask. It could still get slightly off
-      # in a case where a short transaction setting a new low appears in
-      # between ticks of data that TWS sends you.  The high is probably
-      # distorted in the same way the low is, which would throw your
-      # results off if the stock traded after-hours and gapped down. It
-      # should be corrected in a similar way as described above if this
-      # is important to you."
-      #
-      # IB then emits at most 2 events on eWrapper:
-      #          tickPrice( tickerId, tickType, price, canAutoExecute)
-      #          tickSize( tickerId, sizeTickType, size)
-      TickPrice = def_message 1, [:id, :int], # ticker_id
-                              [:tick_type, :int],
-                              [:price, :decimal],
-                              [:size, :int],
-                              [:can_auto_execute, :int]
-      class TickPrice
-        def to_human
-          "<Tick #{TICK_TYPES[@data[:tick_type]]}: price #{@data[:price]} size #{@data[:size]}>"
-        end
-      end
-
-
-      TickSize = def_message 2, [:id, :int], # ticker_id
-                             [:tick_type, :int],
-                             [:size, :int]
-      class TickSize
-        def to_human
-          "<TickSize #{TICK_TYPES[@data[:tick_type]]}: size #{@data[:size]}>"
-        end
-      end
+      ### Actual message classes (short definitions):
 
       OrderStatus = def_message 3, [:id, :int],
                                 [:status, :string],
@@ -290,6 +228,80 @@ module IB
       ExecutionDataEnd = def_message 55, [:id, :int] # request_id
 
       TickSnapshotEnd = def_message 57, [:id, :int] # request_id
+
+      ### Actual message classes (long definitions):
+
+      # The IB code seems to dispatch up to two wrapped objects for this message, a tickPrice
+      # and sometimes a tickSize, which seems to be identical to the TICK_SIZE object.
+      #
+      # Important note from
+      # http://chuckcaplan.com/twsapi/index.php/void%20tickPrice%28%29 :
+      #
+      # "The low you get is NOT the low for the day as you'd expect it
+      # to be. It appears IB calculates the low based on all
+      # transactions after 4pm the previous day. The most inaccurate
+      # results occur when the stock moves up in the 4-6pm aftermarket
+      # on the previous day and then gaps open upward in the
+      # morning. The low you receive from TWS can be easily be several
+      # points different from the actual 9:30am-4pm low for the day in
+      # cases like this. If you require a correct traded low for the
+      # day, you can't get it from the TWS API. One possible source to
+      # help build the right data would be to compare against what Yahoo
+      # lists on finance.yahoo.com/q?s=ticker under the "Day's Range"
+      # statistics (be careful here, because Yahoo will use anti-Denial
+      # of Service techniques to hang your connection if you try to
+      # request too many bytes in a short period of time from them). For
+      # most purposes, a good enough approach would start by replacing
+      # the TWS low for the day with Yahoo's day low when you first
+      # start watching a stock ticker; let's call this time T. Then,
+      # update your internal low if the bid or ask tick you receive is
+      # lower than that for the remainder of the day. You should check
+      # against Yahoo again at time T+20min to handle the occasional
+      # case where the stock set a new low for the day in between
+      # T-20min (the real time your original quote was from, taking into
+      # account the delay) and time T. After that you should have a
+      # correct enough low for the rest of the day as long as you keep
+      # updating based on the bid/ask. It could still get slightly off
+      # in a case where a short transaction setting a new low appears in
+      # between ticks of data that TWS sends you.  The high is probably
+      # distorted in the same way the low is, which would throw your
+      # results off if the stock traded after-hours and gapped down. It
+      # should be corrected in a similar way as described above if this
+      # is important to you."
+      #
+      # IB then emits at most 2 events on eWrapper:
+      #          tickPrice( tickerId, tickType, price, canAutoExecute)
+      #          tickSize( tickerId, sizeTickType, size)
+      TickPrice = def_message 1, [:id, :int], # ticker_id
+                              [:tick_type, :int],
+                              [:price, :decimal],
+                              [:size, :int],
+                              [:can_auto_execute, :int]
+      class TickPrice
+        # Returns Symbol with a meaningful name for received tick type
+        def type
+          TICK_TYPES[@data[:tick_type]]
+        end
+
+        def to_human
+          "<Tick #{type}: price #{@data[:price]} size #{@data[:size]}>"
+        end
+      end
+
+
+      TickSize = def_message 2, [:id, :int], # ticker_id
+                             [:tick_type, :int],
+                             [:size, :int]
+      class TickSize
+        # Returns Symbol with a meaningful name for received tick type
+        def type
+          TICK_TYPES[@data[:tick_type]]
+        end
+
+        def to_human
+          "<TickSize #{TICK_TYPES[@data[:tick_type]]}: size #{@data[:size]}>"
+        end
+      end
 
       # Called Error in Java code, but in fact this type of messages also
       # deliver system alerts and additional (non-error) info from TWS.

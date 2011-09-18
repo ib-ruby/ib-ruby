@@ -2,9 +2,7 @@
 #
 # This script downloads historic data for specific symbol from IB
 #
-# TODO: Fix the script (not working currently)
 # TODO: Fix the Historical command line client
-#
 
 require 'pathname'
 LIB_DIR = (Pathname.new(__FILE__).dirname + '../lib/').realpath.to_s
@@ -15,15 +13,9 @@ require 'bundler/setup'
 require 'ib-ruby'
 
 ### Configurable Options
-
-# if Quiet == false, status data will be printed to STDERR
-Quiet = false
-
-# How long to wait when no messages are received from TWS before exiting, in seconds
-Timeout = 10
-
+Quiet = false # if Quiet == false, status data will be printed to STDERR
+Timeout = 10 # How long to wait when no messages are received from TWS before exiting, in seconds
 SymbolToRequest = IB::Symbols::Forex[:gbpusd]
-
 
 # Definition of what we want market data for.  We have to keep track
 # of what ticker id corresponds to what symbol ourselves, because the

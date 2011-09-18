@@ -1,0 +1,66 @@
+#!/usr/bin/env ruby
+#
+# This script connects to IB API and subscribes to market data for specific symbols.
+# It then prints out all trades that exceed certain size.
+
+require 'pathname'
+LIB_DIR = (Pathname.new(__FILE__).dirname + '../lib/').realpath.to_s
+$LOAD_PATH.unshift LIB_DIR unless $LOAD_PATH.include?(LIB_DIR)
+
+require 'rubygems'
+require 'bundler/setup'
+require 'ib-ruby2'
+
+# Define the symbols we're interested in.
+@market = {
+    123 => IB::Symbols::Futures[:gbp],
+    234 => IB::Symbols::Futures[:jpy]
+}
+
+# To determine when the timeout has passed.
+@last_msg_time = Time.now.to_i + 2
+
+# Connect to IB TWS.
+ib = IB::Connection.new
+
+# Subscribe to TWS alerts/errors
+ib.subscribe(IB::Messages::Incoming::Alert) { |msg| puts msg.to_human }
+
+MIN_SIZE = 0
+
+# This method filters out non-:last type events, and filters out any sale < MIN_SIZE.
+# Note that we have to look the ticker id of each incoming message
+# up in local memory to figure out what it's for.
+# (N.B. The description field is not from IB TWS. It is defined
+#  locally in forex.rb, and is just arbitrary text.)
+def show_sales(msg)
+  return if msg.type != :last_price || msg.data[:size] < MIN_SIZE
+  puts @market[msg.data[:id]].description +
+           ": #{msg.data[:size]} at #{msg.data[:price]}"
+end
+
+def show_size(msg)
+  return if msg.type != :last_size || msg.data[:size] < MIN_SIZE
+  puts @market[msg.data[:id]].description + ": " + msg.to_human
+end
+
+# Now, subscribe to TickerPrice and TickerSize events.  The code passed in the block
+# will be executed when a message of that type is  received, with the received message
+# as its argument. In this case, we just print out the tick.
+ib.subscribe(IB::Messages::Incoming::TickPrice) { |msg| show_sales(msg) }
+ib.subscribe(IB::Messages::Incoming::TickSize) { |msg| show_size(msg) }
+
+# Now we actually request market data for the symbols we're interested in.
+
+@market.each_pair do |id, contract|
+  ib.send IB::Messages::Outgoing::RequestMarketData.new :id => id, :contract => contract
+end
+
+puts "\nSubscribed to TWS market data"
+puts "\n******** Press <Enter> to cancel... *********\n\n"
+gets
+puts "Unsubscribing from TWS market data.."
+
+@market.each_pair do |id, contract|
+  ib.send IB::OutgoingMessages::CancelMarketData.new :id => id
+end

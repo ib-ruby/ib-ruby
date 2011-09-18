@@ -1,16 +1,20 @@
 #!/usr/bin/env ruby
+#
+# Your script description here...
 
 require 'pathname'
-require 'rubygems'
-require 'bundler/setup'
-
 LIB_DIR = (Pathname.new(__FILE__).dirname + '../lib/').realpath.to_s
 $LOAD_PATH.unshift LIB_DIR unless $LOAD_PATH.include?(LIB_DIR)
 
-require 'ib-ruby'
+require 'rubygems'
+require 'bundler/setup'
+require 'ib-ruby2'
 
-# First, connect to IB TWS.
-ib = IB::IB.new
+# Connect to IB TWS.
+ib = IB::Connection.new
+
+# Subscribe to TWS alerts/errors
+ib.subscribe(IB::Messages::Incoming::Alert) { |msg| puts msg.to_human }
 
 # Put your code here
 # ...

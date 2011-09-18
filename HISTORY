@@ -57,3 +57,7 @@
 == 0.4.12 / 2011-09-18
 
 * historic_data script now functional
+
+== 0.4.13 / 2011-09-18
+
+* time_and_sales script now working

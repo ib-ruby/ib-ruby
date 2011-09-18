@@ -1,9 +1,6 @@
 #!/usr/bin/env ruby
 #
-# This script downloads historic data for specific symbol from IB
-#
-# TODO: Fix the script (not working currently)
-# TODO: Fix the Historical command line client
+# This script downloads historic data for specific symbols from IB
 
 require 'pathname'
 LIB_DIR = (Pathname.new(__FILE__).dirname + '../lib/').realpath.to_s
