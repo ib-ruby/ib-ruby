@@ -15,22 +15,6 @@ module IB
                        2 => "PROFILES",
                        3 =>"ALIASES"}
 
-      HISTORICAL_TYPES = [:trades, :midpoint, :bid, :ask]
-
-      # Enumeration of bar size types for convenience.
-      # Bar sizes less than 30 seconds do not work for some securities.
-      BAR_SIZES = {1 => :second,
-                   2 => :five_seconds,
-                   3 => :fifteen_seconds,
-                   4 => :thirty_seconds,
-                   5 => :minute,
-                   6 => :two_minutes,
-                   7 => :five_minutes,
-                   8 => :fifteen_minutes,
-                   9 => :thirty_minutes,
-                   10 => :hour,
-                   11 => :day}
-
       class AbstractMessage
         # Class methods
         def self.message_id
@@ -231,12 +215,12 @@ module IB
         end
       end # RequestMarketData
 
-      # data = { :id => ticker_id (int), needs to be different than the reqMktData ticker
+      # data = { :id => int: Ticker id, needs to be different than the reqMktData ticker
       #                 id. If you use the same ticker ID you used for the symbol when
-      #                 you did ReqMktData, nothing comes back for the historical data call.
-      #          :contract => Contract,
-      #          :end_date_time => String, "yyyymmdd HH:mm:ss", with a time zone optionally
-      #                            allowed after a space at the end: "20050701 18:26:44 GMT"
+      #                 you did ReqMktData, nothing comes back for the historical data call
+      #          :contract => Contract: requested ticker description
+      #          :end_date_time => String: "yyyymmdd HH:mm:ss", with optional time zone
+      #                            allowed after a space: "20050701 18:26:44 GMT"
       #          :duration => String, time span the request will cover, and is specified
       #                  using the format: <integer> <unit>, eg: '1 D', valid units are:
       #                        '1 S' (seconds, default if no unit is specified)
@@ -244,8 +228,21 @@ module IB
       #                        '1 W' (weeks)
       #                        '1 M' (months)
       #                        '1 Y' (years, currently limited to one)
-      #          :bar_size => int, key from BAR_SIZES
-      #          :what_to_show => symbol, one of :trades, :midpoint, :bid, or :ask -
+      #          :bar_size => String: Specifies the size of the bars that will be returned
+      #                       (within IB/TWS limits). Valid values include:
+      #                             '1 sec'
+      #                             '5 secs'
+      #                             '15 secs'
+      #                             '30 secs'
+      #                             '1 min'
+      #                             '2 mins'
+      #                             '3 mins'
+      #                             '5 mins'
+      #                             '15 mins'
+      #                             '30 min'
+      #                             '1 hour'
+      #                             '1 day'
+      #          :what_to_show => Symbol: one of :trades, :midpoint, :bid, or :ask -
       #                           converts to "TRADES," "MIDPOINT," "BID," or "ASK."
       #          :use_rth => int: 0 - all data available during the time span requested
       #                     is returned, even data bars covering time intervals where the
@@ -289,13 +286,18 @@ module IB
         @message_id = 20
         @version = 4
 
+        # Enumeration of data types
+        HISTORICAL_TYPES = [:trades, :midpoint, :bid, :ask]
+
+        # Enumeration of bar size types for convenience.
+        # Bar sizes less than 30 seconds do not work for some securities.
+        BAR_SIZES = ['1 sec', '5 secs', '15 secs', '30 secs',
+                     '1 min', '2 mins', '3 mins', '5 mins',
+                     '15 mins', '30 mins', '1 hour', '1 day']
+
         def encode
           if @data.has_key?(:what_to_show) && @data[:what_to_show].is_a?(String)
             @data[:what_to_show] = @data[:what_to_show].downcase.to_sym
-          end
-
-          if @data.has_key?(:bar_size) && @data[:bar_size].is_a?(Symbol)
-            @data[:bar_size] = BAR_SIZES[@data[:bar_size]]
           end
 
           raise ArgumentError("@data[:what_to_show] must be one of #{HISTORICAL_TYPES}.") unless HISTORICAL_TYPES.include?(@data[:what_to_show])

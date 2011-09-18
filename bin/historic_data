@@ -19,16 +19,20 @@ Timeout = 10 # How long to wait for messages from TWS before exiting, sec
 
 # Definition of what we want market data for.  We have to keep track of what ticker id
 # corresponds to what symbol ourselves, because the ticks don't include any other
-# identifying information.
-#
-# The choice of ticker ids is, as far as I can tell, arbitrary.
-@market = {123 => IB::Symbols::Stocks[:wfc]}
+# identifying information. The choice of ticker ids is, as far as I can tell, arbitrary.
+@market = {123 => IB::Symbols::Stocks[:wfc],
+           456 => IB::Symbols::Futures[:ym],
+           789 => IB::Symbols::Forex[:gbpusd] # No historical market data for GBP/CASH@IDEALPRO Last 60
+}
 
 # To determine when the timeout has passed.
 @last_msg_time = Time.now.to_i + 2
 
 # Connect to IB TWS.
 ib = IB::Connection.new
+
+# Subscribe to TWS alerts/errors
+ib.subscribe(IB::Messages::Incoming::Alert) { |msg| puts msg.to_human }
 
 # Now, subscribe to HistoricalData incoming events.  The code passed in the block
 # will be executed when a message of that type is received, with the received
@@ -42,35 +46,26 @@ ib.subscribe(IB::Messages::Incoming::HistoricalData) do |msg|
   msg.data[:results].each do |datum|
     @last_msg_time = Time.now.to_i
 
-    STDERR.puts "   " + datum.to_s unless Quiet
-    STDOUT.puts "#{datum.date},#{datum.open},#{datum.high},#{datum.low},#{datum.close},#{datum.volume}"
+    STDERR.puts "  " + datum.to_s unless Quiet
+    #STDOUT.puts "#{datum.date},#{datum.open},#{datum.high},#{datum.low},#{datum.close},#{datum.volume}"
   end
 end
 
 # Now we actually request historical data for the symbols we're interested in. TWS will
 # respond with a HistoricalData message, which will be processed by the code above.
 @market.each_pair do |id, contract|
-    p IB::Messages::Outgoing::RequestHistoricalData.new(
-              :id => id,
-              :contract => contract,
-              :end_date_time => Time.now.to_ib,
-              :duration => '2 D', # 2 Days
-              :bar_size => IB::OutgoingMessages::BAR_SIZES.key(:hour),
-              :what_to_show => :trades,
-              :use_rth => 0,
-              :format_date => 2).encode
   ib.send IB::Messages::Outgoing::RequestHistoricalData.new(
               :id => id,
               :contract => contract,
               :end_date_time => Time.now.to_ib,
-              :duration => '2 D', # 2 Days
-              :bar_size => IB::OutgoingMessages::BAR_SIZES.key(:hour),
+              :duration => '2 D', # ?
+              :bar_size => '1 min', #IB::OutgoingMessages::BAR_SIZES.key(:hour),
               :what_to_show => :trades,
-              :use_rth => 0,
-              :format_date => 2)
+              :use_rth => 1,
+              :format_date => 1)
 end
 
-while true
+loop do
   exit(0) if Time.now.to_i > @last_msg_time + Timeout
   sleep 1
 end

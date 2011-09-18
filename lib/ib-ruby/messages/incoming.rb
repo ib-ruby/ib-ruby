@@ -289,6 +289,8 @@ module IB
 
       ExecutionDataEnd = def_message 55, [:id, :int] # request_id
 
+      TickSnapshotEnd = def_message 57, [:id, :int] # request_id
+
       # Called Error in Java code, but in fact this type of messages also
       # deliver system alerts and additional (non-error) info from TWS.
       # It has additional accessors: #code and #message, derived from @data
@@ -571,7 +573,7 @@ module IB
           @data[:completed_indicator] =
               "finished-#{@data[:start_date_str]}-#{@data[:end_date_str]}"
 
-          @data[:history] = Array.new(@data[:item_count]) do |index|
+          @data[:results] = Array.new(@data[:item_count]) do |index|
             Models::Bar.new :date => @socket.read_string,
                             :open => @socket.read_decimal,
                             :high => @socket.read_decimal,
@@ -580,7 +582,7 @@ module IB
                             :volume => @socket.read_int,
                             :wap => @socket.read_decimal,
                             :has_gaps => @socket.read_string,
-                            :bar_count => @socket.read_int
+                            :count => @socket.read_int
           end
         end
 
@@ -723,4 +725,4 @@ __END__
     static final int ACCT_DOWNLOAD_END = 54; *
     static final int EXECUTION_DATA_END = 55; *
     static final int DELTA_NEUTRAL_VALIDATION = 56;
-    static final int TICK_SNAPSHOT_END = 57;
+    static final int TICK_SNAPSHOT_END = 57; *

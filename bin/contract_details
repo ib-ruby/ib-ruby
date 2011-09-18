@@ -13,14 +13,15 @@ require 'ib-ruby2'
 
 # Definition of what we want market data for.  We have to keep track of what ticker id
 # corresponds to what symbol ourselves, because the ticks don't include any other
-# identifying information.
-#
-# The choice of ticker ids is, as far as I can tell, arbitrary.
+# identifying information. The choice of ticker ids is, as far as I can tell, arbitrary.
 @market = {123 => IB::Symbols::Stocks[:wfc],
            129 => IB::Symbols::Stocks[:wrong]}
 
 # Connect to IB TWS.
 ib = IB::Connection.new
+
+# Subscribe to TWS alerts/errors
+ib.subscribe(IB::Messages::Incoming::Alert) { |msg| puts msg.to_human }
 
 # Now, subscribe to ContractData incoming events.  The code passed in the block
 # will be executed when a message of that type is received, with the received

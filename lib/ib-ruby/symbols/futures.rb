@@ -21,7 +21,7 @@ module IB
 
 
     def self.next_quarter_month(time)
-      sprintf("%02d", [3, 6, 9, 12].find{|month| month >= time.month })
+      sprintf("%02d", [3, 6, 9, 12].find { |month| month >= time.month })
     end
 
     def self.next_quarter_year(time)
@@ -36,54 +36,53 @@ module IB
       "#{ self.next_quarter_year(time) }#{ self.next_quarter_month(time) }"
     end
 
-    Futures =
-     {
-      :es => Models::Contract.new({
-                                       :symbol => "ES",
-                                       :expiry => self.next_expiry(Time.now),
-                                       :exchange => "GLOBEX",
-                                       :currency => "USD",
-                                       :sec_type => Models::Contract::SECURITY_TYPES[:future],
-                                       :multiplier => 50,
-                                       :description => "E-Mini S&P 500"
-                                     }),
+    Futures ={
+        :ym => Models::Contract.new(:symbol => "YM",
+                                    :expiry => self.next_expiry(Time.now),
+                                    :exchange => "ECBOT",
+                                    :currency => "USD",
+                                    :sec_type => Models::Contract::SECURITY_TYPES[:future],
+                                    :description => "Mini Dow Jones Industrial"),
 
-      :gbp => Models::Contract.new({
-                                       :symbol => "GBP",
-                                       :expiry => self.next_expiry(Time.now),
-                                       :exchange => "GLOBEX",
-                                       :currency => "USD",
-                                       :sec_type => Models::Contract::SECURITY_TYPES[:future],
-                                       :multiplier => 62500,
-                                       :description => "British Pounds"
-                                     }),
-      :eur => Models::Contract.new({
-                                       :symbol => "EUR",
-                                       :expiry => self.next_expiry(Time.now),
-                                       :exchange => "GLOBEX",
-                                       :currency => "USD",
-                                       :sec_type => Models::Contract::SECURITY_TYPES[:future],
-                                       :multiplier => 12500,
-                                       :description => "Euro FX"
-                                     }),
-      :jpy => Models::Contract.new({
-                                       :symbol => "JPY",
-                                       :expiry => self.next_expiry(Time.now),
-                                       :exchange => "GLOBEX",
-                                       :currency => "USD",
-                                       :sec_type => Models::Contract::SECURITY_TYPES[:future],
-                                       :multiplier => 12500000,
-                                       :description => "Japanese Yen"
-                                     }),
-      :hsi => Models::Contract.new({
-                                       :symbol => "HSI",
-                                       :expiry => self.next_expiry(Time.now),
-                                       :exchange => "HKFE",
-                                       :currency => "HKD",
-                                       :sec_type => Models::Contract::SECURITY_TYPES[:future],
-                                       :multiplier => 50,
-                                       :description => "Hang Seng Index"
-                                     })
+        :es => Models::Contract.new(:symbol => "ES",
+                                    :expiry => self.next_expiry(Time.now),
+                                    :exchange => "GLOBEX",
+                                    :currency => "USD",
+                                    :sec_type => Models::Contract::SECURITY_TYPES[:future],
+                                    :multiplier => 50,
+                                    :description => "E-Mini S&P 500"),
+
+        :gbp => Models::Contract.new(:symbol => "GBP",
+                                     :expiry => self.next_expiry(Time.now),
+                                     :exchange => "GLOBEX",
+                                     :currency => "USD",
+                                     :sec_type => Models::Contract::SECURITY_TYPES[:future],
+                                     :multiplier => 62500,
+                                     :description => "British Pounds"),
+
+        :eur => Models::Contract.new(:symbol => "EUR",
+                                     :expiry => self.next_expiry(Time.now),
+                                     :exchange => "GLOBEX",
+                                     :currency => "USD",
+                                     :sec_type => Models::Contract::SECURITY_TYPES[:future],
+                                     :multiplier => 12500,
+                                     :description => "Euro FX"),
+
+        :jpy => Models::Contract.new(:symbol => "JPY",
+                                     :expiry => self.next_expiry(Time.now),
+                                     :exchange => "GLOBEX",
+                                     :currency => "USD",
+                                     :sec_type => Models::Contract::SECURITY_TYPES[:future],
+                                     :multiplier => 12500000,
+                                     :description => "Japanese Yen"),
+
+        :hsi => Models::Contract.new(:symbol => "HSI",
+                                     :expiry => self.next_expiry(Time.now),
+                                     :exchange => "HKFE",
+                                     :currency => "HKD",
+                                     :sec_type => Models::Contract::SECURITY_TYPES[:future],
+                                     :multiplier => 50,
+                                     :description => "Hang Seng Index")
     }
   end
 end

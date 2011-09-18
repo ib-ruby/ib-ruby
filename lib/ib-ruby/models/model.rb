@@ -1,6 +1,6 @@
 module IB::Models
 
-# Base IB data Model class
+# Base IB data Model class, in future it will be developed into ActiveModel
   class Model
     attr_reader :created_at
 

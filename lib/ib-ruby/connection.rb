@@ -136,39 +136,23 @@ module IB
         msg_id = @server[:socket].read_int
 
         # Debug:
-        p "Got message #{msg_id} (#{Messages::Incoming::Table[msg_id]})" unless [1, 2, 4, 6, 7, 8, 9, 53].include? msg_id
+        puts "Got message #{msg_id} (#{Messages::Incoming::Table[msg_id]})" unless [1, 2, 4, 6, 7, 8, 9, 53].include? msg_id
 
-        if msg_id == 0
-          # Debug:
-          p "Zero msg id! Must be a nil passed in... Ignoring..."
+
+        # Create a new instance of the appropriate message type, and have it read the message.
+        # NB: Failure here usually means unsupported message type received
+        msg = Messages::Incoming::Table[msg_id].new(@server[:socket], @server[:version])
+
+        if @listeners[msg.class].size > 0
+          @listeners[msg.class].each { |listener| listener.call(msg) }
         else
-          # Create a new instance of the appropriate message type, and have it read the message.
-          # NB: Failure here usually means unsupported message type received
-          msg = Messages::Incoming::Table[msg_id].new(@server[:socket], @server[:version])
-
-          @listeners[msg.class].each { |listener|
-            listener.call(msg)
-          }
-
-          # Log the error messages. Make an exception for the "successfully connected"
-          # messages, which, for some reason, come back from IB as errors.
-          if msg.is_a?(Messages::Incoming::Error)
-            # connect strings
-            if msg.code == 2104 || msg.code == 2106
-              #logger.info(msg.to_human)
-            else
-              #logger.error(msg.to_human)
-            end
-          else
-            # Warn if nobody listened to a non-error incoming message.
-            unless @listeners[msg.class].size > 0
-              #logger.warn { " WARNING: Nobody listened to incoming message #{msg.class}" }
-            end
-          end
+          # Warn if nobody listened to an incoming message.
+          puts " WARNING: Nobody listened to incoming message #{msg.class}"
         end
-        # #logger.debug("Reader done with message id #{msg_id}.")
       end # loop
     end # reader
-  end # class Connection
+  end
+
+  # class Connection
   IB = Connection
 end # module IB
