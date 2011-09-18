@@ -11,9 +11,18 @@ module IB
 
       EOL = "\0"
 
-      FaMsgTypeName = {1 => "GROUPS",
-                       2 => "PROFILES",
-                       3 =>"ALIASES"}
+      #FaMsgTypeName = {1 => "GROUPS",
+      #                 2 => "PROFILES",
+      #                 3 =>"ALIASES"}
+
+        # Enumeration of data types
+        DATA_TYPES = [:trades, :midpoint, :bid, :ask]
+
+        # Enumeration of bar size types for convenience.
+        # Bar sizes less than 30 seconds do not work for some securities.
+        BAR_SIZES = ['1 sec', '5 secs', '15 secs', '30 secs',
+                     '1 min', '2 mins', '3 mins', '5 mins',
+                     '15 mins', '30 mins', '1 hour', '1 day']
 
       class AbstractMessage
         # Class methods
@@ -286,22 +295,13 @@ module IB
         @message_id = 20
         @version = 4
 
-        # Enumeration of data types
-        HISTORICAL_TYPES = [:trades, :midpoint, :bid, :ask]
-
-        # Enumeration of bar size types for convenience.
-        # Bar sizes less than 30 seconds do not work for some securities.
-        BAR_SIZES = ['1 sec', '5 secs', '15 secs', '30 secs',
-                     '1 min', '2 mins', '3 mins', '5 mins',
-                     '15 mins', '30 mins', '1 hour', '1 day']
-
         def encode
           if @data.has_key?(:what_to_show) && @data[:what_to_show].is_a?(String)
             @data[:what_to_show] = @data[:what_to_show].downcase.to_sym
           end
 
-          raise ArgumentError("@data[:what_to_show] must be one of #{HISTORICAL_TYPES}.") unless HISTORICAL_TYPES.include?(@data[:what_to_show])
-          raise ArgumentError("@data[:bar_size] must be one of #{BAR_SIZES}.") unless BAR_SIZES.include?(@data[:bar_size])
+          raise ArgumentError(":what_to_show must be one of #{DATA_TYPES}.") unless DATA_TYPES.include?(@data[:what_to_show])
+          raise ArgumentError(":bar_size must be one of #{BAR_SIZES}.") unless BAR_SIZES.include?(@data[:bar_size])
 
           contract = @data[:contract].is_a?(Models::Contract) ?
               @data[:contract] : Models::Contract.from_ib_ruby(@data[:contract])
@@ -321,9 +321,16 @@ module IB
 
       #  data = { :id => ticker_id (int),
       #           :contract => Contract ,
-      #           :bar_size => int/Symbol,
-      #           :what_to_show => String/Symbol,
-      #           :use_rth => bool }
+      #           :bar_size => int/Symbol? Currently only 5 second bars (2?) are supported,
+      #                        if any other value is used, an exception will be thrown.,
+      #          :what_to_show => Symbol: one of :trades, :midpoint, :bid, or :ask -
+      #                           converts to "TRADES," "MIDPOINT," "BID," or "ASK."
+      #          :use_rth => int: 0 - all data available during the time span requested
+      #                     is returned, even data bars covering time intervals where the
+      #                     market in question was illiquid. 1 - only data within the
+      #                     "Regular Trading Hours" of the product in question is returned,
+      #                     even if the time span requested falls partially or completely
+      #                     outside of them.
       class RequestRealTimeBars < AbstractMessage
         @message_id = 50
 
@@ -332,12 +339,8 @@ module IB
             @data[:what_to_show] = @data[:what_to_show].downcase.to_sym
           end
 
-          if @data.has_key?(:bar_size) && @data[:bar_size].is_a?(Symbol)
-            @data[:bar_size] = BAR_SIZES[@data[:bar_size]]
-          end
-
-          raise ArgumentError("@data[:what_to_show] must be one of #{HISTORICAL_TYPES}.") unless HISTORICAL_TYPES.include?(@data[:what_to_show])
-          raise ArgumentError("@data[:bar_size] must be one of #{BAR_SIZES}.") unless BAR_SIZES.include?(@data[:bar_size])
+          raise ArgumentError(":what_to_show must be one of #{DATA_TYPES}.") unless DATA_TYPES.include?(@data[:what_to_show])
+          raise ArgumentError(":bar_size must be one of #{BAR_SIZES}.") unless BAR_SIZES.include?(@data[:bar_size])
 
           contract = @data[:contract].is_a?(Models::Contract) ?
               @data[:contract] : Models::Contract.from_ib_ruby(@data[:contract])

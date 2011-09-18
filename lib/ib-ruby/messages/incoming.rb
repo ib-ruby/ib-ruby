@@ -189,35 +189,66 @@ module IB
       end
 
       # This message is always sent by TWS automatically at connect.
-      # The IB class subscribes to it automatically and stores the order id in
-      # its :next_order_id attribute.
+      # The IB::Connection class subscribes to it automatically and stores
+      # the order id in its @next_order_id attribute.
       NextValidID = def_message 9, [:id, :int]
 
-      MarketDepth = def_message 12, [:id, :int],
-                                [:position, :int],
-                                [:operation, :int],
-                                [:side, :int],
-                                [:price, :decimal],
-                                [:size, :int]
+      MarketDepth =
+          def_message 12, [:id, :int],
+                      [:position, :int], # The row Id of this market depth entry.
+                      [:operation, :int], # How it should be applied to the market depth:
+                      #   0 = insert this new order into the row identified by :position
+                      #   1 = update the existing order in the row identified by :position
+                      #   2 = delete the existing order at the row identified by :position
+                      [:side, :int], # side of the book: 0 = ask, 1 = bid
+                      [:price, :decimal],
+                      [:size, :int]
 
-      MarketDepthL2 = def_message 13, [:id, :int],
-                                  [:position, :int],
-                                  [:market_maker, :string],
-                                  [:operation, :int],
-                                  [:side, :int],
-                                  [:price, :decimal],
-                                  [:size, :int]
+      MarketDepthL2 =
+          def_message 13, [:id, :int],
+                      [:position, :int], # The row Id of this market depth entry.
+                      [:market_maker, :string], # The exchange hosting this order.
+                      [:operation, :int], # How it should be applied to the market depth:
+                      #   0 = insert this new order into the row identified by :position
+                      #   1 = update the existing order in the row identified by :position
+                      #   2 = delete the existing order at the row identified by :position
+                      [:side, :int], # side of the book: 0 = ask, 1 = bid
+                      [:price, :decimal],
+                      [:size, :int]
 
-      NewsBulletins = def_message 14, [:news_message_id, :int],
-                                  [:news_message_type, :int],
-                                  [:news_message, :string],
-                                  [:originating_exchange, :string]
+      NewsBulletins =
+          def_message 14, [:id, :int], # unique incrementing bulletin ID.
+                      [:type, :int], # Type of bulletin. Valid values include:
+                      #     1 = Reqular news bulletin
+                      #     2 = Exchange no longer available for trading
+                      #     3 = Exchange is available for trading
+                      [:text, :string], # The bulletin's message text.
+                      [:exchange, :string] # Exchange from which this message originated.
 
-      ManagedAccounts = def_message 15, [:accounts_list, :string]
+      ManagedAccounts =
+          def_message 15, [:accounts_list, :string]
 
-      ReceiveFA = def_message 16, [:fa_data_type, :int], [:xml, :string]
+      # Receives previously requested FA configuration information from TWS.
+      ReceiveFA =
+          def_message 16, [:type, :int], # type of Financial Advisor configuration data
+                      #                    being received from TWS. Valid values include:
+                      #                      1 = GROUPS
+                      #                      2 = PROFILE
+                      #                      3 = ACCOUNT ALIASES
+                      [:xml, :string] # XML string containing the previously requested
+      #                                 FA configuration information.
 
+      # Receives an XML document that describes the valid parameters that a scanner
+      # subscription can have.
       ScannerParameters = def_message 19, [:xml, :string]
+
+      # Receives the current system time on the server side.
+      CurrentTime = def_message 49, [:time, :int] # long!
+
+      # Receive Reuters global fundamental market data. There must be a subscription to
+      # Reuters Fundamental set up in Account Management before you can receive this data.
+      FundamentalData = def_message 50, [:id, :int], # request_id
+                                    [:data, :string]
 
       ContractDataEnd = def_message 52, [:id, :int] # request_id
 
@@ -572,20 +603,27 @@ module IB
         end
       end # ExecutionData
 
+      # HistoricalData contains following @data:
+      #    :id - The ID of the request to which this is responding
+      #    :count - Number of data points returned (size of :results).
+      #    :results - an Array of Historical Data Bars
+      #    :start_date
+      #    :end_date
+      #    :completed_indicator - string in stupid legacy format
       class HistoricalData < AbstractMessage
         @message_id = 17
 
         def load
           super
           load_map [:id, :int],
-                   [:start_date_str, :string],
-                   [:end_date_str, :string],
-                   [:item_count, :int]
+                   [:start_date, :string],
+                   [:end_date, :string],
+                   [:count, :int]
 
           @data[:completed_indicator] =
-              "finished-#{@data[:start_date_str]}-#{@data[:end_date_str]}"
+              "finished-#{@data[:start_date]}-#{@data[:end_date]}"
 
-          @data[:results] = Array.new(@data[:item_count]) do |index|
+          @data[:results] = Array.new(@data[:count]) do |index|
             Models::Bar.new :date => @socket.read_string,
                             :open => @socket.read_decimal,
                             :high => @socket.read_decimal,
@@ -594,7 +632,7 @@ module IB
                             :volume => @socket.read_int,
                             :wap => @socket.read_decimal,
                             :has_gaps => @socket.read_string,
-                            :count => @socket.read_int
+                            :trades => @socket.read_int
           end
         end
 
@@ -642,9 +680,10 @@ module IB
         end
       end # BondContractData
 
+      # This method receives the requested market scanner data results.
       # ScannerData contains following @data:
       # :id - The ID of the request to which this row is responding
-      # :number_of_elements - Number of data points returnes (size of :results).
+      # :count - Number of data points returned (size of :results).
       # :results - an Array of Hashes, each hash contains a set of
       #            data about one scanned Contract:
       #            :contract - a full description of the contract (details).
@@ -658,9 +697,9 @@ module IB
         def load
           super
           load_map [:id, :int],
-                   [:number_of_elements, :int]
+                   [:count, :int]
 
-          @data[:results] = Array.new(@data[:number_of_elements]) do |index|
+          @data[:results] = Array.new(@data[:count]) do |index|
             {:rank => @socket.read_int,
              :contract => Contract.new(:con_id => @socket.read_int,
                                        :symbol => @socket.read_str,
@@ -687,12 +726,57 @@ module IB
         end
       end # ScannerData
 
-      Table = Hash.new
-      Classes.each { |msg_class|
-        Table[msg_class.message_id] = msg_class
-      }
+      # HistoricalData contains following @data:
+      #    :id - The ID of the *request* to which this is responding
+      #    :time - The date-time stamp of the start of the bar. The format is offset in
+      #            seconds from the beginning of 1970, same format as the UNIX epoch time
+      #    :bar - received RT Bar
+      class RealTimeBar < AbstractMessage
+        @message_id = 50
 
-      #logger.debug("Incoming message class table is #{Table.inspect}")
+        attr_accessor :bar
+
+        def load
+          super
+          load_map [:id, :int],
+                   [:time, :int] # long!
+
+          @bar = Models::Bar.new :date => Time.at(@data[:time]),
+                                 :open => @socket.read_decimal,
+                                 :high => @socket.read_decimal,
+                                 :low => @socket.read_decimal,
+                                 :close => @socket.read_decimal,
+                                 :volume => @socket.read_int,
+                                 :wap => @socket.read_decimal,
+                                 :trades => @socket.read_int
+        end
+
+        def to_human
+          "<RealTimeBar: req id #{@data[:id]}, #{@bar}>"
+        end
+      end # RealTimeBar
+      RealTimeBars = RealTimeBar
+
+      # The server sends this message upon accepting a Delta-Neutral DN RFQ
+      # - see API Reference p. 26
+      class DeltaNeutralValidation < AbstractMessage
+        @message_id = 56
+
+        attr_accessor :contract
+
+        def load
+          super
+          load_map [:id, :int] # request id
+
+          @contract = Models::Contract.new :under_comp => true,
+                                           :under_con_id => @socket.read_int,
+                                           :under_delta => @socket.read_decimal,
+                                           :under_price => @socket.read_decimal
+        end
+      end # DeltaNeutralValidation
+
+      Table = Hash.new
+      Classes.each { |msg_class| Table[msg_class.message_id] = msg_class }
 
     end # module Incoming
   end # module Messages
@@ -715,26 +799,27 @@ __END__
     static final int NEXT_VALID_ID      = 9;  *
     static final int CONTRACT_DATA      = 10; *
     static final int EXECUTION_DATA     = 11; *
-    static final int MARKET_DEPTH     	= 12;
-    static final int MARKET_DEPTH_L2    = 13;
-    static final int NEWS_BULLETINS    	= 14;
-    static final int MANAGED_ACCTS    	= 15;
-    static final int RECEIVE_FA    	    = 16;
-    static final int HISTORICAL_DATA    = 17;
+    static final int MARKET_DEPTH     	= 12; *
+    static final int MARKET_DEPTH_L2    = 13; *
+    static final int NEWS_BULLETINS    	= 14; *
+    static final int MANAGED_ACCTS    	= 15; *
+    static final int RECEIVE_FA    	    = 16; *
+    static final int HISTORICAL_DATA    = 17; *
     static final int BOND_CONTRACT_DATA = 18; *
-    static final int SCANNER_PARAMETERS = 19;
-    static final int SCANNER_DATA       = 20;
+    static final int SCANNER_PARAMETERS = 19; *
+    static final int SCANNER_DATA       = 20; *
     --------- ALREADY IMLEMENTED -----------
     static final int TICK_OPTION_COMPUTATION = 21;
     static final int TICK_GENERIC = 45;
     static final int TICK_STRING = 46;
     static final int TICK_EFP = 47;
-    static final int CURRENT_TIME = 49;
-    static final int REAL_TIME_BARS = 50;
-    static final int FUNDAMENTAL_DATA = 51;
-    static final int CONTRACT_DATA_END = 52;
-    static final int OPEN_ORDER_END = 53;   *
-    static final int ACCT_DOWNLOAD_END = 54; *
+    --------- ALREADY IMLEMENTED -----------
+    static final int CURRENT_TIME = 49;       *
+    static final int REAL_TIME_BARS = 50;     *
+    static final int FUNDAMENTAL_DATA = 51;   *
+    static final int CONTRACT_DATA_END = 52;  *
+    static final int OPEN_ORDER_END = 53;     *
+    static final int ACCT_DOWNLOAD_END = 54;  *
     static final int EXECUTION_DATA_END = 55; *
-    static final int DELTA_NEUTRAL_VALIDATION = 56;
-    static final int TICK_SNAPSHOT_END = 57; *
+    static final int DELTA_NEUTRAL_VALIDATION = 56; *
+    static final int TICK_SNAPSHOT_END = 57;  *

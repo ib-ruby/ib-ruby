@@ -13,12 +13,12 @@ module IB::Models
                   :volume, # The bar opening price.
                   :wap, #    The weighted average price during the time covered by the bar.
                   :has_gaps, # Whether or not there are gaps in the data.
-                  :count # int: When TRADES historical data is returned, represents number
+                  :trades # int: When TRADES historical data is returned, represents number
                          # of trades that occurred during the time period the bar covers
 
     def to_s
       "<Bar #{@date}: wap: #{@wap}, OHLC: #{@open}, #{@high}, #{@low}, #{@close}, " +
-          (count ? "trades: #{@count}," : "") + " vol: #{@volume}, gaps? #{@has_gaps}>"
+          (@trades? "trades: #{@trades}," : "") + " vol: #{@volume}, gaps? #{@has_gaps}>"
     end
   end # Bar
 end # module IB::Models
