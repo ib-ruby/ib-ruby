@@ -14,7 +14,7 @@ require 'ib-ruby2'
 Quiet = false # if Quiet == false, status data will be printed to STDERR
 Timeout = 10 # How long to wait for messages from TWS before exiting, sec
 
-# Definition of what we want market data for.  We have to keep track of what ticker id
+# Definition of what we want data for.  We have to keep track of what ticker id
 # corresponds to what symbol ourselves, because the ticks don't include any other
 # identifying information. The choice of ticker ids is, as far as I can tell, arbitrary.
 @market = {123 => IB::Symbols::Stocks[:wfc],

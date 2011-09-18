@@ -40,7 +40,10 @@ First, start up Interactive Broker's Trader Work Station.
 Ensure it is configured to allow API connections on localhost.
 
   >> require 'ib-ruby'
-  >> ib_connection = IB::Connection.new
+  >> ib = IB::Connection.new
+  >> ib.subscribe(IB::Messages::Incoming::Alert) { |msg| puts msg.to_human }
+  >> ib.subscribe(IB::Messages::Incoming::AccountValue) { |msg| puts msg.to_human }
+  >> ib.send IB::Messages::Outgoing::RequestAccountData.new :subscribe => true
 
 == LICENSE:
 

@@ -10,11 +10,9 @@ require 'rubygems'
 require 'bundler/setup'
 require 'ib-ruby2'
 
-# Definition of what we want market data for.  We have to keep track
-# of what ticker id corresponds to what symbol ourselves, because the
-# ticks don't include any other identifying information.
-#
-# The choice of ticker ids is, as far as I can tell, arbitrary.
+# Definition of what we want market data for.  We have to keep track of what ticker id
+# corresponds to what symbol ourselves, because the ticks don't include any other
+# identifying information. The choice of ticker ids is, as far as I can tell, arbitrary.
 @market = {123 => IB::Symbols::Forex[:gbpusd],
            456 => IB::Symbols::Forex[:eurusd],
            789 => IB::Symbols::Forex[:usdcad]}
@@ -53,5 +51,5 @@ gets
 puts "Cancelling market data subscription.."
 
 @market.each_pair do |id, contract|
-  ib.send IB::Messages::Outgoing::CancelMarketData.new :id => id, :contract => contract
+  ib.send IB::Messages::Outgoing::CancelMarketData.new :id => id
 end

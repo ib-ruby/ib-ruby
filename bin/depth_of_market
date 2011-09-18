@@ -1,0 +1,47 @@
+#!/usr/bin/env ruby
+#
+# This script connects to IB API and subscribes to L2 (depth of market) data for
+# specific symbols
+
+require 'pathname'
+LIB_DIR = (Pathname.new(__FILE__).dirname + '../lib/').realpath.to_s
+$LOAD_PATH.unshift LIB_DIR unless $LOAD_PATH.include?(LIB_DIR)
+
+require 'rubygems'
+require 'bundler/setup'
+require 'ib-ruby2'
+
+# Definition of what we want L2 data for.  We have to keep track of what ticker id
+# corresponds to what symbol ourselves, because the ticks don't include any other
+# identifying information. The choice of ticker ids is, as far as I can tell, arbitrary.
+@market = {123 => IB::Symbols::Stocks[:wfc],
+           456 => IB::Symbols::Futures[:ym],
+           789 => IB::Symbols::Forex[:gbpusd]
+}
+
+# First, connect to IB TWS.
+ib = IB::Connection.new
+
+## Subscribe to TWS alerts/errors
+ib.subscribe(IB::Messages::Incoming::Alert) { |msg| puts msg.to_human }
+
+# Subscribe to MarketDepth events.
+ib.subscribe(IB::Messages::Incoming::MarketDepth) do |msg|
+  puts @market[msg.data[:id]].description + ": " + msg.to_human
+end
+
+# Now we actually request market data for the symbols we're interested in.
+@market.each_pair do |id, contract|
+  ib.send IB::Messages::Outgoing::RequestMarketDepth.new :id => id,
+                                                         :contract => contract,
+                                                         :num_rows => 5
+end
+
+puts "\nSubscribed to market data"
+puts "\n******** Press <Enter> to cancel... *********\n\n"
+gets
+puts "Cancelling market data subscription.."
+
+@market.each_pair do |id, contract|
+  ib.send IB::Messages::Outgoing::CancelMarketDepth.new :id => id
+end
