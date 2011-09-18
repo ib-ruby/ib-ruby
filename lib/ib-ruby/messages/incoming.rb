@@ -573,8 +573,8 @@ module IB
 
         def load
           super
-          load_map [:id, :int] # request_id
-
+          load_map [:id, :int], # request_id
+                   [:order_id, :int]
           @contract =
               Models::Contract.new :con_id => @socket.read_int,
                                    :symbol => @socket.read_string,
@@ -585,9 +585,8 @@ module IB
                                    :exchange => @socket.read_string,
                                    :currency => @socket.read_string,
                                    :local_symbol => @socket.read_string
-
           @execution =
-              Models::Execution.new :order_id => @data[:id],
+              Models::Execution.new :order_id => @data[:order_id],
                                     :exec_id => @socket.read_string,
                                     :time => @socket.read_string,
                                     :account_number => @socket.read_string,
