@@ -88,7 +88,7 @@ module IB
       end
 
       # Macro that defines short message classes using a one-liner
-      def self.def_message message_id, *keys
+      def self.def_message message_id, *keys, &human_block
         base = keys.first.is_a?(Class) ? keys.shift : AbstractMessage
         Class.new(base) do
           @message_id = message_id
@@ -97,6 +97,8 @@ module IB
             super()
             load_map *keys
           end
+
+          define_method(:to_human, &human_block) if human_block
         end
       end
 
@@ -113,21 +115,15 @@ module IB
                                 [:client_id, :int],
                                 [:why_held, :string]
 
-      AccountValue = def_message 6, [:key, :string],
+      AccountValue = def_message(6, [:key, :string],
                                  [:value, :string],
                                  [:currency, :string],
-                                 [:account_name, :string]
-      class AccountValue
-        def to_human
-          "<AccountValue: #{@data[:account_name]}, #{@data[:key]}=#{@data[:value]} #{@data[:currency]}>"
-        end
+                                 [:account_name, :string]) do
+        "<AccountValue: #{@data[:account_name]}, #{@data[:key]}=#{@data[:value]} #{@data[:currency]}>"
       end
 
-      AccountUpdateTime = def_message 8, [:time_stamp, :string]
-      class AccountUpdateTime
-        def to_human
-          "<AccountUpdateTime: #{@data[:time_stamp]}>"
-        end
+      AccountUpdateTime = def_message(8, [:time_stamp, :string]) do
+        "<AccountUpdateTime: #{@data[:time_stamp]}>"
       end
 
       # This message is always sent by TWS automatically at connect.

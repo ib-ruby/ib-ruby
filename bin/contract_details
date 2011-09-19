@@ -26,17 +26,12 @@ ib.subscribe(IB::Messages::Incoming::Alert) { |msg| puts msg.to_human }
 # Now, subscribe to ContractData incoming events.  The code passed in the block
 # will be executed when a message of that type is received, with the received
 # message as its argument. In this case, we just print out the data.
-ib.subscribe(IB::Messages::Incoming::ContractData) do |msg|
-  puts msg.contract.inspect
-
-end
+ib.subscribe(:ContractData) { |msg| puts msg.contract.inspect }
 
 # Now we actually request historical data for the symbols we're interested in. TWS will
 # respond with a HistoricalData message, which will be processed by the code above.
 @market.each_pair do |id, contract|
-  ib.send IB::Messages::Outgoing::RequestContractData.new(
-              :id => id,
-              :contract => contract)
+  ib.send :RequestContractData, :id => id, :contract => contract
 end
 
 sleep 3 # Wait for IB to respond to our request

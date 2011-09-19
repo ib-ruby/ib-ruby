@@ -16,16 +16,14 @@ ib = IB::Connection.new
 
 # Subscribe to TWS alerts/errors and account-related messages
 # that TWS sends in response to account data request
-ib.subscribe(IB::Messages::Incoming::Alert,
-             IB::Messages::Incoming::AccountValue,
-             IB::Messages::Incoming::PortfolioValue,
-             IB::Messages::Incoming::AccountUpdateTime) { |msg| puts msg.to_human }
+ib.subscribe(:Alert, :AccountValue,
+             :PortfolioValue, :AccountUpdateTime) { |msg| puts msg.to_human }
 
-ib.send IB::Messages::Outgoing::RequestAccountData.new :subscribe => true
+ib.send :RequestAccountData, :subscribe => true
 
 puts "\nSubscribing to IB account data"
 puts "\n******** Press <Enter> to cancel... *********\n\n"
 gets
 puts "Cancelling account data subscription.."
 
-ib.send IB::Messages::Outgoing::RequestAccountData.new :subscribe => false
+ib.send :RequestAccountData, :subscribe => false

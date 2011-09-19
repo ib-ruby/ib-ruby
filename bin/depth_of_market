@@ -23,18 +23,16 @@ require 'ib-ruby'
 ib = IB::Connection.new
 
 # Subscribe to TWS alerts/errors
-ib.subscribe(IB::Messages::Incoming::Alert) { |msg| puts msg.to_human }
+ib.subscribe(:Alert) { |msg| puts msg.to_human }
 
 # Subscribe to MarketDepth events.
-ib.subscribe(IB::Messages::Incoming::MarketDepth) do |msg|
+ib.subscribe(:MarketDepth) do |msg|
   puts @market[msg.data[:id]].description + ": " + msg.to_human
 end
 
 # Now we actually request market data for the symbols we're interested in.
 @market.each_pair do |id, contract|
-  ib.send IB::Messages::Outgoing::RequestMarketDepth.new :id => id,
-                                                         :contract => contract,
-                                                         :num_rows => 5
+  ib.send :RequestMarketDepth, :id => id, :contract => contract, :num_rows => 5
 end
 
 puts "\nSubscribed to market data"
@@ -42,6 +40,4 @@ puts "\n******** Press <Enter> to cancel... *********\n\n"
 gets
 puts "Cancelling market data subscription.."
 
-@market.each_pair do |id, contract|
-  ib.send IB::Messages::Outgoing::CancelMarketDepth.new :id => id
-end
+@market.each_pair { |id, contract| ib.send :CancelMarketDepth, :id => id }

@@ -114,6 +114,10 @@ module IB
       raise ArgumentError.new "Need listener proc or block" unless code.is_a? Proc
 
       args.each do |message_class|
+        if message_class.is_a? Symbol
+          message_class = Messages::Incoming.const_get(message_class)
+        end
+
         unless message_class < Messages::Incoming::AbstractMessage
           raise ArgumentError.new "#{message_class} must be an IB message class"
         end
@@ -123,7 +127,11 @@ module IB
     end
 
     # Send an outgoing message.
-    def send(message)
+    def send(message, *args)
+      if message.is_a? Symbol
+        message = Messages::Outgoing.const_get(message).new *args
+      end
+
       raise Exception.new("only sending Messages::Outgoing") unless message.is_a? Messages::Outgoing::AbstractMessage
 
       message.send(@server)
