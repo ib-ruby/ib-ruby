@@ -5,11 +5,11 @@ module IB
 
     # send nice null terminated binary data
     def send(data)
-      self.syswrite(data.to_s + "\0")
+      self.syswrite(data.to_s + EOL)
     end
 
     def read_string
-      str = self.gets("\0").chop
+      str = self.gets(EOL).chop
       #if str.nil?
       #  p 'NIL! FReaking NILLLLLLLLLLLLLLLLLLLLLLLL!'
       #  ''

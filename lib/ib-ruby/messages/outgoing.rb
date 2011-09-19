@@ -9,21 +9,6 @@ module IB
   module Messages
     module Outgoing
 
-      EOL = "\0"
-
-      #FaMsgTypeName = {1 => "GROUPS",
-      #                 2 => "PROFILES",
-      #                 3 =>"ALIASES"}
-
-        # Enumeration of data types
-        DATA_TYPES = [:trades, :midpoint, :bid, :ask]
-
-        # Enumeration of bar size types for convenience.
-        # Bar sizes less than 30 seconds do not work for some securities.
-        BAR_SIZES = ['1 sec', '5 secs', '15 secs', '30 secs',
-                     '1 min', '2 mins', '3 mins', '5 mins',
-                     '15 mins', '30 mins', '1 hour', '1 day']
-
       class AbstractMessage
         # Class methods
         def self.message_id
@@ -36,9 +21,9 @@ module IB
 
         attr_reader :created_at, :data
 
-        # data is a Hash?
+        # data is a Hash
         def initialize(data = {})
-          @data = data # WTF? Datatypes::StringentHash.new(data)
+          @data = data
           @created_at = Time.now
         end
 
@@ -63,7 +48,7 @@ module IB
 
             #print 'SENDING: '
             #p datum
-            server[:socket].syswrite(datum.to_s + "\0")
+            server[:socket].syswrite(datum.to_s + EOL)
           end
         end
 
@@ -547,8 +532,6 @@ module IB
 
     end # module Outgoing
   end # module Messages
-  OutgoingMessages = Messages::Outgoing # Legacy alias
-
 end # module IB
 
 __END__

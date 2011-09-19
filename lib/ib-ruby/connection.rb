@@ -1,7 +1,5 @@
 require 'ib-ruby/socket'
 require 'logger'
-#require 'bigdecimal'
-#require 'bigdecimal/util'
 
 if RUBY_VERSION < "1.9"
   require 'sha1'
@@ -19,22 +17,24 @@ class Time
 end # Time
 
 module IB
-  # Encapsulates API connection to TWS
+  # Encapsulates API connection to TWS or Gateway
   class Connection
 
     # Please note, we are realizing only the most current TWS protocol versions,
     # thus improving performance at the expense of backwards compatibility.
     # Older protocol versions support can be found in older gem versions.
 
-    CLIENT_VERSION = 48 # # Was 27 in original Ruby code
+    CLIENT_VERSION = 48 # Was 27 in original Ruby code
     SERVER_VERSION = 53 # Minimal server version. Latest, was 38 in current Java code.
-    TWS_IP_ADDRESS = "127.0.0.1"
-    TWS_PORT = '4001' # Gateway, TWS: '7496'
+    DEFAULT_OPTIONS = {:host =>"127.0.0.1",
+                       :port => '4001', # Gateway, TWS: '7496'
+                       :open => true
+    }
 
     attr_reader :next_order_id
 
     def initialize(opts = {})
-      @options = {:ip => TWS_IP_ADDRESS, :port => TWS_PORT, }.merge(opts)
+      @options = DEFAULT_OPTIONS.merge(opts)
 
       @connected = false
       @next_order_id = nil
@@ -43,11 +43,10 @@ module IB
       # Message listeners. Key is the message class to listen for.
       # Value is an Array of Procs. The proc will be called with the populated message
       # instance as its argument when a message of that type is received.
+      # TODO: change Array of Procs into a Hash to allow unsubscribing
       @listeners = Hash.new { |hash, key| hash[key] = Array.new }
 
-      #logger.debug("IB#init: Initializing...")
-
-      self.open(@options)
+      self.open(@options) if @options[:open]
     end
 
     def server_version
@@ -63,11 +62,10 @@ module IB
       # sent at connect, and save the id.
       self.subscribe(Messages::Incoming::NextValidID) do |msg|
         @next_order_id = msg.data[:id]
-        p "Got next valid order id #{@next_order_id}."
+        puts "Got next valid order id #{@next_order_id}."
       end
 
-      @server[:socket] = IBSocket.open(opts[:ip], opts[:port])
-      #logger.info("* TWS socket connected to #{@options[:ip]}:#{@options[:port]}.")
+      @server[:socket] = IBSocket.open(opts[:host], opts[:port])
 
       # Secret handshake.
       @server[:socket].send(CLIENT_VERSION)
@@ -151,8 +149,6 @@ module IB
         end
       end # loop
     end # reader
-  end
-
-  # class Connection
-  IB = Connection
+  end # class Connection
+  IB = Connection # Legacy alias
 end # module IB

@@ -1,6 +1,21 @@
 module IB
   ### Widely used TWS constants:
 
+  EOL = "\0"
+
+  #FaMsgTypeName = {1 => "GROUPS",
+  #                 2 => "PROFILES",
+  #                 3 =>"ALIASES"}
+
+  # Enumeration of data types
+  DATA_TYPES = [:trades, :midpoint, :bid, :ask]
+
+  # Enumeration of bar size types for convenience.
+  # Bar sizes less than 30 seconds do not work for some securities.
+  BAR_SIZES = ['1 sec', '5 secs', '15 secs', '30 secs',
+               '1 min', '2 mins', '3 mins', '5 mins',
+               '15 mins', '30 mins', '1 hour', '1 day']
+
   # Tick types as received in TickPrice and TickSize messages (enumeration)
   TICK_TYPES = {
       # int id => :Description #  Corresponding API Event/Function/Method

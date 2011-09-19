@@ -8,7 +8,7 @@ $LOAD_PATH.unshift LIB_DIR unless $LOAD_PATH.include?(LIB_DIR)
 
 require 'rubygems'
 require 'bundler/setup'
-require 'ib-ruby2'
+require 'ib-ruby'
 
 ### Configurable Options
 Quiet = false # if Quiet == false, status data will be printed to STDERR
@@ -21,9 +21,6 @@ Timeout = 10 # How long to wait for messages from TWS before exiting, sec
            456 => IB::Symbols::Futures[:ym],
            789 => IB::Symbols::Forex[:gbpusd] # No historical market data for GBP/CASH@IDEALPRO Last 60
 }
-
-# To determine when the timeout has passed.
-@last_msg_time = Time.now.to_i + 2
 
 # Connect to IB TWS.
 ib = IB::Connection.new
@@ -62,7 +59,4 @@ end
               :format_date => 1)
 end
 
-loop do
-  exit(0) if Time.now.to_i > @last_msg_time + Timeout
-  sleep 1
-end
+sleep 5 # Wait for IB to respond to our request

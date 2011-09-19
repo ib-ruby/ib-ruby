@@ -4,6 +4,7 @@
 # This has been implemented with nils in Ruby to represent the case where an EOL should be sent.
 
 # TODO: Don't instantiate messages, use their classes as just namespace for .encode/decode
+# TODO: realize Message#fire method that raises EWrapper events
 
 module IB
   module Messages
@@ -256,7 +257,7 @@ module IB
         end
 
         def to_human
-          "<TickSize #{TICK_TYPES[@data[:tick_type]]}: size #{@data[:size]}>"
+          "<TickSize #{type}: size #{@data[:size]}>"
         end
       end
 
@@ -306,7 +307,10 @@ module IB
         end
 
         def to_human
-          "<TickSize #{TICK_TYPES[@data[:tick_type]]}: size #{@data[:size]}>"
+          "<TickOption #{type} for #{@data[:id]}: underlying @ #{@data[:under_price]}, "+
+              "option @ #{@data[:option_price]}, IV #{@data[:implied_volatility]}%, " +
+              "delta #{@data[:delta]}, gamma #{@data[:gamma]}, vega #{@data[:vega]}, " +
+              "theta #{@data[:theta]}, pv_dividend #{@data[:pv_dividend]}>"
         end
       end # TickOption
       TickOptionComputation = TickOption
@@ -757,11 +761,7 @@ module IB
 
     end # module Incoming
   end # module Messages
-
-  IncomingMessages = Messages::Incoming # Legacy alias
-
 end # module IB
-
 __END__
 
     // incoming msg id's
@@ -785,8 +785,8 @@ __END__
     static final int BOND_CONTRACT_DATA = 18; *
     static final int SCANNER_PARAMETERS = 19; *
     static final int SCANNER_DATA       = 20; *
+    static final int TICK_OPTION_COMPUTATION = 21; *
     --------- ALREADY IMLEMENTED -----------
-    static final int TICK_OPTION_COMPUTATION = 21;
     static final int TICK_GENERIC = 45;
     static final int TICK_STRING = 46;
     static final int TICK_EFP = 47;

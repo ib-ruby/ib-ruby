@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby
 #
 # This script gets details for specific symbol from IB
-#
 
 require 'pathname'
 LIB_DIR = (Pathname.new(__FILE__).dirname + '../lib/').realpath.to_s
@@ -9,7 +8,7 @@ $LOAD_PATH.unshift LIB_DIR unless $LOAD_PATH.include?(LIB_DIR)
 
 require 'rubygems'
 require 'bundler/setup'
-require 'ib-ruby2'
+require 'ib-ruby'
 
 # Definition of what we want market data for.  We have to keep track of what ticker id
 # corresponds to what symbol ourselves, because the ticks don't include any other

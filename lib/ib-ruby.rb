@@ -1,10 +1,9 @@
+module IB
+end # module IbRuby
+
 require 'version'
-
-module IbRuby
-end  # module IbRuby
-
-require 'ib-ruby/datatypes'
-require 'ib-ruby/ib'
+require 'ib-ruby/constants'
+require 'ib-ruby/connection'
+require 'ib-ruby/models'
+require 'ib-ruby/symbols'
 require 'ib-ruby/messages'
-require 'ib-ruby/symbols/forex'
-require 'ib-ruby/symbols/futures'

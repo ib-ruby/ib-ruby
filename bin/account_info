@@ -9,7 +9,7 @@ $LOAD_PATH.unshift LIB_DIR unless $LOAD_PATH.include?(LIB_DIR)
 
 require 'rubygems'
 require 'bundler/setup'
-require 'ib-ruby2'
+require 'ib-ruby'
 
 # First, connect to IB TWS.
 ib = IB::Connection.new
