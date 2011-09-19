@@ -575,6 +575,7 @@ module IB
           super
           load_map [:id, :int], # request_id
                    [:order_id, :int]
+
           @contract =
               Models::Contract.new :con_id => @socket.read_int,
                                    :symbol => @socket.read_string,
@@ -790,7 +791,7 @@ __END__
     static final int TICK_PRICE		= 1; * TODO: realize both events
     static final int TICK_SIZE		= 2; *
     static final int ORDER_STATUS	= 3; *
-    static final int ERR_MSG		= 4; *
+    static final int ERR_MSG		= 4;   *
     static final int OPEN_ORDER         = 5;  *
     static final int ACCT_VALUE         = 6;  *
     static final int PORTFOLIO_VALUE    = 7;  *

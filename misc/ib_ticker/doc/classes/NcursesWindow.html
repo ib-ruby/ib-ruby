@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Class: NcursesWindow</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <link rel="stylesheet" href=".././rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "width=400,height=400,scrollbars=yes" )
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+  <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'><tr>
+  <td class="file-title"><span class="file-title-prefix">Class</span><br />NcursesWindow</td>
+  <td align="right">
+    <table cellspacing=0 cellpadding=2>
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../files/ncurses_ticker_rb.html">ncurses_ticker.rb</a>
+        </td>
+      </tr>
+    <tr>
+      <td>Parent:</td>
+      <td>
+Object
+     </td>
+   </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+ <!-- banner header -->
+
+  <div id="bodyContent">
+      <div id="content">
+  <table cellpadding='0' cellspacing='0' border='0' width="100%"><tr><td align="center">
+    <map id="map" name="map">
+  <area shape="RECT" coords="20,103,124,151"      href="NcursesTicker.html" alt="NcursesTicker">
+  <area shape="RECT" coords="148,103,263,151"      href="NcursesWindow.html" alt="NcursesWindow">
+  <area shape="RECT" coords="7,7,137,55"      href="DRb/DRbUndumped.html" alt="DRb::DRbUndumped">
+  <area shape="RECT" coords="169,7,241,55"      href="Ncurses.html" alt="Ncurses">
+</map>
+<img src="../dot/f_3.png" usemap="#map" border=0 alt="TopLevel">
+  </td></tr></table>
+
+
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+  <li><a href="#M000083">allocateWindow</a></li>
+  <li><a href="#M000084">display</a></li>
+  <li><a href="#M000086">finishIt</a></li>
+  <li><a href="#M000085">getInput</a></li>
+  <li><a href="#M000082">new</a></li>
+  </ul>
+
+<div class="sectiontitle">Included Modules</div>
+<ul>
+  <li>Ncurses</li>
+</ul>
+
+
+
+
+
+<div class="sectiontitle">Public Class methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M000082"></a><b>new</b>(title=&quot;ib_ticker&quot;)
+  </div>
+  <div class="description">
+  <p>
+initialisiert die Ncurses-Umgebung
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000082_source')" id="l_M000082_source">show source</a> ]</p>
+  <div id="M000082_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ncurses_ticker.rb, line 8</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">title</span>=<span class="ruby-value str">&quot;ib_ticker&quot;</span>)
+    <span class="ruby-ivar">@win</span>=<span class="ruby-constant">Array</span>.<span class="ruby-identifier">new</span>
+    
+     <span class="ruby-constant">Ncurses</span>.<span class="ruby-identifier">initscr</span>()
+       <span class="ruby-constant">Ncurses</span>.<span class="ruby-identifier">cbreak</span>()
+       <span class="ruby-constant">Ncurses</span>.<span class="ruby-identifier">noecho</span>()
+    <span class="ruby-comment cmt"># start_color muss alle Farb-Definitionen vorangehen  </span>
+    <span class="ruby-constant">Ncurses</span>.<span class="ruby-identifier">start_color</span>()
+    <span class="ruby-constant">Ncurses</span>.<span class="ruby-identifier">init_color</span>(<span class="ruby-constant">COLOR_WHITE</span>,<span class="ruby-value">1000</span>,<span class="ruby-value">1000</span>,<span class="ruby-value">1000</span>)
+    <span class="ruby-constant">Ncurses</span>.<span class="ruby-identifier">init_pair</span>(<span class="ruby-value">1</span>,<span class="ruby-constant">COLOR_BLACK</span>, <span class="ruby-constant">COLOR_WHITE</span>)
+    <span class="ruby-constant">Ncurses</span>.<span class="ruby-identifier">init_pair</span>(<span class="ruby-value">2</span>, <span class="ruby-constant">COLOR_BLUE</span>, <span class="ruby-constant">COLOR_WHITE</span>)
+    <span class="ruby-constant">Ncurses</span>.<span class="ruby-identifier">init_pair</span>(<span class="ruby-value">3</span>, <span class="ruby-constant">COLOR_GREEN</span>, <span class="ruby-constant">COLOR_WHITE</span>)
+    <span class="ruby-constant">Ncurses</span>.<span class="ruby-identifier">init_pair</span>(<span class="ruby-value">4</span>, <span class="ruby-constant">COLOR_RED</span>, <span class="ruby-constant">COLOR_WHITE</span>)
+    <span class="ruby-ivar">@color</span>={ <span class="ruby-value str">&quot;normal&quot;</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-constant">Ncurses</span>.<span class="ruby-constant">COLOR_PAIR</span>(<span class="ruby-value">1</span>) ,
+            <span class="ruby-value str">&quot;blue&quot;</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-constant">Ncurses</span>.<span class="ruby-constant">COLOR_PAIR</span>(<span class="ruby-value">2</span>) ,
+              <span class="ruby-value str">&quot;green&quot;</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-constant">Ncurses</span>.<span class="ruby-constant">COLOR_PAIR</span>(<span class="ruby-value">3</span>) ,
+            <span class="ruby-value str">&quot;red&quot;</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-constant">Ncurses</span>.<span class="ruby-constant">COLOR_PAIR</span>(<span class="ruby-value">4</span>) }
+    <span class="ruby-ivar">@dimFenster</span>={ <span class="ruby-identifier">:width</span> =<span class="ruby-operator">&gt;</span><span class="ruby-value">29</span>, <span class="ruby-identifier">:height</span> =<span class="ruby-operator">&gt;</span> (<span class="ruby-constant">Ncurses</span>.<span class="ruby-constant">LINES</span> <span class="ruby-operator">/</span> <span class="ruby-value">1</span>).<span class="ruby-identifier">to_i</span><span class="ruby-operator">-</span><span class="ruby-value">1</span>} <span class="ruby-comment cmt"># /1: volle Bildschirmhohe , /2: halbee höhe...</span>
+    <span class="ruby-identifier">e</span>=<span class="ruby-constant">Ncurses</span><span class="ruby-operator">::</span><span class="ruby-constant">WINDOW</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value">0</span>,<span class="ruby-value">0</span>,<span class="ruby-value">0</span>,<span class="ruby-value">0</span>)
+       <span class="ruby-identifier">e</span>.<span class="ruby-identifier">bkgd</span>(<span class="ruby-ivar">@color</span>[<span class="ruby-value str">&quot;normal&quot;</span>])
+    <span class="ruby-identifier">e</span>.<span class="ruby-identifier">attron</span>(<span class="ruby-ivar">@color</span>[<span class="ruby-value str">&quot;blue&quot;</span>])
+    <span class="ruby-identifier">e</span>.<span class="ruby-identifier">mvprintw</span>(<span class="ruby-value">0</span>,(<span class="ruby-constant">Ncurses</span>.<span class="ruby-constant">COLS</span> <span class="ruby-operator">/</span> <span class="ruby-value">2</span>)<span class="ruby-operator">-</span><span class="ruby-value">5</span> ,<span class="ruby-identifier">title</span>)
+    <span class="ruby-identifier">e</span>.<span class="ruby-identifier">attroff</span>(<span class="ruby-ivar">@color</span>[<span class="ruby-value str">&quot;blue&quot;</span>])
+    
+    <span class="ruby-constant">Ncurses</span><span class="ruby-operator">::</span><span class="ruby-constant">Panel</span><span class="ruby-operator">::</span><span class="ruby-constant">PANEL</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">e</span>)
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="sectiontitle">Public Instance methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M000083"></a><b>allocateWindow</b>(stock,colorBorder='normal', colorWindow='normal')
+  </div>
+  <div class="description">
+  <p>
+erzeugt ein neues Fenster und gibt die FensterNummer zurueck
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000083_source')" id="l_M000083_source">show source</a> ]</p>
+  <div id="M000083_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ncurses_ticker.rb, line 37</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">allocateWindow</span>(<span class="ruby-identifier">stock</span>,<span class="ruby-identifier">colorBorder</span>=<span class="ruby-value str">'normal'</span>, <span class="ruby-identifier">colorWindow</span>=<span class="ruby-value str">'normal'</span>)
+        <span class="ruby-comment cmt"># Ncurses::WINDOW.new(Höhe, Breite, X-Pos, Y-Pos)</span>
+        <span class="ruby-comment cmt"># Ist Höhe oder Breite 0, wird die maximal mögliche Ausbreitung verwendet</span>
+    <span class="ruby-identifier">countFenster</span>=<span class="ruby-ivar">@win</span>.<span class="ruby-identifier">size</span>
+    
+    <span class="ruby-keyword kw">if</span> (<span class="ruby-identifier">countFenster</span><span class="ruby-operator">+</span><span class="ruby-value">1</span>)<span class="ruby-operator">*</span> <span class="ruby-ivar">@dimFenster</span>[<span class="ruby-identifier">:width</span>] <span class="ruby-operator">&gt;</span> <span class="ruby-constant">Ncurses</span>.<span class="ruby-constant">COLS</span> 
+      <span class="ruby-identifier">top</span>=<span class="ruby-ivar">@dimFenster</span>[<span class="ruby-identifier">:height</span>]<span class="ruby-operator">+</span><span class="ruby-value">2</span>
+      <span class="ruby-identifier">colFenster</span>= <span class="ruby-identifier">countFenster</span><span class="ruby-operator">-</span> (<span class="ruby-constant">Ncurses</span>.<span class="ruby-constant">COLS</span><span class="ruby-operator">/</span><span class="ruby-ivar">@dimFenster</span>[<span class="ruby-identifier">:width</span>]).<span class="ruby-identifier">to_i</span>  
+      
+    <span class="ruby-keyword kw">else</span>
+      <span class="ruby-identifier">top</span>=<span class="ruby-value">1</span>
+      <span class="ruby-identifier">colFenster</span>=<span class="ruby-identifier">countFenster</span>
+    <span class="ruby-keyword kw">end</span>
+    <span class="ruby-identifier">eins</span> = <span class="ruby-constant">Ncurses</span><span class="ruby-operator">::</span><span class="ruby-constant">WINDOW</span>.<span class="ruby-identifier">new</span>(<span class="ruby-ivar">@dimFenster</span>[<span class="ruby-identifier">:height</span>] ,
+                          <span class="ruby-ivar">@dimFenster</span>[<span class="ruby-identifier">:width</span>],
+                          <span class="ruby-identifier">top</span>, 
+                          <span class="ruby-identifier">colFenster</span><span class="ruby-operator">*</span><span class="ruby-ivar">@dimFenster</span>[<span class="ruby-identifier">:width</span>])
+      <span class="ruby-identifier">eins</span>.<span class="ruby-identifier">bkgd</span>(<span class="ruby-ivar">@color</span>[<span class="ruby-identifier">colorBorder</span>])
+    <span class="ruby-comment cmt"># Nun malen wir noch hübsche Rahmen in unser Fenster</span>
+      <span class="ruby-identifier">eins</span>.<span class="ruby-identifier">border</span>(<span class="ruby-operator">*</span>([<span class="ruby-value">0</span>] <span class="ruby-operator">*</span> <span class="ruby-value">8</span>))
+     <span class="ruby-comment cmt"># Ausserdem sollten wir sie einen Panel hinzufügen, damit sie immer</span>
+     <span class="ruby-comment cmt"># aktualisiert werden, wenn wir Ncurses::Panel.update aufrufen. Bei</span>
+     <span class="ruby-comment cmt"># Ncurses wird erst alles in einen Buffer geschrieben und erst mit</span>
+     <span class="ruby-comment cmt"># entsprechenden Refresh-Aufrufen wirklich auf dem Bildschirm dargestellt!</span>
+      <span class="ruby-constant">Ncurses</span><span class="ruby-operator">::</span><span class="ruby-constant">Panel</span><span class="ruby-operator">::</span><span class="ruby-constant">PANEL</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">eins</span>)
+   <span class="ruby-comment cmt"># Nun machen wir uns unsere inneren Fenster, damit der Rahmen nicht</span>
+     <span class="ruby-comment cmt"># übermalt wird, machen wir sie um je ein Zeichen pro Rand kleiner</span>
+  
+    <span class="ruby-ivar">@win</span>[<span class="ruby-identifier">countFenster</span>] = <span class="ruby-constant">Ncurses</span><span class="ruby-operator">::</span><span class="ruby-constant">WINDOW</span>.<span class="ruby-identifier">new</span>(<span class="ruby-ivar">@dimFenster</span>[<span class="ruby-identifier">:height</span>] <span class="ruby-operator">-</span> <span class="ruby-value">2</span>,
+                          <span class="ruby-ivar">@dimFenster</span>[<span class="ruby-identifier">:width</span>] <span class="ruby-operator">-</span> <span class="ruby-value">2</span>,
+                           <span class="ruby-identifier">top</span><span class="ruby-operator">+</span><span class="ruby-value">1</span>,
+                            (<span class="ruby-identifier">colFenster</span><span class="ruby-operator">*</span><span class="ruby-ivar">@dimFenster</span>[<span class="ruby-identifier">:width</span>]) <span class="ruby-operator">+</span><span class="ruby-value">1</span>)
+      <span class="ruby-ivar">@win</span>[<span class="ruby-identifier">countFenster</span>].<span class="ruby-identifier">bkgd</span>(<span class="ruby-ivar">@color</span>[<span class="ruby-identifier">colorWindow</span>])
+    <span class="ruby-comment cmt"># Und wieder fügen wir sie dem Panel hinzu</span>
+    <span class="ruby-constant">Ncurses</span><span class="ruby-operator">::</span><span class="ruby-constant">Panel</span><span class="ruby-operator">::</span><span class="ruby-constant">PANEL</span>.<span class="ruby-identifier">new</span>(<span class="ruby-ivar">@win</span>[<span class="ruby-identifier">countFenster</span>])
+    <span class="ruby-comment cmt"># Wenn wir am Ende des Fensters angekommen sind, soll weiterscrollt werden</span>
+      <span class="ruby-ivar">@win</span>[<span class="ruby-identifier">countFenster</span>].<span class="ruby-identifier">scrollok</span>(<span class="ruby-keyword kw">true</span>)
+    
+    <span class="ruby-identifier">eins</span>.<span class="ruby-identifier">mvprintw</span>(<span class="ruby-value">0</span>,<span class="ruby-value">4</span>,<span class="ruby-identifier">stock</span>.<span class="ruby-identifier">ibSymbol</span>)
+    <span class="ruby-identifier">display</span> <span class="ruby-identifier">countFenster</span>,<span class="ruby-value str">&quot;&quot;</span>
+    <span class="ruby-identifier">countFenster</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000084"></a><b>display</b>(window,message,color=&quot;normal&quot;)
+  </div>
+  <div class="description">
+  <p>
+schreibt den Text auf das Fenster
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000084_source')" id="l_M000084_source">show source</a> ]</p>
+  <div id="M000084_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ncurses_ticker.rb, line 80</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">display</span>(<span class="ruby-identifier">window</span>,<span class="ruby-identifier">message</span>,<span class="ruby-identifier">color</span>=<span class="ruby-value str">&quot;normal&quot;</span>)
+    <span class="ruby-ivar">@win</span>[<span class="ruby-identifier">window</span>].<span class="ruby-identifier">attron</span>(<span class="ruby-ivar">@color</span>[<span class="ruby-identifier">color</span>])   
+    <span class="ruby-ivar">@win</span>[<span class="ruby-identifier">window</span>].<span class="ruby-identifier">printw</span>(<span class="ruby-identifier">message</span><span class="ruby-operator">&lt;&lt;</span><span class="ruby-value str">&quot;\n&quot;</span>)    
+     <span class="ruby-ivar">@win</span>[<span class="ruby-identifier">window</span>].<span class="ruby-identifier">attroff</span>(<span class="ruby-ivar">@color</span>[<span class="ruby-identifier">color</span>])
+     <span class="ruby-constant">Ncurses</span><span class="ruby-operator">::</span><span class="ruby-constant">Panel</span>.<span class="ruby-identifier">update</span>
+     <span class="ruby-constant">Ncurses</span>.<span class="ruby-identifier">doupdate</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000086"></a><b>finishIt</b>()
+  </div>
+  <div class="description">
+  <p>
+AufraeumAktionen zum Ende der Apllikation
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000086_source')" id="l_M000086_source">show source</a> ]</p>
+  <div id="M000086_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ncurses_ticker.rb, line 99</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">finishIt</span>
+      <span class="ruby-constant">Ncurses</span>.<span class="ruby-identifier">echo</span>()
+        <span class="ruby-constant">Ncurses</span>.<span class="ruby-identifier">nocbreak</span>()
+        <span class="ruby-constant">Ncurses</span>.<span class="ruby-identifier">nl</span>()
+      <span class="ruby-constant">Ncurses</span>.<span class="ruby-identifier">endwin</span>   
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000085"></a><b>getInput</b>()
+  </div>
+  <div class="description">
+  <p>
+diese Routine vertraegt sich nicht mit dem KursImport
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000085_source')" id="l_M000085_source">show source</a> ]</p>
+  <div id="M000085_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ncurses_ticker.rb, line 88</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">getInput</span>
+    <span class="ruby-identifier">loop</span> <span class="ruby-keyword kw">do</span>
+      <span class="ruby-identifier">display</span>(<span class="ruby-value">0</span>,<span class="ruby-value str">'press a key or &quot;d&quot; to exit'</span>)
+      <span class="ruby-identifier">ch</span>=<span class="ruby-ivar">@eins</span>.<span class="ruby-identifier">getch</span>
+      <span class="ruby-identifier">display</span>(<span class="ruby-value">0</span>,<span class="ruby-node">&quot;you pressed #{ch}&quot;</span>)
+      <span class="ruby-keyword kw">break</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">ch</span><span class="ruby-operator">==</span><span class="ruby-value">100</span>
+    <span class="ruby-keyword kw">end</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+</div>
+
+  </div>
+
+    </body>
+</html>

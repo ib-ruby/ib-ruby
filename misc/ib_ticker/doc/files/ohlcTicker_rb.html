@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>File: ohlcTicker.rb</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <link rel="stylesheet" href=".././rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "width=400,height=400,scrollbars=yes" )
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+  <table border='0' cellpadding='0' cellspacing='0' width="100%" class='banner'>
+  <tr><td>
+    <table width="100%" border='0' cellpadding='0' cellspacing='0'><tr>
+      <td class="file-title" colspan="2"><span class="file-title-prefix">File</span><br />ohlcTicker.rb</td>
+      <td align="right">
+        <table border='0' cellspacing="0" cellpadding="2">
+          <tr>
+            <td>Path:</td>
+            <td>ohlcTicker.rb
+            </td>
+          </tr>
+          <tr>
+            <td>Modified:</td>
+            <td>Fri Sep 16 13:28:01 CEST 2005</td>
+          </tr>
+        </table>
+      </td></tr>
+    </table>
+  </td></tr>
+</table><br>
+ <!-- banner header -->
+
+  <div id="bodyContent">
+      <div id="content">
+  <table cellpadding='0' cellspacing='0' border='0' width="100%"><tr><td align="center">
+    <map id="map" name="map">
+  <area shape="RECT" coords="7,199,100,247"      href="../classes/MysqlTicker.html" alt="MysqlTicker">
+  <area shape="RECT" coords="56,103,160,151"      href="../classes/RemoteTicker.html" alt="RemoteTicker">
+  <area shape="RECT" coords="124,199,204,247"      href="../classes/FileTicker.html" alt="FileTicker">
+  <area shape="RECT" coords="43,7,174,55"      href="../classes/DRb/DRbUndumped.html" alt="DRb::DRbUndumped">
+</map>
+<img src="../dot/f_7.png" usemap="#map" border=0 alt="TopLevel">
+  </td></tr></table>
+
+  <div class="description"><pre>
+ -----------------------------------------------------------------------------------------------------------------------------------
+ ohlcTicker.rb    client-for ib-ticker
+</pre>
+<p>
+.ohlcTicker.rb connects to &#8216;ib-ticker&#8217; running on port 33810 on
+localhost
+</p>
+<pre>
+  and saves the data according to the following command line parameter
+  * --mysql  -&gt; saves data in mysql-tables
+  * --file     -&gt; saves data in  [ib_symbol].ohlc  files in the current directory
+  * --type  [file, mysql, remote]  -&gt; sets the output-Mode directly
+     *  stock   one stock out of stocks.yaml (name and alias-entrys are supported)
+  *  contract   [mmyy] month and year either as string or as number e.g. 305, 1204
+              (uses default of stocks.yaml if omitted or not suitable)
+  all command-parameters are optional.
+</pre>
+<p>
+Example:
+</p>
+<pre>
+  ruby ohlcTicker.rb --file --resolution 10m dax 605 stoxx 605
+  saves 10 min. ohlc-records to FESX JUN 05.ohlc and FDAX JUN 05.ohlc
+
+  DefaultValue of  --type is 'remote',
+                  --resolution is '1m' (1 Minute)
+  The default-stocks are noted in the branch starting at row 145:
+       if furtherArguments.empty?
+          [ 'stoxx', 'bund', 'bobl', 'dax'].each do |fut|
+            [605].each do |contract|
+</pre>
+</div>
+
+  <div class="sectiontitle">Required Files</div>
+  <ul>
+  <li>drb</li>
+  <li><a href="stock_rb.html">stock</a></li>
+  <li>drb/observer</li>
+  <li><a href="ohlc_rb.html">ohlc</a></li>
+  <li><a href="ohlcRecord_rb.html">ohlcRecord</a></li>
+  <li><a href="mysql_class_rb.html">mysql_class</a></li>
+  <li>optparse</li>
+  </ul>
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+  <li><a href="#M000002">connectNow</a></li>
+  </ul>
+
+
+
+
+  <div class="sectiontitle">Constants</div>
+  <table border='0' cellpadding='5'>
+  <tr valign='top'>
+    <td class="attr-name">Version</td>
+    <td>=</td>
+    <td class="attr-value">&quot;1.2&quot;</td>
+  </tr>
+  </table>
+
+
+<div class="sectiontitle">Public Instance methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M000002"></a><b>connectNow</b>(s,server,type)
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000002_source')" id="l_M000002_source">show source</a> ]</p>
+  <div id="M000002_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ohlcTicker.rb, line 199</span>
+    <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">connectNow</span>(<span class="ruby-identifier">s</span>,<span class="ruby-identifier">server</span>,<span class="ruby-identifier">type</span>) 
+        <span class="ruby-identifier">puts</span> <span class="ruby-value str">' '</span>
+        <span class="ruby-identifier">puts</span> <span class="ruby-node">&quot; requesting ticker data for  #{s.ibSymbol}  &quot;</span>
+        <span class="ruby-identifier">puts</span> <span class="ruby-value str">' '</span>
+        
+        <span class="ruby-keyword kw">begin</span>
+          <span class="ruby-keyword kw">case</span> <span class="ruby-identifier">type</span>
+            <span class="ruby-keyword kw">when</span> <span class="ruby-value str">'mysql'</span>
+              <span class="ruby-identifier">ticker</span>=<span class="ruby-constant">MysqlTicker</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">s</span>,<span class="ruby-identifier">server</span>)
+      
+            <span class="ruby-keyword kw">when</span> <span class="ruby-value str">'file'</span>
+              <span class="ruby-identifier">ticker</span>=<span class="ruby-constant">FileTicker</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">s</span>,<span class="ruby-identifier">server</span>)
+        
+            <span class="ruby-keyword kw">else</span>
+            <span class="ruby-identifier">ticker</span>=<span class="ruby-constant">RemoteTicker</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">s</span>,<span class="ruby-identifier">server</span>)
+          <span class="ruby-keyword kw">end</span>
+      
+        <span class="ruby-keyword kw">rescue</span>  <span class="ruby-constant">StandardError</span>
+            <span class="ruby-identifier">$stderr</span>.<span class="ruby-identifier">print</span> <span class="ruby-value str">&quot; drb failed: \n\n --------------------------------------------------\n no connection to the server\n&quot;</span>
+          <span class="ruby-identifier">$stderr</span>.<span class="ruby-identifier">print</span> <span class="ruby-value str">&quot; --------------------------------------------------\n&quot;</span>
+          <span class="ruby-identifier">$stderr</span>.<span class="ruby-identifier">print</span> <span class="ruby-value str">&quot; please start the server (ib_ticker.rb) \n&quot;</span>
+          <span class="ruby-identifier">$stderr</span>.<span class="ruby-identifier">print</span> <span class="ruby-node">&quot; and restart #{$0}\n \n errorCode:\n #{$!} \n\n\n&quot;</span>
+          <span class="ruby-identifier">raise</span> <span class="ruby-constant">SystemError</span>
+        <span class="ruby-keyword kw">end</span>
+      [<span class="ruby-identifier">ticker</span>]   <span class="ruby-comment cmt"># returnValue</span>
+    <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+</div>
+
+  </div>
+
+    </body>
+</html>

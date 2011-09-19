@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>File: stock.rb</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <link rel="stylesheet" href=".././rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "width=400,height=400,scrollbars=yes" )
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+  <table border='0' cellpadding='0' cellspacing='0' width="100%" class='banner'>
+  <tr><td>
+    <table width="100%" border='0' cellpadding='0' cellspacing='0'><tr>
+      <td class="file-title" colspan="2"><span class="file-title-prefix">File</span><br />stock.rb</td>
+      <td align="right">
+        <table border='0' cellspacing="0" cellpadding="2">
+          <tr>
+            <td>Path:</td>
+            <td>stock.rb
+            </td>
+          </tr>
+          <tr>
+            <td>Modified:</td>
+            <td>Fri Sep 16 07:56:34 CEST 2005</td>
+          </tr>
+        </table>
+      </td></tr>
+    </table>
+  </td></tr>
+</table><br>
+ <!-- banner header -->
+
+  <div id="bodyContent">
+      <div id="content">
+  <table cellpadding='0' cellspacing='0' border='0' width="100%"><tr><td align="center">
+    <map id="map" name="map">
+  <area shape="RECT" coords="28,124,100,172"      href="../classes/Stock.html" alt="Stock">
+  <area shape="RECT" coords="124,28,196,76"      href="../classes/String.html" alt="String">
+  <area shape="RECT" coords="18,17,112,64"      href="../classes/IB_Definitions.html" alt="IB_Definitions">
+</map>
+<img src="../dot/f_6.png" usemap="#map" border=0 alt="TopLevel">
+  </td></tr></table>
+
+  <div class="description"><p>
+# Die Klasse <a href="../classes/Stock.html">Stock</a> ist die MutterKlasse
+für Chart, Account und <a href="../classes/Ticker.html">Ticker</a>.
+</p>
+<h2>Modul <a href="../classes/IB_Definitions.html">IB_Definitions</a></h2>
+<p>
+Die Methoden dieses Moduls bündeln den Zugang zu den ib-spezifischen
+Einstellungen
+</p>
+<p>
+Aus der yaml-Datei werden folgende Daten verarbeitet:
+</p>
+<pre>
+ 160 ib:
+ 161  underlying: gbm     &lt;--- Hier Eintrag der TWS im Underlying-Modus eintragen
+ 162  symbol:  fgbm     &lt;--- Hier den konstanten Teil aus dem Symbol-Modus eintragen
+ 163  exchange: dtb     &lt;--- Die Börse
+ 164  contract: 305     &lt;--- Das ist der default-Kontrakt.
+ 165  backtestintervall: [ 1203, 304 , 604 , 904, 1204 ]
+</pre>
+</div>
+
+  <div class="sectiontitle">Required Files</div>
+  <ul>
+  <li>pp</li>
+  <li>yaml</li>
+  <li><a href="stdExt_rb.html">stdExt</a></li>
+  <li>optparse</li>
+  <li>pp</li>
+  </ul>
+
+
+
+
+
+
+
+
+</div>
+
+  </div>
+
+    </body>
+</html>

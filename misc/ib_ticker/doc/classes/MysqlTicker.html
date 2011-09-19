@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Class: MysqlTicker</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <link rel="stylesheet" href=".././rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "width=400,height=400,scrollbars=yes" )
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+  <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'><tr>
+  <td class="file-title"><span class="file-title-prefix">Class</span><br />MysqlTicker</td>
+  <td align="right">
+    <table cellspacing=0 cellpadding=2>
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../files/ohlcTicker_rb.html">ohlcTicker.rb</a>
+        </td>
+      </tr>
+    <tr>
+      <td>Parent:</td>
+      <td>
+        <a href="RemoteTicker.html">
+RemoteTicker
+         </a>
+     </td>
+   </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+ <!-- banner header -->
+
+  <div id="bodyContent">
+      <div id="content">
+  <table cellpadding='0' cellspacing='0' border='0' width="100%"><tr><td align="center">
+    <map id="map" name="map">
+  <area shape="RECT" coords="7,199,100,247"      href="MysqlTicker.html" alt="MysqlTicker">
+  <area shape="RECT" coords="56,103,160,151"      href="RemoteTicker.html" alt="RemoteTicker">
+  <area shape="RECT" coords="124,199,204,247"      href="FileTicker.html" alt="FileTicker">
+  <area shape="RECT" coords="43,7,174,55"      href="DRb/DRbUndumped.html" alt="DRb::DRbUndumped">
+</map>
+<img src="../dot/f_7.png" usemap="#map" border=0 alt="TopLevel">
+  </td></tr></table>
+
+  <div class="description"><p>
+Überschreibt die &#8216;update&#8217;-Methode von <a
+href="RemoteTicker.html">RemoteTicker</a>.
+</p>
+<p>
+Die <a href="OHLC.html">OHLC</a>-Objekte werden nun in der zugeordneten
+mysql-Tabelle gespeichert.
+</p>
+</div>
+
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+  <li><a href="#M000027">new</a></li>
+  <li><a href="#M000028">output</a></li>
+  </ul>
+
+
+
+
+
+
+<div class="sectiontitle">Public Class methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M000027"></a><b>new</b>(s,server)
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000027_source')" id="l_M000027_source">show source</a> ]</p>
+  <div id="M000027_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ohlcTicker.rb, line 107</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">s</span>,<span class="ruby-identifier">server</span>)
+      <span class="ruby-keyword kw">super</span>(<span class="ruby-identifier">s</span>,<span class="ruby-identifier">server</span>)
+      <span class="ruby-comment cmt"># check wether the datbase exists</span>
+      <span class="ruby-identifier">db</span>=<span class="ruby-constant">SQLquery</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value str">&quot;ohlc&quot;</span>,<span class="ruby-node">&quot;show tables like 'ib_#{@stock.getDatabaseName}'&quot;</span>)
+      <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">db</span>.<span class="ruby-identifier">getRowCount</span><span class="ruby-operator">==</span><span class="ruby-value">0</span>
+        <span class="ruby-identifier">vorkomma</span>=<span class="ruby-constant">Math</span><span class="ruby-operator">::</span><span class="ruby-identifier">log10</span>(<span class="ruby-identifier">s</span>.<span class="ruby-identifier">tickRange</span>[<span class="ruby-value str">&quot;max&quot;</span>]).<span class="ruby-identifier">round</span> <span class="ruby-operator">+</span> <span class="ruby-constant">Math</span><span class="ruby-operator">::</span><span class="ruby-identifier">log10</span>(<span class="ruby-identifier">s</span>.<span class="ruby-identifier">tickSize</span>).<span class="ruby-identifier">round</span>.<span class="ruby-identifier">abs</span>
+        <span class="ruby-identifier">nachkomma</span>=<span class="ruby-constant">Math</span><span class="ruby-operator">::</span><span class="ruby-identifier">log10</span>(<span class="ruby-identifier">s</span>.<span class="ruby-identifier">tickSize</span>) <span class="ruby-operator">&lt;</span> <span class="ruby-value">0</span>  <span class="ruby-operator">?</span> <span class="ruby-constant">Math</span><span class="ruby-operator">::</span><span class="ruby-identifier">log10</span>(<span class="ruby-identifier">s</span>.<span class="ruby-identifier">tickSize</span>).<span class="ruby-identifier">round</span>.<span class="ruby-identifier">abs</span> <span class="ruby-operator">:</span> <span class="ruby-value">0</span>  
+        <span class="ruby-constant">SQLquery</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value str">'ohlc'</span>,  <span class="ruby-node">&quot;CREATE TABLE ib_#{s.getDatabaseName }  (
+                  id int( 10 ) unsigned NOT NULL AUTO_INCREMENT ,
+                  date datetime NOT NULL default '0000-00-00 00:00:00',
+                  open decimal( #{vorkomma},#{nachkomma} ) NOT NULL default '0',
+                  high decimal( #{vorkomma},#{nachkomma} ) NOT NULL default '0',
+                  low decimal( #{vorkomma},#{nachkomma} ) NOT NULL default '0',
+                  close decimal( #{vorkomma},#{nachkomma} ) NOT NULL default '0',      
+                  price  decimal( #{vorkomma+2},#{nachkomma+2} ) NOT NULL default '0',
+                  volume mediumint( 9 ) NOT NULL default '0',
+                  PRIMARY KEY ( `id` ) ,
+                  KEY `date` ( `date` )
+                  ) TYPE = MYISAM COMMENT = 'ohlc-IndexFuture-Table';
+        
+                &quot;</span>)
+        <span class="ruby-identifier">puts</span> <span class="ruby-value str">&quot;database table created&quot;</span>
+      <span class="ruby-keyword kw">end</span>
+    <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="sectiontitle">Public Instance methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M000028"></a><b>output</b>()
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000028_source')" id="l_M000028_source">show source</a> ]</p>
+  <div id="M000028_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ohlcTicker.rb, line 132</span>
+    <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">output</span>
+      <span class="ruby-ivar">@ohlcRecord</span>.<span class="ruby-identifier">on_ohlc_ready</span> <span class="ruby-keyword kw">do</span>
+        <span class="ruby-operator">|</span> <span class="ruby-identifier">ohlc</span> <span class="ruby-operator">|</span>
+          <span class="ruby-identifier">id</span>= <span class="ruby-value str">'z'</span> <span class="ruby-comment cmt">#SQLquery.new(&quot;ohlc&quot;, ohlc.mysqlInsertString(&quot;ib_#{@stock.getDatabaseName} &quot;)){|resultSet| resultSet.insert_id}.getResult</span>
+          <span class="ruby-identifier">puts</span> <span class="ruby-node">&quot;#{ohlc.openDate.strftime( &quot;%H:%M:%S&quot;)} -- #{ohlc.date.strftime( &quot;%H:%M:%S&quot;)}  traded  #{ohlc[&quot;volume&quot;]} contracts @ #{ohlc.close} of #{@stock.name} --&gt; ib_#{@stock.getDatabaseName }  with id #{id}&quot;</span>
+      <span class="ruby-keyword kw">end</span>
+    <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+</div>
+
+  </div>
+
+    </body>
+</html>

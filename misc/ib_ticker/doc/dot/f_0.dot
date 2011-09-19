@@ -1,0 +1,77 @@
+digraph TopLevel {
+    compound = true
+    bgcolor = lightcyan1
+    fontname = Arial
+    fontsize = 8
+    label = "mysql_class.rb"
+    node [
+        fontname = Arial,
+        fontsize = 8,
+        color = black
+    ]
+
+    Stock [
+        fontcolor = black,
+        URL = "classes/Stock.html",
+        shape = ellipse,
+        color = palegoldenrod,
+        style = filled,
+        label = "Stock"
+    ]
+
+    SQLstoredQuery [
+        fontcolor = black,
+        URL = "classes/SQLstoredQuery.html",
+        shape = ellipse,
+        color = palegoldenrod,
+        style = filled,
+        label = "SQLstoredQuery"
+    ]
+
+    SQLoneData [
+        fontcolor = black,
+        URL = "classes/SQLoneData.html",
+        shape = ellipse,
+        color = palegoldenrod,
+        style = filled,
+        label = "SQLoneData"
+    ]
+
+    OHLC [
+        fontcolor = black,
+        URL = "classes/OHLC.html",
+        shape = ellipse,
+        color = palegoldenrod,
+        style = filled,
+        label = "OHLC"
+    ]
+
+    SQLquery [
+        fontcolor = black,
+        URL = "classes/SQLquery.html",
+        shape = ellipse,
+        color = palegoldenrod,
+        style = filled,
+        label = "SQLquery"
+    ]
+
+    IB_Definitions [
+        URL = "classes/IB_Definitions.html",
+        shape = box,
+        label = "IB_Definitions"
+    ]
+
+    IB_Definitions -> Stock [
+
+    ]
+
+    SQLquery -> SQLstoredQuery [
+
+    ]
+
+    SQLquery -> SQLoneData [
+
+    ]
+
+}
+

@@ -1,0 +1,502 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Class: OHLCrecord</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <link rel="stylesheet" href=".././rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "width=400,height=400,scrollbars=yes" )
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+  <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'><tr>
+  <td class="file-title"><span class="file-title-prefix">Class</span><br />OHLCrecord</td>
+  <td align="right">
+    <table cellspacing=0 cellpadding=2>
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../files/ohlcRecord_rb.html">ohlcRecord.rb</a>
+        </td>
+      </tr>
+    <tr>
+      <td>Parent:</td>
+      <td>
+Object
+     </td>
+   </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+ <!-- banner header -->
+
+  <div id="bodyContent">
+      <div id="content">
+  <table cellpadding='0' cellspacing='0' border='0' width="100%"><tr><td align="center">
+    <map id="map" name="map">
+  <area shape="RECT" coords="7,7,100,55"      href="OHLCrecord.html" alt="OHLCrecord">
+  <area shape="RECT" coords="27,103,109,151"      href="TestOHLC.html" alt="TestOHLC">
+  <area shape="RECT" coords="281,7,353,55"      href="Time.html" alt="Time">
+  <area shape="RECT" coords="377,7,449,55"      href="OHLC.html" alt="OHLC">
+  <area shape="RECT" coords="133,103,248,151"      href="TestOHLCrecord.html" alt="TestOHLCrecord">
+  <area shape="RECT" coords="272,103,349,151"      href="TestTime.html" alt="TestTime">
+  <area shape="RECT" coords="124,7,257,55"      href="Test/Unit/TestCase.html" alt="Test::Unit::TestCase">
+</map>
+<img src="../dot/f_1.png" usemap="#map" border=0 alt="TopLevel">
+  </td></tr></table>
+
+  <div class="description"><p>
+Tickdaten oder <a href="OHLC.html">OHLC</a>-Objekte werden jeweils zu einem
+<a href="OHLC.html">OHLC</a>-Objekt zusammengefasst.
+</p>
+<p>
+Bei der Initialisierung wird ein <a href="Stock.html">Stock</a> Objekt
+übergeben. Die dort festgelegte Auflösung wird hier realisiert.
+</p>
+<p>
+Die Methoden <em>accumulateOHLC</em> und <em>accumulateTicks</em>
+akkumulieren die Eingangsdaten. Sie akzeptieren jeweils einen Block, dem
+das erstellte <a href="OHLC.html">OHLC</a>-Objekt zur Verfügung gestellt
+wird.
+</p>
+<p>
+Die <a href="OHLC.html">OHLC</a>-Objekte werden abhängig von der
+Eigenschaft <em>ohlcRaster</em>
+</p>
+<table>
+<tr><td valign="top"><b>variable</b>:</td><td>in festen Abständen, beginnend mit dem ersten realen Tick nach <a
+href="Stock.html#M000011">Stock.hourStart</a> des ersten Tages
+
+</td></tr>
+<tr><td valign="top"><b>fix</b> :</td><td>in festen Abständen, täglich beginend bei <a
+href="Stock.html#M000011">Stock.hourStart</a>. Die <em>erste Kerze</em> des
+Tages ist <b>verkürzt</b>.
+
+</td></tr>
+<tr><td valign="top"><b>startDay</b>:</td><td>in festen Abständen, täglich beginnend mit dem ersten realen Tick nach <a
+href="Stock.html#M000011">Stock.hourStart</a>. Die <em>erste Kerze</em> des
+Tages ist <b>vollständig.</b>
+
+</td></tr>
+</table>
+<p>
+erzeugt. Im letzten Fall wird die Zeit zwischen <a
+href="Stock.html#M000012">Stock.hourEnd</a> und dem ersten Tick des
+nächsten Tages einfach ignoriert.
+</p>
+<p>
+Die <a href="OHLC.html">OHLC</a>-Eigenschaften <em>openDate</em> und
+<em>date</em> werden wie folgt initialisiert:
+</p>
+<table>
+<tr><td valign="top">OHLC.openDate:</td><td>enthält das fixe Raster der <a href="OHLC.html">OHLC</a>-Objekte. Diese
+Eigenschaft ist nicht identisch mit dem ersten tatsächlich registrierten
+Tick im <a href="OHLC.html">OHLC</a>-Zeitrahmen sondern mit dem
+theoretischen Begin dieser Kerze.
+
+</td></tr>
+<tr><td valign="top">OHLC.date:</td><td>enthält die tatsächliche Zeit des letzten in das <a
+href="OHLC.html">OHLC</a>-Objekt integrierten Ticks.
+
+</td></tr>
+</table>
+<p>
+Die Einträge werden einer Prüfung unterzogen, ob sie sich im akzeptierten
+Wertebereich des <a href="Stock.html">Stock</a>-Objekts befinden
+(Stock.tickRange und <a href="Stock.html#M000011">Stock.hourStart</a> /
+hourEnd)
+</p>
+<p>
+Nachdem ein <a href="OHLC.html">OHLC</a>-Element fertig gestellt wurde,
+wird das Signal <em>ohlc_ready </em> ausgelöst, dem das fertige <a
+href="OHLC.html">OHLC</a>-Element mitgegeben wird.
+</p>
+</div>
+
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+  <li><a href="#M000031">accumulateOHLC</a></li>
+  <li><a href="#M000032">accumulateTicks</a></li>
+  <li><a href="#M000038">get_next_open</a></li>
+  <li><a href="#M000036">is_daily_close</a></li>
+  <li><a href="#M000035">is_daily_open</a></li>
+  <li><a href="#M000037">is_open</a></li>
+  <li><a href="#M000034">makeOHLC</a></li>
+  <li><a href="#M000029">new</a></li>
+  <li><a href="#M000030">raster=</a></li>
+  <li><a href="#M000033">unfilledOHLC</a></li>
+  </ul>
+
+
+
+
+
+
+<div class="sectiontitle">Public Class methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M000029"></a><b>new</b>(stock)
+  </div>
+  <div class="description">
+  <h4>Parameter</h4>
+<table>
+<tr><td valign="top">stock:</td><td><a href="Stock.html">Stock</a>-Objekt
+
+</td></tr>
+</table>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000029_source')" id="l_M000029_source">show source</a> ]</p>
+  <div id="M000029_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ohlcRecord.rb, line 121</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">initialize</span> <span class="ruby-identifier">stock</span>
+    <span class="ruby-ivar">@stock</span> = <span class="ruby-identifier">stock</span>
+    <span class="ruby-ivar">@tickArray</span>= []
+    <span class="ruby-ivar">@close</span>, <span class="ruby-ivar">@first</span>,  <span class="ruby-ivar">@lastTime</span> = <span class="ruby-keyword kw">nil</span>, <span class="ruby-keyword kw">nil</span>, <span class="ruby-keyword kw">nil</span>
+    <span class="ruby-ivar">@ohlcRaster</span> = <span class="ruby-value str">'startDay'</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="sectiontitle">Public Instance methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M000031"></a><b>accumulateOHLC</b>(ohlc)
+  </div>
+  <div class="description">
+  <p>
+ohlc-Datensätze werden zu einem <em>Master</em>-Datensatz zusammengefasst.
+</p>
+<p>
+<b>Einsatz</b> z.B. Akkumulation von 1-min-ohlc-Datenblöcken zu einem <a
+href="OHLC.html">OHLC</a>-Objekt der Auflösung Stock#resolution.
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000031_source')" id="l_M000031_source">show source</a> ]</p>
+  <div id="M000031_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ohlcRecord.rb, line 181</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">accumulateOHLC</span>(<span class="ruby-identifier">ohlc</span>)
+    
+     
+   <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">ohlc</span>.<span class="ruby-identifier">checkData</span>(<span class="ruby-ivar">@stock</span>) 
+      <span class="ruby-identifier">ohlc</span>.<span class="ruby-identifier">adjustDate</span>(<span class="ruby-ivar">@stock</span>)
+       <span class="ruby-keyword kw">if</span> <span class="ruby-ivar">@first</span>.<span class="ruby-identifier">nil?</span>
+       <span class="ruby-identifier">resetCandleBoundaries</span>(<span class="ruby-identifier">ohlc</span>) 
+      <span class="ruby-keyword kw">elsif</span> <span class="ruby-identifier">is_open</span>(<span class="ruby-identifier">ohlc</span>.<span class="ruby-identifier">date</span>)   <span class="ruby-comment cmt"># war: ohlcOpenDate als Parameter</span>
+        <span class="ruby-identifier">makeOHLC</span>
+        <span class="ruby-identifier">resetCandleBoundaries</span>(<span class="ruby-identifier">ohlc</span>)
+      <span class="ruby-keyword kw">end</span>
+      <span class="ruby-ivar">@lastTime</span>=<span class="ruby-identifier">ohlc</span>.<span class="ruby-identifier">date</span>
+      <span class="ruby-ivar">@tickArray</span>.<span class="ruby-identifier">push</span> <span class="ruby-identifier">ohlc</span>  
+    <span class="ruby-keyword kw">end</span>
+
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000032"></a><b>accumulateTicks</b>(time, price, volume)
+  </div>
+  <div class="description">
+  <p>
+EinleseMethode für TickDaten
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000032_source')" id="l_M000032_source">show source</a> ]</p>
+  <div id="M000032_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ohlcRecord.rb, line 226</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">accumulateTicks</span>(<span class="ruby-identifier">time</span>, <span class="ruby-identifier">price</span>, <span class="ruby-identifier">volume</span>)
+     <span class="ruby-identifier">tickTime</span>=<span class="ruby-constant">Time</span>.<span class="ruby-identifier">at</span>(<span class="ruby-identifier">time</span>.<span class="ruby-identifier">to_i</span>)
+     <span class="ruby-comment cmt"># Alle tick-daten vor hourStart verwerfen</span>
+     <span class="ruby-comment cmt"># Alle tick-daten ohne Volumen  verwerfen</span>
+
+     <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">tickTime</span>.<span class="ruby-identifier">timeFraction</span> <span class="ruby-operator">&gt;=</span> <span class="ruby-identifier">hourStart</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">volume</span>.<span class="ruby-identifier">to_i</span> <span class="ruby-operator">&gt;</span><span class="ruby-value">0</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">price</span>.<span class="ruby-identifier">to_f</span> <span class="ruby-operator">&gt;=</span> <span class="ruby-identifier">tickRange</span>[<span class="ruby-value str">&quot;min&quot;</span>] <span class="ruby-operator">&amp;&amp;</span>  <span class="ruby-identifier">price</span>.<span class="ruby-identifier">to_f</span> <span class="ruby-operator">&lt;=</span> <span class="ruby-identifier">tickRange</span>[<span class="ruby-value str">&quot;max&quot;</span>]
+       <span class="ruby-keyword kw">if</span> <span class="ruby-ivar">@first</span>.<span class="ruby-identifier">nil?</span>
+         <span class="ruby-identifier">resetCandleBoundaries</span>(<span class="ruby-identifier">tickTime</span>) 
+      <span class="ruby-keyword kw">elsif</span>  <span class="ruby-identifier">is_daily_close</span>(<span class="ruby-identifier">tickTime</span>)
+        <span class="ruby-comment cmt"># Positions after the &quot;closingBell&quot; are ignored. </span>
+        <span class="ruby-comment cmt"># Only the value of the 'closing-auction' , the last dataTick of the day, is added to the last candle</span>
+         <span class="ruby-ivar">@tickArray</span>.<span class="ruby-identifier">pop</span> <span class="ruby-keyword kw">if</span> <span class="ruby-ivar">@close</span>
+         <span class="ruby-ivar">@close</span>=<span class="ruby-keyword kw">true</span> 
+        <span class="ruby-identifier">tickTime</span>=<span class="ruby-identifier">tickTime</span>.<span class="ruby-identifier">adjust2timeFraction</span> <span class="ruby-identifier">hourEnd</span>
+      <span class="ruby-keyword kw">elsif</span> <span class="ruby-identifier">is_open</span>(<span class="ruby-identifier">tickTime</span>)
+        <span class="ruby-identifier">makeOHLC</span>
+        <span class="ruby-identifier">resetCandleBoundaries</span>(<span class="ruby-identifier">tickTime</span>)
+      <span class="ruby-keyword kw">else</span>
+        <span class="ruby-ivar">@lastTime</span>=<span class="ruby-identifier">tickTime</span>  
+      <span class="ruby-keyword kw">end</span>
+      <span class="ruby-ivar">@tickArray</span>.<span class="ruby-identifier">push</span>( { <span class="ruby-identifier">:price</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">price</span>.<span class="ruby-identifier">to_f</span> , <span class="ruby-identifier">:volume</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">volume</span>.<span class="ruby-identifier">to_i</span>}) 
+    <span class="ruby-comment cmt"># p price</span>
+    <span class="ruby-keyword kw">end</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000038"></a><b>get_next_open</b>()
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000038_source')" id="l_M000038_source">show source</a> ]</p>
+  <div id="M000038_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ohlcRecord.rb, line 356</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">get_next_open</span>
+    <span class="ruby-identifier">convertedResolution</span> <span class="ruby-operator">-</span> (<span class="ruby-ivar">@lastTime</span> <span class="ruby-operator">-</span> <span class="ruby-ivar">@first</span> )
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000036"></a><b>is_daily_close</b>(tickTime)
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000036_source')" id="l_M000036_source">show source</a> ]</p>
+  <div id="M000036_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ohlcRecord.rb, line 335</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">is_daily_close</span>(<span class="ruby-identifier">tickTime</span>)
+    <span class="ruby-identifier">tickTime</span>.<span class="ruby-identifier">timeFraction</span> <span class="ruby-operator">&gt;</span> <span class="ruby-ivar">@stock</span>.<span class="ruby-identifier">hourEnd</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000035"></a><b>is_daily_open</b>(tickTime)
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000035_source')" id="l_M000035_source">show source</a> ]</p>
+  <div id="M000035_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ohlcRecord.rb, line 329</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">is_daily_open</span>(<span class="ruby-identifier">tickTime</span>)
+    <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">tickTime</span>.<span class="ruby-identifier">nil?</span>
+      <span class="ruby-identifier">tickTime</span>.<span class="ruby-identifier">day</span> <span class="ruby-operator">!=</span><span class="ruby-ivar">@first</span>.<span class="ruby-identifier">day</span> <span class="ruby-operator">||</span> <span class="ruby-ivar">@first</span>.<span class="ruby-identifier">timeFraction</span> <span class="ruby-operator">&lt;</span> <span class="ruby-ivar">@stock</span>.<span class="ruby-identifier">hourStart</span>
+    <span class="ruby-keyword kw">end</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000037"></a><b>is_open</b>(tickTime)
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000037_source')" id="l_M000037_source">show source</a> ]</p>
+  <div id="M000037_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ohlcRecord.rb, line 339</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">is_open</span>(<span class="ruby-identifier">tickTime</span>)
+    <span class="ruby-keyword kw">if</span>  <span class="ruby-ivar">@ohlcRaster</span> <span class="ruby-operator">==</span> <span class="ruby-value str">'variable'</span> 
+      <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">is_daily_open</span>(<span class="ruby-identifier">tickTime</span>)
+  <span class="ruby-comment cmt">#    # Uebertrag von Vortag mitberuecksichtigen</span>
+      <span class="ruby-identifier">carry</span>=<span class="ruby-ivar">@first</span>.<span class="ruby-identifier">diffFraction</span>( <span class="ruby-ivar">@stock</span>.<span class="ruby-identifier">hourEnd</span> )
+      <span class="ruby-identifier">todaysTime</span>= <span class="ruby-identifier">tickTime</span>.<span class="ruby-identifier">diffFraction</span>( <span class="ruby-ivar">@stock</span>.<span class="ruby-identifier">hourStart</span> ) 
+      (<span class="ruby-identifier">carry</span> <span class="ruby-operator">+</span> <span class="ruby-identifier">todaysTime</span> ) <span class="ruby-operator">&gt;</span> <span class="ruby-ivar">@stock</span>.<span class="ruby-identifier">convertedResolution</span>
+      <span class="ruby-keyword kw">else</span>
+      (<span class="ruby-identifier">tickTime</span> <span class="ruby-operator">-</span> <span class="ruby-ivar">@first</span>) <span class="ruby-operator">&gt;</span>  <span class="ruby-ivar">@stock</span>.<span class="ruby-identifier">convertedResolution</span> 
+      <span class="ruby-keyword kw">end</span>
+    <span class="ruby-keyword kw">else</span>
+
+       <span class="ruby-identifier">is_daily_open</span>(<span class="ruby-identifier">tickTime</span>) <span class="ruby-operator">||</span>  (<span class="ruby-identifier">tickTime</span> <span class="ruby-operator">-</span> <span class="ruby-ivar">@first</span>) <span class="ruby-operator">&gt;</span>  <span class="ruby-ivar">@stock</span>.<span class="ruby-identifier">convertedResolution</span> 
+    <span class="ruby-keyword kw">end</span>
+  
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000034"></a><b>makeOHLC</b>(clearTickDataArray=true)
+  </div>
+  <div class="description">
+  <p>
+Erzeugt ein <a href="OHLC.html">OHLC</a>-Objekt aus den akkumulierten Daten
+</p>
+<p>
+Es wird das Signal ohlc_ready ausgelöst
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000034_source')" id="l_M000034_source">show source</a> ]</p>
+  <div id="M000034_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ohlcRecord.rb, line 286</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">makeOHLC</span>(<span class="ruby-identifier">clearTickDataArray</span>=<span class="ruby-keyword kw">true</span>)
+
+  <span class="ruby-keyword kw">unless</span>  <span class="ruby-ivar">@tickArray</span>.<span class="ruby-identifier">nil?</span> <span class="ruby-operator">||</span> <span class="ruby-ivar">@tickArray</span>.<span class="ruby-identifier">empty?</span>
+    <span class="ruby-keyword kw">if</span>  <span class="ruby-ivar">@tickArray</span>.<span class="ruby-identifier">first</span>.<span class="ruby-identifier">is_a?</span> <span class="ruby-constant">OHLC</span>
+      <span class="ruby-identifier">open</span>=<span class="ruby-ivar">@tickArray</span>.<span class="ruby-identifier">first</span>.<span class="ruby-identifier">open</span>
+      <span class="ruby-identifier">close</span>=<span class="ruby-ivar">@tickArray</span>.<span class="ruby-identifier">last</span>.<span class="ruby-identifier">close</span>
+      <span class="ruby-identifier">low</span>=<span class="ruby-ivar">@tickArray</span>.<span class="ruby-identifier">collect</span>{<span class="ruby-operator">|</span><span class="ruby-identifier">obj</span><span class="ruby-operator">|</span> <span class="ruby-identifier">obj</span>.<span class="ruby-identifier">low</span>}.<span class="ruby-identifier">min</span>
+      <span class="ruby-identifier">high</span>=<span class="ruby-ivar">@tickArray</span>.<span class="ruby-identifier">collect</span>{<span class="ruby-operator">|</span><span class="ruby-identifier">obj</span><span class="ruby-operator">|</span> <span class="ruby-identifier">obj</span>.<span class="ruby-identifier">high</span>}.<span class="ruby-identifier">max</span>
+      <span class="ruby-identifier">volume</span>=<span class="ruby-ivar">@tickArray</span>.<span class="ruby-identifier">collect</span>{<span class="ruby-operator">|</span><span class="ruby-identifier">obj</span><span class="ruby-operator">|</span> <span class="ruby-identifier">obj</span>.<span class="ruby-identifier">volume</span>}.<span class="ruby-identifier">sum</span>
+    
+    <span class="ruby-keyword kw">else</span>      <span class="ruby-comment cmt"># tick-data  --&gt; [:price :volume]</span>
+      <span class="ruby-identifier">open</span>=<span class="ruby-ivar">@tickArray</span>.<span class="ruby-identifier">first</span>[<span class="ruby-identifier">:price</span>].<span class="ruby-identifier">to_f</span>
+      <span class="ruby-identifier">close</span>=<span class="ruby-ivar">@tickArray</span>.<span class="ruby-identifier">last</span>[<span class="ruby-identifier">:price</span>].<span class="ruby-identifier">to_f</span>
+      <span class="ruby-identifier">low</span>=<span class="ruby-ivar">@tickArray</span>.<span class="ruby-identifier">collect</span>{<span class="ruby-operator">|</span><span class="ruby-identifier">obj</span><span class="ruby-operator">|</span> <span class="ruby-identifier">obj</span>[<span class="ruby-identifier">:price</span>].<span class="ruby-identifier">to_f</span>}.<span class="ruby-identifier">min</span>
+      <span class="ruby-identifier">high</span>=<span class="ruby-ivar">@tickArray</span>.<span class="ruby-identifier">collect</span>{<span class="ruby-operator">|</span><span class="ruby-identifier">obj</span><span class="ruby-operator">|</span> <span class="ruby-identifier">obj</span>[<span class="ruby-identifier">:price</span>].<span class="ruby-identifier">to_f</span>}.<span class="ruby-identifier">max</span>
+      <span class="ruby-identifier">volume</span>=<span class="ruby-ivar">@tickArray</span>.<span class="ruby-identifier">collect</span>{<span class="ruby-operator">|</span><span class="ruby-identifier">obj</span><span class="ruby-operator">|</span> <span class="ruby-identifier">obj</span>[<span class="ruby-identifier">:volume</span>].<span class="ruby-identifier">to_i</span>}.<span class="ruby-identifier">sum</span>
+    <span class="ruby-keyword kw">end</span>
+    <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">volume</span><span class="ruby-operator">&lt;=</span><span class="ruby-value">0</span>
+        <span class="ruby-identifier">price</span>=<span class="ruby-identifier">low</span>=<span class="ruby-identifier">high</span>=<span class="ruby-identifier">open</span>=<span class="ruby-identifier">close</span>
+    <span class="ruby-keyword kw">else</span>
+        <span class="ruby-identifier">price</span>=<span class="ruby-ivar">@tickArray</span>.<span class="ruby-identifier">collect</span>{<span class="ruby-operator">|</span><span class="ruby-identifier">obj</span><span class="ruby-operator">|</span> <span class="ruby-identifier">obj</span>[ <span class="ruby-identifier">:price</span> ].<span class="ruby-identifier">to_f</span>  <span class="ruby-operator">*</span> <span class="ruby-identifier">obj</span>[ <span class="ruby-identifier">:volume</span> ] }.<span class="ruby-identifier">sum</span> <span class="ruby-operator">/</span> <span class="ruby-identifier">volume</span>
+    <span class="ruby-keyword kw">end</span>
+    <span class="ruby-comment cmt"># in case of 'variable' ohlc-raster set the start of the day-overlapping candle to hourStart</span>
+    <span class="ruby-keyword kw">if</span>  <span class="ruby-identifier">is_daily_open</span>(<span class="ruby-ivar">@lastTime</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-ivar">@ohlcRaster</span> <span class="ruby-operator">==</span> <span class="ruby-value str">'variable'</span>
+        <span class="ruby-ivar">@first</span>=<span class="ruby-ivar">@lastTime</span>.<span class="ruby-identifier">adjust2timeFraction</span> <span class="ruby-identifier">hourStart</span>  
+        <span class="ruby-ivar">@first</span> <span class="ruby-operator">-=</span> <span class="ruby-identifier">convertedResolution</span>
+    <span class="ruby-keyword kw">end</span>
+    <span class="ruby-ivar">@tickArray</span>.<span class="ruby-identifier">clear</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">clearTickDataArray</span>
+    <span class="ruby-identifier">newOHLC</span>=<span class="ruby-constant">OHLC</span>.<span class="ruby-identifier">new</span>{ [<span class="ruby-ivar">@first</span>.<span class="ruby-identifier">cutTime</span>(<span class="ruby-identifier">hourStart</span>, <span class="ruby-identifier">hourEnd</span>), <span class="ruby-ivar">@lastTime</span>.<span class="ruby-identifier">cutTime</span>(<span class="ruby-identifier">hourStart</span>,<span class="ruby-identifier">hourEnd</span>),
+                       { <span class="ruby-identifier">:open</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">open</span>, <span class="ruby-identifier">:high</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">high</span> , <span class="ruby-identifier">:low</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">low</span>,
+                         <span class="ruby-identifier">:close</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">close</span> , <span class="ruby-identifier">:volume</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">volume</span>, <span class="ruby-identifier">:price</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">price</span>} ] }
+  <span class="ruby-comment cmt">#  yield newOHLC if block_given?</span>
+    <span class="ruby-ivar">@close</span>=<span class="ruby-keyword kw">false</span>        <span class="ruby-comment cmt"># reset the close-flag  (used in accumulateTicks) </span>
+  <span class="ruby-comment cmt">#  if count_observers &gt;0</span>
+  <span class="ruby-comment cmt">#    changed</span>
+  <span class="ruby-comment cmt">#    notify_observers(newOHLC )</span>
+  <span class="ruby-comment cmt">#  end  </span>
+    <span class="ruby-identifier">ohlc_ready</span> <span class="ruby-identifier">newOHLC</span>
+    <span class="ruby-identifier">newOHLC</span>       <span class="ruby-comment cmt"># returnValue</span>
+  <span class="ruby-keyword kw">end</span>        <span class="ruby-comment cmt"># unless</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000030"></a><b>raster=</b>(value)
+  </div>
+  <div class="description">
+  <p>
+Die <a href="OHLC.html">OHLC</a>-Objekte werden abhängig von der
+Eigenschaft <em>ohlcRaster</em>
+</p>
+<table>
+<tr><td valign="top"><b>fix</b> :</td><td>in festen Abständen, täglich beginend bei <a
+href="Stock.html#M000011">Stock.hourStart</a>. Die <em>erste Kerze</em> des
+Tages ist <b>verkürzt</b>.
+
+</td></tr>
+<tr><td valign="top"><b>startDay</b> :</td><td>in festen Abständen, täglich beginnend mit dem ersten realen Tick nach <a
+href="Stock.html#M000011">Stock.hourStart</a>. Die <em>erste Kerze</em> des
+Tages ist <b>vollständig.</b>
+
+</td></tr>
+<tr><td valign="top"><b>variable</b> :</td><td>in festen Abständen, beginnend mit dem ersten realen Tick nach <a
+href="Stock.html#M000011">Stock.hourStart</a> des ersten Tages
+
+</td></tr>
+</table>
+<p>
+erzeugt. Im letzten Fall wird die Zeit zwischen Stock#ourEnd und dem ersten
+Tick des nächsten Tages einfach ignoriert.
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000030_source')" id="l_M000030_source">show source</a> ]</p>
+  <div id="M000030_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ohlcRecord.rb, line 153</span>
+<span class="ruby-keyword kw">def</span> <span class="ruby-identifier">raster=</span> <span class="ruby-identifier">value</span>
+  <span class="ruby-ivar">@ohlcRaster</span>= [<span class="ruby-value str">'fix'</span>, <span class="ruby-value str">'variable'</span>, <span class="ruby-value str">'startDay'</span> ].<span class="ruby-identifier">detect</span>{<span class="ruby-operator">|</span><span class="ruby-identifier">v</span><span class="ruby-operator">|</span> <span class="ruby-identifier">v</span><span class="ruby-operator">==</span> <span class="ruby-identifier">value</span>} <span class="ruby-operator">||</span> <span class="ruby-value str">'startDay'</span>
+<span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000033"></a><b>unfilledOHLC</b>()
+  </div>
+  <div class="description">
+  <p>
+Erzeugt aus noch nicht verarbeiteten TickDaten ein <a
+href="OHLC.html">OHLC</a>-Objekt, verändert die Rohdaten jedoch nicht.
+</p>
+<p>
+Hiermit kann stets ein <em>Snapshot</em> des aktuellen <a
+href="OHLC.html">OHLC</a>-Records abgefragt werden
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000033_source')" id="l_M000033_source">show source</a> ]</p>
+  <div id="M000033_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ohlcRecord.rb, line 256</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">unfilledOHLC</span>   
+    <span class="ruby-identifier">makeOHLC</span> <span class="ruby-keyword kw">false</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+</div>
+
+  </div>
+
+    </body>
+</html>

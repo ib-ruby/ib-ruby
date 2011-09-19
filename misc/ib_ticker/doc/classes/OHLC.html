@@ -1,0 +1,511 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Class: OHLC</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <link rel="stylesheet" href=".././rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "width=400,height=400,scrollbars=yes" )
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+  <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'><tr>
+  <td class="file-title"><span class="file-title-prefix">Class</span><br />OHLC</td>
+  <td align="right">
+    <table cellspacing=0 cellpadding=2>
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../files/mysql_class_rb.html">mysql_class.rb</a>
+<a href="../files/ohlcRecord_rb.html">ohlcRecord.rb</a>
+<a href="../files/ohlc_rb.html">ohlc.rb</a>
+        </td>
+      </tr>
+    <tr>
+      <td>Parent:</td>
+      <td>
+Object
+     </td>
+   </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+ <!-- banner header -->
+
+  <div id="bodyContent">
+      <div id="content">
+  <table cellpadding='0' cellspacing='0' border='0' width="100%"><tr><td align="center">
+    <map id="map" name="map">
+  <area shape="RECT" coords="7,7,79,55"      href="OHLC.html" alt="OHLC">
+</map>
+<img src="../dot/f_4.png" usemap="#map" border=0 alt="TopLevel">
+  </td></tr></table>
+
+  <div class="description"><p>
+In dieser Klasse wird ein <a href="OHLC.html">OHLC</a>-Objekt behandelt
+</p>
+<p>
+Ein <a href="OHLC.html">OHLC</a>-Objekt enthält die Informationen über den
+Kursverlauf im Zeitabschnitt einer Kerze
+</p>
+<p>
+Die Basiswerte <em> open, close, high, low, average, volume </em>, sowie
+<em>openDate und date</em> werden bei der ObjektInitialisierung gesetzt und
+können nicht verändert werden.
+</p>
+<p>
+Die Basiswerte sind als Methoden verfügbar ( OHLC.basiswert ).
+</p>
+</div>
+
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+  <li><a href="#M000060">[]</a></li>
+  <li><a href="#M000057">adjustDate</a></li>
+  <li><a href="#M000056">checkData</a></li>
+  <li><a href="#M000058">is_dailyClose</a></li>
+  <li><a href="#M000054">mysqlInsertString</a></li>
+  <li><a href="#M000059">new</a></li>
+  <li><a href="#M000055">ohlcKeys</a></li>
+  <li><a href="#M000062">printCSV</a></li>
+  <li><a href="#M000061">to_s</a></li>
+  </ul>
+
+
+
+
+
+  <div class="sectiontitle">Attributes</div>
+  <table border='0' cellpadding='5'>
+  <tr valign='top'>
+    <td class='attr-rw'>
+[RW]
+    </td>
+    <td class='attr-name'>date</td>
+    <td class='attr-desc'></td>
+  </tr>
+  <tr valign='top'>
+    <td class='attr-rw'>
+[RW]
+    </td>
+    <td class='attr-name'>openDate</td>
+    <td class='attr-desc'></td>
+  </tr>
+  </table>
+
+<div class="sectiontitle">Public Class methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M000059"></a><b>new</b>(data=nil) {|data| ...}
+  </div>
+  <div class="description">
+  <p>
+Ein Aufruf ohne Parameter initialisiert ein leeres <a
+href="OHLC.html">OHLC</a>-Objekt, <tt>date</tt> und <tt>openDate</tt>
+werden auf das aktuelle Systemdatum gesetzt
+</p>
+<p>
+Der optionale Block <b>muss</b> <tt>openDate</tt>, <tt>date</tt> und
+<tt>base</tt> in dieser Reihenfolge initialisieren.
+</p>
+<table>
+<tr><td valign="top">Aufrufbeispiel:</td><td>@chart.unshift(<a href="OHLC.html#M000059">OHLC.new</a>(ohlc){|data|
+openDate, date, base = *data })
+
+</td></tr>
+</table>
+<p>
+Es kann auch ein <a href="Array.html">Array</a> übergeben werden. Die
+ArrayElemente werden wie folgt zugewiesen
+</p>
+<pre>
+ Array :  [open , high, low, close, volume, price ]
+</pre>
+<p>
+Fehlende Elemente werden mit <em>open</em> ergänzt ( <em>volume</em> ist
+dann 1 )
+</p>
+<p>
+Als weitere Alternative kann auch ein einzelner Zahlenwert übergeben
+werden. Dann wird Volumen auf 1 gesetzt und alle ohlc-Felder werden auf den
+Zahlenwert gesetzt.
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000059_source')" id="l_M000059_source">show source</a> ]</p>
+  <div id="M000059_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ohlc.rb, line 42</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">data</span>=<span class="ruby-keyword kw">nil</span>)
+    
+    <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">block_given?</span>
+      <span class="ruby-ivar">@openDate</span>,<span class="ruby-ivar">@date</span>,<span class="ruby-ivar">@base</span> = <span class="ruby-keyword kw">yield</span>(<span class="ruby-identifier">data</span>)
+    <span class="ruby-keyword kw">else</span> 
+      <span class="ruby-ivar">@date</span>, <span class="ruby-ivar">@openDate</span>=<span class="ruby-constant">Time</span>.<span class="ruby-identifier">new</span>, <span class="ruby-constant">Time</span>.<span class="ruby-identifier">new</span>
+      <span class="ruby-identifier">data</span>=[<span class="ruby-identifier">data</span>] <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">data</span>.<span class="ruby-identifier">is_a?</span> <span class="ruby-constant">Numeric</span> 
+      <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">data</span>.<span class="ruby-identifier">is_a?</span> <span class="ruby-constant">Array</span>
+        <span class="ruby-identifier">o_data</span>= <span class="ruby-identifier">data</span>.<span class="ruby-identifier">dup</span>      <span class="ruby-comment cmt"># prevent the data to be eaten</span>
+        <span class="ruby-ivar">@base</span>= { <span class="ruby-identifier">:open</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">o_data</span>.<span class="ruby-identifier">shift</span>,
+                  <span class="ruby-identifier">:high</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">o_data</span>.<span class="ruby-identifier">shift</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">data</span>.<span class="ruby-identifier">first</span>,
+                  <span class="ruby-identifier">:low</span>  =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">o_data</span>.<span class="ruby-identifier">shift</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">data</span>.<span class="ruby-identifier">first</span>,
+                  <span class="ruby-identifier">:close</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">o_data</span>.<span class="ruby-identifier">shift</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">data</span>.<span class="ruby-identifier">first</span>,
+                  <span class="ruby-identifier">:volume</span> =<span class="ruby-operator">&gt;</span><span class="ruby-identifier">o_data</span>.<span class="ruby-identifier">shift</span> <span class="ruby-operator">||</span> <span class="ruby-value">1</span>,
+                  <span class="ruby-identifier">:price</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">o_data</span>.<span class="ruby-identifier">shift</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">data</span>.<span class="ruby-identifier">first</span> }
+      <span class="ruby-keyword kw">else</span>
+        <span class="ruby-ivar">@base</span>=<span class="ruby-constant">Hash</span>.<span class="ruby-identifier">new</span>
+      <span class="ruby-keyword kw">end</span>
+    <span class="ruby-keyword kw">end</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="sectiontitle">Public Instance methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M000060"></a><b>[]</b>(key)
+  </div>
+  <div class="description">
+  <p>
+<a href="OHLC.html">OHLC</a> kann wie ein Hash angesprochen werden
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000060_source')" id="l_M000060_source">show source</a> ]</p>
+  <div id="M000060_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ohlc.rb, line 78</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-operator">[]</span>(<span class="ruby-identifier">key</span>)
+    <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">key</span><span class="ruby-operator">==</span><span class="ruby-value str">'date'</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">key</span> <span class="ruby-operator">==</span> <span class="ruby-identifier">:date</span>
+      <span class="ruby-ivar">@date</span>
+    <span class="ruby-keyword kw">else</span>  
+      <span class="ruby-identifier">getValue</span>(<span class="ruby-identifier">key</span>)
+    <span class="ruby-keyword kw">end</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000057"></a><b>adjustDate</b>(s)
+  </div>
+  <div class="description">
+  <p>
+<em>openDate</em> und <em>date</em> werden auf <a
+href="Stock.html#M000011">Stock#hourStart</a> bzw <a
+href="Stock.html#M000012">Stock.hourEnd</a> gesetzt, wenn die
+ursprünglichen Werte ausserhalb des Intervalls liegen.
+</p>
+<p>
+In Verbindung mit <a href="OHLC.html#M000056">OHLC#checkData</a> können die
+<a href="OHLC.html">OHLC</a>-Objekte zuverlässig initialisiert werden.
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000057_source')" id="l_M000057_source">show source</a> ]</p>
+  <div id="M000057_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ohlcRecord.rb, line 38</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">adjustDate</span>(<span class="ruby-identifier">s</span>)
+    
+     <span class="ruby-keyword kw">if</span> <span class="ruby-ivar">@openDate</span>.<span class="ruby-identifier">timeFraction</span> <span class="ruby-operator">&lt;</span> <span class="ruby-identifier">s</span>.<span class="ruby-identifier">hourStart</span>
+      <span class="ruby-ivar">@openDate</span>  = <span class="ruby-ivar">@openDate</span>.<span class="ruby-identifier">adjust2timeFraction</span>(<span class="ruby-identifier">s</span>.<span class="ruby-identifier">hourStart</span>)
+     <span class="ruby-keyword kw">end</span>
+    <span class="ruby-keyword kw">if</span> <span class="ruby-ivar">@date</span>.<span class="ruby-identifier">timeFraction</span> <span class="ruby-operator">&gt;</span>  <span class="ruby-identifier">s</span>.<span class="ruby-identifier">hourEnd</span>
+      <span class="ruby-ivar">@date</span> = <span class="ruby-ivar">@date</span>.<span class="ruby-identifier">adjust2timeFraction</span>(<span class="ruby-identifier">s</span>.<span class="ruby-identifier">hourEnd</span>)
+    <span class="ruby-keyword kw">end</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000056"></a><b>checkData</b>(s)
+  </div>
+  <div class="description">
+  <p>
+Einfache Prüfung der <a href="OHLC.html">OHLC</a>-BasisWerte.
+</p>
+<ul>
+<li><em>open, high, close, low </em> und <em> price </em> müssen innerhalb
+Stock#tickRange liegen
+
+</li>
+<li><em>volume</em> muss größer als Null sein
+
+</li>
+<li><em>openDate</em> muss kleiner als <a
+href="Stock.html#M000012">Stock.hourEnd</a>, <em>date</em> muss größer als
+<a href="Stock.html#M000011">Stock#hourStart</a> sein.
+
+</li>
+</ul>
+<p>
+Die Methode liefert true, wenn die Daten ok sind.
+</p>
+<h3>Parameter</h3>
+<table>
+<tr><td valign="top">s :</td><td>Ein <a href="Stock.html">Stock</a>-Objekt
+
+</td></tr>
+</table>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000056_source')" id="l_M000056_source">show source</a> ]</p>
+  <div id="M000056_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ohlcRecord.rb, line 19</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">checkData</span>(<span class="ruby-identifier">s</span>)
+    <span class="ruby-identifier">result</span>=<span class="ruby-keyword kw">true</span>
+    <span class="ruby-ivar">@base</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> 
+      <span class="ruby-operator">|</span><span class="ruby-identifier">x</span>,<span class="ruby-identifier">y</span><span class="ruby-operator">|</span>
+        <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">x</span> <span class="ruby-operator">==</span> <span class="ruby-identifier">:volume</span>
+            <span class="ruby-keyword kw">return</span> <span class="ruby-keyword kw">nil</span> <span class="ruby-keyword kw">unless</span> ( <span class="ruby-identifier">s</span>.<span class="ruby-identifier">tickRange</span>[ <span class="ruby-value str">&quot;min&quot;</span> ]  <span class="ruby-operator">..</span>  <span class="ruby-identifier">s</span>.<span class="ruby-identifier">tickRange</span>[ <span class="ruby-value str">&quot;max&quot;</span> ]).<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">y</span>) 
+        <span class="ruby-keyword kw">else</span> 
+            <span class="ruby-keyword kw">return</span> <span class="ruby-keyword kw">nil</span> <span class="ruby-keyword kw">if</span>  <span class="ruby-identifier">y</span> <span class="ruby-operator">&lt;=</span>  <span class="ruby-value">0</span>
+        <span class="ruby-keyword kw">end</span>         <span class="ruby-comment cmt"># unless</span>
+      <span class="ruby-keyword kw">end</span>            <span class="ruby-comment cmt">#each</span>
+  <span class="ruby-comment cmt">#  return  nil  if @date.timeFraction  &lt; s.hourStart || @openDate.timeFraction  &gt; s.hourEnd</span>
+    <span class="ruby-keyword kw">true</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000058"></a><b>is_dailyClose</b>(s)
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000058_source')" id="l_M000058_source">show source</a> ]</p>
+  <div id="M000058_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ohlcRecord.rb, line 48</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">is_dailyClose</span>  <span class="ruby-identifier">s</span>
+    <span class="ruby-ivar">@date</span>.<span class="ruby-identifier">timeFraction</span> <span class="ruby-operator">&gt;=</span> <span class="ruby-identifier">s</span>.<span class="ruby-identifier">hourEnd</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000054"></a><b>mysqlInsertString</b>(database)
+  </div>
+  <div class="description">
+  <p>
+Ein SQL-Kommando wird erzeugt, das die <em>Basiswerte</em> des aktuellen <a
+href="OHLC.html">OHLC</a>-Objekts in einer Datenbank ablegt.
+</p>
+<h3>Aufrufbeispiel</h3>
+<pre>
+ SQLquery.new(&quot;ohlc&quot;, ohlc.mysqlInsertString(&quot;ib_#{@stock.getDatabaseName} &quot;))
+</pre>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000054_source')" id="l_M000054_source">show source</a> ]</p>
+  <div id="M000054_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File mysql_class.rb, line 8</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">mysqlInsertString</span>(<span class="ruby-identifier">database</span>)
+    <span class="ruby-node">&quot;insert into #{database} (date, #{@base.keys.join(',')}) values  ('#{@date.strftime( &quot;%Y-%m-%d %H:%M:%S&quot;)}',#{@base.values.join(',')}) &quot;</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000055"></a><b>ohlcKeys</b>()
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000055_source')" id="l_M000055_source">show source</a> ]</p>
+  <div id="M000055_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ohlcRecord.rb, line 5</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">ohlcKeys</span>
+    <span class="ruby-ivar">@base</span>.<span class="ruby-identifier">keys</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000062"></a><b>printCSV</b>(*values, &amp;b)
+  </div>
+  <div class="description">
+  <p>
+Aufbereitung der Basisdaten für den cvs-Output.
+</p>
+<p>
+Parameter wie bei <a href="OHLC.html#M000061">OHLC#to_s</a>.
+</p>
+<p>
+Das Volumen wird an den generierten String angehängt und es wird ein
+SatzEndeZeichen eingefügt.
+</p>
+<h3>Aufruf</h3>
+<pre>
+  OHLC#printCSV('open','high','low','close','price'){|opendate,closedate| closedate.strftime(&quot; %H:%M  #{$,}&quot;)}
+</pre>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000062_source')" id="l_M000062_source">show source</a> ]</p>
+  <div id="M000062_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ohlc.rb, line 151</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">printCSV</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">values</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">b</span>)
+    <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">values</span>.<span class="ruby-identifier">empty?</span>
+      <span class="ruby-identifier">a</span>= <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">to_s</span>(<span class="ruby-operator">&amp;</span><span class="ruby-identifier">b</span>)
+    <span class="ruby-keyword kw">else</span>
+        <span class="ruby-identifier">a</span>= <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">to_s</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">values</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">b</span>)
+    <span class="ruby-keyword kw">end</span>
+    <span class="ruby-identifier">a</span> <span class="ruby-operator">+</span><span class="ruby-keyword kw">self</span>[ <span class="ruby-identifier">:volume</span> ].<span class="ruby-identifier">to_s</span><span class="ruby-operator">+</span><span class="ruby-identifier">$/</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000061"></a><b>to_s</b>(formatString=nil) {|@openDate, @date| ...}
+  </div>
+  <div class="description">
+  <p>
+<a href="OHLC.html">OHLC</a>-Objekte können einfach per &quot;print&quot;
+ausgegeben werden
+</p>
+<pre>
+ &quot;to_s&quot; spezifiziert diese Ausgabe
+</pre>
+<p>
+Ohne weitere Parameter wird eine Ausgabe im Format
+</p>
+<pre>
+  22.03.200
+
+  5 10:38 --     10000     10000     10000     10000
+  Datum(open)    open  high   low  close
+</pre>
+<p>
+erzeugt.
+</p>
+<p>
+Die auszugebenden <a href="OHLC.html">OHLC</a>-Werte können durch die
+Angabe der Werte als Parameter definiert werden
+</p>
+<pre>
+  a=OHLC.new(10000)
+  a.to_s('open','close','gogo')
+  =&gt; &quot;22.03.2005 10:45     10000     10000     10000 &quot;
+</pre>
+<p>
+Die globale Variable &#8217;$,&#8217;&#8217; (WortSeperator) trennt die
+Werte.
+</p>
+<p>
+Die Datumsangabe wird im (optionalen) Block ausgewählt und formatiert. Dem
+Block werden das <em>OpenCandle</em>- und das <em>CloseCandle</em>-Datum
+als Time-Objekte zur Vefügung gestellt.
+</p>
+<pre>
+  a.to_s('open','close','gogo'){|opendate,closedate| closedate.strftime(&quot; %H:%M -- &quot;)}
+  =&gt; &quot; 10:43 --     10000     10000     10000 &quot;
+</pre>
+<p>
+Die <a href="OHLC.html">OHLC</a>-Werte werden einheitlich formatiert, der
+Open-Wert dient hierfür als Referenz. Indikatoren sollten deshalb separat
+ausgegeben werden.
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000061_source')" id="l_M000061_source">show source</a> ]</p>
+  <div id="M000061_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ohlc.rb, line 112</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">to_s</span>(<span class="ruby-identifier">formatString</span>=<span class="ruby-keyword kw">nil</span>)
+    
+    <span class="ruby-keyword kw">unless</span> <span class="ruby-ivar">@date</span>.<span class="ruby-identifier">nil?</span> <span class="ruby-operator">||</span> <span class="ruby-ivar">@openDate</span>.<span class="ruby-identifier">nil?</span>
+      <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">block_given?</span>
+        <span class="ruby-identifier">b</span>=<span class="ruby-keyword kw">yield</span>(<span class="ruby-ivar">@openDate</span>, <span class="ruby-ivar">@date</span>)
+      <span class="ruby-keyword kw">else</span>
+        <span class="ruby-identifier">b</span>=<span class="ruby-ivar">@openDate</span>.<span class="ruby-identifier">strftime</span>(<span class="ruby-node">&quot;%d.%m.%Y %H:%M#{$,} &quot;</span>)
+      <span class="ruby-keyword kw">end</span>
+      <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">formatString</span>.<span class="ruby-identifier">nil?</span>
+        <span class="ruby-keyword kw">case</span> <span class="ruby-ivar">@base</span>[ <span class="ruby-identifier">:open</span> ]
+          <span class="ruby-keyword kw">when</span> <span class="ruby-value">0</span> <span class="ruby-operator">..</span> <span class="ruby-value">1</span>
+            <span class="ruby-identifier">formatString</span>= <span class="ruby-value str">&quot; %6.4f &quot;</span>
+          <span class="ruby-keyword kw">when</span> <span class="ruby-value">1</span><span class="ruby-operator">..</span> <span class="ruby-value">100</span>
+            <span class="ruby-identifier">formatString</span>= <span class="ruby-value str">&quot; %6.3f &quot;</span>
+          <span class="ruby-keyword kw">when</span> <span class="ruby-value">100</span> <span class="ruby-operator">..</span> <span class="ruby-value">1000</span>
+            <span class="ruby-identifier">formatString</span>= <span class="ruby-value str">&quot; %6.2f &quot;</span>
+          <span class="ruby-keyword kw">when</span>  <span class="ruby-value">1000</span> <span class="ruby-operator">..</span> <span class="ruby-value">100000</span>
+            <span class="ruby-identifier">formatString</span>=<span class="ruby-value str">&quot; %8.0f &quot;</span>
+          <span class="ruby-keyword kw">else</span>
+            <span class="ruby-identifier">formatString</span>=<span class="ruby-value str">&quot; %1.0f &quot;</span>
+        <span class="ruby-keyword kw">end</span>
+      <span class="ruby-keyword kw">end</span>
+      <span class="ruby-identifier">formatString</span><span class="ruby-operator">+=</span><span class="ruby-identifier">$,</span> <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">$,</span>.<span class="ruby-identifier">nil?</span>
+        <span class="ruby-identifier">b</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">sprintf</span>(<span class="ruby-identifier">formatString</span> <span class="ruby-operator">*</span><span class="ruby-value">5</span>,<span class="ruby-ivar">@base</span>[ <span class="ruby-identifier">:open</span>  ],<span class="ruby-ivar">@base</span>[ <span class="ruby-identifier">:high</span> ],<span class="ruby-ivar">@base</span>[ <span class="ruby-identifier">:low</span> ], <span class="ruby-ivar">@base</span>[ <span class="ruby-identifier">:close</span> ], <span class="ruby-ivar">@base</span>[<span class="ruby-identifier">:price</span>] ) <span class="ruby-operator">+</span> <span class="ruby-ivar">@base</span>[<span class="ruby-identifier">:volume</span>].<span class="ruby-identifier">to_s</span>
+    <span class="ruby-keyword kw">else</span>
+        <span class="ruby-value str">&quot;&quot;</span>
+    <span class="ruby-keyword kw">end</span>
+    
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+</div>
+
+  </div>
+
+    </body>
+</html>

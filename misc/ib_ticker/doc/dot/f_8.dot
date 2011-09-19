@@ -1,0 +1,114 @@
+digraph TopLevel {
+    compound = true
+    bgcolor = lightcyan1
+    fontname = Arial
+    fontsize = 8
+    label = "ib_ticker.rb"
+    node [
+        fontname = Arial,
+        fontsize = 8,
+        color = black
+    ]
+
+    subgraph cluster_IbMessages {
+        fillcolor = palegreen1
+        URL = "classes/IbMessages.html"
+        fontname = Arial
+        color = blue
+        label = "IbMessages"
+        style = filled
+        IbMessages [
+            shape = plaintext,
+            height = 0.01,
+            width = 0.75,
+            label = ""
+        ]
+
+    }
+
+    subgraph cluster_IbOrder {
+        fillcolor = palegreen1
+        URL = "classes/IbOrder.html"
+        fontname = Arial
+        color = blue
+        label = "IbOrder"
+        style = filled
+        IbOrder [
+            shape = plaintext,
+            height = 0.01,
+            width = 0.75,
+            label = ""
+        ]
+
+    }
+
+    DRbTicker [
+        fontcolor = black,
+        URL = "classes/DRbTicker.html",
+        shape = ellipse,
+        color = palegoldenrod,
+        style = filled,
+        label = "DRbTicker"
+    ]
+
+    TWS [
+        fontcolor = black,
+        URL = "classes/TWS.html",
+        shape = ellipse,
+        color = palegoldenrod,
+        style = filled,
+        label = "TWS"
+    ]
+
+    Ticker [
+        fontcolor = black,
+        URL = "classes/Ticker.html",
+        shape = ellipse,
+        color = palegoldenrod,
+        style = filled,
+        label = "Ticker"
+    ]
+
+    DRb__DRbObservable [
+        URL = "classes/DRb/DRbObservable.html",
+        shape = box,
+        label = "DRb::DRbObservable"
+    ]
+
+    DRb__DRbObservable -> DRbTicker [
+
+    ]
+
+    DRb__DRbUndumped [
+        URL = "classes/DRb/DRbUndumped.html",
+        shape = box,
+        label = "DRb::DRbUndumped"
+    ]
+
+    DRb__DRbUndumped -> DRbTicker [
+
+    ]
+
+    IbMessages -> Ticker [
+        ltail = cluster_IbMessages
+    ]
+
+    DRb__DRbObservable -> Ticker [
+
+    ]
+
+    DRb__DRbUndumped -> Ticker [
+
+    ]
+
+    Stock [
+        URL = "classes/Stock.html",
+        label = "Stock"
+    ]
+
+    Stock -> Ticker [
+
+    ]
+
+}
+

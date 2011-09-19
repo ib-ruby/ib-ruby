@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Class: Array</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <link rel="stylesheet" href=".././rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "width=400,height=400,scrollbars=yes" )
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+  <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'><tr>
+  <td class="file-title"><span class="file-title-prefix">Class</span><br />Array</td>
+  <td align="right">
+    <table cellspacing=0 cellpadding=2>
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../files/stdExt_rb.html">stdExt.rb</a>
+        </td>
+      </tr>
+    <tr>
+      <td>Parent:</td>
+      <td>
+Object
+     </td>
+   </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+ <!-- banner header -->
+
+  <div id="bodyContent">
+      <div id="content">
+  <table cellpadding='0' cellspacing='0' border='0' width="100%"><tr><td align="center">
+    <map id="map" name="map">
+  <area shape="RECT" coords="228,28,300,76"      href="Time.html" alt="Time">
+  <area shape="RECT" coords="324,28,410,76"      href="FalseClass.html" alt="FalseClass">
+  <area shape="RECT" coords="434,28,506,76"      href="Array.html" alt="Array">
+  <area shape="RECT" coords="530,28,602,76"      href="Module.html" alt="Module">
+  <area shape="RECT" coords="626,28,698,76"      href="Float.html" alt="Float">
+  <area shape="RECT" coords="722,28,804,76"      href="TrueClass.html" alt="TrueClass">
+  <area shape="RECT" coords="828,28,900,76"      href="Fixnum.html" alt="Fixnum">
+  <area shape="RECT" coords="18,17,111,64"      href="Enumerable.html" alt="Enumerable">
+  <area shape="RECT" coords="122,17,215,64"      href="Comparable.html" alt="Comparable">
+</map>
+<img src="../dot/f_2.png" usemap="#map" border=0 alt="TopLevel">
+  </td></tr></table>
+
+
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+  <li><a href="#M000043">covariance</a></li>
+  <li><a href="#M000044">delta</a></li>
+  <li><a href="#M000046">derivation</a></li>
+  <li><a href="#M000045">momentum</a></li>
+  <li><a href="#M000048">slope</a></li>
+  <li><a href="#M000047">trend</a></li>
+  </ul>
+
+
+
+
+
+
+<div class="sectiontitle">Public Instance methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M000043"></a><b>covariance</b>()
+  </div>
+  <div class="description">
+  <p>
+berechnet die Kovarianz der Datenreihen.
+</p>
+<p>
+Diese Methode erwartet zwei Vektoren, die vertikal ein <a
+href="Array.html">Array</a> populieren:
+</p>
+<pre>
+  [ [x0, y0] ... [xn, yn] ]
+</pre>
+<p>
+Dokumentation der Berechnung: <a
+href="http://de.wikipedia.org/wiki/Kovarianz">de.wikipedia.org/wiki/Kovarianz</a>
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000043_source')" id="l_M000043_source">show source</a> ]</p>
+  <div id="M000043_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stdExt.rb, line 89</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">covariance</span>
+    <span class="ruby-identifier">averageX</span>= <span class="ruby-identifier">average</span>{<span class="ruby-operator">|</span><span class="ruby-identifier">x</span><span class="ruby-operator">|</span> <span class="ruby-identifier">x</span>.<span class="ruby-identifier">first</span>}
+    <span class="ruby-identifier">averageY</span>= <span class="ruby-identifier">average</span>{<span class="ruby-operator">|</span><span class="ruby-identifier">x</span><span class="ruby-operator">|</span> <span class="ruby-identifier">x</span>.<span class="ruby-identifier">last</span>}
+    (<span class="ruby-identifier">sum</span>{<span class="ruby-operator">|</span><span class="ruby-identifier">x</span><span class="ruby-operator">|</span> (<span class="ruby-identifier">x</span>.<span class="ruby-identifier">first</span> <span class="ruby-operator">-</span> <span class="ruby-identifier">averageX</span> ) <span class="ruby-operator">*</span> (<span class="ruby-identifier">x</span>.<span class="ruby-identifier">last</span> <span class="ruby-operator">*</span> <span class="ruby-identifier">averageY</span>)} ) <span class="ruby-operator">/</span> <span class="ruby-identifier">size</span>  
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000044"></a><b>delta</b>(start=0,inc=1)
+  </div>
+  <div class="description">
+  <p>
+Gibt die Differenz zweier aufeinanderfolgender Arraywerte zurück (inc=1)
+oder die Differenz zweier <em>inc</em> getrennter Werte.
+</p>
+<p>
+Aufruf ohne Parameter: Differenz zwischen dem aktuellen und dem vorherigen
+Wert (Also die erste Ableitung)
+</p>
+  </div>
+<div class="aka">
+  This method is also aliased as
+  <a href="Array.html#M000045">momentum</a>
+  <a href="Array.html#M000046">derivation</a>
+</div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000044_source')" id="l_M000044_source">show source</a> ]</p>
+  <div id="M000044_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stdExt.rb, line 111</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">delta</span>(<span class="ruby-identifier">start</span>=<span class="ruby-value">0</span>,<span class="ruby-identifier">inc</span>=<span class="ruby-value">1</span>)
+    <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">size</span> <span class="ruby-operator">&gt;</span> <span class="ruby-identifier">start</span><span class="ruby-operator">+</span><span class="ruby-value">1</span>
+        <span class="ruby-identifier">at</span>(<span class="ruby-identifier">start</span>) <span class="ruby-operator">-</span> <span class="ruby-identifier">at</span>(<span class="ruby-identifier">start</span><span class="ruby-operator">+</span><span class="ruby-value">1</span>) <span class="ruby-keyword kw">rescue</span> <span class="ruby-value">0</span>
+     <span class="ruby-keyword kw">else</span>
+      <span class="ruby-value">0</span>
+    <span class="ruby-keyword kw">end</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000046"></a><b>derivation</b>(start=0,inc=1)
+  </div>
+  <div class="description">
+  <p>
+Alias for <a href="Array.html#M000044">delta</a>
+</p>
+  </div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000045"></a><b>momentum</b>(start=0,inc=1)
+  </div>
+  <div class="description">
+  <p>
+Alias for <a href="Array.html#M000044">delta</a>
+</p>
+  </div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000048"></a><b>slope</b>(start=0, ref=1, &amp;b)
+  </div>
+  <div class="description">
+  <p>
+Es wird die zweite Ableitung gebildet. Praktisch wird Steigung der
+Wertepaare
+</p>
+<pre>
+  ( @chart [start]-@chart[start+1] und  @chart[ref]-@chart[ref+1]
+</pre>
+<p>
+ermittelt. Das absolute Vorzeichen der Steigerung ist unerheblich.
+</p>
+<pre>
+  Je negativer Slope ist, desto größer ist die Abnahme der Steigung,
+  je positiver Slope ist, desto größer ist die Zunahme der Steigung
+</pre>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000048_source')" id="l_M000048_source">show source</a> ]</p>
+  <div id="M000048_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stdExt.rb, line 148</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">slope</span>(<span class="ruby-identifier">start</span>=<span class="ruby-value">0</span>, <span class="ruby-identifier">ref</span>=<span class="ruby-value">1</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">b</span>)
+     <span class="ruby-identifier">delta</span>(<span class="ruby-identifier">start</span>,<span class="ruby-operator">&amp;</span><span class="ruby-identifier">b</span>).<span class="ruby-identifier">abs</span> <span class="ruby-operator">-</span> <span class="ruby-identifier">delta</span>(<span class="ruby-identifier">ref</span>,<span class="ruby-operator">&amp;</span><span class="ruby-identifier">b</span>).<span class="ruby-identifier">abs</span> 
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000047"></a><b>trend</b>(count=2,tolerance=0,&amp;b)
+  </div>
+  <div class="description">
+  <p>
+Wir stellen fest, ob im gegebenen Intervall (count Datenpunkte)ein Trend zu
+verzeichnen ist. Der optionale Parameter &quot;toleranz&quot; gibt an, wie
+oft der kontinuierliche Verlauf verletzt werden darf (Anzahl der
+Ausreisser).
+</p>
+<pre>
+  (Derzeit erfolgt noch keine Statistische Auswerung)
+</pre>
+<p>
+Wenn gleiche Werte toleriert werden sollen, dann kann Toleranz auf 0.5
+gesetzt werden
+</p>
+<pre>
+    [ {&quot;var&quot; =&gt; 3}, {&quot;var&quot; =&gt; 4 } , {'var' =&gt; 5}, {'var'=&gt;5}].trend(3,0.5){|x| x['var']}  =&gt; tue
+    [ {&quot;var&quot; =&gt; 3}, {&quot;var&quot; =&gt; 4 } , {'var' =&gt; 5}, {'var'=&gt;4}].trend(3,0.5){|x| x['var']} =&gt; false
+</pre>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000047_source')" id="l_M000047_source">show source</a> ]</p>
+  <div id="M000047_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stdExt.rb, line 131</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">trend</span>(<span class="ruby-identifier">count</span>=<span class="ruby-value">2</span>,<span class="ruby-identifier">tolerance</span>=<span class="ruby-value">0</span>,<span class="ruby-operator">&amp;</span><span class="ruby-identifier">b</span>)
+  <span class="ruby-comment cmt"># count  tupel are analysed</span>
+  <span class="ruby-comment cmt"># trendCount contains the amount of eqal-signed tupel</span>
+  <span class="ruby-identifier">trendCount</span> = (<span class="ruby-value">0</span><span class="ruby-operator">..</span><span class="ruby-identifier">count</span><span class="ruby-operator">-</span><span class="ruby-value">1</span>).<span class="ruby-identifier">collect</span>{ <span class="ruby-operator">|</span><span class="ruby-identifier">x</span><span class="ruby-operator">|</span> <span class="ruby-identifier">delta</span>(<span class="ruby-identifier">x</span>,<span class="ruby-operator">&amp;</span><span class="ruby-identifier">b</span>) }.<span class="ruby-identifier">collect</span>{<span class="ruby-operator">|</span><span class="ruby-identifier">x</span><span class="ruby-operator">|</span> <span class="ruby-identifier">x</span>.<span class="ruby-identifier">sign</span> }.<span class="ruby-identifier">sum</span>.<span class="ruby-identifier">abs</span>
+  <span class="ruby-comment cmt"># we detect a trend, if ...</span>
+  <span class="ruby-identifier">trendCount</span><span class="ruby-operator">&gt;=</span> (<span class="ruby-identifier">count</span> <span class="ruby-operator">-</span> (<span class="ruby-identifier">tolerance</span><span class="ruby-operator">*</span><span class="ruby-value">2</span>))
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+</div>
+
+  </div>
+
+    </body>
+</html>

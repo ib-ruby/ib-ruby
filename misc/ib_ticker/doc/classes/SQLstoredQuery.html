@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Class: SQLstoredQuery</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <link rel="stylesheet" href=".././rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "width=400,height=400,scrollbars=yes" )
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+  <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'><tr>
+  <td class="file-title"><span class="file-title-prefix">Class</span><br />SQLstoredQuery</td>
+  <td align="right">
+    <table cellspacing=0 cellpadding=2>
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../files/mysql_class_rb.html">mysql_class.rb</a>
+        </td>
+      </tr>
+    <tr>
+      <td>Parent:</td>
+      <td>
+        <a href="SQLquery.html">
+SQLquery
+         </a>
+     </td>
+   </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+ <!-- banner header -->
+
+  <div id="bodyContent">
+      <div id="content">
+  <table cellpadding='0' cellspacing='0' border='0' width="100%"><tr><td align="center">
+    <map id="map" name="map">
+  <area shape="RECT" coords="17,103,89,151"      href="Stock.html" alt="Stock">
+  <area shape="RECT" coords="113,103,231,151"      href="SQLstoredQuery.html" alt="SQLstoredQuery">
+  <area shape="RECT" coords="255,103,351,151"      href="SQLoneData.html" alt="SQLoneData">
+  <area shape="RECT" coords="303,7,375,55"      href="OHLC.html" alt="OHLC">
+  <area shape="RECT" coords="196,7,279,55"      href="SQLquery.html" alt="SQLquery">
+  <area shape="RECT" coords="7,7,100,55"      href="IB_Definitions.html" alt="IB_Definitions">
+</map>
+<img src="../dot/f_0.png" usemap="#map" border=0 alt="TopLevel">
+  </td></tr></table>
+
+  <div class="description"><pre>
+ Sonderfall der DatenbankabfrageKlasse.
+ Es wird eine in der Datenbank gespeicherte Abfrage ausgeführt
+</pre>
+<table>
+<tr><td valign="top">todo:</td><td>Der Name der abzufragenden Datenbanktabelle sollte in der
+Konfigurationsdatei festgelegt werden. derzeit: tf_Queries
+
+</td></tr>
+</table>
+</div>
+
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+  <li><a href="#M000039">new</a></li>
+  </ul>
+
+
+
+
+
+
+<div class="sectiontitle">Public Class methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M000039"></a><b>new</b>(queryName,*arguments)
+  </div>
+  <div class="description">
+  <p>
+Die Abfrage, die in der angegebenen Tabellenzeile gespeichert ist, wird
+ausgeführt. Die optionalen Argumente werden in die Abfrage integriert. Das
+Abfrageergebnis wird in den StandardVariablen der Basisklasse abgelegt.
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000039_source')" id="l_M000039_source">show source</a> ]</p>
+  <div id="M000039_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File mysql_class.rb, line 209</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">queryName</span>,<span class="ruby-operator">*</span><span class="ruby-identifier">arguments</span>)
+<span class="ruby-comment cmt"># p arguments</span>
+<span class="ruby-comment cmt"># p queryName</span>
+    <span class="ruby-identifier">query</span>=<span class="ruby-constant">SQLoneData</span>.<span class="ruby-identifier">new</span>(<span class="ruby-node">&quot;select query from queries where short='#{queryName}'&quot;</span>)
+
+    <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">arguments</span>.<span class="ruby-identifier">length</span><span class="ruby-operator">&gt;</span><span class="ruby-value">0</span>
+      <span class="ruby-identifier">arguments</span>.<span class="ruby-identifier">flatten!</span>
+      <span class="ruby-identifier">arguments</span>.<span class="ruby-identifier">collect!</span>{<span class="ruby-operator">|</span><span class="ruby-identifier">x</span><span class="ruby-operator">|</span> <span class="ruby-value str">&quot;'&quot;</span><span class="ruby-operator">+</span><span class="ruby-identifier">x</span>.<span class="ruby-identifier">to_s</span><span class="ruby-operator">+</span><span class="ruby-value str">&quot;'&quot;</span>} <span class="ruby-comment cmt"># die Argumente in Hochkommata setzen</span>
+      <span class="ruby-identifier">p</span> <span class="ruby-identifier">arg</span>=<span class="ruby-identifier">arguments</span>.<span class="ruby-identifier">join</span>(<span class="ruby-value str">&quot;,&quot;</span>)        <span class="ruby-comment cmt"># die einzelnen Argumente mit ',' trennen</span>
+<span class="ruby-comment cmt">#   Vorbereitung  auf sprintf :  % gegen  &amp;&amp;  austauschen</span>
+      <span class="ruby-identifier">arg</span>.<span class="ruby-identifier">gsub!</span>(<span class="ruby-regexp re">/[%]/</span> , <span class="ruby-value str">'&amp;&amp;'</span> )
+      <span class="ruby-identifier">sQuery</span>= <span class="ruby-value str">&quot;sprintf(\&quot;\#{query.queryData}\&quot;,\#{arg})\n&quot;</span>
+<span class="ruby-comment cmt">#   Maskierte:  % zurückwandeln</span>
+      <span class="ruby-identifier">sQuery</span>.<span class="ruby-identifier">gsub!</span>(<span class="ruby-regexp re">/[&amp;][&amp;]/</span>,<span class="ruby-value str">'%'</span>)
+                        <span class="ruby-comment cmt"># Den ZeichenkettenAuswertungsString zusammensetzen</span>
+      <span class="ruby-keyword kw">super</span>(<span class="ruby-identifier">eval</span>(<span class="ruby-identifier">sQuery</span>.<span class="ruby-identifier">strip</span>))      <span class="ruby-comment cmt"># .. und umsetzen sowie die Basisklasse damit füllen</span>
+    <span class="ruby-keyword kw">else</span>
+      <span class="ruby-comment cmt"># keine Argrumente für die Query übergeben</span>
+      <span class="ruby-keyword kw">super</span>(<span class="ruby-identifier">query</span>.<span class="ruby-identifier">queryData</span>)
+    <span class="ruby-keyword kw">end</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+</div>
+
+  </div>
+
+    </body>
+</html>

@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Class: Ticker</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <link rel="stylesheet" href=".././rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "width=400,height=400,scrollbars=yes" )
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+  <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'><tr>
+  <td class="file-title"><span class="file-title-prefix">Class</span><br />Ticker</td>
+  <td align="right">
+    <table cellspacing=0 cellpadding=2>
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../files/ib_ticker_rb.html">ib_ticker.rb</a>
+        </td>
+      </tr>
+    <tr>
+      <td>Parent:</td>
+      <td>
+        <a href="Stock.html">
+Stock
+         </a>
+     </td>
+   </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+ <!-- banner header -->
+
+  <div id="bodyContent">
+      <div id="content">
+  <table cellpadding='0' cellspacing='0' border='0' width="100%"><tr><td align="center">
+    <map id="map" name="map">
+  <area shape="RECT" coords="175,124,247,172"      href="Ticker.html" alt="Ticker">
+  <area shape="RECT" coords="322,124,407,172"      href="DRbTicker.html" alt="DRbTicker">
+  <area shape="RECT" coords="628,28,700,76"      href="TWS.html" alt="TWS">
+  <area shape="RECT" coords="220,28,354,76"      href="DRb/DRbObservable.html" alt="DRb::DRbObservable">
+  <area shape="RECT" coords="378,28,508,76"      href="DRb/DRbUndumped.html" alt="DRb::DRbUndumped">
+  <area shape="RECT" coords="124,28,196,76"      href="Stock.html" alt="Stock">
+  <area shape="RECT" coords="18,17,111,64"      href="IbMessages.html" alt="IbMessages">
+  <area shape="RECT" coords="522,17,615,64"      href="IbOrder.html" alt="IbOrder">
+</map>
+<img src="../dot/f_8.png" usemap="#map" border=0 alt="TopLevel">
+  </td></tr></table>
+
+
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+  <li><a href="#M000092">doAction</a></li>
+  <li><a href="#M000087">getInstance</a></li>
+  <li><a href="#M000088">new</a></li>
+  <li><a href="#M000090">stopAllTicker</a></li>
+  <li><a href="#M000089">stopTicker</a></li>
+  <li><a href="#M000091">update</a></li>
+  </ul>
+
+<div class="sectiontitle">Included Modules</div>
+<ul>
+  <li>IbMessages</li>
+  <li>DRb::DRbObservable</li>
+  <li>DRb::DRbUndumped</li>
+</ul>
+
+
+
+
+
+<div class="sectiontitle">Public Class methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M000087"></a><b>getInstance</b>(stock)
+  </div>
+  <div class="description">
+  <p>
+Konstruktor-Methode mit einfachem Caching-Algorithmus
+</p>
+<p>
+Es wird ein <a href="Ticker.html">Ticker</a> mit den aktuellen
+Eigenschaften den übergebenen <a href="Stock.html">Stock</a>-Objekts
+erzeugt
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000087_source')" id="l_M000087_source">show source</a> ]</p>
+  <div id="M000087_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ib_ticker.rb, line 353</span>
+   <span class="ruby-keyword kw">def</span> <span class="ruby-constant">Ticker</span>.<span class="ruby-identifier">getInstance</span>(<span class="ruby-identifier">stock</span>) 
+         <span class="ruby-identifier">tickerVersion</span>=<span class="ruby-value">2</span> 
+        <span class="ruby-comment cmt">#  start only one instance of the tws-server</span>
+    <span class="ruby-ivar">@@tws</span> =<span class="ruby-constant">TWS</span>.<span class="ruby-identifier">new</span>   <span class="ruby-keyword kw">if</span> <span class="ruby-ivar">@@tws</span>.<span class="ruby-identifier">nil?</span>
+    <span class="ruby-identifier">tmpStock</span> = <span class="ruby-constant">Stock</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">stock</span>)
+    <span class="ruby-keyword kw">if</span> <span class="ruby-ivar">@@tickerInstance</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">tmpStock</span>.<span class="ruby-identifier">ibSymbol</span>)
+      <span class="ruby-identifier">puts</span> <span class="ruby-value str">&quot;reusing saved tickerInstance&quot;</span> 
+      <span class="ruby-identifier">obj</span> = <span class="ruby-ivar">@@tickerInstance</span>[<span class="ruby-identifier">tmpStock</span>.<span class="ruby-identifier">ibSymbol</span>]
+    <span class="ruby-keyword kw">else</span> 
+         <span class="ruby-identifier">obj</span> = <span class="ruby-constant">Ticker</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">tmpStock</span>)
+    <span class="ruby-keyword kw">end</span> 
+    <span class="ruby-identifier">obj</span>
+     <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000088"></a><b>new</b>(stock)
+  </div>
+  <div class="description">
+  <p>
+initialize is called from getInstance
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000088_source')" id="l_M000088_source">show source</a> ]</p>
+  <div id="M000088_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ib_ticker.rb, line 368</span>
+ <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">stock</span>)
+    <span class="ruby-comment cmt"># @@tickerID , @@tickerInstance and @@tws are initalized in Ticker#getInstance</span>
+    <span class="ruby-identifier">tickerVersion</span>=<span class="ruby-value">2</span>
+    <span class="ruby-keyword kw">super</span>(<span class="ruby-identifier">stock</span>)
+    <span class="ruby-ivar">@thisTickerID</span>=<span class="ruby-ivar">@@tickerID</span>      <span class="ruby-comment cmt"># identifies the current ticker</span>
+    <span class="ruby-ivar">@data</span>=<span class="ruby-constant">Hash</span>.<span class="ruby-identifier">new</span>
+    <span class="ruby-ivar">@file</span>=<span class="ruby-keyword kw">nil</span>
+    <span class="ruby-ivar">@last</span>=<span class="ruby-constant">Hash</span>.<span class="ruby-identifier">new</span>
+    <span class="ruby-ivar">@@tickerInstance</span>[ <span class="ruby-identifier">ibSymbol</span>] = <span class="ruby-keyword kw">self</span>
+    <span class="ruby-ivar">@@tws</span>.<span class="ruby-identifier">sendMessage</span> [<span class="ruby-identifier">twsRequestCode</span>(<span class="ruby-value str">&quot;req_mkt_data&quot;</span> ), <span class="ruby-identifier">tickerVersion</span> , <span class="ruby-ivar">@@tickerID</span> ]<span class="ruby-operator">+</span><span class="ruby-identifier">ibTicker</span>
+    <span class="ruby-ivar">@@tws</span>.<span class="ruby-identifier">add_observer</span>(<span class="ruby-keyword kw">self</span>) 
+    <span class="ruby-ivar">@@tickerID</span><span class="ruby-operator">+=</span><span class="ruby-value">1</span>
+  
+    <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="sectiontitle">Public Instance methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M000092"></a><b>doAction</b>()
+  </div>
+  <div class="description">
+  <p>
+called from update
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000092_source')" id="l_M000092_source">show source</a> ]</p>
+  <div id="M000092_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ib_ticker.rb, line 430</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">doAction</span>
+    <span class="ruby-comment cmt"># print &quot;ticker: #{name} --&gt; #{ @last.values.join(&quot; --  &quot;)} --&gt; #{@file} \n&quot;;</span>
+      <span class="ruby-identifier">print</span> <span class="ruby-node">&quot;allocated observers: #{count_observers} \n&quot;</span>
+      <span class="ruby-identifier">print</span> <span class="ruby-node">&quot;ticker: #{name} --&gt; #{ @last.values.join(&quot; --  &quot;)} \n&quot;</span>;
+  
+      <span class="ruby-identifier">changed</span>
+      <span class="ruby-identifier">notify_observers</span>(<span class="ruby-ivar">@last</span>[<span class="ruby-identifier">:time</span>],<span class="ruby-ivar">@last</span>[<span class="ruby-identifier">:price</span>], <span class="ruby-ivar">@last</span>[<span class="ruby-identifier">:size</span>] )
+    <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000090"></a><b>stopAllTicker</b>()
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000090_source')" id="l_M000090_source">show source</a> ]</p>
+  <div id="M000090_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ib_ticker.rb, line 395</span>
+<span class="ruby-keyword kw">def</span>  <span class="ruby-identifier">stopAllTicker</span>
+    <span class="ruby-identifier">ok</span>=<span class="ruby-keyword kw">true</span>
+    <span class="ruby-ivar">@@tickerInstance</span>.<span class="ruby-identifier">each</span>{ <span class="ruby-operator">|</span><span class="ruby-identifier">x</span>,<span class="ruby-identifier">y</span><span class="ruby-operator">|</span>    <span class="ruby-identifier">t</span>= <span class="ruby-identifier">y</span>.<span class="ruby-identifier">stopTicker</span> ; <span class="ruby-identifier">ok</span>=<span class="ruby-identifier">t</span> <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">ok</span>} 
+    <span class="ruby-ivar">@@tws</span>.<span class="ruby-identifier">closeTWS</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">ok</span>
+    <span class="ruby-identifier">ok</span>  <span class="ruby-comment cmt"># return false if the tws is not disconnected</span>
+    <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000089"></a><b>stopTicker</b>()
+  </div>
+  <div class="description">
+  <p>
+removes all tickers (only needed if the max of connections to the tws is
+reached)
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000089_source')" id="l_M000089_source">show source</a> ]</p>
+  <div id="M000089_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ib_ticker.rb, line 383</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">stopTicker</span>
+    <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">count_observers</span><span class="ruby-operator">&gt;</span><span class="ruby-value">0</span>
+      <span class="ruby-identifier">puts</span> <span class="ruby-value str">&quot; ----------------------------------------------------------------------------------------------------------&quot;</span>
+      <span class="ruby-identifier">puts</span> <span class="ruby-node">&quot; #{count_observers} clients are currently connected &quot;</span>
+      <span class="ruby-identifier">puts</span> <span class="ruby-value str">&quot; &quot;</span>
+      <span class="ruby-identifier">puts</span> <span class="ruby-value str">&quot; disconnect them ? (y/n)&quot;</span>
+      <span class="ruby-keyword kw">return</span> <span class="ruby-keyword kw">false</span> <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">readline</span>()<span class="ruby-operator">=~</span><span class="ruby-regexp re">/y/</span>
+    <span class="ruby-keyword kw">end</span>
+    <span class="ruby-ivar">@@tws</span>.<span class="ruby-identifier">sendMessage</span> [ <span class="ruby-identifier">twsRequestCode</span>(<span class="ruby-value str">&quot;CANCEL_MKT_DATA&quot;</span>), <span class="ruby-value">1</span>, <span class="ruby-ivar">@thisTickerID</span>] 
+    <span class="ruby-keyword kw">return</span> <span class="ruby-keyword kw">true</span>
+     <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000091"></a><b>update</b>(ibData)
+  </div>
+  <div class="description">
+  <p>
+called by TWS if a ticker-event is detected
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000091_source')" id="l_M000091_source">show source</a> ]</p>
+  <div id="M000091_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ib_ticker.rb, line 404</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">update</span> (<span class="ruby-identifier">ibData</span>)
+  
+    <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">ibData</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Hash</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">ibData</span>[ <span class="ruby-identifier">:tickerID</span> ].<span class="ruby-identifier">to_i</span><span class="ruby-operator">==</span><span class="ruby-ivar">@thisTickerID</span>
+      <span class="ruby-identifier">ibData</span>.<span class="ruby-identifier">delete</span>( <span class="ruby-identifier">:version</span> )
+      <span class="ruby-identifier">ibData</span>.<span class="ruby-identifier">delete</span>( <span class="ruby-identifier">:tickerID</span> )
+      <span class="ruby-ivar">@data</span>.<span class="ruby-identifier">update</span>(<span class="ruby-identifier">ibData</span>)
+      <span class="ruby-comment cmt"># alle Size-Events werden gespeichert.</span>
+      <span class="ruby-comment cmt"># Wenn ein Price-Event ohne Positionsänderung eintritt, dann wird dies nicht registriert</span>
+      <span class="ruby-comment cmt"># Alternative: Prüfen, ob innerhalb einer timeOut-Zeit ein SizeEvent gesendet wird.</span>
+      <span class="ruby-comment cmt">##     wenn dies nicht der Fall ist, auch</span>
+      <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">ibData</span>.<span class="ruby-identifier">has_key?</span>( <span class="ruby-identifier">:last_price</span> )
+        <span class="ruby-identifier">doAction</span> <span class="ruby-keyword kw">if</span> <span class="ruby-ivar">@last</span>[<span class="ruby-identifier">:event</span>]<span class="ruby-operator">==</span><span class="ruby-value str">&quot;price&quot;</span>
+        <span class="ruby-ivar">@last</span>[<span class="ruby-identifier">:price</span>]=<span class="ruby-identifier">ibData</span>[ <span class="ruby-identifier">:last_price</span> ]
+        <span class="ruby-ivar">@last</span>[<span class="ruby-identifier">:event</span>]=<span class="ruby-value str">'price'</span>
+        <span class="ruby-ivar">@last</span>[<span class="ruby-identifier">:time</span>]=<span class="ruby-constant">Time</span>.<span class="ruby-identifier">now</span>
+      <span class="ruby-comment cmt">#  print &quot;price:  #{@last.values.join(&quot; --  &quot;)} \n&quot;</span>
+      <span class="ruby-keyword kw">elsif</span> <span class="ruby-identifier">ibData</span>.<span class="ruby-identifier">has_key?</span>( <span class="ruby-identifier">:last_size</span> )
+          <span class="ruby-ivar">@last</span>[<span class="ruby-identifier">:size</span>]=<span class="ruby-identifier">ibData</span>[ <span class="ruby-identifier">:last_size</span> ]
+          <span class="ruby-ivar">@last</span>[<span class="ruby-identifier">:event</span>]=<span class="ruby-value str">'size'</span>
+          <span class="ruby-ivar">@last</span>[<span class="ruby-identifier">:time</span>]=<span class="ruby-constant">Time</span>.<span class="ruby-identifier">now</span>
+          <span class="ruby-identifier">doAction</span> 
+      <span class="ruby-keyword kw">end</span>  
+    <span class="ruby-keyword kw">end</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+</div>
+
+  </div>
+
+    </body>
+</html>

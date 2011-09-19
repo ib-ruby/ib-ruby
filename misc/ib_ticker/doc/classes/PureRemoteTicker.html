@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Class: PureRemoteTicker</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <link rel="stylesheet" href=".././rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "width=400,height=400,scrollbars=yes" )
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+  <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'><tr>
+  <td class="file-title"><span class="file-title-prefix">Class</span><br />PureRemoteTicker</td>
+  <td align="right">
+    <table cellspacing=0 cellpadding=2>
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../files/pureTicker_rb.html">pureTicker.rb</a>
+        </td>
+      </tr>
+    <tr>
+      <td>Parent:</td>
+      <td>
+Object
+     </td>
+   </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+ <!-- banner header -->
+
+  <div id="bodyContent">
+      <div id="content">
+  <table cellpadding='0' cellspacing='0' border='0' width="100%"><tr><td align="center">
+    <map id="map" name="map">
+  <area shape="RECT" coords="7,199,111,247"      href="PureFileTicker.html" alt="PureFileTicker">
+  <area shape="RECT" coords="63,103,188,151"      href="PureRemoteTicker.html" alt="PureRemoteTicker">
+  <area shape="RECT" coords="135,199,249,247"      href="PureMysqlTicker.html" alt="PureMysqlTicker">
+  <area shape="RECT" coords="60,7,191,55"      href="DRb/DRbUndumped.html" alt="DRb::DRbUndumped">
+</map>
+<img src="../dot/f_5.png" usemap="#map" border=0 alt="TopLevel">
+  </td></tr></table>
+
+  <div class="description"><p>
+Basis- <a href="OHLC.html">OHLC</a>-Tticker-Klasse
+</p>
+<p>
+Stellt die Verbindug zu ib_ticker (port 33810 oder gemäß &#8212;port
+KommandoParameter) her und registriert sich dort als Observator.
+</p>
+<p>
+Die Methode &#8216;update&#8217; wird bei jedem &quot;changed&quot;
+Ereignis aufgerufen. Sie erhält die TickDaten als Parameter
+</p>
+<p>
+<a href="RemoteTicker.html">RemoteTicker</a> stellt die <a
+href="OHLC.html">OHLC</a>-Objekte auf dem Bildschirm dar.
+</p>
+</div>
+
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+  <li><a href="#M000067">new</a></li>
+  <li><a href="#M000068">update</a></li>
+  </ul>
+
+<div class="sectiontitle">Included Modules</div>
+<ul>
+  <li>DRb::DRbUndumped</li>
+</ul>
+
+
+
+
+
+<div class="sectiontitle">Public Class methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M000067"></a><b>new</b>(s,server)
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000067_source')" id="l_M000067_source">show source</a> ]</p>
+  <div id="M000067_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File pureTicker.rb, line 79</span>
+    <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">s</span>,<span class="ruby-identifier">server</span>)
+      <span class="ruby-ivar">@stock</span>=<span class="ruby-identifier">s</span>
+      <span class="ruby-identifier">x</span>=<span class="ruby-identifier">server</span>.<span class="ruby-identifier">connectTicker</span>(<span class="ruby-identifier">s</span>)
+      <span class="ruby-identifier">x</span>.<span class="ruby-identifier">add_observer</span>(<span class="ruby-keyword kw">self</span>)
+    <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="sectiontitle">Public Instance methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M000068"></a><b>update</b>(*args)
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000068_source')" id="l_M000068_source">show source</a> ]</p>
+  <div id="M000068_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File pureTicker.rb, line 86</span>
+    <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">update</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">args</span>)
+      <span class="ruby-identifier">puts</span> <span class="ruby-node">&quot; #{@stock.name}&quot;</span>
+    <span class="ruby-comment cmt"># pp ohlc</span>
+      <span class="ruby-identifier">p</span> <span class="ruby-identifier">args</span>.<span class="ruby-identifier">inspect</span>
+    <span class="ruby-comment cmt"># print ohlc.printCSV( 'open', 'high', 'low', 'close' ){ |date1,date2| date1.strftime( &quot;%H:%M:%S &quot;) + '-- ' + date2.strftime( &quot;%M:%S &quot;)}</span>
+    <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+</div>
+
+  </div>
+
+    </body>
+</html>

@@ -1,0 +1,85 @@
+digraph TopLevel {
+    compound = true
+    bgcolor = lightcyan1
+    fontname = Arial
+    fontsize = 8
+    label = "ohlcRecord.rb"
+    node [
+        fontname = Arial,
+        fontsize = 8,
+        color = black
+    ]
+
+    OHLCrecord [
+        fontcolor = black,
+        URL = "classes/OHLCrecord.html",
+        shape = ellipse,
+        color = palegoldenrod,
+        style = filled,
+        label = "OHLCrecord"
+    ]
+
+    TestOHLC [
+        fontcolor = black,
+        URL = "classes/TestOHLC.html",
+        shape = ellipse,
+        color = palegoldenrod,
+        style = filled,
+        label = "TestOHLC"
+    ]
+
+    Time [
+        fontcolor = black,
+        URL = "classes/Time.html",
+        shape = ellipse,
+        color = palegoldenrod,
+        style = filled,
+        label = "Time"
+    ]
+
+    OHLC [
+        fontcolor = black,
+        URL = "classes/OHLC.html",
+        shape = ellipse,
+        color = palegoldenrod,
+        style = filled,
+        label = "OHLC"
+    ]
+
+    TestOHLCrecord [
+        fontcolor = black,
+        URL = "classes/TestOHLCrecord.html",
+        shape = ellipse,
+        color = palegoldenrod,
+        style = filled,
+        label = "TestOHLCrecord"
+    ]
+
+    TestTime [
+        fontcolor = black,
+        URL = "classes/TestTime.html",
+        shape = ellipse,
+        color = palegoldenrod,
+        style = filled,
+        label = "TestTime"
+    ]
+
+    Test__Unit__TestCase [
+        URL = "classes/Test/Unit/TestCase.html",
+        label = "Test::Unit::TestCase"
+    ]
+
+    Test__Unit__TestCase -> TestOHLC [
+
+    ]
+
+    Test__Unit__TestCase -> TestOHLCrecord [
+
+    ]
+
+    Test__Unit__TestCase -> TestTime [
+
+    ]
+
+}
+

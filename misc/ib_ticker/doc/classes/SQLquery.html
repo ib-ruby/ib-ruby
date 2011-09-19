@@ -1,0 +1,465 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Class: SQLquery</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <link rel="stylesheet" href=".././rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "width=400,height=400,scrollbars=yes" )
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+  <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'><tr>
+  <td class="file-title"><span class="file-title-prefix">Class</span><br />SQLquery</td>
+  <td align="right">
+    <table cellspacing=0 cellpadding=2>
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../files/mysql_class_rb.html">mysql_class.rb</a>
+        </td>
+      </tr>
+    <tr>
+      <td>Parent:</td>
+      <td>
+Object
+     </td>
+   </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+ <!-- banner header -->
+
+  <div id="bodyContent">
+      <div id="content">
+  <table cellpadding='0' cellspacing='0' border='0' width="100%"><tr><td align="center">
+    <map id="map" name="map">
+  <area shape="RECT" coords="17,103,89,151"      href="Stock.html" alt="Stock">
+  <area shape="RECT" coords="113,103,231,151"      href="SQLstoredQuery.html" alt="SQLstoredQuery">
+  <area shape="RECT" coords="255,103,351,151"      href="SQLoneData.html" alt="SQLoneData">
+  <area shape="RECT" coords="303,7,375,55"      href="OHLC.html" alt="OHLC">
+  <area shape="RECT" coords="196,7,279,55"      href="SQLquery.html" alt="SQLquery">
+  <area shape="RECT" coords="7,7,100,55"      href="IB_Definitions.html" alt="IB_Definitions">
+</map>
+<img src="../dot/f_0.png" usemap="#map" border=0 alt="TopLevel">
+  </td></tr></table>
+
+  <div class="description"><p>
+diese Klasse setzt Queries an die Default-Datenbank ab und speichert das
+Ergebnis in den Variablen queryArray und querryHash
+</p>
+<ul>
+<li>Aufbau von queryHash [{&quot;feld1&quot;=&gt;&quot;wert1&quot;,
+&quot;feld2&quot;=&gt;&quot;wert2&quot;, &#8230;&quot;}, {&#8230;} , .. ]
+
+</li>
+<li>Aufbau von queryArray [[ wert1&quot;], [wert2&quot;], [&#8230;], &#8230;],
+[ &#8230;] , &#8230;
+
+</li>
+</ul>
+<p>
+Dies ist die Basisklasse für alle SQL-Abfragen
+</p>
+<table>
+<tr><td valign="top">todo:</td><td>Die Default-Datenbank sollte als xml-file spezifiziert und eingelesen
+werden
+
+</td></tr>
+</table>
+<pre>
+ Der Parameter: query wird an die Datenbank gesendet
+ Das Ergebnis wird zurückgegeben
+  entweder als Array
+</pre>
+<p>
+oder (bei Abfragen ohne Ergebnis z.b. insert, update, drop, delete) als
+mysql_affectedRows Alternativ akzeptiert die Klasse hierfür (kein
+ErgebnisSet) einen Block. Beispiel: <a
+href="SQLquery.html#M000069">SQLquery.new</a>(&quot;insert into Unternehmen
+set Name=&#8217;TestUnternhemen&#8217; &quot;)
+</p>
+<pre>
+          {|resultSet| resultSet.insert_id}.getResult
+</pre>
+<p>
+gibt die id der letzen Insert-Aktion zurück
+</p>
+</div>
+
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+  <li><a href="#M000074">getField</a></li>
+  <li><a href="#M000076">getFields</a></li>
+  <li><a href="#M000073">getHash</a></li>
+  <li><a href="#M000075">getHoleItem</a></li>
+  <li><a href="#M000077">getInfo</a></li>
+  <li><a href="#M000070">getResult</a></li>
+  <li><a href="#M000072">getRowCount</a></li>
+  <li><a href="#M000071">getRows</a></li>
+  <li><a href="#M000069">new</a></li>
+  <li><a href="#M000079">ohlc</a></li>
+  <li><a href="#M000078">oneData</a></li>
+  </ul>
+
+
+
+
+
+
+<div class="sectiontitle">Public Class methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M000069"></a><b>new</b>(*args) {|db| ...}
+  </div>
+  <div class="description">
+  <p>
+aufruf: <a
+href="SQLquery.html#M000069">SQLquery.new</a>([server,[user,[password,[database,]]]],
+query
+</p>
+<pre>
+ die ersten Argumente können weggelassen werden
+</pre>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000069_source')" id="l_M000069_source">show source</a> ]</p>
+  <div id="M000069_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File mysql_class.rb, line 62</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">args</span>)
+  <span class="ruby-comment cmt">#p query</span>
+  <span class="ruby-identifier">args</span>= <span class="ruby-identifier">args</span>.<span class="ruby-identifier">flatten</span>
+    <span class="ruby-ivar">@queryArray</span>=<span class="ruby-constant">Array</span>.<span class="ruby-identifier">new</span>
+    <span class="ruby-ivar">@queryHash</span>=<span class="ruby-constant">Array</span>.<span class="ruby-identifier">new</span>
+    <span class="ruby-identifier">query</span>=<span class="ruby-identifier">args</span>.<span class="ruby-identifier">pop</span>
+    <span class="ruby-identifier">dbs</span>= <span class="ruby-identifier">args</span>.<span class="ruby-identifier">pop</span> <span class="ruby-operator">||</span> <span class="ruby-value str">'ib'</span> 
+    <span class="ruby-identifier">password</span>= <span class="ruby-identifier">args</span>.<span class="ruby-identifier">pop</span> <span class="ruby-operator">||</span> <span class="ruby-value str">'focus'</span>
+    <span class="ruby-identifier">user</span>=<span class="ruby-identifier">args</span>.<span class="ruby-identifier">pop</span> <span class="ruby-operator">||</span> <span class="ruby-value str">'topo'</span>
+    <span class="ruby-identifier">server</span>=<span class="ruby-identifier">args</span>.<span class="ruby-identifier">pop</span> <span class="ruby-operator">||</span> <span class="ruby-value str">'server'</span>       <span class="ruby-comment cmt"># change to   topofocus.t-link.de</span>
+    <span class="ruby-identifier">db</span> = <span class="ruby-constant">Mysql</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">server</span>, <span class="ruby-identifier">user</span>,<span class="ruby-identifier">password</span>)
+    <span class="ruby-identifier">db</span>.<span class="ruby-identifier">select_db</span>(<span class="ruby-identifier">dbs</span>)
+    <span class="ruby-keyword kw">begin</span>
+    <span class="ruby-ivar">@result</span> = <span class="ruby-identifier">db</span>.<span class="ruby-identifier">query</span>(<span class="ruby-identifier">query</span>.<span class="ruby-identifier">strip</span>)
+    <span class="ruby-keyword kw">rescue</span> <span class="ruby-constant">MysqlError</span>
+      <span class="ruby-identifier">print</span> <span class="ruby-node">&quot;ERROR: #{query.strip} \n&quot;</span>
+      <span class="ruby-identifier">raise</span>
+    <span class="ruby-keyword kw">end</span>
+<span class="ruby-comment cmt">#   p @result.class</span>
+<span class="ruby-comment cmt">#     Elemente über Namen ansprechen</span>
+    <span class="ruby-keyword kw">if</span>  <span class="ruby-identifier">block_given?</span>
+<span class="ruby-comment cmt">#   print &quot; block detected \n&quot;</span>
+      <span class="ruby-ivar">@result</span>=<span class="ruby-keyword kw">yield</span> <span class="ruby-identifier">db</span>
+    <span class="ruby-keyword kw">elsif</span> <span class="ruby-ivar">@result</span>.<span class="ruby-identifier">class</span><span class="ruby-operator">==</span><span class="ruby-constant">MysqlRes</span>
+      <span class="ruby-ivar">@result</span>.<span class="ruby-identifier">each_hash</span> <span class="ruby-keyword kw">do</span>
+         <span class="ruby-operator">|</span><span class="ruby-identifier">row</span><span class="ruby-operator">|</span>
+         <span class="ruby-identifier">h</span>=<span class="ruby-constant">Hash</span>.<span class="ruby-identifier">new</span>
+         <span class="ruby-identifier">row</span>.<span class="ruby-identifier">each</span>{<span class="ruby-operator">|</span><span class="ruby-identifier">x</span>,<span class="ruby-identifier">y</span><span class="ruby-operator">|</span> <span class="ruby-identifier">h</span>[<span class="ruby-identifier">x</span>.<span class="ruby-identifier">to_sym</span>]=<span class="ruby-identifier">y</span> }
+         <span class="ruby-ivar">@queryHash</span>.<span class="ruby-identifier">push</span>(<span class="ruby-identifier">h</span>) 
+      <span class="ruby-keyword kw">end</span>
+      <span class="ruby-ivar">@result</span>.<span class="ruby-identifier">data_seek</span>(<span class="ruby-value">0</span>)
+      <span class="ruby-ivar">@result</span>.<span class="ruby-identifier">each</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">a</span><span class="ruby-operator">|</span> <span class="ruby-ivar">@queryArray</span>.<span class="ruby-identifier">push</span>(<span class="ruby-identifier">a</span>) }
+    <span class="ruby-keyword kw">elsif</span> <span class="ruby-ivar">@result</span>.<span class="ruby-identifier">nil?</span>
+       <span class="ruby-ivar">@result</span>= <span class="ruby-identifier">db</span>.<span class="ruby-identifier">affected_rows</span>
+    <span class="ruby-keyword kw">end</span>
+    <span class="ruby-identifier">db</span>.<span class="ruby-identifier">close</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="sectiontitle">Public Instance methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M000074"></a><b>getField</b>(field)
+  </div>
+  <div class="description">
+  <p>
+Übergabeparamter: Feldname. Es wird ein <a href="Array.html">Array</a> mit
+den Elementen zurückgegeben
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000074_source')" id="l_M000074_source">show source</a> ]</p>
+  <div id="M000074_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File mysql_class.rb, line 129</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">getField</span>(<span class="ruby-identifier">field</span>)
+    <span class="ruby-identifier">thisResult</span>=<span class="ruby-constant">Array</span>.<span class="ruby-identifier">new</span>
+<span class="ruby-comment cmt">#   puts &quot;field=&quot;+field.to_s</span>
+    ( <span class="ruby-identifier">field</span>.<span class="ruby-identifier">instance_of?</span> <span class="ruby-constant">Fixnum</span>)<span class="ruby-operator">?</span> <span class="ruby-ivar">@queryArray</span>.<span class="ruby-identifier">each</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">a</span><span class="ruby-operator">|</span><span class="ruby-identifier">thisResult</span>.<span class="ruby-identifier">push</span>(<span class="ruby-identifier">a</span>[<span class="ruby-identifier">field</span>]) }<span class="ruby-operator">:</span><span class="ruby-ivar">@queryHash</span>.<span class="ruby-identifier">each</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">a</span><span class="ruby-operator">|</span><span class="ruby-identifier">thisResult</span>.<span class="ruby-identifier">push</span>(<span class="ruby-identifier">a</span>[<span class="ruby-identifier">field</span>])}
+    <span class="ruby-keyword kw">return</span> <span class="ruby-identifier">thisResult</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000076"></a><b>getFields</b>()
+  </div>
+  <div class="description">
+  <p>
+Alle Felder der aktuellen Abfrage in ein <a href="Array.html">Array</a>
+einlesen
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000076_source')" id="l_M000076_source">show source</a> ]</p>
+  <div id="M000076_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File mysql_class.rb, line 145</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">getFields</span>
+    <span class="ruby-identifier">fields</span> = <span class="ruby-ivar">@result</span>.<span class="ruby-identifier">fetch_fields</span>.<span class="ruby-identifier">collect!</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">f</span><span class="ruby-operator">|</span> <span class="ruby-identifier">f</span>.<span class="ruby-identifier">name</span> }
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000073"></a><b>getHash</b>()
+  </div>
+  <div class="description">
+  <p>
+Das Abfrageergebnis wird als Hash zurükgegeben. Die Zeilen sind als <a
+href="Array.html">Array</a> organisiert: [{bez1 =&gt;wert1, bez2=&gt;wert2,
+..}][{&#8230;}]&#8230; Das Ergebnis kann mit pop oder each durchmustert
+werden
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000073_source')" id="l_M000073_source">show source</a> ]</p>
+  <div id="M000073_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File mysql_class.rb, line 123</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">getHash</span>
+    <span class="ruby-ivar">@queryHash</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000075"></a><b>getHoleItem</b>(*field)
+  </div>
+  <div class="description">
+  <p>
+Das QueryErgebnis wird als String in einem <a href="Array.html">Array</a>
+zurückgegeben
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000075_source')" id="l_M000075_source">show source</a> ]</p>
+  <div id="M000075_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File mysql_class.rb, line 137</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">getHoleItem</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">field</span>)
+<span class="ruby-comment cmt">#   die übergebenen Felder als Array populieren : [feld1/wert1, feld2/wert2, ... ] [..] ..</span>
+    <span class="ruby-identifier">thisResult</span>= (<span class="ruby-identifier">field</span>.<span class="ruby-identifier">flatten!</span>.<span class="ruby-identifier">collect!</span>{<span class="ruby-operator">|</span><span class="ruby-identifier">p</span><span class="ruby-operator">|</span> <span class="ruby-identifier">getField</span>(<span class="ruby-identifier">p</span>)}).<span class="ruby-identifier">transpose</span>
+<span class="ruby-comment cmt">#   und dann die Unterarrays zu strings zusammenfassen</span>
+    <span class="ruby-identifier">thisResult</span>.<span class="ruby-identifier">collect!</span>{<span class="ruby-operator">|</span><span class="ruby-identifier">p</span><span class="ruby-operator">|</span> <span class="ruby-identifier">p</span>.<span class="ruby-identifier">join</span>(<span class="ruby-value str">&quot; &quot;</span>) }
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000077"></a><b>getInfo</b>()
+  </div>
+  <div class="description">
+  <p>
+Die Datenbankfelder des aktuellen Datensatzes auslesen und auf Stdout
+ausgeben.
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000077_source')" id="l_M000077_source">show source</a> ]</p>
+  <div id="M000077_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File mysql_class.rb, line 151</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">getInfo</span>
+    <span class="ruby-identifier">fields</span> = <span class="ruby-ivar">@result</span>.<span class="ruby-identifier">fetch_fields</span>.<span class="ruby-identifier">collect!</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">f</span><span class="ruby-operator">|</span> <span class="ruby-identifier">f</span>.<span class="ruby-identifier">name</span> }
+<span class="ruby-comment cmt">#   Überschrift</span>
+    <span class="ruby-identifier">puts</span> <span class="ruby-identifier">fields</span>.<span class="ruby-identifier">join</span>(<span class="ruby-value str">&quot;\t&quot;</span>)
+<span class="ruby-comment cmt">#   Daten</span>
+    <span class="ruby-ivar">@queryArray</span>.<span class="ruby-identifier">each</span>  { <span class="ruby-operator">|</span><span class="ruby-identifier">row</span><span class="ruby-operator">|</span>  <span class="ruby-identifier">puts</span> <span class="ruby-identifier">row</span>.<span class="ruby-identifier">join</span>(<span class="ruby-value str">&quot;\t&quot;</span>) }
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000070"></a><b>getResult</b>()
+  </div>
+  <div class="description">
+  <p>
+Das Ergebnis der letzten mysql-Abfrage wird zurückgeben
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000070_source')" id="l_M000070_source">show source</a> ]</p>
+  <div id="M000070_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File mysql_class.rb, line 101</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">getResult</span>
+    <span class="ruby-ivar">@result</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000072"></a><b>getRowCount</b>()
+  </div>
+  <div class="description">
+  <p>
+Es wird die Größe der Ergebnismenge zurückgegeben (Anzahl der
+Ergebniszeilen)
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000072_source')" id="l_M000072_source">show source</a> ]</p>
+  <div id="M000072_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File mysql_class.rb, line 117</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">getRowCount</span>
+    <span class="ruby-ivar">@result</span>.<span class="ruby-identifier">num_rows</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000071"></a><b>getRows</b>(*field)
+  </div>
+  <div class="description">
+  <p>
+Übergabeparamter: Liste von Elementen. Es wird ein <a
+href="Array.html">Array</a> mit den Werten zurückgegeben
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000071_source')" id="l_M000071_source">show source</a> ]</p>
+  <div id="M000071_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File mysql_class.rb, line 106</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">getRows</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">field</span>)
+<span class="ruby-comment cmt"># p  @queryArray if field.empty?</span>
+    <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">field</span>.<span class="ruby-identifier">empty?</span> 
+      <span class="ruby-ivar">@queryArray</span>
+    <span class="ruby-keyword kw">else</span>
+      (<span class="ruby-identifier">field</span>.<span class="ruby-identifier">collect</span>{<span class="ruby-operator">|</span><span class="ruby-identifier">p</span><span class="ruby-operator">|</span> <span class="ruby-identifier">getField</span>(<span class="ruby-identifier">p</span>)}).<span class="ruby-identifier">transpose</span>
+    <span class="ruby-keyword kw">end</span>
+    
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000079"></a><b>ohlc</b>() {|a if block_given?| ...}
+  </div>
+  <div class="description">
+  <p>
+gibt die Ergebnismenge der SQL-Abfrage als ein <a
+href="Array.html">Array</a> von <a href="OHLC.html">OHLC</a> Objekten
+zurück
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000079_source')" id="l_M000079_source">show source</a> ]</p>
+  <div id="M000079_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File mysql_class.rb, line 167</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">ohlc</span>
+    <span class="ruby-identifier">getHash</span>.<span class="ruby-identifier">collect</span>  <span class="ruby-keyword kw">do</span>
+      <span class="ruby-operator">|</span><span class="ruby-identifier">row</span><span class="ruby-operator">|</span> 
+    <span class="ruby-comment cmt"># pp row</span>
+        <span class="ruby-identifier">a</span>= <span class="ruby-constant">OHLC</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">row</span>) <span class="ruby-keyword kw">do</span> 
+              <span class="ruby-operator">|</span><span class="ruby-identifier">data</span><span class="ruby-operator">|</span> 
+              <span class="ruby-identifier">date</span>= <span class="ruby-constant">Time</span>.<span class="ruby-identifier">at</span>(<span class="ruby-identifier">data</span>.<span class="ruby-identifier">delete</span>( <span class="ruby-identifier">:date</span> ).<span class="ruby-identifier">to_i</span>)
+              <span class="ruby-identifier">ohlcData</span>=<span class="ruby-constant">Hash</span>.<span class="ruby-identifier">new</span>
+              <span class="ruby-identifier">data</span>.<span class="ruby-identifier">each</span>{<span class="ruby-operator">|</span><span class="ruby-identifier">x</span>,<span class="ruby-identifier">y</span><span class="ruby-operator">|</span> <span class="ruby-identifier">ohlcData</span>[<span class="ruby-identifier">x</span>]=<span class="ruby-identifier">y</span>.<span class="ruby-identifier">to_f</span> }
+              [<span class="ruby-identifier">date</span>,<span class="ruby-identifier">date</span>,<span class="ruby-identifier">ohlcData</span> ]
+            <span class="ruby-keyword kw">end</span>
+        <span class="ruby-keyword kw">yield</span> <span class="ruby-identifier">a</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">block_given?</span>
+    <span class="ruby-keyword kw">end</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000078"></a><b>oneData</b>()
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000078_source')" id="l_M000078_source">show source</a> ]</p>
+  <div id="M000078_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File mysql_class.rb, line 159</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">oneData</span>
+      <span class="ruby-ivar">@result</span>.<span class="ruby-identifier">data_seek</span>(<span class="ruby-value">0</span>)
+      <span class="ruby-ivar">@result</span>.<span class="ruby-identifier">fetch_row</span>[<span class="ruby-value">0</span>] <span class="ruby-keyword kw">unless</span> <span class="ruby-ivar">@queryHash</span>.<span class="ruby-identifier">empty?</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+</div>
+
+  </div>
+
+    </body>
+</html>

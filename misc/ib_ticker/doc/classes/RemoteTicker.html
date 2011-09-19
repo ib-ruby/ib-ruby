@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Class: RemoteTicker</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <link rel="stylesheet" href=".././rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "width=400,height=400,scrollbars=yes" )
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+  <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'><tr>
+  <td class="file-title"><span class="file-title-prefix">Class</span><br />RemoteTicker</td>
+  <td align="right">
+    <table cellspacing=0 cellpadding=2>
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../files/ohlcTicker_rb.html">ohlcTicker.rb</a>
+        </td>
+      </tr>
+    <tr>
+      <td>Parent:</td>
+      <td>
+Object
+     </td>
+   </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+ <!-- banner header -->
+
+  <div id="bodyContent">
+      <div id="content">
+  <table cellpadding='0' cellspacing='0' border='0' width="100%"><tr><td align="center">
+    <map id="map" name="map">
+  <area shape="RECT" coords="7,199,100,247"      href="MysqlTicker.html" alt="MysqlTicker">
+  <area shape="RECT" coords="56,103,160,151"      href="RemoteTicker.html" alt="RemoteTicker">
+  <area shape="RECT" coords="124,199,204,247"      href="FileTicker.html" alt="FileTicker">
+  <area shape="RECT" coords="43,7,174,55"      href="DRb/DRbUndumped.html" alt="DRb::DRbUndumped">
+</map>
+<img src="../dot/f_7.png" usemap="#map" border=0 alt="TopLevel">
+  </td></tr></table>
+
+  <div class="description"><p>
+Basis- <a href="OHLC.html">OHLC</a>-Tticker-Klasse
+</p>
+<p>
+Stellt die Verbindug zu ib_ticker (port 33810 oder gemäß &#8212;port
+KommandoParameter) her und registriert sich dort als Observator.
+</p>
+<p>
+Die Methode &#8216;update&#8217; wird bei jedem &quot;changed&quot;
+Ereignis aufgerufen. Sie erhält den jeweils fertiggestellten <a
+href="OHLC.html">OHLC</a>-Objekt als Parameter.
+</p>
+<p>
+<a href="RemoteTicker.html">RemoteTicker</a> stellt die <a
+href="OHLC.html">OHLC</a>-Objekte auf dem Bildschirm dar.
+</p>
+</div>
+
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+  <li><a href="#M000049">new</a></li>
+  <li><a href="#M000050">output</a></li>
+  <li><a href="#M000051">update</a></li>
+  </ul>
+
+<div class="sectiontitle">Included Modules</div>
+<ul>
+  <li>DRb::DRbUndumped</li>
+</ul>
+
+
+
+
+
+<div class="sectiontitle">Public Class methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M000049"></a><b>new</b>(s,server)
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000049_source')" id="l_M000049_source">show source</a> ]</p>
+  <div id="M000049_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ohlcTicker.rb, line 79</span>
+    <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">s</span>,<span class="ruby-identifier">server</span>)
+      <span class="ruby-ivar">@stock</span>=<span class="ruby-identifier">s</span>
+      <span class="ruby-ivar">@ohlcRecord</span>=<span class="ruby-constant">OHLCrecord</span>.<span class="ruby-identifier">new</span> <span class="ruby-identifier">s</span>
+      <span class="ruby-identifier">x</span>=<span class="ruby-identifier">server</span>.<span class="ruby-identifier">connectTicker</span>(<span class="ruby-identifier">s</span>)
+      <span class="ruby-identifier">x</span>.<span class="ruby-identifier">add_observer</span>(<span class="ruby-keyword kw">self</span>)
+      <span class="ruby-identifier">output</span>
+    <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="sectiontitle">Public Instance methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M000050"></a><b>output</b>()
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000050_source')" id="l_M000050_source">show source</a> ]</p>
+  <div id="M000050_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ohlcTicker.rb, line 86</span>
+    <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">output</span>
+          <span class="ruby-ivar">@ohlcRecord</span>.<span class="ruby-identifier">on_ohlc_ready</span> <span class="ruby-keyword kw">do</span>
+        <span class="ruby-operator">|</span> <span class="ruby-identifier">ohlc</span> <span class="ruby-operator">|</span>
+        <span class="ruby-identifier">print</span> <span class="ruby-value str">&quot;%6s&quot;</span> <span class="ruby-operator">%</span> <span class="ruby-ivar">@stock</span>.<span class="ruby-identifier">name</span>, <span class="ruby-value str">'--&gt;'</span>, <span class="ruby-identifier">ohlc</span>.<span class="ruby-identifier">to_s</span>,<span class="ruby-value str">&quot;\n&quot;</span>
+        <span class="ruby-keyword kw">end</span>
+
+    <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000051"></a><b>update</b>(*args)
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000051_source')" id="l_M000051_source">show source</a> ]</p>
+  <div id="M000051_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ohlcTicker.rb, line 93</span>
+    <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">update</span> <span class="ruby-operator">*</span><span class="ruby-identifier">args</span>
+    <span class="ruby-comment cmt"># debug # puts &quot; RemoteTicker#update: recieved tickData for stock  #{@stock.name}&quot;</span>
+      <span class="ruby-ivar">@ohlcRecord</span>.<span class="ruby-identifier">accumulateTicks</span> <span class="ruby-operator">*</span><span class="ruby-identifier">args</span>
+    <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+</div>
+
+  </div>
+
+    </body>
+</html>

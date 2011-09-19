@@ -1,0 +1,59 @@
+digraph TopLevel {
+    compound = true
+    bgcolor = lightcyan1
+    fontname = Arial
+    fontsize = 8
+    label = "pureTicker.rb"
+    node [
+        fontname = Arial,
+        fontsize = 8,
+        color = black
+    ]
+
+    PureFileTicker [
+        fontcolor = black,
+        URL = "classes/PureFileTicker.html",
+        shape = ellipse,
+        color = palegoldenrod,
+        style = filled,
+        label = "PureFileTicker"
+    ]
+
+    PureRemoteTicker [
+        fontcolor = black,
+        URL = "classes/PureRemoteTicker.html",
+        shape = ellipse,
+        color = palegoldenrod,
+        style = filled,
+        label = "PureRemoteTicker"
+    ]
+
+    PureMysqlTicker [
+        fontcolor = black,
+        URL = "classes/PureMysqlTicker.html",
+        shape = ellipse,
+        color = palegoldenrod,
+        style = filled,
+        label = "PureMysqlTicker"
+    ]
+
+    PureRemoteTicker -> PureFileTicker [
+
+    ]
+
+    DRb__DRbUndumped [
+        URL = "classes/DRb/DRbUndumped.html",
+        shape = box,
+        label = "DRb::DRbUndumped"
+    ]
+
+    DRb__DRbUndumped -> PureRemoteTicker [
+
+    ]
+
+    PureRemoteTicker -> PureMysqlTicker [
+
+    ]
+
+}
+

@@ -1,0 +1,741 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Class: Stock</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <link rel="stylesheet" href=".././rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "width=400,height=400,scrollbars=yes" )
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+  <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'><tr>
+  <td class="file-title"><span class="file-title-prefix">Class</span><br />Stock</td>
+  <td align="right">
+    <table cellspacing=0 cellpadding=2>
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../files/mysql_class_rb.html">mysql_class.rb</a>
+<a href="../files/stock_rb.html">stock.rb</a>
+        </td>
+      </tr>
+    <tr>
+      <td>Parent:</td>
+      <td>
+Object
+     </td>
+   </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+ <!-- banner header -->
+
+  <div id="bodyContent">
+      <div id="content">
+  <table cellpadding='0' cellspacing='0' border='0' width="100%"><tr><td align="center">
+    <map id="map" name="map">
+  <area shape="RECT" coords="28,124,100,172"      href="Stock.html" alt="Stock">
+  <area shape="RECT" coords="124,28,196,76"      href="String.html" alt="String">
+  <area shape="RECT" coords="18,17,112,64"      href="IB_Definitions.html" alt="IB_Definitions">
+</map>
+<img src="../dot/f_6.png" usemap="#map" border=0 alt="TopLevel">
+  </td></tr></table>
+
+  <div class="description"><p>
+Die Klasse <a href="Stock.html">Stock</a> ist die MutterKlasse für Chart,
+Account und <a href="Ticker.html">Ticker</a>.
+</p>
+<p>
+In der Datei <em>stocks.yaml</em> sind die Default-Einstellungen für die
+handelbaren Futures zusammengefasst. Diese Yaml-Datei wird für die
+Initialisierung des <a href="Stock.html">Stock</a>-Objekts herangezogen.
+</p>
+<p>
+Die Daten werden in ein Hash (Stock.stock) eingelesen.
+</p>
+<p>
+<a href="Stock.html">Stock</a> bietet einen kontrollierten Zugriff auf die
+eingelesenen BasisDaten.
+</p>
+</div>
+
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+  <li><a href="#M000024">adjustContract</a></li>
+  <li><a href="#M000020">assignContract</a></li>
+  <li><a href="#M000022">availableContracts</a></li>
+  <li><a href="#M000004">availableStocks</a></li>
+  <li><a href="#M000015">boxSize</a></li>
+  <li><a href="#M000021">checkContract</a></li>
+  <li><a href="#M000014">convertedResolution</a></li>
+  <li><a href="#M000007">dynElement</a></li>
+  <li><a href="#M000018">endDay=</a></li>
+  <li><a href="#M000006">getAvailableProperties</a></li>
+  <li><a href="#M000023">getTradingRange</a></li>
+  <li><a href="#M000012">hourEnd</a></li>
+  <li><a href="#M000011">hourStart</a></li>
+  <li><a href="#M000003">mysqlFetchOHLC</a></li>
+  <li><a href="#M000005">new</a></li>
+  <li><a href="#M000009">printFormat</a></li>
+  <li><a href="#M000013">resolution=</a></li>
+  <li><a href="#M000016">reversalBoxSize</a></li>
+  <li><a href="#M000008">setElement</a></li>
+  <li><a href="#M000017">startDay=</a></li>
+  <li><a href="#M000019">tadingDays=</a></li>
+  <li><a href="#M000010">tt</a></li>
+  </ul>
+
+<div class="sectiontitle">Included Modules</div>
+<ul>
+  <li><a href="IB_Definitions.html">IB_Definitions</a></li>
+</ul>
+
+
+
+  <div class="sectiontitle">Constants</div>
+  <table border='0' cellpadding='5'>
+  <tr valign='top'>
+    <td class="attr-name">FILENAME</td>
+    <td>=</td>
+    <td class="attr-value">'stocks.yaml'</td>
+  </tr>
+  </table>
+
+  <div class="sectiontitle">Attributes</div>
+  <table border='0' cellpadding='5'>
+  <tr valign='top'>
+    <td class='attr-rw'>
+[R]
+    </td>
+    <td class='attr-name'>stock</td>
+    <td class='attr-desc'></td>
+  </tr>
+  </table>
+
+<div class="sectiontitle">Public Class methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M000004"></a><b>availableStocks</b>(attribut='name')
+  </div>
+  <div class="description">
+  <p>
+Auch ohne vorherige Initialisierung des <a
+href="Stock.html">Stock</a>-Objekts können mit <a
+href="Stock.html#M000004">Stock#availableStocks</a> die verfügbaren Stocks
+ausgelesen werden
+</p>
+<h4>Beispiel</h4>
+<p>
+pp <a href="Stock.html#M000004">Stock.availableStocks</a>
+</p>
+<pre>
+ [&quot;dax&quot;, &quot;stoxx&quot;, &quot;smi&quot;, &quot;bund&quot;, &quot;bobl&quot;, &quot;russel2000_&quot;, &quot;end&quot;]
+</pre>
+<p>
+pp <a
+href="Stock.html#M000004">Stock.availableStocks</a>(&#8216;alias&#8217;)
+</p>
+<pre>
+ gibt eine Liste der verfügbaren Aliase aus
+</pre>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000004_source')" id="l_M000004_source">show source</a> ]</p>
+  <div id="M000004_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stock.rb, line 108</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-constant">Stock</span>.<span class="ruby-identifier">availableStocks</span>(<span class="ruby-identifier">attribut</span>=<span class="ruby-value str">'name'</span>)
+    <span class="ruby-constant">File</span>.<span class="ruby-identifier">open</span>(<span class="ruby-constant">FILENAME</span>) <span class="ruby-keyword kw">do</span>
+     <span class="ruby-operator">|</span><span class="ruby-identifier">f</span><span class="ruby-operator">|</span>
+     <span class="ruby-constant">YAML</span>.<span class="ruby-identifier">load_stream</span>( <span class="ruby-identifier">f</span> ).<span class="ruby-identifier">documents</span>.<span class="ruby-identifier">collect</span>{<span class="ruby-operator">|</span><span class="ruby-identifier">x</span><span class="ruby-operator">|</span> <span class="ruby-identifier">x</span>[<span class="ruby-identifier">attribut</span>]}
+    <span class="ruby-keyword kw">end</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000007"></a><b>dynElement</b>(*names)
+  </div>
+  <div class="description">
+  <p>
+dynElement erzeugt Assessor-Methoden für
+</p>
+<pre>
+  :name,  :tickValue, :tickRange, :tickSize, :halfTurnFee, :currency, :backtestIntervall, :resolution
+</pre>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000007_source')" id="l_M000007_source">show source</a> ]</p>
+  <div id="M000007_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stock.rb, line 171</span>
+    <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">dynElement</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">names</span>)
+       <span class="ruby-identifier">names</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">name</span><span class="ruby-operator">|</span>
+     <span class="ruby-comment cmt"># &quot;remove the first get if nessesary to enable the access of (get)Resolution etc&quot;</span>
+      <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">name</span>.<span class="ruby-identifier">to_s</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-value str">&quot;get&quot;</span>)
+      <span class="ruby-identifier">pname</span>=<span class="ruby-identifier">name</span>.<span class="ruby-identifier">to_s</span>.<span class="ruby-identifier">sub</span>(<span class="ruby-regexp re">/get/</span>,<span class="ruby-value str">''</span>).<span class="ruby-identifier">downcase</span> 
+    <span class="ruby-keyword kw">else</span>
+         <span class="ruby-identifier">pname</span>=<span class="ruby-identifier">name</span>.<span class="ruby-identifier">to_s</span>.<span class="ruby-identifier">downcase</span>
+    <span class="ruby-keyword kw">end</span>  
+    <span class="ruby-comment cmt"># now create the method</span>
+    <span class="ruby-identifier">class_eval</span> <span class="ruby-value str">&quot;def \#{name}\n@stock['\#{pname}']\nend\n&quot;</span>
+      <span class="ruby-keyword kw">end</span>
+    <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000005"></a><b>new</b>(stock=nil)
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000005_source')" id="l_M000005_source">show source</a> ]</p>
+  <div id="M000005_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stock.rb, line 114</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">stock</span>=<span class="ruby-keyword kw">nil</span>)
+    <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">stock</span>.<span class="ruby-identifier">is_a?</span>  <span class="ruby-constant">Stock</span>
+      <span class="ruby-comment cmt"># initialize from modifed stock-object</span>
+      <span class="ruby-ivar">@stock</span>=<span class="ruby-identifier">stock</span>.<span class="ruby-identifier">stock</span>.<span class="ruby-identifier">dup</span>
+    <span class="ruby-keyword kw">else</span>
+      <span class="ruby-comment cmt"># initialize from default values; convert Hash-Keys to downcase</span>
+      <span class="ruby-ivar">@stock</span>=<span class="ruby-constant">Hash</span>.<span class="ruby-identifier">new</span>
+      <span class="ruby-identifier">readStockYAML</span>(<span class="ruby-identifier">stock</span>).<span class="ruby-identifier">each</span>{<span class="ruby-operator">|</span><span class="ruby-identifier">x</span>,<span class="ruby-identifier">y</span><span class="ruby-operator">|</span> <span class="ruby-ivar">@stock</span>[<span class="ruby-identifier">x</span>.<span class="ruby-identifier">downcase</span>]=<span class="ruby-identifier">y</span>} 
+    <span class="ruby-keyword kw">end</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000008"></a><b>setElement</b>(*names)
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000008_source')" id="l_M000008_source">show source</a> ]</p>
+  <div id="M000008_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stock.rb, line 189</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">setElement</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">names</span>)
+    <span class="ruby-identifier">names</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">name</span><span class="ruby-operator">|</span>
+         <span class="ruby-comment cmt"># &quot;remove the first set if nessesary to enable the access of (set)Resolution etc&quot;</span>
+  
+       <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">name</span>.<span class="ruby-identifier">to_s</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-value str">&quot;set&quot;</span>)
+        <span class="ruby-identifier">pname</span>=<span class="ruby-identifier">name</span>.<span class="ruby-identifier">to_s</span>.<span class="ruby-identifier">sub</span>(<span class="ruby-regexp re">/set/</span>,<span class="ruby-value str">''</span>).<span class="ruby-identifier">downcase</span> 
+      <span class="ruby-keyword kw">else</span>
+           <span class="ruby-identifier">pname</span>=<span class="ruby-identifier">name</span>.<span class="ruby-identifier">to_s</span>.<span class="ruby-identifier">downcase</span>
+        <span class="ruby-identifier">name</span>= <span class="ruby-identifier">name</span>.<span class="ruby-identifier">to_s</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-value str">&quot;=&quot;</span>
+      <span class="ruby-keyword kw">end</span> 
+      <span class="ruby-comment cmt"># now create the method</span>
+          <span class="ruby-identifier">class_eval</span> <span class="ruby-value str">&quot;def \#{name}(value)\n@stock['\#{pname}']=value\nend\n&quot;</span>
+        <span class="ruby-keyword kw">end</span>
+    <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="sectiontitle">Public Instance methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M000024"></a><b>adjustContract</b>()
+  </div>
+  <div class="description">
+  <p>
+ermittelt den für die Datenbankabfrage geeigneten Contract aus den
+<tt>StartDay</tt>- und <tt>EndDay</tt>-Eigenschaften des Objekts und legt
+diese Angabe in <em>ib-contract</em> ab
+</p>
+<ul>
+<li>Wird nur der StartDay spezifiziert, dann wird der gesamte Rest des
+Kontrakts selektiert
+
+</li>
+<li>Wird nur der EndDay spezifiziert, dann wird der Anfang des Kontrakts als
+Beginn selektiert
+
+</li>
+<li>Wird keine Angabe gemacht, oder liegen beide Werte ausserhalb der Werte,
+dann wird der aktuelle Kontrakt bis zum aktuellen Datum selektiert
+
+</li>
+</ul>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000024_source')" id="l_M000024_source">show source</a> ]</p>
+  <div id="M000024_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stock.rb, line 340</span>
+   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">adjustContract</span>
+     <span class="ruby-comment cmt"># we have to clone the hash because it will be modified here</span>
+    <span class="ruby-comment cmt"># and we dont want to change the yaml-reference-data </span>
+    <span class="ruby-comment cmt"># because other methods may relay on that data</span>
+     <span class="ruby-identifier">contractClone</span>=<span class="ruby-ivar">@stock</span>[<span class="ruby-value str">&quot;contracts&quot;</span>].<span class="ruby-identifier">clone</span>
+<span class="ruby-comment cmt">#   format  @stock[&quot;contracts&quot;].: { contract  =&gt; [ start_date,, activate_date, end_date] } </span>
+    <span class="ruby-keyword kw">if</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">startDay</span>.<span class="ruby-identifier">nil?</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">endDay</span>.<span class="ruby-identifier">nil?</span>   <span class="ruby-comment cmt"># nothing is set until now</span>
+                                                  <span class="ruby-comment cmt"># select the hole default-contract</span>
+      <span class="ruby-identifier">assignContract</span>
+    <span class="ruby-keyword kw">elsif</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">endDay</span>.<span class="ruby-identifier">nil?</span>
+      <span class="ruby-identifier">startDate</span>=<span class="ruby-constant">Date</span>.<span class="ruby-identifier">new</span>(<span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">startDay</span>.<span class="ruby-identifier">year</span>,  <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">startDay</span>.<span class="ruby-identifier">month</span>,  <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">startDay</span>.<span class="ruby-identifier">day</span>)
+      <span class="ruby-identifier">thisContract</span>=<span class="ruby-identifier">contractClone</span>.<span class="ruby-identifier">delete_if</span>{  <span class="ruby-operator">|</span><span class="ruby-identifier">c</span>, <span class="ruby-identifier">b</span><span class="ruby-operator">|</span> <span class="ruby-identifier">startDate</span>  <span class="ruby-operator">&lt;</span> <span class="ruby-identifier">b</span>[<span class="ruby-value">1</span>]}
+      <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">endDay</span> =  <span class="ruby-identifier">thisContract</span>[<span class="ruby-identifier">thisContract</span>.<span class="ruby-identifier">keys</span>.<span class="ruby-identifier">sort</span>.<span class="ruby-identifier">last</span>][<span class="ruby-value">2</span>].<span class="ruby-identifier">to_s</span>
+    <span class="ruby-keyword kw">elsif</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">startDay</span>.<span class="ruby-identifier">nil?</span>
+      <span class="ruby-identifier">endDate</span>=<span class="ruby-constant">Date</span>.<span class="ruby-identifier">new</span>(<span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">endDay</span>.<span class="ruby-identifier">year</span>,  <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">endDay</span>.<span class="ruby-identifier">month</span>,  <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">endDay</span>.<span class="ruby-identifier">day</span>)
+      <span class="ruby-identifier">thisContract</span>=<span class="ruby-identifier">contractClone</span>.<span class="ruby-identifier">delete_if</span>{  <span class="ruby-operator">|</span><span class="ruby-identifier">c</span>, <span class="ruby-identifier">b</span><span class="ruby-operator">|</span> <span class="ruby-identifier">endDate</span>  <span class="ruby-operator">&gt;</span> <span class="ruby-identifier">b</span>[<span class="ruby-value">2</span>]}
+      <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">startDay</span> = <span class="ruby-identifier">thisContract</span>[<span class="ruby-identifier">thisContract</span>.<span class="ruby-identifier">keys</span>.<span class="ruby-identifier">sort</span>.<span class="ruby-identifier">last</span>][<span class="ruby-value">1</span>].<span class="ruby-identifier">to_s</span>
+    <span class="ruby-keyword kw">else</span>
+    
+      <span class="ruby-identifier">startDate</span>=<span class="ruby-constant">Date</span>.<span class="ruby-identifier">new</span>(<span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">startDay</span>.<span class="ruby-identifier">year</span>,  <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">startDay</span>.<span class="ruby-identifier">month</span>,  <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">startDay</span>.<span class="ruby-identifier">day</span>) 
+      <span class="ruby-identifier">endDate</span>=<span class="ruby-constant">Date</span>.<span class="ruby-identifier">new</span>(<span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">endDay</span>.<span class="ruby-identifier">year</span>,  <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">endDay</span>.<span class="ruby-identifier">month</span>,  <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">endDay</span>.<span class="ruby-identifier">day</span>) 
+      
+      <span class="ruby-comment cmt"># startDate &lt; b[0] --&gt; remove all entries starting after the startDay</span>
+      <span class="ruby-comment cmt"># endDate  &gt; b[2] --&gt; remove all entries ending before the endDay</span>
+      <span class="ruby-identifier">thisContract</span>= <span class="ruby-identifier">contractClone</span>.<span class="ruby-identifier">delete_if</span>{   <span class="ruby-operator">|</span><span class="ruby-identifier">c</span>, <span class="ruby-identifier">b</span><span class="ruby-operator">|</span> <span class="ruby-identifier">startDate</span>  <span class="ruby-operator">&lt;</span> <span class="ruby-identifier">b</span>[<span class="ruby-value">0</span>] <span class="ruby-keyword kw">or</span> <span class="ruby-identifier">endDate</span> <span class="ruby-operator">&gt;</span> <span class="ruby-identifier">b</span>[<span class="ruby-value">2</span>] } 
+      <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">thisContract</span>.<span class="ruby-identifier">size</span> <span class="ruby-operator">&gt;</span><span class="ruby-value">1</span>
+        <span class="ruby-identifier">thisContract</span>= <span class="ruby-identifier">contractClone</span>.<span class="ruby-identifier">delete_if</span>{  <span class="ruby-operator">|</span><span class="ruby-identifier">c</span>, <span class="ruby-identifier">b</span><span class="ruby-operator">|</span> <span class="ruby-identifier">startDate</span>  <span class="ruby-operator">&lt;</span> <span class="ruby-identifier">b</span>[<span class="ruby-value">1</span>]  <span class="ruby-keyword kw">or</span> <span class="ruby-identifier">endDate</span> <span class="ruby-operator">&gt;</span> <span class="ruby-identifier">b</span>[<span class="ruby-value">2</span>] } 
+      <span class="ruby-keyword kw">elsif</span> <span class="ruby-identifier">thisContract</span>.<span class="ruby-identifier">empty?</span>
+        <span class="ruby-identifier">assignContract</span>
+      <span class="ruby-keyword kw">end</span>
+  <span class="ruby-comment cmt">#    thisContract.each{|x,y| puts &quot;contract : #{x}&quot;;  y.each{ |k|  print k.to_s,&quot;  &quot;};  print &quot;\n&quot; }</span>
+  <span class="ruby-comment cmt">#    puts &quot;setting Contract to #{thisContract.keys.first} &quot;</span>
+      <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">contract</span> =  <span class="ruby-identifier">thisContract</span>.<span class="ruby-identifier">keys</span>.<span class="ruby-identifier">first</span>
+    <span class="ruby-keyword kw">end</span> 
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000020"></a><b>assignContract</b>(contract=@stock[&quot;ib&quot;][&quot;contract&quot;])
+  </div>
+  <div class="description">
+  <p>
+waehlt den gesamten Kontraktzeitraum aus
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000020_source')" id="l_M000020_source">show source</a> ]</p>
+  <div id="M000020_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stock.rb, line 277</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">assignContract</span>(<span class="ruby-identifier">contract</span>=<span class="ruby-ivar">@stock</span>[<span class="ruby-value str">&quot;ib&quot;</span>][<span class="ruby-value str">&quot;contract&quot;</span>])
+    <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">startDay</span> = <span class="ruby-ivar">@stock</span>[<span class="ruby-value str">&quot;contracts&quot;</span>][<span class="ruby-identifier">contract</span>.<span class="ruby-identifier">to_i</span>][<span class="ruby-value">1</span>].<span class="ruby-identifier">to_s</span>
+    <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">endDay</span> = <span class="ruby-ivar">@stock</span>[<span class="ruby-value str">&quot;contracts&quot;</span>][<span class="ruby-identifier">contract</span>.<span class="ruby-identifier">to_i</span>][<span class="ruby-value">2</span>].<span class="ruby-identifier">to_s</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000022"></a><b>availableContracts</b>()
+  </div>
+  <div class="description">
+  <p>
+ein <a href="Array.html">Array</a> im Format [ [{<a
+href="http://..">monat},{jahr}],</a> mit
+</p>
+<pre>
+ {monat} und {jahr} im Fixum-format, z.B. [[12, 4], [3, 5]]
+</pre>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000022_source')" id="l_M000022_source">show source</a> ]</p>
+  <div id="M000022_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stock.rb, line 306</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">availableContracts</span> 
+    <span class="ruby-ivar">@stock</span>[<span class="ruby-value str">&quot;contracts&quot;</span>].<span class="ruby-identifier">keys</span>.<span class="ruby-identifier">collect</span>{<span class="ruby-operator">|</span><span class="ruby-identifier">x</span><span class="ruby-operator">|</span> [(<span class="ruby-identifier">x</span> <span class="ruby-operator">/</span> <span class="ruby-value">100</span>).<span class="ruby-identifier">ceil</span>, <span class="ruby-identifier">x</span> <span class="ruby-value str">%(100*( x / 100).ceil)</span>]}.<span class="ruby-identifier">sort</span>{<span class="ruby-operator">|</span><span class="ruby-identifier">x</span>,<span class="ruby-identifier">y</span><span class="ruby-operator">|</span> <span class="ruby-identifier">x</span>[<span class="ruby-value">1</span>] <span class="ruby-operator">&lt;=&gt;</span> <span class="ruby-identifier">y</span>[<span class="ruby-value">1</span>]}
+
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000015"></a><b>boxSize</b>()
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000015_source')" id="l_M000015_source">show source</a> ]</p>
+  <div id="M000015_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stock.rb, line 251</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">boxSize</span>
+    <span class="ruby-ivar">@stock</span>[<span class="ruby-value str">'boxsize'</span>] <span class="ruby-operator">||</span> <span class="ruby-ivar">@stock</span>[<span class="ruby-value str">'ticksize'</span>] <span class="ruby-operator">*</span> <span class="ruby-value">5</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000021"></a><b>checkContract</b>(thisContract)
+  </div>
+  <div class="description">
+  <p>
+prueft, ob der angegebene Kontrakt in &quot;contracts&quot; definiert ist
+und gibt den Kontrakt (als IntegerWert) zurueck
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000021_source')" id="l_M000021_source">show source</a> ]</p>
+  <div id="M000021_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stock.rb, line 285</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">checkContract</span>(<span class="ruby-identifier">thisContract</span>)
+<span class="ruby-comment cmt"># alte routine</span>
+<span class="ruby-comment cmt">#   validMonth=[3,6,9,12]</span>
+<span class="ruby-comment cmt">#   validYears=[1,2,3,4,5]</span>
+<span class="ruby-comment cmt">#   month=contract.to_s[0..-3].to_i</span>
+<span class="ruby-comment cmt">#   year=contract.to_s[-2..-1].to_i</span>
+  <span class="ruby-comment cmt">#  unless validMonth.include?(month) &amp;&amp; validYears.include?(year)</span>
+    <span class="ruby-keyword kw">unless</span> <span class="ruby-ivar">@stock</span>[<span class="ruby-value str">&quot;contracts&quot;</span>].<span class="ruby-identifier">key?</span> <span class="ruby-identifier">thisContract</span>.<span class="ruby-identifier">to_i</span>
+      <span class="ruby-identifier">$stderr</span>.<span class="ruby-identifier">print</span> <span class="ruby-node">&quot;STOCK.rb::checkContract: contract is not usable : #{thisContract} . Using the default from stocks.yaml \r\n&quot;</span>
+      <span class="ruby-ivar">@stock</span>[<span class="ruby-value str">&quot;ib&quot;</span>][<span class="ruby-value str">&quot;contract&quot;</span>] 
+    <span class="ruby-keyword kw">else</span>
+      <span class="ruby-identifier">thisContract</span>.<span class="ruby-identifier">to_i</span>
+    <span class="ruby-keyword kw">end</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000014"></a><b>convertedResolution</b>()
+  </div>
+  <div class="description">
+  <p>
+Die aktuelle <a href="OHLC.html">OHLC</a>-Auflösung in Sekunden
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000014_source')" id="l_M000014_source">show source</a> ]</p>
+  <div id="M000014_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stock.rb, line 245</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">convertedResolution</span>
+      
+      <span class="ruby-ivar">@stock</span>[<span class="ruby-value str">'convertedresolution'</span>]=<span class="ruby-identifier">convertResolution</span> <span class="ruby-keyword kw">if</span> <span class="ruby-ivar">@stock</span>[<span class="ruby-value str">'convertedresolution'</span>].<span class="ruby-identifier">nil?</span>
+      <span class="ruby-ivar">@stock</span>[<span class="ruby-value str">'convertedresolution'</span>]
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000018"></a><b>endDay=</b>(value=Time.now)
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000018_source')" id="l_M000018_source">show source</a> ]</p>
+  <div id="M000018_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stock.rb, line 267</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">endDay=</span> (<span class="ruby-identifier">value</span>=<span class="ruby-constant">Time</span>.<span class="ruby-identifier">now</span>)
+    <span class="ruby-ivar">@stock</span>[<span class="ruby-value str">&quot;endday&quot;</span>]= <span class="ruby-identifier">value</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Time</span>) <span class="ruby-operator">?</span> <span class="ruby-identifier">value</span> <span class="ruby-operator">:</span>  <span class="ruby-constant">Time</span>.<span class="ruby-identifier">getDateFromString</span>(<span class="ruby-identifier">value</span>)    
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000006"></a><b>getAvailableProperties</b>() {|doc| ...}
+  </div>
+  <div class="description">
+  <p>
+Gibt den Inhalt des Yaml-Files zurück
+</p>
+<pre>
+  Der übergebene Block kann Eigenschaften herausfiltern
+</pre>
+<h4>Aufrufbeispiel:</h4>
+<pre>
+    Stock#getAvailableProperties{ |yaml| yaml[&quot;name&quot;] }
+    gibt die möglichen Stocks zurück
+</pre>
+<p>
+Die Einträge werden wie im Yaml-File notiert wiedergegeben. (Es findet z.B.
+keine Konversation der Schlüsselelemente zu Kleinbuchstaben statt.)
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000006_source')" id="l_M000006_source">show source</a> ]</p>
+  <div id="M000006_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stock.rb, line 148</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">getAvailableProperties</span>
+    <span class="ruby-identifier">value</span>=<span class="ruby-constant">Array</span>.<span class="ruby-identifier">new</span>   <span class="ruby-comment cmt"># declare value</span>
+    <span class="ruby-constant">File</span>.<span class="ruby-identifier">open</span>(<span class="ruby-value str">'stocks.yaml'</span>) <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">f</span><span class="ruby-operator">|</span>
+       <span class="ruby-identifier">yp</span>=<span class="ruby-constant">YAML</span><span class="ruby-operator">::</span><span class="ruby-identifier">load_documents</span>(<span class="ruby-identifier">f</span>) <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">doc</span><span class="ruby-operator">|</span>
+        <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">block_given?</span>
+          <span class="ruby-identifier">value</span>.<span class="ruby-identifier">push</span> <span class="ruby-identifier">doc</span>
+        <span class="ruby-keyword kw">else</span>
+          <span class="ruby-identifier">value</span>.<span class="ruby-identifier">push</span> <span class="ruby-keyword kw">yield</span>(<span class="ruby-identifier">doc</span>)
+        <span class="ruby-keyword kw">end</span>
+      <span class="ruby-keyword kw">end</span>
+    <span class="ruby-keyword kw">end</span>
+    <span class="ruby-identifier">value</span>.<span class="ruby-identifier">compact</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000023"></a><b>getTradingRange</b>()
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000023_source')" id="l_M000023_source">show source</a> ]</p>
+  <div id="M000023_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stock.rb, line 316</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">getTradingRange</span>
+    <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">getTradingDays</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Integer</span>)
+      <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">getStartDay</span>.<span class="ruby-identifier">class</span><span class="ruby-operator">==</span><span class="ruby-constant">Time</span>
+        {<span class="ruby-value str">&quot;startDay&quot;</span>  =<span class="ruby-operator">&gt;</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">startDay</span>,
+        <span class="ruby-value str">&quot;tradingDays&quot;</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">tradingDays</span>}
+      <span class="ruby-keyword kw">elsif</span> <span class="ruby-identifier">getEndDay</span>.<span class="ruby-identifier">class</span><span class="ruby-operator">==</span><span class="ruby-constant">Time</span>
+      {<span class="ruby-value str">&quot;endDay&quot;</span>  =<span class="ruby-operator">&gt;</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">endDay</span>,
+        <span class="ruby-value str">&quot;tradingDays&quot;</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">tradingDays</span>}
+      <span class="ruby-keyword kw">end</span>
+    <span class="ruby-keyword kw">else</span>
+      {<span class="ruby-value str">&quot;endDay&quot;</span>  =<span class="ruby-operator">&gt;</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">endDay</span>,
+      <span class="ruby-value str">&quot;startDay&quot;</span>  =<span class="ruby-operator">&gt;</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">startDay</span>}
+    <span class="ruby-keyword kw">end</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000012"></a><b>hourEnd</b>()
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000012_source')" id="l_M000012_source">show source</a> ]</p>
+  <div id="M000012_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stock.rb, line 234</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">hourEnd</span>
+    <span class="ruby-ivar">@stock</span>[<span class="ruby-value str">&quot;time&quot;</span>][<span class="ruby-value str">&quot;close&quot;</span>]
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000011"></a><b>hourStart</b>()
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000011_source')" id="l_M000011_source">show source</a> ]</p>
+  <div id="M000011_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stock.rb, line 230</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">hourStart</span>
+    <span class="ruby-ivar">@stock</span>[<span class="ruby-value str">&quot;time&quot;</span>][<span class="ruby-value str">&quot;open&quot;</span>]
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000003"></a><b>mysqlFetchOHLC</b>()
+  </div>
+  <div class="description">
+  <p>
+Ein SQL-Kommando wird erzeugt, das die <em>OHLCdaten</em> des aktuellen <a
+href="Stock.html">Stock</a>-Objekts aus einer Datenbank liesst.
+</p>
+<h3>Aufrufbeispiel</h3>
+<pre>
+ SQLquery.new(&quot;ohlc&quot;, stock.mysqlFetchOHLC &quot;)
+</pre>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000003_source')" id="l_M000003_source">show source</a> ]</p>
+  <div id="M000003_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File mysql_class.rb, line 23</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">mysqlFetchOHLC</span>
+      <span class="ruby-node">&quot;select  unix_timestamp(date) as date,price,volume,open, high, low,close 
+                  from ib_#{getDatabaseName} 
+                  where date between  '#{startDay.strftime( &quot;%Y-%m-%d&quot; )} '  and
+                  '#{endDay.strftime( &quot;%Y-%m-%d&quot; )} ' 
+                  and hour(date) between #{hourStart.to_i} and #{hourEnd.to_i}
+                  order by date&quot;</span>
+      
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000009"></a><b>printFormat</b>()
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000009_source')" id="l_M000009_source">show source</a> ]</p>
+  <div id="M000009_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stock.rb, line 219</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">printFormat</span>
+
+    <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">tt</span>
+      <span class="ruby-identifier">ts</span> = <span class="ruby-constant">Math</span><span class="ruby-operator">::</span><span class="ruby-identifier">log10</span>(<span class="ruby-identifier">tickSize</span>).<span class="ruby-identifier">floor</span>.<span class="ruby-identifier">to_i</span>
+      <span class="ruby-identifier">tr</span> =  <span class="ruby-constant">Math</span><span class="ruby-operator">::</span><span class="ruby-identifier">log10</span>( <span class="ruby-identifier">tickRange</span>[ <span class="ruby-value str">'max'</span> ] ).<span class="ruby-identifier">ceil</span>
+      <span class="ruby-identifier">tr</span>  = (<span class="ruby-identifier">tr</span> <span class="ruby-value">+1</span>).<span class="ruby-identifier">to_i</span>
+      <span class="ruby-identifier">ts</span> <span class="ruby-operator">&lt;</span> <span class="ruby-value">0</span> <span class="ruby-operator">?</span> <span class="ruby-node">&quot;%#{tr-ts}.#{-ts}f&quot;</span> <span class="ruby-operator">:</span> <span class="ruby-node">&quot;%#{tr}.0f&quot;</span>
+    <span class="ruby-keyword kw">end</span>
+    <span class="ruby-ivar">@pv</span> <span class="ruby-operator">||=</span> <span class="ruby-identifier">tt</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000013"></a><b>resolution=</b>(r)
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000013_source')" id="l_M000013_source">show source</a> ]</p>
+  <div id="M000013_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stock.rb, line 238</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">resolution=</span>(<span class="ruby-identifier">r</span>)
+    <span class="ruby-ivar">@stock</span>[<span class="ruby-value str">'resolution'</span>]=<span class="ruby-identifier">r</span>
+    <span class="ruby-ivar">@stock</span>[<span class="ruby-value str">'convertedresolution'</span>]=<span class="ruby-identifier">convertResolution</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000016"></a><b>reversalBoxSize</b>()
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000016_source')" id="l_M000016_source">show source</a> ]</p>
+  <div id="M000016_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stock.rb, line 255</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">reversalBoxSize</span>
+    <span class="ruby-ivar">@stock</span>[<span class="ruby-value str">'reversalboxsize'</span>] <span class="ruby-operator">||</span> <span class="ruby-identifier">boxSize</span> <span class="ruby-operator">*</span> <span class="ruby-value">3</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000017"></a><b>startDay=</b>(value)
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000017_source')" id="l_M000017_source">show source</a> ]</p>
+  <div id="M000017_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stock.rb, line 259</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">startDay=</span> (<span class="ruby-identifier">value</span>)
+  <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">value</span><span class="ruby-operator">==</span><span class="ruby-value">-1</span>
+      <span class="ruby-ivar">@stock</span>[<span class="ruby-value str">&quot;startday&quot;</span>]=  <span class="ruby-constant">Time</span>.<span class="ruby-identifier">getDateFromString</span>(<span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">startDay</span><span class="ruby-operator">-</span><span class="ruby-value">60</span><span class="ruby-operator">*</span><span class="ruby-value">60</span><span class="ruby-operator">*</span><span class="ruby-value">24</span>)
+    <span class="ruby-keyword kw">else</span>
+      <span class="ruby-ivar">@stock</span>[<span class="ruby-value str">&quot;startday&quot;</span>] = <span class="ruby-identifier">value</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Time</span>) <span class="ruby-operator">?</span> <span class="ruby-identifier">value</span> <span class="ruby-operator">:</span>  <span class="ruby-constant">Time</span>.<span class="ruby-identifier">getDateFromString</span>(<span class="ruby-identifier">value</span>)
+    <span class="ruby-keyword kw">end</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000019"></a><b>tadingDays=</b>(value)
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000019_source')" id="l_M000019_source">show source</a> ]</p>
+  <div id="M000019_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stock.rb, line 271</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">tadingDays=</span> (<span class="ruby-identifier">value</span>)
+    <span class="ruby-ivar">@stock</span>[<span class="ruby-value str">&quot;tradingdays&quot;</span>]=<span class="ruby-identifier">value</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000010"></a><b>tt</b>()
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000010_source')" id="l_M000010_source">show source</a> ]</p>
+  <div id="M000010_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stock.rb, line 221</span>
+    <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">tt</span>
+      <span class="ruby-identifier">ts</span> = <span class="ruby-constant">Math</span><span class="ruby-operator">::</span><span class="ruby-identifier">log10</span>(<span class="ruby-identifier">tickSize</span>).<span class="ruby-identifier">floor</span>.<span class="ruby-identifier">to_i</span>
+      <span class="ruby-identifier">tr</span> =  <span class="ruby-constant">Math</span><span class="ruby-operator">::</span><span class="ruby-identifier">log10</span>( <span class="ruby-identifier">tickRange</span>[ <span class="ruby-value str">'max'</span> ] ).<span class="ruby-identifier">ceil</span>
+      <span class="ruby-identifier">tr</span>  = (<span class="ruby-identifier">tr</span> <span class="ruby-value">+1</span>).<span class="ruby-identifier">to_i</span>
+      <span class="ruby-identifier">ts</span> <span class="ruby-operator">&lt;</span> <span class="ruby-value">0</span> <span class="ruby-operator">?</span> <span class="ruby-node">&quot;%#{tr-ts}.#{-ts}f&quot;</span> <span class="ruby-operator">:</span> <span class="ruby-node">&quot;%#{tr}.0f&quot;</span>
+    <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+</div>
+
+  </div>
+
+    </body>
+</html>

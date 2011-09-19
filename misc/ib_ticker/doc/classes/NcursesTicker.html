@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Class: NcursesTicker</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <link rel="stylesheet" href=".././rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "width=400,height=400,scrollbars=yes" )
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+  <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'><tr>
+  <td class="file-title"><span class="file-title-prefix">Class</span><br />NcursesTicker</td>
+  <td align="right">
+    <table cellspacing=0 cellpadding=2>
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../files/ncurses_ticker_rb.html">ncurses_ticker.rb</a>
+        </td>
+      </tr>
+    <tr>
+      <td>Parent:</td>
+      <td>
+Object
+     </td>
+   </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+ <!-- banner header -->
+
+  <div id="bodyContent">
+      <div id="content">
+  <table cellpadding='0' cellspacing='0' border='0' width="100%"><tr><td align="center">
+    <map id="map" name="map">
+  <area shape="RECT" coords="20,103,124,151"      href="NcursesTicker.html" alt="NcursesTicker">
+  <area shape="RECT" coords="148,103,263,151"      href="NcursesWindow.html" alt="NcursesWindow">
+  <area shape="RECT" coords="7,7,137,55"      href="DRb/DRbUndumped.html" alt="DRb::DRbUndumped">
+  <area shape="RECT" coords="169,7,241,55"      href="Ncurses.html" alt="Ncurses">
+</map>
+<img src="../dot/f_3.png" usemap="#map" border=0 alt="TopLevel">
+  </td></tr></table>
+
+
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+  <li><a href="#M000064">new</a></li>
+  <li><a href="#M000065">update</a></li>
+  </ul>
+
+<div class="sectiontitle">Included Modules</div>
+<ul>
+  <li>DRb::DRbUndumped</li>
+</ul>
+
+
+
+
+  <div class="sectiontitle">Attributes</div>
+  <table border='0' cellpadding='5'>
+  <tr valign='top'>
+    <td class='attr-rw'>
+[R]
+    </td>
+    <td class='attr-name'>a</td>
+    <td class='attr-desc'></td>
+  </tr>
+  <tr valign='top'>
+    <td class='attr-rw'>
+[R]
+    </td>
+    <td class='attr-name'>eins</td>
+    <td class='attr-desc'></td>
+  </tr>
+  <tr valign='top'>
+    <td class='attr-rw'>
+[R]
+    </td>
+    <td class='attr-name'>zwei</td>
+    <td class='attr-desc'></td>
+  </tr>
+  </table>
+
+<div class="sectiontitle">Public Class methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M000064"></a><b>new</b>(stock, server, ncurses)
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000064_source')" id="l_M000064_source">show source</a> ]</p>
+  <div id="M000064_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ncurses_ticker.rb, line 111</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">stock</span>, <span class="ruby-identifier">server</span>, <span class="ruby-identifier">ncurses</span>)
+    <span class="ruby-identifier">x</span>=<span class="ruby-identifier">server</span>.<span class="ruby-identifier">connectTicker</span>(<span class="ruby-identifier">stock</span>)
+    <span class="ruby-identifier">x</span>.<span class="ruby-identifier">add_observer</span>(<span class="ruby-keyword kw">self</span>)
+    <span class="ruby-ivar">@nc</span>=<span class="ruby-identifier">ncurses</span>
+    <span class="ruby-ivar">@window</span>=<span class="ruby-identifier">ncurses</span>.<span class="ruby-identifier">allocateWindow</span>(<span class="ruby-identifier">stock</span>)
+    <span class="ruby-ivar">@last</span>=[<span class="ruby-value">0</span>,<span class="ruby-value str">'normal'</span>]
+    <span class="ruby-ivar">@formatstr</span>=<span class="ruby-value str">&quot;%7.&quot;</span><span class="ruby-operator">+</span><span class="ruby-constant">Math</span><span class="ruby-operator">::</span><span class="ruby-identifier">log10</span>(<span class="ruby-value">1</span><span class="ruby-operator">/</span><span class="ruby-identifier">stock</span>.<span class="ruby-identifier">tickSize</span>).<span class="ruby-identifier">ceil</span>.<span class="ruby-identifier">to_s</span><span class="ruby-operator">+</span><span class="ruby-value str">&quot;f&quot;</span>
+    <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="sectiontitle">Public Instance methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M000065"></a><b>update</b>(time, price,volume)
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000065_source')" id="l_M000065_source">show source</a> ]</p>
+  <div id="M000065_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File ncurses_ticker.rb, line 123</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">update</span>(<span class="ruby-identifier">time</span>, <span class="ruby-identifier">price</span>,<span class="ruby-identifier">volume</span>) <span class="ruby-comment cmt"># callback for observer </span>
+  <span class="ruby-keyword kw">if</span> <span class="ruby-ivar">@last</span>[<span class="ruby-value">0</span>]<span class="ruby-operator">&lt;</span> <span class="ruby-identifier">price</span>
+    <span class="ruby-identifier">color</span>=<span class="ruby-value str">&quot;blue&quot;</span>
+  <span class="ruby-keyword kw">elsif</span> <span class="ruby-ivar">@last</span>[<span class="ruby-value">0</span>]<span class="ruby-operator">==</span><span class="ruby-identifier">price</span>
+    <span class="ruby-identifier">color</span>=<span class="ruby-ivar">@last</span>[<span class="ruby-value">1</span>]
+  <span class="ruby-keyword kw">else</span>
+    <span class="ruby-identifier">color</span>=<span class="ruby-value str">&quot;red&quot;</span>
+  <span class="ruby-keyword kw">end</span>
+  
+  <span class="ruby-identifier">displaystr</span>= <span class="ruby-identifier">sprintf</span>(  <span class="ruby-node">&quot;%s#{@formatstr} &lt;&gt; %5d&quot;</span> , <span class="ruby-identifier">time</span>.<span class="ruby-identifier">strftime</span>(<span class="ruby-value str">'%H:%M:%S-&gt;'</span>), <span class="ruby-identifier">price</span>, <span class="ruby-identifier">volume</span>)
+  <span class="ruby-ivar">@nc</span>.<span class="ruby-identifier">display</span>( <span class="ruby-ivar">@window</span>, <span class="ruby-identifier">displaystr</span>, <span class="ruby-identifier">color</span>)
+<span class="ruby-comment cmt"># @nc.display(@window,&quot;#{time.strftime('%H:%M:%S')} -&gt;#{&quot;%7.2f&quot; % price} &lt;&gt;#{&quot;%5d&quot;% volume}&quot;,color)</span>
+  <span class="ruby-ivar">@last</span>=[<span class="ruby-identifier">price</span>,<span class="ruby-identifier">color</span>]
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+</div>
+
+  </div>
+
+    </body>
+</html>

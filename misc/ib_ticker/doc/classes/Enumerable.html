@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Module: Enumerable</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <link rel="stylesheet" href=".././rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "width=400,height=400,scrollbars=yes" )
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+  <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'><tr>
+  <td class="file-title"><span class="file-title-prefix">Module</span><br />Enumerable</td>
+  <td align="right">
+    <table cellspacing=0 cellpadding=2>
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../files/stdExt_rb.html">stdExt.rb</a>
+        </td>
+      </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+ <!-- banner header -->
+
+  <div id="bodyContent">
+      <div id="content">
+  <table cellpadding='0' cellspacing='0' border='0' width="100%"><tr><td align="center">
+    <map id="map" name="map">
+  <area shape="RECT" coords="17,17,111,64"      href="Enumerable.html" alt="Enumerable">
+</map>
+<img src="../dot/m_2_0.png" usemap="#map" border=0 alt="Module: Enumerable">
+  </td></tr></table>
+
+
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+  <li><a href="#M000104">average</a></li>
+  <li><a href="#M000107">correlate</a></li>
+  <li><a href="#M000106">sigma</a></li>
+  <li><a href="#M000103">sum</a></li>
+  <li><a href="#M000105">variance</a></li>
+  </ul>
+
+
+
+
+
+
+<div class="sectiontitle">Public Instance methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M000104"></a><b>average</b>(&amp;b)
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000104_source')" id="l_M000104_source">show source</a> ]</p>
+  <div id="M000104_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stdExt.rb, line 20</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">average</span>(<span class="ruby-operator">&amp;</span><span class="ruby-identifier">b</span>)
+    <span class="ruby-keyword kw">if</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">size</span><span class="ruby-operator">&gt;</span><span class="ruby-value">0</span>
+    <span class="ruby-comment cmt">#puts &quot;sum: #{self.sum(&amp;b)}&quot;</span>
+      (<span class="ruby-identifier">sum</span>(<span class="ruby-operator">&amp;</span><span class="ruby-identifier">b</span>) <span class="ruby-operator">/</span> <span class="ruby-identifier">size</span>).<span class="ruby-identifier">to_f</span>
+    <span class="ruby-keyword kw">else</span>
+      <span class="ruby-value">0</span>
+    <span class="ruby-keyword kw">end</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000107"></a><b>correlate</b>(sample=0)
+  </div>
+  <div class="description">
+  <p>
+calculates the correlation coefficent of the linear regession
+</p>
+<p>
+requirement: the contents are Arrays itself
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000107_source')" id="l_M000107_source">show source</a> ]</p>
+  <div id="M000107_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stdExt.rb, line 56</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">correlate</span>(<span class="ruby-identifier">sample</span>=<span class="ruby-value">0</span>)
+  <span class="ruby-comment cmt">#  if self.first.class.is_a? Array</span>
+<span class="ruby-comment cmt">#   require 'pp'</span>
+    <span class="ruby-identifier">p</span> <span class="ruby-identifier">vSum</span>=<span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">sum</span>{<span class="ruby-operator">|</span><span class="ruby-identifier">x</span><span class="ruby-operator">|</span> <span class="ruby-identifier">x</span>.<span class="ruby-identifier">first</span> <span class="ruby-operator">*</span> <span class="ruby-identifier">x</span>.<span class="ruby-identifier">last</span> }
+    <span class="ruby-identifier">p</span> <span class="ruby-identifier">xyMean</span> = <span class="ruby-identifier">vSum</span> <span class="ruby-operator">/</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">size</span>.<span class="ruby-identifier">to_f</span>
+    <span class="ruby-identifier">p</span> <span class="ruby-identifier">xMean</span> = <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">average</span>{<span class="ruby-operator">|</span><span class="ruby-identifier">x</span><span class="ruby-operator">|</span> <span class="ruby-identifier">x</span>.<span class="ruby-identifier">first</span>}
+    <span class="ruby-identifier">p</span> <span class="ruby-identifier">yMean</span> = <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">average</span>{<span class="ruby-operator">|</span><span class="ruby-identifier">x</span><span class="ruby-operator">|</span> <span class="ruby-identifier">x</span>.<span class="ruby-identifier">last</span>}
+    <span class="ruby-identifier">p</span> <span class="ruby-identifier">xSigma</span>= <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">sigma</span>(<span class="ruby-identifier">sample</span>){<span class="ruby-operator">|</span><span class="ruby-identifier">x</span><span class="ruby-operator">|</span> <span class="ruby-identifier">x</span>.<span class="ruby-identifier">first</span>}
+    <span class="ruby-identifier">p</span> <span class="ruby-identifier">ySigma</span> = <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">sigma</span>(<span class="ruby-identifier">sample</span>){<span class="ruby-operator">|</span><span class="ruby-identifier">x</span><span class="ruby-operator">|</span> <span class="ruby-identifier">x</span>.<span class="ruby-identifier">last</span>}
+      ( <span class="ruby-identifier">xyMean</span> <span class="ruby-operator">-</span> (<span class="ruby-identifier">xMean</span> <span class="ruby-operator">*</span> <span class="ruby-identifier">yMean</span>)) <span class="ruby-operator">/</span> (<span class="ruby-identifier">xSigma</span> <span class="ruby-operator">*</span> <span class="ruby-identifier">ySigma</span> ) 
+  <span class="ruby-comment cmt">#  else</span>
+  <span class="ruby-comment cmt">#    0</span>
+    <span class="ruby-comment cmt">#end  </span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000106"></a><b>sigma</b>(sample=0,&amp;b)
+  </div>
+  <div class="description">
+  <p>
+calculates the standard- deviation
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000106_source')" id="l_M000106_source">show source</a> ]</p>
+  <div id="M000106_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stdExt.rb, line 50</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">sigma</span>(<span class="ruby-identifier">sample</span>=<span class="ruby-value">0</span>,<span class="ruby-operator">&amp;</span><span class="ruby-identifier">b</span>)
+    <span class="ruby-constant">Math</span><span class="ruby-operator">::</span><span class="ruby-identifier">sqrt</span>( <span class="ruby-identifier">variance</span>(<span class="ruby-identifier">sample</span>,<span class="ruby-operator">&amp;</span><span class="ruby-identifier">b</span>)) <span class="ruby-keyword kw">rescue</span> <span class="ruby-value">0</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000103"></a><b>sum</b>() {|i| ...}
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000103_source')" id="l_M000103_source">show source</a> ]</p>
+  <div id="M000103_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stdExt.rb, line 12</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">sum</span>
+    <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">block_given?</span>
+    <span class="ruby-identifier">inject</span>(<span class="ruby-value">0</span>) {<span class="ruby-operator">|</span><span class="ruby-identifier">n</span>, <span class="ruby-identifier">i</span><span class="ruby-operator">|</span>   <span class="ruby-keyword kw">yield</span>(<span class="ruby-identifier">i</span>).<span class="ruby-identifier">nil?</span> <span class="ruby-value">? </span><span class="ruby-identifier">n</span> <span class="ruby-operator">:</span> <span class="ruby-keyword kw">yield</span>(<span class="ruby-identifier">i</span>) <span class="ruby-operator">+</span> <span class="ruby-identifier">n</span> }
+  <span class="ruby-keyword kw">else</span>
+    <span class="ruby-identifier">inject</span>(<span class="ruby-value">0</span>) {<span class="ruby-operator">|</span><span class="ruby-identifier">n</span>, <span class="ruby-identifier">i</span><span class="ruby-operator">|</span>  <span class="ruby-identifier">n</span> <span class="ruby-operator">+</span> <span class="ruby-identifier">i</span> }
+    <span class="ruby-keyword kw">end</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000105"></a><b>variance</b>(sample=0) {|k| ...}
+  </div>
+  <div class="description">
+  <p>
+calculates the variance
+</p>
+<p>
+if sample is given and is not zero (0), the calculation is based on a
+sample of the array-elements
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000105_source')" id="l_M000105_source">show source</a> ]</p>
+  <div id="M000105_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stdExt.rb, line 32</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">variance</span>(<span class="ruby-identifier">sample</span>=<span class="ruby-value">0</span>)
+     <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">size</span> <span class="ruby-operator">&gt;</span><span class="ruby-value">1</span>
+      <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">block_given?</span>
+        <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">sample</span>.<span class="ruby-identifier">zero?</span>
+          (<span class="ruby-identifier">size</span> <span class="ruby-operator">*</span>  <span class="ruby-identifier">inject</span>(<span class="ruby-value">0</span>){<span class="ruby-operator">|</span><span class="ruby-identifier">x</span>, <span class="ruby-identifier">k</span><span class="ruby-operator">|</span> <span class="ruby-identifier">x</span> <span class="ruby-operator">+</span> <span class="ruby-keyword kw">yield</span>(<span class="ruby-identifier">k</span>) <span class="ruby-operator">**</span> <span class="ruby-value">2</span> }  <span class="ruby-operator">-</span> <span class="ruby-identifier">inject</span>(<span class="ruby-value">0</span>){<span class="ruby-operator">|</span><span class="ruby-identifier">x</span>, <span class="ruby-identifier">k</span><span class="ruby-operator">|</span> <span class="ruby-identifier">x</span> <span class="ruby-operator">+</span> <span class="ruby-keyword kw">yield</span>(<span class="ruby-identifier">k</span>) } <span class="ruby-operator">**</span>  <span class="ruby-value">2</span>).<span class="ruby-identifier">to_f</span>   <span class="ruby-operator">/</span> ( <span class="ruby-identifier">size</span><span class="ruby-operator">**</span><span class="ruby-value">2</span> ) .<span class="ruby-identifier">to_f</span> 
+        <span class="ruby-keyword kw">else</span>
+          (<span class="ruby-identifier">size</span> <span class="ruby-operator">*</span>  <span class="ruby-identifier">inject</span>(<span class="ruby-value">0</span>){<span class="ruby-operator">|</span><span class="ruby-identifier">x</span>, <span class="ruby-identifier">k</span><span class="ruby-operator">|</span> <span class="ruby-identifier">x</span> <span class="ruby-operator">+</span> <span class="ruby-keyword kw">yield</span>(<span class="ruby-identifier">k</span>) <span class="ruby-operator">**</span> <span class="ruby-value">2</span> }  <span class="ruby-operator">-</span> <span class="ruby-identifier">inject</span>(<span class="ruby-value">0</span>){<span class="ruby-operator">|</span><span class="ruby-identifier">x</span>, <span class="ruby-identifier">k</span><span class="ruby-operator">|</span> <span class="ruby-identifier">x</span> <span class="ruby-operator">+</span> <span class="ruby-keyword kw">yield</span>(<span class="ruby-identifier">k</span>) } <span class="ruby-operator">**</span>  <span class="ruby-value">2</span>).<span class="ruby-identifier">to_f</span>   <span class="ruby-operator">/</span> (<span class="ruby-identifier">size</span><span class="ruby-operator">*</span> (<span class="ruby-identifier">size</span> <span class="ruby-operator">-</span> <span class="ruby-value">1</span>) ).<span class="ruby-identifier">to_f</span> 
+        <span class="ruby-keyword kw">end</span>
+      <span class="ruby-keyword kw">else</span>
+        <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">sample</span>.<span class="ruby-identifier">zero?</span>
+          (<span class="ruby-identifier">size</span> <span class="ruby-operator">*</span>  <span class="ruby-identifier">inject</span>(<span class="ruby-value">0</span>){<span class="ruby-operator">|</span><span class="ruby-identifier">x</span>, <span class="ruby-identifier">k</span><span class="ruby-operator">|</span> <span class="ruby-identifier">x</span> <span class="ruby-operator">+</span> <span class="ruby-identifier">k</span> <span class="ruby-operator">**</span> <span class="ruby-value">2</span> }  <span class="ruby-operator">-</span> <span class="ruby-identifier">inject</span>(<span class="ruby-value">0</span>){<span class="ruby-operator">|</span><span class="ruby-identifier">x</span>, <span class="ruby-identifier">k</span><span class="ruby-operator">|</span> <span class="ruby-identifier">x</span> <span class="ruby-operator">+</span><span class="ruby-identifier">k</span> } <span class="ruby-operator">**</span>  <span class="ruby-value">2</span>).<span class="ruby-identifier">to_f</span>  <span class="ruby-operator">/</span> (<span class="ruby-identifier">size</span><span class="ruby-operator">**</span><span class="ruby-value">2</span>) .<span class="ruby-identifier">to_f</span> 
+        <span class="ruby-keyword kw">else</span>
+          (<span class="ruby-identifier">size</span> <span class="ruby-operator">*</span>  <span class="ruby-identifier">inject</span>(<span class="ruby-value">0</span>){<span class="ruby-operator">|</span><span class="ruby-identifier">x</span>, <span class="ruby-identifier">k</span><span class="ruby-operator">|</span> <span class="ruby-identifier">x</span> <span class="ruby-operator">+</span> <span class="ruby-identifier">k</span> <span class="ruby-operator">**</span> <span class="ruby-value">2</span> }  <span class="ruby-operator">-</span> <span class="ruby-identifier">inject</span>(<span class="ruby-value">0</span>){<span class="ruby-operator">|</span><span class="ruby-identifier">x</span>, <span class="ruby-identifier">k</span><span class="ruby-operator">|</span> <span class="ruby-identifier">x</span> <span class="ruby-operator">+</span> <span class="ruby-identifier">k</span> } <span class="ruby-operator">**</span>  <span class="ruby-value">2</span>).<span class="ruby-identifier">to_f</span>   <span class="ruby-operator">/</span> (<span class="ruby-identifier">size</span><span class="ruby-operator">*</span> (<span class="ruby-identifier">size</span> <span class="ruby-operator">-</span> <span class="ruby-value">1</span>) ).<span class="ruby-identifier">to_f</span> 
+        <span class="ruby-keyword kw">end</span>
+      <span class="ruby-keyword kw">end</span>
+    <span class="ruby-keyword kw">end</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+</div>
+
+  </div>
+
+    </body>
+</html>

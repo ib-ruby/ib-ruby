@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>File: ib_ticker.rb</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <link rel="stylesheet" href=".././rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "width=400,height=400,scrollbars=yes" )
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+  <table border='0' cellpadding='0' cellspacing='0' width="100%" class='banner'>
+  <tr><td>
+    <table width="100%" border='0' cellpadding='0' cellspacing='0'><tr>
+      <td class="file-title" colspan="2"><span class="file-title-prefix">File</span><br />ib_ticker.rb</td>
+      <td align="right">
+        <table border='0' cellspacing="0" cellpadding="2">
+          <tr>
+            <td>Path:</td>
+            <td>ib_ticker.rb
+            </td>
+          </tr>
+          <tr>
+            <td>Modified:</td>
+            <td>Fri Sep 16 12:21:44 CEST 2005</td>
+          </tr>
+        </table>
+      </td></tr>
+    </table>
+  </td></tr>
+</table><br>
+ <!-- banner header -->
+
+  <div id="bodyContent">
+      <div id="content">
+  <table cellpadding='0' cellspacing='0' border='0' width="100%"><tr><td align="center">
+    <map id="map" name="map">
+  <area shape="RECT" coords="175,124,247,172"      href="../classes/Ticker.html" alt="Ticker">
+  <area shape="RECT" coords="322,124,407,172"      href="../classes/DRbTicker.html" alt="DRbTicker">
+  <area shape="RECT" coords="628,28,700,76"      href="../classes/TWS.html" alt="TWS">
+  <area shape="RECT" coords="220,28,354,76"      href="../classes/DRb/DRbObservable.html" alt="DRb::DRbObservable">
+  <area shape="RECT" coords="378,28,508,76"      href="../classes/DRb/DRbUndumped.html" alt="DRb::DRbUndumped">
+  <area shape="RECT" coords="124,28,196,76"      href="../classes/Stock.html" alt="Stock">
+  <area shape="RECT" coords="18,17,111,64"      href="../classes/IbMessages.html" alt="IbMessages">
+  <area shape="RECT" coords="522,17,615,64"      href="../classes/IbOrder.html" alt="IbOrder">
+</map>
+<img src="../dot/f_8.png" usemap="#map" border=0 alt="TopLevel">
+  </td></tr></table>
+
+  <div class="description"><pre>
+ -----------------------------------------------------------------------------------------------------------------------------------
+  ib_ticker.rb   client-server access to the realtime datastream of interactive-brokers
+
+ usage:
+ ./ib-ticker.rb  starts the ib-tws-server in client-Server-Mode
+</pre>
+<p>
+. ./ib-ticker.rb host starts the ib-tws-server in local mode and performs
+some tests
+</p>
+<pre>
+              set  host to 'localhost'  or the name of the computer running the tws
+
+ use remoteTicker.rb to connect to the server
+</pre>
+<p>
+a demo-version of the tws is available here
+</p>
+<pre>
+ http://interactivebrokers.com/cgi-pub/jtslink.pl?user_name=edemo
+</pre>
+</div>
+
+  <div class="sectiontitle">Required Files</div>
+  <ul>
+  <li>socket</li>
+  <li><a href="stock_rb.html">stock</a></li>
+  <li>drb/drb</li>
+  <li>drb/observer</li>
+  </ul>
+
+
+
+
+
+
+  <div class="sectiontitle">Constants</div>
+  <table border='0' cellpadding='5'>
+  <tr valign='top'>
+    <td class="attr-name">TWS_HOST</td>
+    <td>=</td>
+    <td class="attr-value">ARGV.shift ||  'localhost'</td>
+  </tr>
+  <tr valign='top'>
+    <td>&nbsp;</td>
+    <td colspan="2" class="attr-desc">
+set constant
+
+</td>
+  </tr>
+  </table>
+
+
+</div>
+
+  </div>
+
+    </body>
+</html>

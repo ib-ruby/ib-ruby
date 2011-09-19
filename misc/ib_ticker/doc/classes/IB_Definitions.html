@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Module: IB_Definitions</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <link rel="stylesheet" href=".././rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "width=400,height=400,scrollbars=yes" )
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+  <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'><tr>
+  <td class="file-title"><span class="file-title-prefix">Module</span><br />IB_Definitions</td>
+  <td align="right">
+    <table cellspacing=0 cellpadding=2>
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../files/stock_rb.html">stock.rb</a>
+        </td>
+      </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+ <!-- banner header -->
+
+  <div id="bodyContent">
+      <div id="content">
+  <table cellpadding='0' cellspacing='0' border='0' width="100%"><tr><td align="center">
+    <map id="map" name="map">
+  <area shape="RECT" coords="17,17,112,64"      href="IB_Definitions.html" alt="IB_Definitions">
+</map>
+<img src="../dot/m_6_0.png" usemap="#map" border=0 alt="Module: IB_Definitions">
+  </td></tr></table>
+
+  <div class="description"><p>
+# Die Klasse <a href="Stock.html">Stock</a> ist die MutterKlasse für Chart,
+Account und <a href="Ticker.html">Ticker</a>.
+</p>
+<h2>Modul <a href="IB_Definitions.html">IB_Definitions</a></h2>
+<p>
+Die Methoden dieses Moduls bündeln den Zugang zu den ib-spezifischen
+Einstellungen
+</p>
+<p>
+Aus der yaml-Datei werden folgende Daten verarbeitet:
+</p>
+<pre>
+ 160 ib:
+ 161  underlying: gbm     &lt;--- Hier Eintrag der TWS im Underlying-Modus eintragen
+ 162  symbol:  fgbm     &lt;--- Hier den konstanten Teil aus dem Symbol-Modus eintragen
+ 163  exchange: dtb     &lt;--- Die Börse
+ 164  contract: 305     &lt;--- Das ist der default-Kontrakt.
+ 165  backtestintervall: [ 1203, 304 , 604 , 904, 1204 ]
+</pre>
+</div>
+
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+  <li><a href="#M000100">contract</a></li>
+  <li><a href="#M000099">contract=</a></li>
+  <li><a href="#M000096">getDatabaseName</a></li>
+  <li><a href="#M000097">ibExchange</a></li>
+  <li><a href="#M000101">ibSymbol</a></li>
+  <li><a href="#M000102">ibTicker</a></li>
+  <li><a href="#M000098">ibUnderlying</a></li>
+  </ul>
+
+
+
+
+
+
+<div class="sectiontitle">Public Instance methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M000100"></a><b>contract</b>()
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000100_source')" id="l_M000100_source">show source</a> ]</p>
+  <div id="M000100_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stock.rb, line 34</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">contract</span>
+    <span class="ruby-ivar">@stock</span>[<span class="ruby-value str">&quot;ib&quot;</span>][<span class="ruby-value str">&quot;contract&quot;</span>]
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000099"></a><b>contract=</b>(thiscontract)
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000099_source')" id="l_M000099_source">show source</a> ]</p>
+  <div id="M000099_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stock.rb, line 31</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">contract=</span> (<span class="ruby-identifier">thiscontract</span>)
+    <span class="ruby-ivar">@stock</span>[<span class="ruby-value str">&quot;ib&quot;</span>][<span class="ruby-value str">&quot;contract&quot;</span>]= <span class="ruby-identifier">checkContract</span>(<span class="ruby-identifier">thiscontract</span>)  <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">thiscontract</span><span class="ruby-operator">==</span><span class="ruby-value">0</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000096"></a><b>getDatabaseName</b>()
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000096_source')" id="l_M000096_source">show source</a> ]</p>
+  <div id="M000096_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stock.rb, line 19</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">getDatabaseName</span>
+    <span class="ruby-identifier">sprintf</span>(<span class="ruby-value str">&quot;%s%04d&quot;</span>,<span class="ruby-ivar">@stock</span>[<span class="ruby-value str">&quot;name&quot;</span>],<span class="ruby-ivar">@stock</span>[<span class="ruby-value str">&quot;ib&quot;</span>][<span class="ruby-value str">&quot;contract&quot;</span>])
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000097"></a><b>ibExchange</b>()
+  </div>
+  <div class="description">
+  <p>
+Reflektiert den Yaml-eintrag unter &#8216;ib&#8217; +
+&#8216;exchange&#8217;
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000097_source')" id="l_M000097_source">show source</a> ]</p>
+  <div id="M000097_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stock.rb, line 23</span>
+    <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">ibExchange</span>
+    <span class="ruby-ivar">@stock</span>[<span class="ruby-value str">&quot;ib&quot;</span>][<span class="ruby-value str">&quot;exchange&quot;</span>].<span class="ruby-identifier">upcase</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000101"></a><b>ibSymbol</b>()
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000101_source')" id="l_M000101_source">show source</a> ]</p>
+  <div id="M000101_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stock.rb, line 44</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">ibSymbol</span>
+      <span class="ruby-identifier">contractTime</span>=<span class="ruby-constant">Time</span>.<span class="ruby-identifier">mktime</span>(<span class="ruby-ivar">@stock</span>[<span class="ruby-value str">&quot;ib&quot;</span>][<span class="ruby-value str">&quot;contract&quot;</span>].<span class="ruby-identifier">to_s</span>[<span class="ruby-value">-2</span><span class="ruby-operator">..</span><span class="ruby-value">-1</span>].<span class="ruby-identifier">to_i</span>,<span class="ruby-ivar">@stock</span>[<span class="ruby-value str">&quot;ib&quot;</span>][<span class="ruby-value str">&quot;contract&quot;</span>].<span class="ruby-identifier">to_s</span>[<span class="ruby-value">0</span><span class="ruby-operator">..</span><span class="ruby-value">-3</span>].<span class="ruby-identifier">to_i</span>)
+                <span class="ruby-comment cmt"># mktime: year, month</span>
+      <span class="ruby-identifier">ibS</span>= <span class="ruby-keyword kw">case</span> <span class="ruby-identifier">ibExchange</span>
+        <span class="ruby-keyword kw">when</span> <span class="ruby-value str">'DTB'</span> , <span class="ruby-value str">'ECBOT'</span>
+            <span class="ruby-ivar">@stock</span>[<span class="ruby-value str">&quot;ib&quot;</span>][<span class="ruby-value str">&quot;symbol&quot;</span>]<span class="ruby-operator">+</span><span class="ruby-identifier">contractTime</span>.<span class="ruby-identifier">strftime</span>(<span class="ruby-value str">&quot; %b %y&quot;</span>)        <span class="ruby-comment cmt"># generate symbol</span>
+        <span class="ruby-keyword kw">when</span> <span class="ruby-value str">'GLOBEX'</span>, <span class="ruby-value str">'CME'</span>, <span class="ruby-value str">'CFE'</span> , <span class="ruby-value str">'MONEP'</span>
+            <span class="ruby-identifier">contract</span>={ <span class="ruby-value">3</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-value str">&quot;H&quot;</span>, <span class="ruby-value">6</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-value str">&quot;M&quot;</span>, <span class="ruby-value">9</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-value str">&quot;U&quot;</span> , <span class="ruby-value">12</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-value str">&quot;Z&quot;</span>}
+            <span class="ruby-ivar">@stock</span>[<span class="ruby-value str">&quot;ib&quot;</span>][<span class="ruby-value str">&quot;symbol&quot;</span>]<span class="ruby-operator">+</span><span class="ruby-identifier">contract</span>[<span class="ruby-identifier">contractTime</span>.<span class="ruby-identifier">month</span>]<span class="ruby-operator">+</span><span class="ruby-identifier">contractTime</span>.<span class="ruby-identifier">strftime</span>(<span class="ruby-value str">&quot;%Y&quot;</span>)[<span class="ruby-value">3</span><span class="ruby-operator">..</span><span class="ruby-value">3</span>]
+      <span class="ruby-keyword kw">end</span>
+    <span class="ruby-identifier">ibS</span>.<span class="ruby-identifier">upcase</span>                                            <span class="ruby-comment cmt"># return value</span>
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000102"></a><b>ibTicker</b>(contr=0)
+  </div>
+  <div class="description">
+  <p>
+Liefert ein ib-<a href="Ticker.html">Ticker</a>-Request-String als <a
+href="Array.html">Array</a>
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000102_source')" id="l_M000102_source">show source</a> ]</p>
+  <div id="M000102_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stock.rb, line 61</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">ibTicker</span>(<span class="ruby-identifier">contr</span>=<span class="ruby-value">0</span>)
+    <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">contract</span> =<span class="ruby-identifier">contr</span>
+    [<span class="ruby-identifier">ibUnderlying</span>, <span class="ruby-value str">'FUT'</span> ,<span class="ruby-value str">''</span>, <span class="ruby-value">0</span>,<span class="ruby-value str">''</span>,<span class="ruby-identifier">ibExchange</span>,<span class="ruby-value str">&quot;&quot;</span>,<span class="ruby-identifier">ibSymbol</span>]
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000098"></a><b>ibUnderlying</b>()
+  </div>
+  <div class="description">
+  <p>
+Reflektiert den Yaml-eintrag unter &#8216;ib&#8217; +
+&#8216;underlying&#8217;
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000098_source')" id="l_M000098_source">show source</a> ]</p>
+  <div id="M000098_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File stock.rb, line 27</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">ibUnderlying</span>
+      <span class="ruby-ivar">@stock</span>[<span class="ruby-value str">&quot;ib&quot;</span>][<span class="ruby-value str">&quot;underlying&quot;</span>].<span class="ruby-identifier">upcase</span> 
+  <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+</div>
+
+  </div>
+
+    </body>
+</html>

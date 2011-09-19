@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<style>
+<!--
+  body {
+    background-color: #EEE;
+    font-family: "Bitstream Vera Sans", Verdana, Arial, Helvetica, sans-serif; 
+    color: #000;
+    margin: 0px;
+  }
+  .banner {
+    background: #005;
+    color: #FFF;
+    padding: 0.2em;
+    font-size: small;
+    font-weight: bold;
+    text-align: center;
+  }
+  .entries {
+    margin: 0.25em 1em 0 1em;
+    font-size: x-small;
+  }
+  a {
+    color: #00F;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  a:hover {
+    color: #77F;
+    text-decoration: underline;
+  }
+-->
+</style>
+<base target="docwin">
+</head>
+<body>
+<div class="banner">Methods</div>
+<div class="entries">
+<a href="classes/OHLC.html#M000060">[] (OHLC)</a><br>
+<a href="classes/OHLCrecord.html#M000031">accumulateOHLC (OHLCrecord)</a><br>
+<a href="classes/OHLCrecord.html#M000032">accumulateTicks (OHLCrecord)</a><br>
+<a href="classes/Stock.html#M000024">adjustContract (Stock)</a><br>
+<a href="classes/OHLC.html#M000057">adjustDate (OHLC)</a><br>
+<a href="classes/NcursesWindow.html#M000083">allocateWindow (NcursesWindow)</a><br>
+<a href="classes/Stock.html#M000020">assignContract (Stock)</a><br>
+<a href="classes/Stock.html#M000022">availableContracts (Stock)</a><br>
+<a href="classes/Stock.html#M000004">availableStocks (Stock)</a><br>
+<a href="classes/Enumerable.html#M000104">average (Enumerable)</a><br>
+<a href="classes/Stock.html#M000015">boxSize (Stock)</a><br>
+<a href="classes/Stock.html#M000021">checkContract (Stock)</a><br>
+<a href="classes/OHLC.html#M000056">checkData (OHLC)</a><br>
+<a href="files/ohlcTicker_rb.html#M000002">connectNow (ohlcTicker.rb)</a><br>
+<a href="files/pureTicker_rb.html#M000001">connectNow (pureTicker.rb)</a><br>
+<a href="classes/DRbTicker.html#M000025">connectTicker (DRbTicker)</a><br>
+<a href="classes/IB_Definitions.html#M000100">contract (IB_Definitions)</a><br>
+<a href="classes/IB_Definitions.html#M000099">contract= (IB_Definitions)</a><br>
+<a href="classes/Stock.html#M000014">convertedResolution (Stock)</a><br>
+<a href="classes/Enumerable.html#M000107">correlate (Enumerable)</a><br>
+<a href="classes/Array.html#M000043">covariance (Array)</a><br>
+<a href="classes/Array.html#M000044">delta (Array)</a><br>
+<a href="classes/Array.html#M000046">derivation (Array)</a><br>
+<a href="classes/NcursesWindow.html#M000084">display (NcursesWindow)</a><br>
+<a href="classes/Ticker.html#M000092">doAction (Ticker)</a><br>
+<a href="classes/Stock.html#M000007">dynElement (Stock)</a><br>
+<a href="classes/Stock.html#M000018">endDay= (Stock)</a><br>
+<a href="classes/NcursesWindow.html#M000086">finishIt (NcursesWindow)</a><br>
+<a href="classes/Stock.html#M000006">getAvailableProperties (Stock)</a><br>
+<a href="classes/IB_Definitions.html#M000096">getDatabaseName (IB_Definitions)</a><br>
+<a href="classes/SQLquery.html#M000074">getField (SQLquery)</a><br>
+<a href="classes/SQLquery.html#M000076">getFields (SQLquery)</a><br>
+<a href="classes/SQLquery.html#M000073">getHash (SQLquery)</a><br>
+<a href="classes/SQLquery.html#M000075">getHoleItem (SQLquery)</a><br>
+<a href="classes/SQLquery.html#M000077">getInfo (SQLquery)</a><br>
+<a href="classes/NcursesWindow.html#M000085">getInput (NcursesWindow)</a><br>
+<a href="classes/Ticker.html#M000087">getInstance (Ticker)</a><br>
+<a href="classes/SQLquery.html#M000070">getResult (SQLquery)</a><br>
+<a href="classes/SQLquery.html#M000072">getRowCount (SQLquery)</a><br>
+<a href="classes/SQLquery.html#M000071">getRows (SQLquery)</a><br>
+<a href="classes/Stock.html#M000023">getTradingRange (Stock)</a><br>
+<a href="classes/OHLCrecord.html#M000038">get_next_open (OHLCrecord)</a><br>
+<a href="classes/Stock.html#M000012">hourEnd (Stock)</a><br>
+<a href="classes/Stock.html#M000011">hourStart (Stock)</a><br>
+<a href="classes/IB_Definitions.html#M000097">ibExchange (IB_Definitions)</a><br>
+<a href="classes/IB_Definitions.html#M000101">ibSymbol (IB_Definitions)</a><br>
+<a href="classes/IB_Definitions.html#M000102">ibTicker (IB_Definitions)</a><br>
+<a href="classes/IB_Definitions.html#M000098">ibUnderlying (IB_Definitions)</a><br>
+<a href="classes/TrueClass.html#M000095">ifFalse (TrueClass)</a><br>
+<a href="classes/FalseClass.html#M000042">ifFalse (FalseClass)</a><br>
+<a href="classes/TrueClass.html#M000094">ifTrue (TrueClass)</a><br>
+<a href="classes/FalseClass.html#M000041">ifTrue (FalseClass)</a><br>
+<a href="classes/OHLC.html#M000058">is_dailyClose (OHLC)</a><br>
+<a href="classes/OHLCrecord.html#M000036">is_daily_close (OHLCrecord)</a><br>
+<a href="classes/OHLCrecord.html#M000035">is_daily_open (OHLCrecord)</a><br>
+<a href="classes/OHLCrecord.html#M000037">is_open (OHLCrecord)</a><br>
+<a href="classes/OHLCrecord.html#M000034">makeOHLC (OHLCrecord)</a><br>
+<a href="classes/Array.html#M000045">momentum (Array)</a><br>
+<a href="classes/Stock.html#M000003">mysqlFetchOHLC (Stock)</a><br>
+<a href="classes/OHLC.html#M000054">mysqlInsertString (OHLC)</a><br>
+<a href="classes/NcursesWindow.html#M000082">new (NcursesWindow)</a><br>
+<a href="classes/Stock.html#M000005">new (Stock)</a><br>
+<a href="classes/MysqlTicker.html#M000027">new (MysqlTicker)</a><br>
+<a href="classes/NcursesTicker.html#M000064">new (NcursesTicker)</a><br>
+<a href="classes/OHLCrecord.html#M000029">new (OHLCrecord)</a><br>
+<a href="classes/OHLC.html#M000059">new (OHLC)</a><br>
+<a href="classes/PureRemoteTicker.html#M000067">new (PureRemoteTicker)</a><br>
+<a href="classes/RemoteTicker.html#M000049">new (RemoteTicker)</a><br>
+<a href="classes/SQLquery.html#M000069">new (SQLquery)</a><br>
+<a href="classes/SQLstoredQuery.html#M000039">new (SQLstoredQuery)</a><br>
+<a href="classes/Ticker.html#M000088">new (Ticker)</a><br>
+<a href="classes/SQLoneData.html#M000040">new (SQLoneData)</a><br>
+<a href="classes/PureMysqlTicker.html#M000080">new (PureMysqlTicker)</a><br>
+<a href="classes/SQLquery.html#M000079">ohlc (SQLquery)</a><br>
+<a href="classes/OHLC.html#M000055">ohlcKeys (OHLC)</a><br>
+<a href="classes/SQLquery.html#M000078">oneData (SQLquery)</a><br>
+<a href="classes/RemoteTicker.html#M000050">output (RemoteTicker)</a><br>
+<a href="classes/MysqlTicker.html#M000028">output (MysqlTicker)</a><br>
+<a href="classes/FileTicker.html#M000093">output (FileTicker)</a><br>
+<a href="classes/OHLC.html#M000062">printCSV (OHLC)</a><br>
+<a href="classes/Stock.html#M000009">printFormat (Stock)</a><br>
+<a href="classes/OHLCrecord.html#M000030">raster= (OHLCrecord)</a><br>
+<a href="classes/Stock.html#M000013">resolution= (Stock)</a><br>
+<a href="classes/Stock.html#M000016">reversalBoxSize (Stock)</a><br>
+<a href="classes/Float.html#M000063">roundf (Float)</a><br>
+<a href="classes/Module.html#M000053">send (Module)</a><br>
+<a href="classes/Module.html#M000052">sends (Module)</a><br>
+<a href="classes/Stock.html#M000008">setElement (Stock)</a><br>
+<a href="classes/Enumerable.html#M000106">sigma (Enumerable)</a><br>
+<a href="classes/Array.html#M000048">slope (Array)</a><br>
+<a href="classes/Stock.html#M000017">startDay= (Stock)</a><br>
+<a href="classes/Ticker.html#M000090">stopAllTicker (Ticker)</a><br>
+<a href="classes/Ticker.html#M000089">stopTicker (Ticker)</a><br>
+<a href="classes/Enumerable.html#M000103">sum (Enumerable)</a><br>
+<a href="classes/Stock.html#M000019">tadingDays= (Stock)</a><br>
+<a href="classes/DRbTicker.html#M000026">testMethod (DRbTicker)</a><br>
+<a href="classes/OHLC.html#M000061">to_s (OHLC)</a><br>
+<a href="classes/Array.html#M000047">trend (Array)</a><br>
+<a href="classes/Stock.html#M000010">tt (Stock)</a><br>
+<a href="classes/OHLCrecord.html#M000033">unfilledOHLC (OHLCrecord)</a><br>
+<a href="classes/Ticker.html#M000091">update (Ticker)</a><br>
+<a href="classes/RemoteTicker.html#M000051">update (RemoteTicker)</a><br>
+<a href="classes/PureMysqlTicker.html#M000081">update (PureMysqlTicker)</a><br>
+<a href="classes/NcursesTicker.html#M000065">update (NcursesTicker)</a><br>
+<a href="classes/PureFileTicker.html#M000066">update (PureFileTicker)</a><br>
+<a href="classes/PureRemoteTicker.html#M000068">update (PureRemoteTicker)</a><br>
+<a href="classes/Enumerable.html#M000105">variance (Enumerable)</a><br>
+</div>
+</body></html>

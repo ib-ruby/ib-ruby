@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Class: PureFileTicker</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <link rel="stylesheet" href=".././rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "width=400,height=400,scrollbars=yes" )
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+  <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'><tr>
+  <td class="file-title"><span class="file-title-prefix">Class</span><br />PureFileTicker</td>
+  <td align="right">
+    <table cellspacing=0 cellpadding=2>
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../files/pureTicker_rb.html">pureTicker.rb</a>
+        </td>
+      </tr>
+    <tr>
+      <td>Parent:</td>
+      <td>
+        <a href="PureRemoteTicker.html">
+PureRemoteTicker
+         </a>
+     </td>
+   </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+ <!-- banner header -->
+
+  <div id="bodyContent">
+      <div id="content">
+  <table cellpadding='0' cellspacing='0' border='0' width="100%"><tr><td align="center">
+    <map id="map" name="map">
+  <area shape="RECT" coords="7,199,111,247"      href="PureFileTicker.html" alt="PureFileTicker">
+  <area shape="RECT" coords="63,103,188,151"      href="PureRemoteTicker.html" alt="PureRemoteTicker">
+  <area shape="RECT" coords="135,199,249,247"      href="PureMysqlTicker.html" alt="PureMysqlTicker">
+  <area shape="RECT" coords="60,7,191,55"      href="DRb/DRbUndumped.html" alt="DRb::DRbUndumped">
+</map>
+<img src="../dot/f_5.png" usemap="#map" border=0 alt="TopLevel">
+  </td></tr></table>
+
+
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+  <li><a href="#M000066">update</a></li>
+  </ul>
+
+
+
+
+
+
+<div class="sectiontitle">Public Instance methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M000066"></a><b>update</b>(*args)
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000066_source')" id="l_M000066_source">show source</a> ]</p>
+  <div id="M000066_source" class="dyn-source">
+<pre>
+<span class="ruby-comment cmt"># File pureTicker.rb, line 132</span>
+      <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">update</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">args</span>)  
+        <span class="ruby-constant">File</span>.<span class="ruby-identifier">open</span>(<span class="ruby-node">&quot;#{@stock.ibSymbol}.ohlc&quot;</span>,<span class="ruby-value str">'a'</span>) <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">thisFile</span><span class="ruby-operator">|</span> 
+          <span class="ruby-identifier">$,</span>=<span class="ruby-value str">&quot;,&quot;</span>
+<span class="ruby-comment cmt"># debug         print ohlc.printCSV</span>
+          <span class="ruby-identifier">thisFile</span>.<span class="ruby-identifier">print</span> <span class="ruby-identifier">args</span>.<span class="ruby-identifier">join</span>(<span class="ruby-value str">&quot;,&quot;</span>)
+        <span class="ruby-keyword kw">end</span>
+      <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+</div>
+
+  </div>
+
+    </body>
+</html>
