@@ -16,6 +16,7 @@ tmtags
 ## Idea
 .idea
 .bundle
+.rakeTasks
 *.iml
 
 ## PROJECT::GENERAL
