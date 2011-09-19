@@ -14,15 +14,12 @@ require 'ib-ruby'
 # First, connect to IB TWS.
 ib = IB::Connection.new
 
-## Subscribe to TWS alerts/errors
-ib.subscribe(IB::Messages::Incoming::Alert) { |msg| puts msg.to_human }
-
-## Subscribe to the messages that TWS sends in response to account data request
-ib.subscribe(IB::Messages::Incoming::AccountValue) { |msg| puts msg.to_human }
-
-ib.subscribe(IB::Messages::Incoming::PortfolioValue) { |msg| puts msg.to_human }
-
-ib.subscribe(IB::Messages::Incoming::AccountUpdateTime) { |msg| puts msg.to_human }
+# Subscribe to TWS alerts/errors and account-related messages
+# that TWS sends in response to account data request
+ib.subscribe(IB::Messages::Incoming::Alert,
+             IB::Messages::Incoming::AccountValue,
+             IB::Messages::Incoming::PortfolioValue,
+             IB::Messages::Incoming::AccountUpdateTime) { |msg| puts msg.to_human }
 
 ib.send IB::Messages::Outgoing::RequestAccountData.new :subscribe => true
 

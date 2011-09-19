@@ -108,15 +108,18 @@ module IB
 
     # Subscribe to incoming message events of type message_class.
     # code is a Proc that will be called with the message instance as its argument.
-    def subscribe(message_class, code = nil, &block)
-      code ||= block
+    def subscribe(*args, &block)
+      code = args.last.respond_to?(:call) ? args.pop : block
 
       raise ArgumentError.new "Need listener proc or block" unless code.is_a? Proc
-      unless message_class < Messages::Incoming::AbstractMessage
-        raise ArgumentError.new "#{message_class} must be an IB message class"
-      end
 
-      @listeners[message_class].push(code)
+      args.each do |message_class|
+        unless message_class < Messages::Incoming::AbstractMessage
+          raise ArgumentError.new "#{message_class} must be an IB message class"
+        end
+
+        @listeners[message_class].push(code)
+      end
     end
 
     # Send an outgoing message.

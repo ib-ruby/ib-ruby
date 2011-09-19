@@ -33,22 +33,23 @@ MIN_SIZE = 0
 # up in local memory to figure out what it's for.
 # (N.B. The description field is not from IB TWS. It is defined
 #  locally in forex.rb, and is just arbitrary text.)
-def show_sales(msg)
+def show_sales_and_size(msg)
   return if msg.type != :last_price || msg.data[:size] < MIN_SIZE
-  puts @market[msg.data[:id]].description +
-           ": #{msg.data[:size]} at #{msg.data[:price]}"
+  puts @market[msg.data[:id]].description + ": " +
+           (msg.is_a?(IB::Messages::Incoming::TickPrice) ?
+               "#{msg.data[:size]} at #{msg.data[:price]}" : msg.to_human)
 end
 
 def show_size(msg)
   return if msg.type != :last_size || msg.data[:size] < MIN_SIZE
-  puts @market[msg.data[:id]].description + ": " + msg.to_human
 end
 
 # Now, subscribe to TickerPrice and TickerSize events.  The code passed in the block
 # will be executed when a message of that type is  received, with the received message
 # as its argument. In this case, we just print out the tick.
-ib.subscribe(IB::Messages::Incoming::TickPrice) { |msg| show_sales(msg) }
-ib.subscribe(IB::Messages::Incoming::TickSize) { |msg| show_size(msg) }
+ib.subscribe(IB::Messages::Incoming::TickPrice,
+             IB::Messages::Incoming::TickSize,
+             IB::Messages::Incoming::TickString) { |msg| show_sales_and_size(msg) }
 
 # Now we actually request market data for the symbols we're interested in.
 

@@ -22,24 +22,15 @@ ib = IB::Connection.new
 ## Subscribe to TWS alerts/errors
 ib.subscribe(IB::Messages::Incoming::Alert) { |msg| puts msg.to_human }
 
-# Subscribe to TickerPrice and TickerSize events.  The code passed in the block will
-# be executed when a message of that type is received, with the received message as its
-# argument. In this case, we just print out the tick.
-#
-# Note that we have to look the ticker id of each incoming message
-# up in local memory to figure out what it's for.
+# Subscribe to Ticker... events.  The code passed in the block will be executed when
+# any message of that type is received, with the received message as its argument.
+# In this case, we just print out the tick.
 #
 # (N.B. The description field is not from IB TWS. It is defined
 #  locally in forex.rb, and is just arbitrary text.)
-ib.subscribe(IB::Messages::Incoming::TickPrice) do |msg|
-  puts @market[msg.data[:id]].description + ": " + msg.to_human
-end
-
-ib.subscribe(IB::Messages::Incoming::TickSize) do |msg|
-  puts @market[msg.data[:id]].description + ": " + msg.to_human
-end
-
-ib.subscribe(IB::Messages::Incoming::TickOption) do |msg|
+ib.subscribe(IB::Messages::Incoming::TickPrice,
+             IB::Messages::Incoming::TickSize,
+             IB::Messages::Incoming::TickOption) do |msg|
   puts @market[msg.data[:id]].description + ": " + msg.to_human
 end
 

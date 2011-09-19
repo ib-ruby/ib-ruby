@@ -22,7 +22,7 @@ require 'ib-ruby'
 # First, connect to IB TWS.
 ib = IB::Connection.new
 
-## Subscribe to TWS alerts/errors
+# Subscribe to TWS alerts/errors
 ib.subscribe(IB::Messages::Incoming::Alert) { |msg| puts msg.to_human }
 
 # Subscribe to MarketDepth events.

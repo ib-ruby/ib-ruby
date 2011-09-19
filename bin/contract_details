@@ -14,7 +14,7 @@ require 'ib-ruby'
 # corresponds to what symbol ourselves, because the ticks don't include any other
 # identifying information. The choice of ticker ids is, as far as I can tell, arbitrary.
 @market = {123 => IB::Symbols::Stocks[:wfc],
-           125 => IB::Symbols::Options[:wfc15],
+           125 => IB::Symbols::Options[:wfc20],
            129 => IB::Symbols::Stocks[:wrong]}
 
 # Connect to IB TWS.
