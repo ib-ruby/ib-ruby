@@ -81,3 +81,7 @@
 == 0.4.18 / 2011-09-19
 
 * IB::Connection#subscribe syntax changed
+
+== 0.4.19 / 2011-09-19
+
+* All IB messages implemented

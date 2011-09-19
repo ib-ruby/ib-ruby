@@ -257,10 +257,25 @@ module IB
                              [:tick_type, :int],
                              [:size, :int]
 
+      TickGeneric = def_message 45, AbstractTick,
+                                [:id, :int], # ticker_id
+                                [:tick_type, :int],
+                                [:value, :decimal]
+
       TickString = def_message 46, AbstractTick,
                                [:id, :int], # ticker_id
                                [:tick_type, :int],
                                [:value, :string]
+
+      TickEFP = def_message 47, AbstractTick,
+                            [:id, :int], # ticker_id
+                            [:tick_type, :int],
+                            [:basis_points, :decimal],
+                            [:formatted_basis_points, :string],
+                            [:implied_futures_price, :decimal],
+                            [:hold_days, :int],
+                            [:dividend_impact, :decimal],
+                            [:dividends_to_expiry, :decimal]
 
       # This message is received when the market in an option or its underlier moves.
       # TWS’s option model volatilities, prices, and deltas, along with the present
@@ -782,11 +797,9 @@ __END__
     static final int SCANNER_PARAMETERS = 19; *
     static final int SCANNER_DATA       = 20; *
     static final int TICK_OPTION_COMPUTATION = 21; *
-    --------- ALREADY IMLEMENTED -----------
-    static final int TICK_GENERIC = 45;
-    static final int TICK_STRING = 46;
-    static final int TICK_EFP = 47;
-    --------- ALREADY IMLEMENTED -----------
+    static final int TICK_GENERIC = 45;       *
+    static final int TICK_STRING = 46;        *
+    static final int TICK_EFP = 47;           *
     static final int CURRENT_TIME = 49;       *
     static final int REAL_TIME_BARS = 50;     *
     static final int FUNDAMENTAL_DATA = 51;   *
