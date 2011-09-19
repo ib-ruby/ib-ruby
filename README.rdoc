@@ -7,14 +7,11 @@ that is in turn forked from http://github.com/pjlegato/ib-ruby by Paul Legato.
 
 == DESCRIPTION:
 
-Ruby Implementation of the Interactive Broker' TWS API
-
-The goal of this fork is to modernize library structure (Bundler/Gemfile/etc) and
-then roll out a new version based on latest IB TWS API v.965.
+Ruby Implementation of the Interactive Broker' TWS API v.965.
 
 == FEATURES/PROBLEMS:
 
-* This is a ALPHA release, and should not be used for live trading.
+* This is a BETA release, and should not be used for live trading.
   Any features contained with are AS-IS and may not work in all conditions
 * This code is not sanctioned or supported by Interactive Brokers
 
@@ -41,9 +38,20 @@ Ensure it is configured to allow API connections on localhost.
 
   >> require 'ib-ruby'
   >> ib = IB::Connection.new
-  >> ib.subscribe(IB::Messages::Incoming::Alert) { |msg| puts msg.to_human }
-  >> ib.subscribe(IB::Messages::Incoming::AccountValue) { |msg| puts msg.to_human }
-  >> ib.send IB::Messages::Outgoing::RequestAccountData.new :subscribe => true
+  >> ib.subscribe(:Alert, :AccountValue) { |msg| puts msg.to_human }
+  >> ib.send :RequestAccountData, :subscribe => true
+
+Essentially, all interaction of your code and TWS can be described as an exchange
+of messages. You subscribe to message types you're interested in using
+IB::Connection#subscribe and request data from TWS using IB::Connection#send.
+The code blocks (or procs) given to #subscribe will be executed when a message of
+requested type is received, with the received message as its argument.
+
+Use sample scripts in /bin folder as an example of how common tasks can be
+achieved using ib-ruby.
+
+See /lib/ib-ruby/messages for a full list of TWS incoming/outgoing messages and
+their attributes. Original TWS docs and code samples can be found in /misc folder.
 
 == LICENSE:
 
