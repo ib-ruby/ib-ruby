@@ -12,17 +12,16 @@ module IB
     module Incoming
       Classes = Array.new
 
-      #
       # This is just a basic generic message from the server.
       #
       # Class variables:
-      # @message_id - integer message id.
+      # @message_id - int: message id.
+      # @version - int: current version of message format.
       #
-      # Instance attributes:
+      # Instance attributes (at minimum):
       # @data - Hash of actual data read from a stream.
       #
       # Override the load(socket) method in your subclass to do actual reading into @data.
-      #
       class AbstractMessage
         attr_accessor :created_at, :data
 
@@ -84,79 +83,6 @@ module IB
           end
         end
       end
-
-      # Tick types received in TickPrice and TickSize messages (enumeration)
-      TICK_TYPES = {
-          # int id => :Description #  Corresponding API Event/Function/Method
-          0 => :bid_size, #               tickSize()
-          1 => :bid_price, #              tickPrice()
-          2 => :ask_price, #              tickPrice()
-          3 => :ask_size, #               tickSize()
-          4 => :last_price, #             tickPrice()
-          5 => :last_size, #              tickSize()
-          6 => :high, #                   tickPrice()
-          7 => :low, #                    tickPrice()
-          8 => :volume, #                 tickSize()
-          9 => :close_price, #            tickPrice()
-          10 => :bid_option_computation, #  tickOptionComputation() See Note 1 below
-          11 => :ask_option_computation, #  tickOptionComputation() See => :Note 1 below
-          12 => :last_option_computation, # tickOptionComputation()  See Note 1 below
-          13 => :model_option_computation, #tickOptionComputation() See Note 1 below
-          14 => :open_tick, #             tickPrice()
-          15 => :low_13_week, #           tickPrice()
-          16 => :high_13_week, #          tickPrice()
-          17 => :low_26_week, #           tickPrice()
-          18 => :high_26_week, #          tickPrice()
-          19 => :low_52_week, #           tickPrice()
-          20 => :high_52_week, #          tickPrice()
-          21 => :avg_volume, #            tickSize()
-          22 => :open_interest, #         tickSize()
-          23 => :option_historical_vol, # tickGeneric()
-          24 => :option_implied_vol, #    tickGeneric()
-          25 => :option_bid_exch, #   not USED
-          26 => :option_ask_exch, #   not USED
-          27 => :option_call_open_interest, # tickSize()
-          28 => :option_put_open_interest, #  tickSize()
-          29 => :option_call_volume, #        tickSize()
-          30 => :option_put_volume, #         tickSize()
-          31 => :index_future_premium, #      tickGeneric()
-          32 => :bid_exch, #                  tickString()
-          33 => :ask_exch, #                  tickString()
-          34 => :auction_volume, #    not USED
-          35 => :auction_price, #     not USED
-          36 => :auction_imbalance, # not USED
-          37 => :mark_price, #              tickPrice()
-          38 => :bid_efp_computation, #     tickEFP()
-          39 => :ask_efp_computation, #     tickEFP()
-          40 => :last_efp_computation, #    tickEFP()
-          41 => :open_efp_computation, #    tickEFP()
-          42 => :high_efp_computation, #    tickEFP()
-          43 => :low_efp_computation, #     tickEFP()
-          44 => :close_efp_computation, #   tickEFP()
-          45 => :last_timestamp, #          tickString()
-          46 => :shortable, #               tickGeneric()
-          47 => :fundamental_ratios, #      tickString()
-          48 => :rt_volume, #               tickGeneric()
-          49 => :halted, #      see note 2 below.
-          50 => :bidyield, #                tickPrice() See Note 3 below
-          51 => :askyield, #                tickPrice() See Note 3 below
-          52 => :lastyield, #               tickPrice() See Note 3 below
-          53 => :cust_option_computation, # tickOptionComputation()
-          54 => :trade_count, #             tickGeneric()
-          55 => :trade_rate, #              tickGeneric()
-          56 => :volume_rate, #             tickGeneric()
-          #   Note 1: Tick types BID_OPTION_COMPUTATION, ASK_OPTION_COMPUTATION,
-          #           LAST_OPTION_COMPUTATION, and MODEL_OPTION_COMPUTATION return all
-          #           Greeks (delta, gamma, vega, theta), the underlying price and the
-          #           stock and option reference price when requested.
-          #           MODEL_OPTION_COMPUTATION also returns model implied volatility.
-          #   Note 2: When trading is halted for a contract, TWS receives a special tick:
-          #           haltedLast=1. When trading is resumed, TWS receives haltedLast=0.
-          #           A tick type, HALTED, tick ID= 49, is now available in regular market
-          #           data via the API to indicate this halted state. Possible values for
-          #           this new tick type are: 0 = Not halted, 1 = Halted.
-          #   Note 3: Applies to bond contracts only.
-      }
 
       ### Actual message classes (short definitions):
 
@@ -333,6 +259,57 @@ module IB
           "<TickSize #{TICK_TYPES[@data[:tick_type]]}: size #{@data[:size]}>"
         end
       end
+
+      # This message is received when the market in an option or its underlier moves.
+      # TWS’s option model volatilities, prices, and deltas, along with the present
+      # value of dividends expected on that options underlier are received.
+      # TickOption message contains following @data:
+      #    :id - Ticker Id that was specified previously in the call to reqMktData()
+      #    :tick_type - Specifies the type of option computation (see TICK_TYPES).
+      #    :implied_volatility - The implied volatility calculated by the TWS option
+      #                          modeler, using the specified :tick_type value.
+      #    :delta - The option delta value.
+      #    :option_price - The option price.
+      #    :pv_dividend - The present value of dividends expected on the options underlier
+      #    :gamma - The option gamma value.
+      #    :vega - The option vega value.
+      #    :theta - The option theta value.
+      #    :under_price - The price of the underlying.
+      class TickOption
+        # Returns Symbol with a meaningful name for received tick type
+        def type
+          TICK_TYPES[@data[:tick_type]]
+        end
+
+        # Read @data[key] if it was computed (received value above limit)
+        # Leave @data[key] nil if received value below limit ("not yet computed" indicator)
+        def read_computed key, limit
+          value = @socket.read_decimal # limit-1 is the "not yet computed" indicator
+          @data[key] = value < limit ? nil : value
+        end
+
+        def load
+          super
+
+          @data[:id] = @socket.read_int # ticker_id
+          @data[:tick_type] = @socket.read_int
+          read_computed :implied_volatility, 0 #-1 is the "not yet computed" indicator
+          read_computed :delta, -1 #            -2 is the "not yet computed" indicator
+          if type == :model_option
+            read_computed :option_price, 0 #    -1 is the "not yet computed" indicator
+            read_computed :pv_dividend, 0 #     -1 is the "not yet computed" indicator
+          end
+          read_computed :gamma, -1 #            -2 is the "not yet computed" indicator
+          read_computed :vega, -1 #             -2 is the "not yet computed" indicator
+          read_computed :theta, -1 #            -2 is the "not yet computed" indicator
+          read_computed :under_price, 0 #       -1 is the "not yet computed" indicator
+        end
+
+        def to_human
+          "<TickSize #{TICK_TYPES[@data[:tick_type]]}: size #{@data[:size]}>"
+        end
+      end # TickOption
+      TickOptionComputation = TickOption
 
       # Called Error in Java code, but in fact this type of messages also
       # deliver system alerts and additional (non-error) info from TWS.

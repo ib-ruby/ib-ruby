@@ -3,6 +3,7 @@ require 'version'
 module IbRuby
 end  # module IbRuby
 
+require 'ib-ruby/constants'
 require 'ib-ruby/connection'
 require 'ib-ruby/models'
 require 'ib-ruby/symbols/forex'

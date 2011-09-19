@@ -29,7 +29,7 @@ module IB
     CLIENT_VERSION = 48 # # Was 27 in original Ruby code
     SERVER_VERSION = 53 # Minimal server version. Latest, was 38 in current Java code.
     TWS_IP_ADDRESS = "127.0.0.1"
-    TWS_PORT = "7496"
+    TWS_PORT = '4001' # Gateway, TWS: '7496'
 
     attr_reader :next_order_id
 
