@@ -73,9 +73,24 @@ module IB
         end
       end # class AbstractMessage
 
+      class AbstractTick < AbstractMessage
+        # Returns Symbol with a meaningful name for received tick type
+        def type
+          TICK_TYPES[@data[:tick_type]]
+        end
+
+        def to_human
+          "<#{self.class.to_s.split('::').last} #{type}:" +
+              @data.map do |key, value|
+                " #{key} #{value}" unless [:version, :id, :tick_type].include?(key)
+              end.compact.join(',') + " >"
+        end
+      end
+
       # Macro that defines short message classes using a one-liner
       def self.def_message message_id, *keys
-        Class.new(AbstractMessage) do
+        base = keys.first.is_a?(Class) ? keys.shift : AbstractMessage
+        Class.new(base) do
           @message_id = message_id
 
           define_method(:load) do
@@ -230,36 +245,22 @@ module IB
       # IB then emits at most 2 events on eWrapper:
       #          tickPrice( tickerId, tickType, price, canAutoExecute)
       #          tickSize( tickerId, sizeTickType, size)
-      TickPrice = def_message 1, [:id, :int], # ticker_id
+      TickPrice = def_message 1, AbstractTick,
+                              [:id, :int], # ticker_id
                               [:tick_type, :int],
                               [:price, :decimal],
                               [:size, :int],
                               [:can_auto_execute, :int]
-      class TickPrice
-        # Returns Symbol with a meaningful name for received tick type
-        def type
-          TICK_TYPES[@data[:tick_type]]
-        end
 
-        def to_human
-          "<Tick #{type}: price #{@data[:price]} size #{@data[:size]}>"
-        end
-      end
-
-
-      TickSize = def_message 2, [:id, :int], # ticker_id
+      TickSize = def_message 2, AbstractTick,
+                             [:id, :int], # ticker_id
                              [:tick_type, :int],
                              [:size, :int]
-      class TickSize
-        # Returns Symbol with a meaningful name for received tick type
-        def type
-          TICK_TYPES[@data[:tick_type]]
-        end
 
-        def to_human
-          "<TickSize #{type}: size #{@data[:size]}>"
-        end
-      end
+      TickString = def_message 46, AbstractTick,
+                               [:id, :int], # ticker_id
+                               [:tick_type, :int],
+                               [:value, :string]
 
       # This message is received when the market in an option or its underlier moves.
       # TWS’s option model volatilities, prices, and deltas, along with the present
@@ -276,11 +277,8 @@ module IB
       #    :vega - The option vega value.
       #    :theta - The option theta value.
       #    :under_price - The price of the underlying.
-      class TickOption
-        # Returns Symbol with a meaningful name for received tick type
-        def type
-          TICK_TYPES[@data[:tick_type]]
-        end
+      class TickOption < AbstractTick
+        @message_id = 21
 
         # Read @data[key] if it was computed (received value above limit)
         # Leave @data[key] nil if received value below limit ("not yet computed" indicator)
@@ -296,10 +294,8 @@ module IB
           @data[:tick_type] = @socket.read_int
           read_computed :implied_volatility, 0 #-1 is the "not yet computed" indicator
           read_computed :delta, -1 #            -2 is the "not yet computed" indicator
-          if type == :model_option
-            read_computed :option_price, 0 #    -1 is the "not yet computed" indicator
-            read_computed :pv_dividend, 0 #     -1 is the "not yet computed" indicator
-          end
+          read_computed :option_price, 0 #      -1 is the "not yet computed" indicator
+          read_computed :pv_dividend, 0 #       -1 is the "not yet computed" indicator
           read_computed :gamma, -1 #            -2 is the "not yet computed" indicator
           read_computed :vega, -1 #             -2 is the "not yet computed" indicator
           read_computed :theta, -1 #            -2 is the "not yet computed" indicator
@@ -319,7 +315,7 @@ module IB
       # deliver system alerts and additional (non-error) info from TWS.
       # It has additional accessors: #code and #message, derived from @data
       Alert = def_message 4, [:id, :int], [:code, :int], [:message, :string]
-      class Alert < AbstractMessage
+      class Alert
         def code
           @data && @data[:code]
         end

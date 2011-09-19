@@ -14,6 +14,7 @@ require 'ib-ruby'
 # corresponds to what symbol ourselves, because the ticks don't include any other
 # identifying information. The choice of ticker ids is, as far as I can tell, arbitrary.
 @market = {123 => IB::Symbols::Stocks[:wfc],
+           125 => IB::Symbols::Options[:wfc15],
            129 => IB::Symbols::Stocks[:wrong]}
 
 # Connect to IB TWS.
@@ -27,6 +28,7 @@ ib.subscribe(IB::Messages::Incoming::Alert) { |msg| puts msg.to_human }
 # message as its argument. In this case, we just print out the data.
 ib.subscribe(IB::Messages::Incoming::ContractData) do |msg|
   puts msg.contract.inspect
+
 end
 
 # Now we actually request historical data for the symbols we're interested in. TWS will
