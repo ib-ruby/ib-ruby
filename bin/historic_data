@@ -26,7 +26,7 @@ Timeout = 10 # How long to wait for messages from TWS before exiting, sec
 ib = IB::Connection.new
 
 # Subscribe to TWS alerts/errors
-ib.subscribe(IB::Messages::Incoming::Alert) { |msg| puts msg.to_human }
+ib.subscribe(:Alert) { |msg| puts msg.to_human }
 
 # Now, subscribe to HistoricalData incoming events.  The code passed in the block
 # will be executed when a message of that type is received, with the received
@@ -41,7 +41,6 @@ ib.subscribe(IB::Messages::Incoming::HistoricalData) do |msg|
     @last_msg_time = Time.now.to_i
 
     STDERR.puts "  " + datum.to_s unless Quiet
-    #STDOUT.puts "#{datum.date},#{datum.open},#{datum.high},#{datum.low},#{datum.close},#{datum.volume}"
   end
 end
 

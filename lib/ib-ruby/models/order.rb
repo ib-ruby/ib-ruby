@@ -228,6 +228,8 @@ module IB
         @delta_neutral_order_type = ''
         @what_if = false
         @not_held = false
+        @algo_strategy = ''
+        @algo_params = []
 
         # TODO: Initialize with nil instead of Max_Value, or change
         #       Order sending code in IB::Messages::Outgoing::PlaceOrder
@@ -255,6 +257,16 @@ module IB
         #@reference_price_type = Max_Value # -"-
 
         super opts
+      end
+
+      def serialize_algo(*args)
+        if algo_strategy.empty? || algo_strategy.nil?
+          ['']
+        else
+          [algo_strategy,
+           algo_params.size,
+           algo_params.to_a]
+        end
       end
 
     end # class Order

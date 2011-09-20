@@ -446,10 +446,10 @@ module IB
           under_comp_present = (@socket.read_int == 1)
 
           if under_comp_present
-            @contract.under_comp =
-                Models::Contract::UnderComp.new :con_id => @socket.read_int,
-                                                :delta => @socket.read_decimal,
-                                                :price => @socket.read_decimal
+            @contract.under_comp = true
+            @contract.under_con_id = @socket.read_int
+            @contract.under_delta = @socket.read_decimal
+            @contract.under_price = @socket.read_decimal
           end
 
           @order.algo_strategy = @socket.read_string
@@ -597,7 +597,6 @@ module IB
       #    :results - an Array of Historical Data Bars
       #    :start_date
       #    :end_date
-      #    :completed_indicator - string in stupid legacy format
       class HistoricalData < AbstractMessage
         @message_id = 17
 
@@ -607,9 +606,6 @@ module IB
                    [:start_date, :string],
                    [:end_date, :string],
                    [:count, :int]
-
-          @data[:completed_indicator] =
-              "finished-#{@data[:start_date]}-#{@data[:end_date]}"
 
           @data[:results] = Array.new(@data[:count]) do |index|
             Models::Bar.new :date => @socket.read_string,
@@ -625,7 +621,8 @@ module IB
         end
 
         def to_human
-          "<HistoricalData: req id #{@data[:id]}, #{@data[:item_count]} items, from #{@data[:start_date_str]} to #{@data[:end_date_str]}>"
+          "<HistoricalData: req id #{@data[:id]}, #{@data[:item_count]
+          } items, from #{@data[:start_date_str]} to #{@data[:end_date_str]}>"
         end
       end # HistoricalData
 

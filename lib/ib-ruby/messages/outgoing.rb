@@ -368,10 +368,19 @@ module IB
 
       # data = { :id => ticker_id (int),
       #          :contract => Contract,
-      #          :exercise_action => int,
-      #          :exercise_quantity => int,
+      #          :exercise_action => int, 1 = exercise, 2 = lapse
+      #          :exercise_quantity => int, The number of contracts to be exercised
       #          :account => string,
-      #          :override => int } ## override? override what?
+      #          :override => int: Specifies whether your setting will override the
+      #                       system's natural action. For example, if your action
+      #                       is "exercise" and the option is not in-the-money, by
+      #                       natural action the option would not exercise. If you
+      #                       have override set to "yes" the natural action would be
+      #                       overridden and the out-of-the money option would be
+      #                       exercised. Values are:
+      #                              • 0 = do not override
+      #                              • 1 = override
+      #       }
       class ExerciseOptions < AbstractMessage
         @message_id = 21
 
@@ -385,7 +394,9 @@ module IB
         end
       end # ExerciseOptions
 
-      # Data format is { :id => order_id (int), :contract => Contract, :order => Order }
+      # Data format is { :id => order_id (int),
+      #                  :contract => Contract,
+      #                  :order => Order }
       class PlaceOrder < AbstractMessage
         @message_id = 3
         @version = 31
@@ -457,29 +468,50 @@ module IB
            @data[:order].clearing_intent,
            @data[:order].not_held,
            @data[:contract].serialize_under_comp,
-           @data[:contract].serialize_algo,
+           @data[:order].serialize_algo,
            @data[:order].what_if]
         end
       end # PlaceOrder
 
-      # data = { :filter => ExecutionFilter ]
+      # When this message is sent, TWS responds with ExecutionData messages, each
+      # containing the execution report that meets the specified criteria.
+      # @data={:id =>         int: :request_id,
+      #        :client_id => int: Filter the results based on the clientId.
+      #        :acct_code => Filter the results based on based on account code.
+      #                      Note: this is only relevant for Financial Advisor accts.
+      #        :sec_type =>  Filter the results based on the order security type.
+      #        :time =>      Filter the results based on execution reports received
+      #                      after the specified time - format "yyyymmdd-hh:mm:ss"
+      #        :symbol   =>  Filter the results based on the order symbol.
+      #        :exchange =>  Filter the results based on the order exchange
+      #        :side =>  Filter the results based on the order action: BUY/SELL/SSHORT
       class RequestExecutions < AbstractMessage
         @message_id = 7
         @version = 3
 
         def encode
+
           [super,
-           @data[:filter].client_id,
-           @data[:filter].acct_code,
-           @data[:filter].time, # Valid format for time is "yyyymmdd-hh:mm:ss"
-           @data[:filter].symbol,
-           @data[:filter].sec_type,
-           @data[:filter].exchange,
-           @data[:filter].side]
+           @data[:client_id],
+           @data[:acct_code],
+           @data[:time], # Valid format for time is "yyyymmdd-hh:mm:ss"
+           @data[:symbol],
+           @data[:sec_type],
+           @data[:exchange],
+           @data[:side]]
         end # encode
       end # RequestExecutions
 
-      # data = { :request_id => int, :contract => Contract, :report_type => String }
+      # Send this message to receive Reuters global fundamental data. There must be
+      # a subscription to Reuters Fundamental set up in Account Management before
+      # you can receive this data.
+      # data = { :id => int: :request_id,
+      #          :contract => Contract,
+      #          :report_type => String: one of the following:
+      #                             Estimates
+      #                             Financial Statements
+      #                             Summary
+      #        }
       class RequestFundamentalData < AbstractMessage
         @message_id = 52
 

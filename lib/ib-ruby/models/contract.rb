@@ -6,15 +6,6 @@ module IB
   module Models
     class Contract < Model
 
-      # Valid security types (sec_type attribute)
-      SECURITY_TYPES = {:stock => "STK",
-                        :option => "OPT",
-                        :future => "FUT",
-                        :index => "IND",
-                        :futures_option => "FOP",
-                        :forex => "CASH",
-                        :bag => "BAG"}
-
       BAG_SEC_TYPE = "BAG"
 
       # Fields are Strings unless noted otherwise
@@ -235,25 +226,6 @@ module IB
         else
           [false]
         end
-      end
-
-      def serialize_algo(*args)
-        raise "Unimplemented"
-        #if (m_serverVersion >= MIN_SERVER_VER_ALGO_ORDERS) {
-        #  send( order.m_algoStrategy);
-        #  if( !IsEmpty(order.m_algoStrategy)) {
-        #    java.util.Vector algoParams = order.m_algoParams;
-        #    int algoParamsCount = algoParams == null ? 0 : algoParams.size();
-        #    send( algoParamsCount);
-        #    if( algoParamsCount > 0) {
-        #      for( int i = 0; i < algoParamsCount; ++i) {
-        #        TagValue tagValue = (TagValue)algoParams.get(i);
-        #        send( tagValue.m_tag);
-        #        send( tagValue.m_value);
-        #      }
-        #    }
-        #  }
-        #}
       end
 
       # Some messages send open_close too, some don't. WTF.

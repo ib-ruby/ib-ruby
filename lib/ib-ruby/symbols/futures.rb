@@ -18,8 +18,6 @@ module IB
     # N.B. This will not work as expected near/after expiration during that month, as
     # volume rolls over to the next quarter even though the current month is still valid!
     #
-
-
     def self.next_quarter_month(time)
       sprintf("%02d", [3, 6, 9, 12].find { |month| month >= time.month })
     end
@@ -41,14 +39,14 @@ module IB
                                     :expiry => self.next_expiry(Time.now),
                                     :exchange => "ECBOT",
                                     :currency => "USD",
-                                    :sec_type => Models::Contract::SECURITY_TYPES[:future],
+                                    :sec_type => SECURITY_TYPES[:future],
                                     :description => "Mini Dow Jones Industrial"),
 
         :es => Models::Contract.new(:symbol => "ES",
                                     :expiry => self.next_expiry(Time.now),
                                     :exchange => "GLOBEX",
                                     :currency => "USD",
-                                    :sec_type => Models::Contract::SECURITY_TYPES[:future],
+                                    :sec_type => SECURITY_TYPES[:future],
                                     :multiplier => 50,
                                     :description => "E-Mini S&P 500"),
 
@@ -56,7 +54,7 @@ module IB
                                      :expiry => self.next_expiry(Time.now),
                                      :exchange => "GLOBEX",
                                      :currency => "USD",
-                                     :sec_type => Models::Contract::SECURITY_TYPES[:future],
+                                     :sec_type => SECURITY_TYPES[:future],
                                      :multiplier => 62500,
                                      :description => "British Pounds"),
 
@@ -64,7 +62,7 @@ module IB
                                      :expiry => self.next_expiry(Time.now),
                                      :exchange => "GLOBEX",
                                      :currency => "USD",
-                                     :sec_type => Models::Contract::SECURITY_TYPES[:future],
+                                     :sec_type => SECURITY_TYPES[:future],
                                      :multiplier => 12500,
                                      :description => "Euro FX"),
 
@@ -72,7 +70,7 @@ module IB
                                      :expiry => self.next_expiry(Time.now),
                                      :exchange => "GLOBEX",
                                      :currency => "USD",
-                                     :sec_type => Models::Contract::SECURITY_TYPES[:future],
+                                     :sec_type => SECURITY_TYPES[:future],
                                      :multiplier => 12500000,
                                      :description => "Japanese Yen"),
 
@@ -80,7 +78,7 @@ module IB
                                      :expiry => self.next_expiry(Time.now),
                                      :exchange => "HKFE",
                                      :currency => "HKD",
-                                     :sec_type => Models::Contract::SECURITY_TYPES[:future],
+                                     :sec_type => SECURITY_TYPES[:future],
                                      :multiplier => 50,
                                      :description => "Hang Seng Index")
     }

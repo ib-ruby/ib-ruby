@@ -11,12 +11,12 @@ module IB
         {:wfc => Models::Contract.new(:symbol => "WFC",
                                       :exchange => "NYSE",
                                       :currency => "USD",
-                                      :sec_type => Models::Contract::SECURITY_TYPES[:stock],
+                                      :sec_type => SECURITY_TYPES[:stock],
                                       :description => "Wells Fargo"),
         :wrong => Models::Contract.new(:symbol => "QEEUUE",
                                       :exchange => "NYSE",
                                       :currency => "USD",
-                                      :sec_type => Models::Contract::SECURITY_TYPES[:stock],
+                                      :sec_type => SECURITY_TYPES[:stock],
                                       :description => "Inexistent stock"),
         }
   end

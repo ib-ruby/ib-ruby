@@ -40,10 +40,6 @@ def show_sales_and_size(msg)
                "#{msg.data[:size]} at #{msg.data[:price]}" : msg.to_human)
 end
 
-def show_size(msg)
-  return if msg.type != :last_size || msg.data[:size] < MIN_SIZE
-end
-
 # Now, subscribe to TickerPrice and TickerSize events.  The code passed in the block
 # will be executed when a message of that type is  received, with the received message
 # as its argument. In this case, we just print out the tick.

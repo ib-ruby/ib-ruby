@@ -7,14 +7,23 @@ module IB
   #                 2 => "PROFILES",
   #                 3 =>"ALIASES"}
 
-  # Enumeration of data types
-  DATA_TYPES = [:trades, :midpoint, :bid, :ask]
-
   # Enumeration of bar size types for convenience.
   # Bar sizes less than 30 seconds do not work for some securities.
   BAR_SIZES = ['1 sec', '5 secs', '15 secs', '30 secs',
                '1 min', '2 mins', '3 mins', '5 mins',
                '15 mins', '30 mins', '1 hour', '1 day']
+
+  # Enumeration of data types
+  DATA_TYPES = [:trades, :midpoint, :bid, :ask]
+
+  # Valid security types (sec_type attribute)
+  SECURITY_TYPES = {:stock => "STK",
+                    :option => "OPT",
+                    :future => "FUT",
+                    :index => "IND",
+                    :futures_option => "FOP",
+                    :forex => "CASH",
+                    :bag => "BAG"}
 
   # Tick types as received in TickPrice and TickSize messages (enumeration)
   TICK_TYPES = {
