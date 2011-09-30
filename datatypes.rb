@@ -169,7 +169,7 @@ module IB
       # note that the :description field is entirely local to ib-ruby, and not part of TWS.
       # You can use it to store whatever arbitrary data you want.
 
-      attr_accessor(:symbol, :strike, :multiplier, :exchange, :currency,
+      attr_accessor(:con_id, :symbol, :strike, :multiplier, :exchange, :currency,
                     :local_symbol, :combo_legs, :description)
 
       # Bond values
@@ -194,6 +194,7 @@ module IB
       def right=(x)
         x.upcase! if x.is_a?(String)
         x = nil if !x.nil? && x.empty?
+        x = nil if x == "0"
         raise(ArgumentError.new("Invalid right \"#{x}\" (must be one of PUT, CALL, P, C)"))  unless x.nil? || [ "PUT", "CALL", "P", "C"].include?(x)
         @right = x
       end

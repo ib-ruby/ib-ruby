@@ -53,11 +53,11 @@ msg = IB::OutgoingMessages::SetServerLoglevel.new({
                                                   })
 ib.dispatch(msg)
 
-# msg = IB::OutgoingMessages::RequestAccountData.new({
-#                                                      :subscribe => true,
-#                                                      :account_code => ''
-#                                                    })
-# ib.dispatch(msg)
+msg = IB::OutgoingMessages::RequestAccountData.new({
+                                                     :subscribe => true,
+                                                     :account_code => ''
+                                                   })
+ib.dispatch(msg)
 
          
 puts "\n\n\t******** Press <Enter> to quit.. *********\n\n"
