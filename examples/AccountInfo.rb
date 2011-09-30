@@ -28,10 +28,12 @@ require 'symbols/futures'
 ib = IB::IB.new
 
 # Uncomment this for verbose debug messages:
-# IB::IBLogger.level = Logger::Severity::DEBUG
+#IB::IBLogger.level = Logger::Severity::DEBUG
 
 ## Subscribe to the messages that TWS sends in response to a request
 ## for account data.
+
+puts "IB Server Version: #{ib.server_version}"
 
 ib.subscribe(IB::IncomingMessages::AccountValue, lambda {|msg|
                puts msg.to_human
@@ -46,12 +48,16 @@ ib.subscribe(IB::IncomingMessages::AccountUpdateTime, lambda {|msg|
              })
 
 
-
-msg = IB::OutgoingMessages::RequestAccountData.new({
-                                                     :subscribe => true,
-                                                     :account_code => ''
-                                                   })
+msg = IB::OutgoingMessages::SetServerLoglevel.new({
+                                                    :loglevel => 5
+                                                  })
 ib.dispatch(msg)
+
+# msg = IB::OutgoingMessages::RequestAccountData.new({
+#                                                      :subscribe => true,
+#                                                      :account_code => ''
+#                                                    })
+# ib.dispatch(msg)
 
          
 puts "\n\n\t******** Press <Enter> to quit.. *********\n\n"

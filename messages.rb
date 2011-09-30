@@ -22,7 +22,7 @@
 # These fields are initialized to this MAX_VALUE.
 # This has been implemented with nils in Ruby to represent the case where an EOL should be sent.
 
-require 'iblogger'
+require './iblogger'
 
 module IB
 
@@ -427,6 +427,12 @@ module IB
     end # CancelNewsBulletins
 
     # data = { :loglevel => int }
+    # API clients can specify how detailed they want these log entries to be by setting the log level. Log levels are:
+    # ·          1 = SYSTEM (least detailed)
+    # ·          2 = ERROR  (default, if no level is specified)
+    # ·          3 = WARNING
+    # ·          4 = INFORMATION
+    # ·          5 = DETAIL (most detailed)    
     class SetServerLoglevel < AbstractMessage
       def self.message_id
         14
