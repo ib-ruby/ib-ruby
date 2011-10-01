@@ -71,6 +71,7 @@ module IB
 
 
   class IB
+#    Tws_client_version = 27
     Tws_client_version = 27
 
     attr_reader :next_order_id

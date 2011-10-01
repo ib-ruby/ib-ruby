@@ -33,7 +33,7 @@ require 'time' # for extended time parsing
 
 # Gems - requires duration and getopt.
 require 'rubygems'
-require 'duration'
+#require 'duration'
 require 'getopt/long'
 
 
@@ -172,8 +172,8 @@ end
 ### Parameters
 
 # DURATION is how much historic data we want, in seconds, before END_DATE_TIME.
-# (The 'duration' gem gives us methods like #hour on integers.)
-DURATION = (opt["duration"] && opt["duration"].to_i) || 1.day
+# Date::Delta.new(1).in_secs is 1 day in seconds...86400
+DURATION = (opt["duration"] && opt["duration"].to_i) || Date::Delta.new(1).in_secs
 
 if DURATION > 86400
   STDERR.puts("\nTWS does not accept a --duration longer than 86400 seconds (1 day.) Please try again with a smaller duration.\n\n")

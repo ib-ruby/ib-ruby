@@ -1163,16 +1163,16 @@ end # module OutgoingMessages
 
       def load
         @contract = Datatypes::Contract.new
-
         autoload([:version, :int])
+#       @contract.con_id = @socket.read_int if @data[:version] >= 6
         @contract.symbol = @socket.read_string
         @contract.sec_type = @socket.read_string
         @contract.expiry = @socket.read_string
         @contract.strike = @socket.read_decimal
         @contract.right = @socket.read_string
+#        version_load(7, [:multiplier, :string], [:primary_exchange, :string])       
         @contract.currency = @socket.read_string
         @contract.local_symbol = @socket.read_string if @data[:version] >= 2
-
         autoload([:position, :int], [:market_price, :decimal], [:market_value, :decimal])
         version_load(3, [:average_cost, :decimal], [:unrealized_pnl, :decimal], [:realized_pnl, :decimal])
         version_load(4, [:account_name, :string])
