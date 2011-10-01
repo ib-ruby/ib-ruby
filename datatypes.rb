@@ -101,7 +101,7 @@ module IB
       OCA_Reduce_non_block = 3
 
       # No idea what the fa_* attributes are for, nor many of the others.
-      attr_accessor(:fa_group, :fa_profile, :fa_method, :fa_profile, :fa_method, :fa_percentage, :primary_exchange,
+      attr_accessor(:fa_group, :fa_profile, :fa_method, :fa_percentage, :primary_exchange,
                     :short_sale_slot,     # 1 or 2, says Order.java. (No idea what the difference is.)
                     :designated_location, # "when slot=2 only"
                     :oca_type, # 1 = CANCEL_WITH_BLOCK, 2 = REDUCE_WITH_BLOCK, 3 = REDUCE_NON_BLOCK
@@ -392,7 +392,7 @@ module IB
     # Just like a Hash, but throws an exception if you try to access a key that doesn't exist.
     class StringentHash < Hash
       def initialize(hash)
-        super() {|hash,key| raise Exception.new("key #{key.inspect} not found!") }
+        super() {|inner_hash,key| raise Exception.new("key #{key.inspect} not found!") }
         self.merge!(hash) unless hash.nil?
       end
     end

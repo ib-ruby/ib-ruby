@@ -19,7 +19,6 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
 
   # specify any dependencies here; for example:
-  s.add_development_dependency "duration"
   s.add_development_dependency "getopt"
   
   # s.add_runtime_dependency "rest-client"

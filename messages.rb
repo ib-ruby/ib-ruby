@@ -786,7 +786,7 @@ module IB
       end
     end # CancelHistoricalData
 
-end # module OutgoingMessages
+  end # module OutgoingMessages
 
   ################################################################
   #### end outgoing messages
