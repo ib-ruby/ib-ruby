@@ -8,8 +8,12 @@ Gem::Specification.new do |s|
   s.authors     = ["Ric Pruss"]
   s.email       = ["ricpruss@gmail.com"]
   s.homepage    = ""
-  s.summary     = %q{TODO: Write a gem summary}
-  s.description = %q{TODO: Write a gem description}
+  s.summary     = %q{A Ruby interface to the Interactive Brokers' Trader
+  Workstation API (http://www.interactivebrokers.com/)}
+
+  s.description = %q{IB-Ruby: Ruby implementation of the Interactive Brokers' TWS API.
+  Copyright (C) 2006-2009 Paul Legato By Paul Legato (pjlegato at gmail dot com) sightly updated
+  by Ric Pruss in the spirt of the GPL license Paul post the project under .}
 
   s.rubyforge_project = "ib-ruby"
 

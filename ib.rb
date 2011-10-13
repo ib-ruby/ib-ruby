@@ -23,8 +23,8 @@ require 'logger'
 require 'bigdecimal'
 require 'bigdecimal/util'
 
-require './messages'
-require './iblogger'
+require_relative 'messages'
+require_relative 'iblogger'
 
 
 # Add method to_ib to render datetime in IB format (zero padded "yyyymmdd HH:mm:ss")

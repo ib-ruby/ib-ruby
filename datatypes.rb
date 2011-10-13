@@ -200,6 +200,7 @@ module IB
       end
 
       def expiry=(x)
+        x = x.to_s
         x = nil if !x.nil? && x.empty?
         raise(ArgumentError.new("Invalid expiry \"#{x}\" (must be in format YYYYMM or YYYYMMDD)"))  unless x.nil? || x.to_s =~ /^\d\d\d\d\d\d(\d\d)?$/
         @expiry = x.to_s
