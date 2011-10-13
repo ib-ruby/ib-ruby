@@ -22,7 +22,7 @@
 # These fields are initialized to this MAX_VALUE.
 # This has been implemented with nils in Ruby to represent the case where an EOL should be sent.
 
-require 'iblogger'
+require './iblogger'
 
 module IB
 
@@ -427,6 +427,12 @@ module IB
     end # CancelNewsBulletins
 
     # data = { :loglevel => int }
+    # API clients can specify how detailed they want these log entries to be by setting the log level. Log levels are:
+    # ·          1 = SYSTEM (least detailed)
+    # ·          2 = ERROR  (default, if no level is specified)
+    # ·          3 = WARNING
+    # ·          4 = INFORMATION
+    # ·          5 = DETAIL (most detailed)    
     class SetServerLoglevel < AbstractMessage
       def self.message_id
         14
@@ -780,7 +786,7 @@ module IB
       end
     end # CancelHistoricalData
 
-end # module OutgoingMessages
+  end # module OutgoingMessages
 
   ################################################################
   #### end outgoing messages
@@ -1157,16 +1163,16 @@ end # module OutgoingMessages
 
       def load
         @contract = Datatypes::Contract.new
-
         autoload([:version, :int])
+#       @contract.con_id = @socket.read_int if @data[:version] >= 6
         @contract.symbol = @socket.read_string
         @contract.sec_type = @socket.read_string
         @contract.expiry = @socket.read_string
         @contract.strike = @socket.read_decimal
         @contract.right = @socket.read_string
+#        version_load(7, [:multiplier, :string], [:primary_exchange, :string])       
         @contract.currency = @socket.read_string
         @contract.local_symbol = @socket.read_string if @data[:version] >= 2
-
         autoload([:position, :int], [:market_price, :decimal], [:market_value, :decimal])
         version_load(3, [:average_cost, :decimal], [:unrealized_pnl, :decimal], [:realized_pnl, :decimal])
         version_load(4, [:account_name, :string])

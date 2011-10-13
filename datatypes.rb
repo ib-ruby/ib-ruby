@@ -101,7 +101,7 @@ module IB
       OCA_Reduce_non_block = 3
 
       # No idea what the fa_* attributes are for, nor many of the others.
-      attr_accessor(:fa_group, :fa_profile, :fa_method, :fa_profile, :fa_method, :fa_percentage, :primary_exchange,
+      attr_accessor(:fa_group, :fa_profile, :fa_method, :fa_percentage, :primary_exchange,
                     :short_sale_slot,     # 1 or 2, says Order.java. (No idea what the difference is.)
                     :designated_location, # "when slot=2 only"
                     :oca_type, # 1 = CANCEL_WITH_BLOCK, 2 = REDUCE_WITH_BLOCK, 3 = REDUCE_NON_BLOCK
@@ -169,7 +169,7 @@ module IB
       # note that the :description field is entirely local to ib-ruby, and not part of TWS.
       # You can use it to store whatever arbitrary data you want.
 
-      attr_accessor(:symbol, :strike, :multiplier, :exchange, :currency,
+      attr_accessor(:con_id, :symbol, :strike, :multiplier, :exchange, :currency,
                     :local_symbol, :combo_legs, :description)
 
       # Bond values
@@ -194,11 +194,13 @@ module IB
       def right=(x)
         x.upcase! if x.is_a?(String)
         x = nil if !x.nil? && x.empty?
+        x = nil if x == "0"
         raise(ArgumentError.new("Invalid right \"#{x}\" (must be one of PUT, CALL, P, C)"))  unless x.nil? || [ "PUT", "CALL", "P", "C"].include?(x)
         @right = x
       end
 
       def expiry=(x)
+        x = x.to_s
         x = nil if !x.nil? && x.empty?
         raise(ArgumentError.new("Invalid expiry \"#{x}\" (must be in format YYYYMM or YYYYMMDD)"))  unless x.nil? || x.to_s =~ /^\d\d\d\d\d\d(\d\d)?$/
         @expiry = x.to_s
@@ -391,7 +393,7 @@ module IB
     # Just like a Hash, but throws an exception if you try to access a key that doesn't exist.
     class StringentHash < Hash
       def initialize(hash)
-        super() {|hash,key| raise Exception.new("key #{key.inspect} not found!") }
+        super() {|inner_hash,key| raise Exception.new("key #{key.inspect} not found!") }
         self.merge!(hash) unless hash.nil?
       end
     end

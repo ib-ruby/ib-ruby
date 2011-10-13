@@ -17,14 +17,14 @@
 # 02110-1301 USA
 #
 
-require 'sha1'
+require 'digest/sha1'
 require 'socket'
 require 'logger'
 require 'bigdecimal'
 require 'bigdecimal/util'
 
-require 'messages'
-require 'iblogger'
+require_relative 'messages'
+require_relative 'iblogger'
 
 
 # Add method to_ib to render datetime in IB format (zero padded "yyyymmdd HH:mm:ss")
@@ -71,6 +71,7 @@ module IB
 
 
   class IB
+#    Tws_client_version = 27
     Tws_client_version = 27
 
     attr_reader :next_order_id
@@ -143,7 +144,7 @@ module IB
       # Server version >= 3 wants an arbitrary client ID at this point. This can be used
       # to identify subsequent communications.
       if @server[:version] >= 3
-        @server[:client_id] = SHA1.digest(Time.now.to_s + $$.to_s).unpack("C*").join.to_i % 999999999
+        @server[:client_id] = Digest::SHA1.digest(Time.now.to_s + $$.to_s).unpack("C*").join.to_i % 999999999
         @server[:socket].send(@server[:client_id])
         IBLogger.debug("\tSent client id # #{@server[:client_id]}.")
       end
