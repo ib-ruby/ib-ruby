@@ -31,14 +31,11 @@ require 'symbols/futures'
 # Stdlib
 require 'time' # for extended time parsing
 
-# Gems - requires duration and getopt.
-require 'rubygems'
-require 'duration'
+# An interesting opt to Hash parser.
 require 'getopt/long'
-
-
-require "getopt/long"
 include Getopt
+
+
 opt = Getopt::Long.getopts(
    ["--help", BOOLEAN],
    ["--end", REQUIRED],
@@ -114,8 +111,11 @@ Options:
 
 
 --duration is how much historic data we want, in seconds, before --end's time.
-  The default is 86400 (seconds, which is 1 day.)
-  The TWS-imposed limit is 86400 (1 day per request.) Requests for more than 86400 seconds worth of historic data will fail.
+  The default is "1 D".
+  The TWS-imposed limits is roughly  based on bar size (2 days per request 1 min.)
+  Requests for more than limits worth of historic data will fail.
+  When specifying a unit, historical data request duration format is integer{SPACE}unit (S|D|W|M|Y).
+  Strings quotes are required for the duration switch.
 
 --what determines what the data will be comprised of. This can be "trades", "midpoint", "bid", or "asked".
   The default is "trades".
@@ -172,13 +172,13 @@ end
 ### Parameters
 
 # DURATION is how much historic data we want, in seconds, before END_DATE_TIME.
-# (The 'duration' gem gives us methods like #hour on integers.)
-DURATION = (opt["duration"] && opt["duration"].to_i) || 1.day
+# Date::Delta.new(1).in_secs is 1 day in seconds...86400  
+DURATION = opt["duration"] || "1 D"
 
-if DURATION > 86400
-  STDERR.puts("\nTWS does not accept a --duration longer than 86400 seconds (1 day.) Please try again with a smaller duration.\n\n")
-  exit(1)
-end
+# if DURATION > 86400
+#   STDERR.puts("\nTWS does not accept a --duration longer than 86400 seconds (1 day.) Please try again with a smaller duration.\n\n")
+#   exit(1)
+# end
 
 
 # This is the last time we want data for.

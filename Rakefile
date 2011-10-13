@@ -1,30 +1,8 @@
-#
-# Copyright (C) 2006 Blue Voodoo Magic LLC.
-#
-# This library is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation; either
-# version 2.1 of the License, or (at your option) any later version.
-#
-# This library is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public
-# License along with this library; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-#
+require "bundler/gem_tasks"
+require "rake/testtask"
 
-require 'rake'
-require 'rake/rdoctask'
-
-desc 'Generate documentation.'
-Rake::RDocTask.new(:rdoc) do |rdoc|
-  rdoc.rdoc_dir = 'rdoc'
-  rdoc.title    = 'ib-ruby'
-  rdoc.options << '--line-numbers' << '--inline-source'
-  rdoc.rdoc_files.include('README')
-  rdoc.rdoc_files.include('LICENSE')
-  rdoc.rdoc_files.include('*.rb')
+Rake::TestTask.new do |t|
+  t.libs << "test"
+  t.test_files = FileList['tests/*tests.rb']
+  t.verbose = true
 end
