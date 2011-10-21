@@ -1,22 +1,18 @@
 == 0.1 / 2006-11-12
+
 * Initial version - Paul Legato
 
 == 0.2 / 2007-02-14
+
 * Alpha Release - Paul Legato
 
 == 0.3 / 2009-06-18
+
 * Gem packaging
 
 == 0.4 / 2011-09-04
+
 * Repackaging with Bundler and Gemfile
-
-== 0.4.1 / 2011-09-05
-
-* Bones removed
-
-== 0.4.2 / 2011-09-05
-
-* Removing old tests
 
 == 0.4.3 / 2011-09-05
 
@@ -26,10 +22,6 @@
 
 * IB references and Java examples added
 
-== 0.4.5 / 2011-09-06
-
-* Sample scripts updated
-
 == 0.4.6 / 2011-09-07
 
 * CSV Downloader Java examples added
@@ -38,49 +30,9 @@
 
 * Datatypes turned into Models
 
-== 0.4.8 / 2011-09-12
-
-* IB::Messages::Outgoing code compacted using macros
-
-== 0.4.9 / 2011-09-15
-
-* IB::Messages::Incoming rewritten
-
-== 0.4.10 / 2011-09-16
-
-* Market data request now working
-
-== 0.4.11 / 2011-09-17
-
-* New scripts working
-
-== 0.4.12 / 2011-09-18
-
-* historic_data script now functional
-
-== 0.4.13 / 2011-09-18
-
-* time_and_sales script now working
-
 == 0.4.14 / 2011-09-18
 
 * DOM script added
-
-== 0.4.15 / 2011-09-18
-
-* Messages like RTBars etc implemented
-
-== 0.4.16 / 2011-09-19
-
-* Execution Model added
-
-== 0.4.17 / 2011-09-19
-
-* option_data script now working
-
-== 0.4.18 / 2011-09-19
-
-* IB::Connection#subscribe syntax changed
 
 == 0.4.19 / 2011-09-19
 
@@ -89,10 +41,6 @@
 == 0.4.20 / 2011-09-19
 
 * IB::Connection#subscribe now accepts Symbols with message names
-
-== 0.4.21 / 2011-09-19
-
-* README extended
 
 == 0.4.22 / 2011-09-20
 

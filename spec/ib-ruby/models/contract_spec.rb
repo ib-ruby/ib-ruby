@@ -4,7 +4,7 @@ describe IB::Models::Contract do
 
   let(:properties) do
     {:symbol => "TEST",
-     :sec_type => IB::Models::Contract::SECURITY_TYPES[:stock],
+     :sec_type => IB::SECURITY_TYPES[:stock],
      :expiry => '200609',
      :strike => 1234,
      :right => "put",
@@ -86,7 +86,7 @@ describe IB::Models::Contract do
       expect {
         x = IB::Models::Contract.new
         x.symbol = "TEST"
-        x.sec_type = IB::Models::Contract::SECURITY_TYPES[:stock]
+        x.sec_type = IB::SECURITY_TYPES[:stock]
         x.expiry = 200609
         x.strike = 1234
         x.right = "put"
@@ -121,7 +121,7 @@ describe IB::Models::Contract do
     end
 
     it 'accepts pre-determined security types' do
-      IB::Models::Contract::SECURITY_TYPES.values.each do |type|
+      IB::SECURITY_TYPES.values.each do |type|
         expect {
           x = IB::Models::Contract.new({:sec_type => type})
         }.to_not raise_error
@@ -195,12 +195,12 @@ describe IB::Models::Contract do
 
     it "serializes long" do
       subject.serialize(:long).should ==
-          ["TEST", IB::Models::Contract::SECURITY_TYPES[:stock], "200609", 1234, "PUT", 123, "SMART", nil, "USD", "baz"]
+          ["TEST", IB::SECURITY_TYPES[:stock], "200609", 1234, "PUT", 123, "SMART", nil, "USD", "baz"]
     end
 
     it "serializes short" do
       subject.serialize(:short).should ==
-          ["TEST", IB::Models::Contract::SECURITY_TYPES[:stock], "200609", 1234, "PUT", 123, "SMART", "USD", "baz"]
+          ["TEST", IB::SECURITY_TYPES[:stock], "200609", 1234, "PUT", 123, "SMART", "USD", "baz"]
     end
   end #serialization
 
