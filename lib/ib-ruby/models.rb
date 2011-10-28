@@ -1,7 +1,7 @@
 module IB
   module Models
   end
-  #Datatypes = Models # Legacy alias
+  Datatypes = Models # Legacy alias
 end
 
 require 'ib-ruby/models/order'

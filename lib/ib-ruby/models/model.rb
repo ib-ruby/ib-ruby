@@ -11,9 +11,8 @@ module IB
       def initialize(opts={})
         raise ArgumentError.new("Argument must be a Hash") unless opts.is_a?(Hash)
         @created_at = Time.now
-        opts.keys.each do |key|
-          self.send((key.to_s + "=").to_sym, opts[key])
-        end
+
+        opts.keys.each { |key| self.send("#{key}=", opts[key]) }
       end
     end # Model
   end # module Models

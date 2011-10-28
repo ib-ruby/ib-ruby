@@ -3,9 +3,9 @@ module IB
 
   EOL = "\0"
 
-  #FaMsgTypeName = {1 => "GROUPS",
-  #                 2 => "PROFILES",
-  #                 3 =>"ALIASES"}
+  FA_TYPES = {1 => "GROUPS", # FaMsgTypeName
+              2 => "PROFILES",
+              3 =>"ALIASES"}
 
   # Enumeration of bar size types for convenience.
   # Bar sizes less than 30 seconds do not work for some securities.
@@ -16,7 +16,7 @@ module IB
   # Enumeration of data types
   DATA_TYPES = [:trades, :midpoint, :bid, :ask]
 
-  # Valid security types (sec_type attribute)
+  # Valid security types (sec_type attribute of IB::Contract)
   SECURITY_TYPES = {:stock => "STK",
                     :option => "OPT",
                     :future => "FUT",

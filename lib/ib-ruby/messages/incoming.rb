@@ -19,7 +19,7 @@ module IB
       # @message_id - int: message id.
       # @version - int: current version of message format.
       #
-      # Instance attributes (at minimum):
+      # Instance attributes (at least):
       # @data - Hash of actual data read from a stream.
       #
       # Override the load(socket) method in your subclass to do actual reading into @data.
@@ -35,12 +35,11 @@ module IB
           @message_id
         end
 
-        def initialize(socket, server_version)
+        def initialize socket
           raise Exception.new("Don't use AbstractMessage directly; use the subclass for your specific message type") if self.class.name == "AbstractMessage"
           @created_at = Time.now
           @data = Hash.new
           @socket = socket
-          @server_version = server_version
 
           self.load()
 
@@ -64,12 +63,8 @@ module IB
         # type identifiers must have a corresponding read_type method on socket (read_int, etc.).
         # [:version, :int ] is loaded first, by default
         #
-        #
         def load_map(*map)
-          ##logger.debug("load_maping map: " + map.inspect)
-          map.each { |spec|
-            @data[spec[0]] = @socket.__send__(("read_" + spec[1].to_s).to_sym)
-          }
+          map.each { |(name, type)| @data[name] = @socket.__send__("read_#{type}") }
         end
       end # class AbstractMessage
 

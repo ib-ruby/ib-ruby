@@ -21,6 +21,6 @@ module IB
         "<Bar #{@date}: wap: #{@wap}, OHLC: #{@open}, #{@high}, #{@low}, #{@close}, " +
             (@trades ? "trades: #{@trades}," : "") + " vol: #{@volume}, gaps? #{@has_gaps}>"
       end
-    end # Bar
+    end # class Bar
   end # module Models
 end # module IB

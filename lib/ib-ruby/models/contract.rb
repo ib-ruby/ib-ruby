@@ -98,7 +98,6 @@ module IB
 
       # Used for Delta-Neutral Combo contracts only!
       # UnderComp fields are bundled into Contract proper, as it should be.
-      # Already defined
       attr_accessor :under_comp, # if not nil, attributes below are sent to server
                     #:under_con_id is is already defined in ContractDetails section
                     :under_delta, # double: The underlying stock or future delta.
@@ -142,6 +141,7 @@ module IB
       def right=(x)
         x.upcase! if x.is_a?(String)
         x = nil if !x.nil? && x.empty?
+        x = nil if x == "0"
         raise(ArgumentError.new("Invalid right \"#{x}\" (must be one of PUT, CALL, P, C)")) unless x.nil? || ["PUT", "CALL", "P", "C", "0"].include?(x)
         @right = x
       end

@@ -31,14 +31,15 @@ module IB
                        :open => true
     }
 
-    attr_reader :next_order_id
+    attr_reader :next_order_id, # Next valid order id
+                :server #         Info about server and server connection state
 
     def initialize(opts = {})
       @options = DEFAULT_OPTIONS.merge(opts)
 
       @connected = false
       @next_order_id = nil
-      @server = Hash.new # information about server and server connection state
+      @server = Hash.new
 
       # Message listeners. Key is the message class to listen for.
       # Value is an Array of Procs. The proc will be called with the populated message
@@ -49,99 +50,100 @@ module IB
       self.open(@options) if @options[:open]
     end
 
-    def server_version
-      @server[:version]
-    end
-
     def open(opts = {})
       raise Exception.new("Already connected!") if @connected
 
       opts = @options.merge(opts)
 
-      # Subscribe to the NextValidID message from TWS that is always
-      # sent at connect, and save the id.
-      self.subscribe(Messages::Incoming::NextValidID) do |msg|
+      # TWS always sends NextValidID message at connect - save this id
+      self.subscribe(:NextValidID) do |msg|
         @next_order_id = msg.data[:id]
-        puts "Got next valid order id #{@next_order_id}."
+        puts "Got next valid order id: #{@next_order_id}."
       end
 
       @server[:socket] = IBSocket.open(opts[:host], opts[:port])
 
-      # Secret handshake.
+      # Secret handshake
       @server[:socket].send(CLIENT_VERSION)
       @server[:version] = @server[:socket].read_int
-      @server[:local_connect_time] = Time.now()
       raise(Exception.new("TWS version >= #{SERVER_VERSION} required.")) if @server[:version] < SERVER_VERSION
 
-      puts "\tGot server version: #{@server[:version]}."
-      #logger.debug("\tGot server version: #{@server[:version]}.")
-
-      # Server version >= 20 sends the server time back. Our min server version is 38
+      @server[:local_connect_time] = Time.now()
       @server[:remote_connect_time] = @server[:socket].read_string
-      #logger.debug("\tServer connect time: #{@server[:remote_connect_time]}.")
 
-      # Server wants an arbitrary client ID at this point. This can be used
-      # to identify subsequent communications.
-      @server[:client_id] = SHA1.digest(Time.now.to_s + $$.to_s).unpack("C*").join.to_i % 999999999
+      # Sending arbitrary client ID to identify subsequent communications.
+      @server[:client_id] = random_id
       @server[:socket].send(@server[:client_id])
-      #logger.debug("\tSent client id # #{@server[:client_id]}.")
 
-      #logger.debug("Starting reader thread..")
+      # Starting reader thread
       Thread.abort_on_exception = true
       @server[:reader_thread] = Thread.new { self.reader }
 
       @connected = true
+      puts "Connected to server, version: #{@server[:version]}, connection time: " +
+               "#{@server[:local_connect_time]} local, " +
+               "#{@server[:remote_connect_time]} remote."
     end
 
     def close
       @server[:reader_thread].kill # Thread uses blocking I/O, so join is useless.
-      @server[:socket].close()
+      @server[:socket].close
       @server = Hash.new
-      @@server_version = nil
+      @server[:version] = nil
       @connected = false
-      #logger.debug("Disconnected.")
     end
 
     def to_s
-      "IB Connector: #{ @connected ? "connected." : "disconnected."}"
+      "IB Connection: #{ @connected ? "connected." : "disconnected."}"
     end
 
-    # Subscribe to incoming message events of type message_class.
-    # code is a Proc that will be called with the message instance as its argument.
+    # Subscribe listener to specific type(s) of incoming message events.
+    # Listener will be called later with received message instance as its argument.
     def subscribe(*args, &block)
-      code = args.last.respond_to?(:call) ? args.pop : block
+      listener = args.last.respond_to?(:call) ? args.pop : block
 
-      raise ArgumentError.new "Need listener proc or block" unless code.is_a? Proc
+      raise ArgumentError.new "Need listener proc or block" unless listener.is_a? Proc
 
-      args.each do |message_class|
-        if message_class.is_a? Symbol
-          message_class = Messages::Incoming.const_get(message_class)
-        end
+      args.each do |what|
+        message_class =
+            case
+              when what.is_a?(Class) && what < Messages::Incoming::AbstractMessage
+                what
+              when what.is_a?(Symbol)
+                Messages::Incoming.const_get(what)
+              else
+                raise ArgumentError.new "#{what} must represent incoming IB message class"
+            end
 
-        unless message_class < Messages::Incoming::AbstractMessage
-          raise ArgumentError.new "#{message_class} must be an IB message class"
-        end
-
-        @listeners[message_class].push(code)
+        @listeners[message_class].push(listener)
       end
     end
 
     # Send an outgoing message.
-    def send(message, *args)
-      if message.is_a? Symbol
-        message = Messages::Outgoing.const_get(message).new *args
-      end
-
-      raise Exception.new("only sending Messages::Outgoing") unless message.is_a? Messages::Outgoing::AbstractMessage
-
+    def send(what, *args)
+      message =
+          case
+            when what.is_a?(Messages::Outgoing::AbstractMessage)
+              what
+            when what.is_a?(Class) && what < Messages::Outgoing::AbstractMessage
+              what.new *args
+            when what.is_a?(Symbol)
+              Messages::Outgoing.const_get(what).new *args
+            else
+              raise ArgumentError.new("Only able to send Messages::Outgoing")
+          end
       message.send(@server)
     end
 
     protected
 
+    def random_id
+      SHA1.digest(Time.now.to_s + $$.to_s).unpack("C*").join.to_i % 999999999
+    end
+
     def reader
       loop do
-        # this blocks, so Thread#join is useless.
+        # this read blocks, so Thread#join is useless.
         msg_id = @server[:socket].read_int
 
         # Debug:
@@ -149,18 +151,17 @@ module IB
           puts "Got message #{msg_id} (#{Messages::Incoming::Table[msg_id]})"
         end
 
-        # Create a new instance of the appropriate message type, and have it read the message.
+        # Create new instance of the appropriate message type, and have it read the message.
         # NB: Failure here usually means unsupported message type received
-        msg = Messages::Incoming::Table[msg_id].new(@server[:socket], @server[:version])
+        msg = Messages::Incoming::Table[msg_id].new(@server[:socket])
 
-        if @listeners[msg.class].size > 0
-          @listeners[msg.class].each { |listener| listener.call(msg) }
-        else
-          # Warn if nobody listened to an incoming message.
-          puts " WARNING: Nobody listened to incoming message #{msg.class}"
-        end
+        @listeners[msg.class].each { |listener| listener.call(msg) }
+        puts "No listeners for incoming message #{msg.class}!" if @listeners[msg.class].empty?
       end # loop
     end # reader
-  end # class Connection
+
+  end
+
+  # class Connection
   IB = Connection # Legacy alias
 end # module IB

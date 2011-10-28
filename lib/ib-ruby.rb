@@ -1,5 +1,6 @@
 module IB
-end # module IbRuby
+end # module IB
+IbRuby = IB
 
 require 'version'
 require 'ib-ruby/constants'

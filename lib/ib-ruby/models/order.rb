@@ -177,15 +177,14 @@ module IB
                     # changes enough to warrant doing so. This is very helpful in keeping
                     # the limit price sent to the exchange up to date as the underlying price changes.
 
-                    # COMBO ORDERS ONLY
+                    # COMBO ORDERS ONLY:
                     :basis_points, #      double: EFP orders only
                     :basis_points_type, # double: EFP orders only
 
                     # SCALE ORDERS ONLY
-                    :scale_init_level_size, # int: Defines the size of the first, or initial,
-                    #                              order component.
-                    :scale_subs_level_size, # int: Defines the order size of the subsequent
-                    # scale order components. Used in conjunction with scaleInitLevelSize().
+                    :scale_init_level_size, # int: Size of the first (initial) order component.
+                    :scale_subs_level_size, # int: Order size of the subsequent scale order
+                    #             components. Used in conjunction with scaleInitLevelSize().
                     :scale_price_increment, # double: Defines the price increment between
                     # scale components. This field is required for Scale orders.
 
@@ -194,12 +193,12 @@ module IB
                     :algo_params, # public Vector<TagValue> m_algoParams; ?!
 
                     # WTF?!
-                    :what_if, #bool: Use to request pre-trade commissions and margin
+                    :what_if, # bool: Use to request pre-trade commissions and margin
                     # information. If set to true, margin and commissions data is received
                     # back via the OrderState() object for the openOrder() callback.
-                    :not_held #public boolean  m_notHeld; // Not Held
+                    :not_held # public boolean  m_notHeld; // Not Held
 
-      # Some Order properties (received back from IB)are separated into
+      # Some Order properties (received back from IB) are separated into
       # OrderState object. Here, they are lumped into Order proper: see OrderState.java
       attr_accessor :status, # String: Displays the order status.
                     :init_margin, # String: Shows the impact the order would have on your
@@ -209,9 +208,9 @@ module IB
                     :equity_with_loan, # String: Shows the impact the order would have on
                     #                            your equity with loan value.
                     :commission, # double: Shows the commission amount on the order.
-                    :commission_currency, # String: Shows the currency of the commissio.
+                    :commission_currency, # String: Shows the currency of the commission.
 
-                    #These fields define the possible range of the actual order commission:
+                    #The possible range of the actual order commission:
                     :min_commission,
                     :max_commission,
 
