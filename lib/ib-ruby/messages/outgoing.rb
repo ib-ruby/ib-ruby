@@ -40,14 +40,12 @@ module IB
         # an Array of elements that ought to be sent to the server by calling to_s on
         # each one and postpending a '\0'.
         #
-        def send(server)
+        def send_to(server)
           self.encode.flatten.each do |datum|
             # TWS wants to receive booleans as 1 or 0... rewrite as necessary.
             datum = "1" if datum == true
             datum = "0" if datum == false
 
-            #print 'SENDING: '
-            #p datum
             server[:socket].syswrite(datum.to_s + EOL)
           end
         end

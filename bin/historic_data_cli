@@ -241,7 +241,7 @@ ib.subscribe(IB::IncomingMessages::HistoricalData, lambda { |msg|
                                                             :use_RTH => REGULAR_HOURS_ONLY,
                                                             :format_date => DATE_FORMAT
                                                         })
-  ib.dispatch(msg)
+  ib.send_message(msg)
 }
 
 

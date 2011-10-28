@@ -31,7 +31,7 @@ ib.subscribe(:ContractData) { |msg| puts msg.contract.inspect }
 # Now we actually request historical data for the symbols we're interested in. TWS will
 # respond with a HistoricalData message, which will be processed by the code above.
 @market.each_pair do |id, contract|
-  ib.send :RequestContractData, :id => id, :contract => contract
+  ib.send_message :RequestContractData, :id => id, :contract => contract
 end
 
 sleep 3 # Wait for IB to respond to our request

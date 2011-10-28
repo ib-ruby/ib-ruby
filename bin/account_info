@@ -19,11 +19,11 @@ ib = IB::Connection.new
 ib.subscribe(:Alert, :AccountValue,
              :PortfolioValue, :AccountUpdateTime) { |msg| puts msg.to_human }
 
-ib.send :RequestAccountData, :subscribe => true
+ib.send_message :RequestAccountData, :subscribe => true
 
 puts "\nSubscribing to IB account data"
 puts "\n******** Press <Enter> to cancel... *********\n\n"
 gets
 puts "Cancelling account data subscription.."
 
-ib.send :RequestAccountData, :subscribe => false
+ib.send_message :RequestAccountData, :subscribe => false

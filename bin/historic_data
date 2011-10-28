@@ -47,15 +47,15 @@ end
 # Now we actually request historical data for the symbols we're interested in. TWS will
 # respond with a HistoricalData message, which will be processed by the code above.
 @market.each_pair do |id, contract|
-  ib.send IB::Messages::Outgoing::RequestHistoricalData.new(
-              :id => id,
-              :contract => contract,
-              :end_date_time => Time.now.to_ib,
-              :duration => '2 D', # ?
-              :bar_size => '1 min', #IB::OutgoingMessages::BAR_SIZES.key(:hour),
-              :what_to_show => :trades,
-              :use_rth => 1,
-              :format_date => 1)
+  ib.send_message IB::Messages::Outgoing::RequestHistoricalData.new(
+                      :id => id,
+                      :contract => contract,
+                      :end_date_time => Time.now.to_ib,
+                      :duration => '2 D', # ?
+                      :bar_size => '1 min', #IB::OutgoingMessages::BAR_SIZES.key(:hour),
+                      :what_to_show => :trades,
+                      :use_rth => 1,
+                      :format_date => 1)
 end
 
 sleep 5 # Wait for IB to respond to our request

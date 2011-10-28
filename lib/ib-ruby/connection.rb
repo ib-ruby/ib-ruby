@@ -1,13 +1,6 @@
 require 'ib-ruby/socket'
 require 'logger'
 
-if RUBY_VERSION < "1.9"
-  require 'sha1'
-else
-  require 'digest/sha1'
-  include Digest
-end
-
 # Add method to_ib to render datetime in IB format (zero padded "yyyymmdd HH:mm:ss")
 class Time
   def to_ib
@@ -41,13 +34,15 @@ module IB
       @next_order_id = nil
       @server = Hash.new
 
-      # Message listeners. Key is the message class to listen for.
-      # Value is an Array of Procs. The proc will be called with the populated message
-      # instance as its argument when a message of that type is received.
-      # TODO: change Array of Procs into a Hash to allow unsubscribing
-      @listeners = Hash.new { |hash, key| hash[key] = Array.new }
-
       self.open(@options) if @options[:open]
+    end
+
+    # Message subscribers. Key is the message class to listen for.
+    # Value is a Hash of subscriber Procs, keyed by their subscription id.
+    # All subscriber Procs will be called with the message instance
+    # as an argument when a message of that type is received.
+    def subscribers
+      @subscribers ||= Hash.new { |hash, key| hash[key] = Hash.new }
     end
 
     def open(opts = {})
@@ -59,6 +54,7 @@ module IB
       self.subscribe(:NextValidID) do |msg|
         @next_order_id = msg.data[:id]
         puts "Got next valid order id: #{@next_order_id}."
+        #p self
       end
 
       @server[:socket] = IBSocket.open(opts[:host], opts[:port])
@@ -93,16 +89,18 @@ module IB
       @connected = false
     end
 
-    def to_s
-      "IB Connection: #{ @connected ? "connected." : "disconnected."}"
+    def connected?
+      @connected
     end
 
-    # Subscribe listener to specific type(s) of incoming message events.
+    # Subscribe Proc or block to specific type(s) of incoming message events.
     # Listener will be called later with received message instance as its argument.
+    # Returns subscriber id to allow unsubscribing
     def subscribe(*args, &block)
-      listener = args.last.respond_to?(:call) ? args.pop : block
+      subscriber = args.last.respond_to?(:call) ? args.pop : block
+      subscriber_id = random_id
 
-      raise ArgumentError.new "Need listener proc or block" unless listener.is_a? Proc
+      raise ArgumentError.new "Need subscriber proc or block" unless subscriber.is_a? Proc
 
       args.each do |what|
         message_class =
@@ -115,12 +113,21 @@ module IB
                 raise ArgumentError.new "#{what} must represent incoming IB message class"
             end
 
-        @listeners[message_class].push(listener)
+        subscribers[message_class][subscriber_id] = subscriber
+      end
+      subscriber_id
+    end
+
+    # Remove subscriber(s) with specific subscriber id
+    def unsubscribe(subscriber_id)
+
+      subscribers.each do |message_class, message_subscribers|
+        message_subscribers.delete subscriber_id
       end
     end
 
     # Send an outgoing message.
-    def send(what, *args)
+    def send_message(what, *args)
       message =
           case
             when what.is_a?(Messages::Outgoing::AbstractMessage)
@@ -132,13 +139,13 @@ module IB
             else
               raise ArgumentError.new("Only able to send Messages::Outgoing")
           end
-      message.send(@server)
+      message.send_to(@server)
     end
 
     protected
 
     def random_id
-      SHA1.digest(Time.now.to_s + $$.to_s).unpack("C*").join.to_i % 999999999
+      rand 999999999
     end
 
     def reader
@@ -155,8 +162,8 @@ module IB
         # NB: Failure here usually means unsupported message type received
         msg = Messages::Incoming::Table[msg_id].new(@server[:socket])
 
-        @listeners[msg.class].each { |listener| listener.call(msg) }
-        puts "No listeners for incoming message #{msg.class}!" if @listeners[msg.class].empty?
+        subscribers[msg.class].each { |_, subscriber| subscriber.call(msg) }
+        puts "No subscribers for incoming message #{msg.class}!" if subscribers[msg.class].empty?
       end # loop
     end # reader
 

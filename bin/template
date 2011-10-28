@@ -14,7 +14,7 @@ require 'ib-ruby'
 ib = IB::Connection.new
 
 # Subscribe to TWS alerts/errors
-ib.subscribe(IB::Messages::Incoming::Alert) { |msg| puts msg.to_human }
+ib.subscribe(:Alert) { |msg| puts msg.to_human }
 
 # Put your code here
 # ...
