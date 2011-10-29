@@ -6,13 +6,13 @@ describe IB::Connection do
     context 'connected by default' do
       # THIS depends on TWS|Gateway connectivity
       before(:all) { @ib = IB::Connection.new }
-      after(:all) { @ib.close }
+      after(:all) { @ib.close if @ib}
       subject { @ib }
 
       it { should_not be_nil }
       it { should be_connected }
       its (:server) {should be_a Hash}
-      its (:subscribers) {should have_at_least(1).listener} # :NextValidID and empty Hashes
+      its (:subscribers) {should have_at_least(1).hash} # :NextValidID and empty Hashes
       its (:next_order_id) {should be_a Fixnum} # Not before :NextValidID arrives
     end
 
@@ -25,17 +25,17 @@ describe IB::Connection do
       its (:subscribers) {should be_empty}
       its (:next_order_id) {should be_nil}
     end
-  end #instantiation
+  end # instantiation
 
   context "subscriptions" do
-    # THIS depends on TWS|Gateway connectivity
-    before(:all) { @ib = IB::Connection.new }
-    after(:all) { @ib.close }
+    before(:all) { @ib = IB::Connection.new :open => false}
 
-    it 'adds (multiple) subscribers' do
-      @subscriber_id = @ib.subscribe(:Alert, :AccountValue) do
+    it '#subscribe, adds (multiple) subscribers' do
+      @subscriber_id = @ib.subscribe(IB::Messages::Incoming::Alert, :AccountValue) do
         puts "oooooooooo"
       end
+
+      @subscriber_id.should be_a Fixnum
 
       @ib.subscribers.should have_key(IB::Messages::Incoming::Alert)
       @ib.subscribers.should have_key(IB::Messages::Incoming::AccountValue)
@@ -45,12 +45,13 @@ describe IB::Connection do
       @ib.subscribers[IB::Messages::Incoming::AccountValue][@subscriber_id].should be_a Proc
     end
 
-    it 'removes all subscribers' do
-      @subscriber_id = @ib.unsubscribe(@subscriber_id)
+    it '#unsubscribe, removes all subscribers at this id' do
+      @ib.unsubscribe(@subscriber_id)
 
       @ib.subscribers[IB::Messages::Incoming::Alert].should_not have_key(@subscriber_id)
       @ib.subscribers[IB::Messages::Incoming::AccountValue].should_not have_key(@subscriber_id)
     end
 
-  end #subscriptions
+  end # subscriptions
+
 end # describe IB::Connection

@@ -54,7 +54,6 @@ module IB
       self.subscribe(:NextValidID) do |msg|
         @next_order_id = msg.data[:id]
         puts "Got next valid order id: #{@next_order_id}."
-        #p self
       end
 
       @server[:socket] = IBSocket.open(opts[:host], opts[:port])
@@ -150,7 +149,7 @@ module IB
 
     def reader
       loop do
-        # this read blocks, so Thread#join is useless.
+        # This read blocks, so Thread#join is useless.
         msg_id = @server[:socket].read_int
 
         # Debug:
