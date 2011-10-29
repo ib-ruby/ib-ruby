@@ -17,7 +17,7 @@ $LOAD_PATH.unshift LIB_PATH.to_s
 require 'version'
 
 NAME = 'ib-ruby'
-CLASS_NAME = IbRuby
+CLASS_NAME = IB
 
 # Load rakefile tasks
 Dir['tasks/*.rake'].sort.each { |file| load file }
