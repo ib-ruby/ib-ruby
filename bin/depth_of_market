@@ -32,7 +32,10 @@ end
 
 # Now we actually request market data for the symbols we're interested in.
 @market.each_pair do |id, contract|
-  ib.send_message :RequestMarketDepth, :id => id, :contract => contract, :num_rows => 5
+  ib.send_message :RequestMarketDepth,
+                  :id => id,
+                  :contract => contract,
+                  :num_rows => 5
 end
 
 puts "\nSubscribed to market data"
@@ -40,4 +43,4 @@ puts "\n******** Press <Enter> to cancel... *********\n\n"
 gets
 puts "Cancelling market data subscription.."
 
-@market.each_pair { |id, contract| ib.send :CancelMarketDepth, :id => id }
+@market.each_pair { |id, contract| ib.send_message :CancelMarketDepth, :id => id }

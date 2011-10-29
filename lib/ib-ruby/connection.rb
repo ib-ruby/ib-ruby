@@ -20,7 +20,8 @@ module IB
     CLIENT_VERSION = 48 # Was 27 in original Ruby code
     SERVER_VERSION = 53 # Minimal server version. Latest, was 38 in current Java code.
     DEFAULT_OPTIONS = {:host =>"127.0.0.1",
-                       :port => '4001', # Gateway, TWS: '7496'
+                       :port => '4001', # IB Gateway connection (default)
+                       #:port => '7496', # TWS connection, with annoying pop-ups
                        :open => true
     }
 
@@ -117,7 +118,7 @@ module IB
       subscriber_id
     end
 
-    # Remove subscriber(s) with specific subscriber id
+    # Remove all subscribers with specific subscriber id
     def unsubscribe(subscriber_id)
 
       subscribers.each do |message_class, message_subscribers|
@@ -136,10 +137,12 @@ module IB
             when what.is_a?(Symbol)
               Messages::Outgoing.const_get(what).new *args
             else
-              raise ArgumentError.new("Only able to send Messages::Outgoing")
+              raise ArgumentError.new "Only able to send outgoing IB messages"
           end
       message.send_to(@server)
     end
+
+    alias dispatch send_message
 
     protected
 
@@ -166,8 +169,7 @@ module IB
       end # loop
     end # reader
 
-  end
-
-  # class Connection
+  end # class Connection
   IB = Connection # Legacy alias
+
 end # module IB

@@ -56,4 +56,4 @@ puts "\n******** Press <Enter> to cancel... *********\n\n"
 gets
 puts "Unsubscribing from TWS market data.."
 
-@market.each_pair { |id, contract| ib.send :CancelMarketData, :id => id }
+@market.each_pair { |id, contract| ib.send_message :CancelMarketData, :id => id }
