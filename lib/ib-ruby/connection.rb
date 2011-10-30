@@ -22,11 +22,12 @@ module IB
     DEFAULT_OPTIONS = {:host =>"127.0.0.1",
                        :port => '4001', # IB Gateway connection (default)
                        #:port => '7496', # TWS connection, with annoying pop-ups
-                       :open => true
+                       :connect => true,
+                       :reader => true
     }
 
-    attr_reader :next_order_id, # Next valid order id
-                :server #         Info about server and server connection state
+    attr_reader :server, #         Info about IB server and server connection state
+                :next_order_id #  Next valid order id
 
     def initialize(opts = {})
       @options = DEFAULT_OPTIONS.merge(opts)
@@ -35,7 +36,8 @@ module IB
       @next_order_id = nil
       @server = Hash.new
 
-      self.open(@options) if @options[:open]
+      connect if @options[:connect]
+      start_reader if @options[:reader]
     end
 
     # Message subscribers. Key is the message class to listen for.
@@ -46,10 +48,8 @@ module IB
       @subscribers ||= Hash.new { |hash, key| hash[key] = Hash.new }
     end
 
-    def open(opts = {})
+    def connect
       raise Exception.new("Already connected!") if @connected
-
-      opts = @options.merge(opts)
 
       # TWS always sends NextValidID message at connect - save this id
       self.subscribe(:NextValidID) do |msg|
@@ -57,7 +57,7 @@ module IB
         puts "Got next valid order id: #{@next_order_id}."
       end
 
-      @server[:socket] = IBSocket.open(opts[:host], opts[:port])
+      @server[:socket] = IBSocket.open(@options[:host], @options[:port])
 
       # Secret handshake
       @server[:socket].send(CLIENT_VERSION)
@@ -71,23 +71,25 @@ module IB
       @server[:client_id] = random_id
       @server[:socket].send(@server[:client_id])
 
-      # Starting reader thread
-      Thread.abort_on_exception = true
-      @server[:reader_thread] = Thread.new { self.reader }
-
       @connected = true
       puts "Connected to server, version: #{@server[:version]}, connection time: " +
                "#{@server[:local_connect_time]} local, " +
                "#{@server[:remote_connect_time]} remote."
     end
 
-    def close
-      @server[:reader_thread].kill # Thread uses blocking I/O, so join is useless.
+    alias open connect # Legacy alias
+
+    def disconnect
+      if @server[:reader]
+        @reader_running = false
+        @server[:reader].join
+      end
       @server[:socket].close
       @server = Hash.new
-      @server[:version] = nil
       @connected = false
     end
+
+    alias close disconnect # Legacy alias
 
     def connected?
       @connected
@@ -142,7 +144,34 @@ module IB
       message.send_to(@server)
     end
 
-    alias dispatch send_message
+    alias dispatch send_message # Legacy alias
+
+    # Process incoming messages during *poll_time* (200) msecs
+    def process_messages poll_time = 200 # in msec
+      time_out = Time.now + poll_time/1000.0
+      while (time_left = time_out - Time.now) > 0
+        # If server socket is readable, process single incoming message
+        process_message if select [@server[:socket]], nil, nil, time_left
+      end
+    end
+
+    # Process single incoming message (blocking)
+    def process_message
+      # This read blocks!
+      msg_id = @server[:socket].read_int
+
+      # Debug:
+      unless [1, 2, 4, 6, 7, 8, 9, 21, 53].include? msg_id
+        puts "Got message #{msg_id} (#{Messages::Incoming::Table[msg_id]})"
+      end
+
+      # Create new instance of the appropriate message type, and have it read the message.
+      # NB: Failure here usually means unsupported message type received
+      msg = Messages::Incoming::Table[msg_id].new(@server[:socket])
+
+      subscribers[msg.class].each { |_, subscriber| subscriber.call(msg) }
+      puts "No subscribers for message #{msg.class}!" if subscribers[msg.class].empty?
+    end
 
     protected
 
@@ -150,24 +179,15 @@ module IB
       rand 999999999
     end
 
-    def reader
-      loop do
-        # This read blocks, so Thread#join is useless.
-        msg_id = @server[:socket].read_int
-
-        # Debug:
-        unless [1, 2, 4, 6, 7, 8, 9, 21, 53].include? msg_id
-          puts "Got message #{msg_id} (#{Messages::Incoming::Table[msg_id]})"
-        end
-
-        # Create new instance of the appropriate message type, and have it read the message.
-        # NB: Failure here usually means unsupported message type received
-        msg = Messages::Incoming::Table[msg_id].new(@server[:socket])
-
-        subscribers[msg.class].each { |_, subscriber| subscriber.call(msg) }
-        puts "No subscribers for incoming message #{msg.class}!" if subscribers[msg.class].empty?
-      end # loop
-    end # reader
+    # Start reader thread that continuously reads messages from server in background.
+    # If you don't start reader, you should manually poll @server[:socket] for messages.
+    def start_reader
+      Thread.abort_on_exception = true
+      @reader_running = true
+      @server[:reader] = Thread.new do
+        process_messages while @reader_running
+      end
+    end
 
   end # class Connection
   IB = Connection # Legacy alias

@@ -9,7 +9,7 @@ module IB
     end
 
     def read_string
-      str = self.gets(EOL).chop
+      self.gets(EOL).chop
     end
 
     def read_int

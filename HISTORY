@@ -53,3 +53,7 @@
 == 0.5.1 / 2011-10-29
 
 * Connection specs extended
+
+== 0.5.2 / 2011-10-30
+
+* Add nonblocking Connection#process_messages API

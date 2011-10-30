@@ -13,6 +13,7 @@ describe IB::Connection do
       it { should_not be_nil }
       it { should be_connected }
       its (:server) {should be_a Hash}
+      its (:server) {should have_key :reader}
       its (:subscribers) {should have_at_least(1).item} # :NextValidID and empty Hashes
       its (:next_order_id) {should be_a Fixnum} # Not before :NextValidID arrives
     end
@@ -40,40 +41,41 @@ describe IB::Connection do
 
     context "subscriptions" do
 
-       it '#subscribe, adds (multiple) subscribers' do
-         @subscriber_id = @ib.subscribe(IB::Messages::Incoming::Alert, :AccountValue) do
-           puts "oooooooooo"
-         end
+      it '#subscribe, adds (multiple) subscribers' do
+        @subscriber_id = @ib.subscribe(IB::Messages::Incoming::Alert, :AccountValue) do
+          puts "oooooooooo"
+        end
 
-         @subscriber_id.should be_a Fixnum
+        @subscriber_id.should be_a Fixnum
 
-         @ib.subscribers.should have_key(IB::Messages::Incoming::Alert)
-         @ib.subscribers.should have_key(IB::Messages::Incoming::AccountValue)
-         @ib.subscribers[IB::Messages::Incoming::Alert].should have_key(@subscriber_id)
-         @ib.subscribers[IB::Messages::Incoming::AccountValue].should have_key(@subscriber_id)
-         @ib.subscribers[IB::Messages::Incoming::Alert][@subscriber_id].should be_a Proc
-         @ib.subscribers[IB::Messages::Incoming::AccountValue][@subscriber_id].should be_a Proc
-       end
+        @ib.subscribers.should have_key(IB::Messages::Incoming::Alert)
+        @ib.subscribers.should have_key(IB::Messages::Incoming::AccountValue)
+        @ib.subscribers[IB::Messages::Incoming::Alert].should have_key(@subscriber_id)
+        @ib.subscribers[IB::Messages::Incoming::AccountValue].should have_key(@subscriber_id)
+        @ib.subscribers[IB::Messages::Incoming::Alert][@subscriber_id].should be_a Proc
+        @ib.subscribers[IB::Messages::Incoming::AccountValue][@subscriber_id].should be_a Proc
+      end
 
-       it '#unsubscribe, removes all subscribers at this id' do
-         @ib.unsubscribe(@subscriber_id)
+      it '#unsubscribe, removes all subscribers at this id' do
+        @ib.unsubscribe(@subscriber_id)
 
-         @ib.subscribers[IB::Messages::Incoming::Alert].should_not have_key(@subscriber_id)
-         @ib.subscribers[IB::Messages::Incoming::AccountValue].should_not have_key(@subscriber_id)
-       end
+        @ib.subscribers[IB::Messages::Incoming::Alert].should_not have_key(@subscriber_id)
+        @ib.subscribers[IB::Messages::Incoming::AccountValue].should_not have_key(@subscriber_id)
+      end
 
-     end # subscriptions
+    end # subscriptions
   end # connected
 
   context 'not connected to IB Gateway' do
-    before(:all) { @ib = IB::Connection.new :open => false }
+    before(:all) { @ib = IB::Connection.new :connect => false, :reader => false }
 
-    context 'instantiation passing :open => false' do
+    context 'instantiation passing :connect => false' do
       subject { @ib }
 
       it { should_not be_nil }
       it { should_not be_connected }
       its (:server) {should be_a Hash}
+      its (:server) {should_not have_key :reader}
       its (:subscribers) {should be_empty}
       its (:next_order_id) {should be_nil}
     end
