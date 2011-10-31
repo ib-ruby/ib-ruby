@@ -198,8 +198,7 @@ module IB
                           @data[:tick_list]
                       end
           [super,
-           @data[:contract].con_id, # part of serialize?
-           @data[:contract].serialize,
+           @data[:contract].serialize_long(:con_id),
            @data[:contract].serialize_combo_legs,
            @data[:contract].serialize_under_comp,
            tick_list,
@@ -290,8 +289,7 @@ module IB
               @data[:contract] : Models::Contract.from_ib_ruby(@data[:contract])
 
           [super,
-           contract.serialize,
-           contract.include_expired,
+           contract.serialize_long(:include_expired),
            @data[:end_date_time],
            @data[:bar_size],
            @data[:duration],
@@ -329,7 +327,7 @@ module IB
               @data[:contract] : Models::Contract.from_ib_ruby(@data[:contract])
 
           [super,
-           contract.serialize,
+           contract.serialize_long,
            @data[:bar_size],
            @data[:what_to_show].to_s.upcase,
            @data[:use_rth]]
@@ -343,8 +341,7 @@ module IB
 
         def encode
           [super,
-           @data[:contract].con_id, # part of serialize?
-           @data[:contract].serialize(:short),
+           @data[:contract].serialize_short(:con_id),
            @data[:contract].include_expired,
            @data[:contract].sec_id_type,
            @data[:contract].sec_id]
@@ -359,7 +356,7 @@ module IB
 
         def encode
           [super,
-           @data[:contract].serialize(:short),
+           @data[:contract].serialize_short,
            @data[:num_rows]]
         end
       end # RequestMarketDepth
@@ -384,7 +381,7 @@ module IB
 
         def encode
           [super,
-           @data[:contract].serialize(:short),
+           @data[:contract].serialize_short,
            @data[:exercise_action],
            @data[:exercise_quantity],
            @data[:account],
@@ -402,9 +399,7 @@ module IB
 
         def encode
           [super,
-           @data[:contract].serialize,
-           @data[:contract].sec_id_type, # Unimplemented?
-           @data[:contract].sec_id, # Unimplemented?
+           @data[:contract].serialize_long(:sec_id),
            @data[:order].action, # send main order fields
            @data[:order].total_quantity,
            @data[:order].order_type,
@@ -516,12 +511,7 @@ module IB
         def encode
           [super,
            @data[:request_id],
-           @data[:contract].symbol, # Yet another Contract serialization!
-           @data[:contract].sec_type,
-           @data[:contract].exchange,
-           @data[:contract].primary_exchange,
-           @data[:contract].currency,
-           @data[:contract].local_symbol,
+           @data[:contract].serialize(:primary_exchange), # Minimal serialization set
            @data[:report_type]]
         end
       end # RequestFundamentalData
@@ -534,8 +524,7 @@ module IB
         def encode
           [super,
            @data[:request_id],
-           @data[:contract].con_id, # part of serialize?
-           @data[:contract].serialize,
+           @data[:contract].serialize_long(:con_id),
            @data[:option_price],
            @data[:under_price]]
         end
@@ -551,8 +540,7 @@ module IB
         def encode
           [super,
            @data[:request_id],
-           @data[:contract].con_id, # part of serialize?
-           @data[:contract].serialize,
+           @data[:contract].serialize_long(:con_id),
            @data[:volatility],
            @data[:under_price]]
         end
@@ -601,3 +589,32 @@ __END__
     private static final int CANCEL_CALC_IMPLIED_VOLAT = 56;
     private static final int CANCEL_CALC_OPTION_PRICE = 57;
     private static final int REQ_GLOBAL_CANCEL = 58;
+
+
+3           @data[:contract].con_id, # part of serialize?
+           @data[:contract].serialize,
+
+no_expiry
+1           @data[:contract].symbol, # Yet another Contract serialization!
+           @data[:contract].sec_type,
+           @data[:contract].exchange,
+           @data[:contract].primary_exchange,
+           @data[:contract].currency,
+           @data[:contract].local_symbol,
+
+sec_id
+1           @data[:contract].serialize,
+           @data[:contract].sec_id_type,
+           @data[:contract].sec_id,
+
+no_primary_exchange
+2           @data[:contract].serialize(:short),
+
+1           @data[:contract].con_id, # part of serialize?
+           @data[:contract].serialize(:short),
+
+1           contract.serialize,
+
+include_expired
+1           contract.serialize,
+           contract.include_expired,

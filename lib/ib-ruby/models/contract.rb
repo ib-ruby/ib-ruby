@@ -167,28 +167,27 @@ module IB
 
       # This returns an Array of data from the given contract, in standard format.
       # Different messages serialize contracts differently. Go figure.
-      # Note that it does not include the combo legs.
-      def serialize(type = :long)
-        [symbol,
+      # Note that it does NOT include the combo legs.
+      def serialize(*fields)
+        [(fields.include? :con_id ? [con_id] : []),
+         symbol,
          sec_type,
-         expiry,
-         strike,
-         right,
-         multiplier,
-         exchange] +
-            (type == :long ? [primary_exchange] : []) +
-            [currency,
-             local_symbol]
+         (fields.include? :option ? [expiry, strike, right, multiplier] : []),
+         exchange,
+         (fields.include? :primary_exchange ? [primary_exchange] : []),
+         currency,
+         local_symbol,
+         (fields.include? :sec_id ? [sec_id_type, sec_id] : []),
+         (fields.include? :include_expired ? [include_expired] : []),
+        ]
       end
 
-      # @Legacy
-      def serialize_long(version)
-        serialize(:long)
+      def serialize_long(*fields)
+        serialize(:option, :primary_exchange, *fields)
       end
 
-      # @Legacy
-      def serialize_short(version)
-        serialize(:short)
+      def serialize_short(*fields)
+        serialize(:option, *fields)
       end
 
       # This produces a string uniquely identifying this contract, in the format used

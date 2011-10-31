@@ -83,7 +83,7 @@ module IB
       end
 
       # Macro that defines short message classes using a one-liner
-      def self.def_message message_id, *keys, &human_block
+      def self.def_message message_id, *keys, &to_human
         base = keys.first.is_a?(Class) ? keys.shift : AbstractMessage
         Class.new(base) do
           @message_id = message_id
@@ -93,7 +93,7 @@ module IB
             load_map *keys
           end
 
-          define_method(:to_human, &human_block) if human_block
+          define_method(:to_human, &to_human) if to_human
         end
       end
 
@@ -287,10 +287,11 @@ module IB
         @message_id = 21
 
         # Read @data[key] if it was computed (received value above limit)
-        # Leave @data[key] nil if received value below limit ("not yet computed" indicator)
+        # Leave @data[key] nil if received value below limit ("not yet computed")
         def read_computed key, limit
-          value = @socket.read_decimal # limit-1 is the "not yet computed" indicator
-          @data[key] = value < limit ? nil : value
+          value = @socket.read_decimal
+          # limit is the "not yet computed" indicator
+          @data[key] = value <= limit ? nil : value
         end
 
         def load
@@ -298,14 +299,14 @@ module IB
 
           @data[:id] = @socket.read_int # ticker_id
           @data[:tick_type] = @socket.read_int
-          read_computed :implied_volatility, 0 #-1 is the "not yet computed" indicator
-          read_computed :delta, -1 #            -2 is the "not yet computed" indicator
-          read_computed :option_price, 0 #      -1 is the "not yet computed" indicator
-          read_computed :pv_dividend, 0 #       -1 is the "not yet computed" indicator
-          read_computed :gamma, -1 #            -2 is the "not yet computed" indicator
-          read_computed :vega, -1 #             -2 is the "not yet computed" indicator
-          read_computed :theta, -1 #            -2 is the "not yet computed" indicator
-          read_computed :under_price, 0 #       -1 is the "not yet computed" indicator
+          read_computed :implied_volatility, -1 #-1 is the "not yet computed" indicator
+          read_computed :delta, -2 #            -2 is the "not yet computed" indicator
+          read_computed :option_price, -1 #      -1 is the "not yet computed" indicator
+          read_computed :pv_dividend, -1 #       -1 is the "not yet computed" indicator
+          read_computed :gamma, -2 #            -2 is the "not yet computed" indicator
+          read_computed :vega, -2 #             -2 is the "not yet computed" indicator
+          read_computed :theta, -2 #            -2 is the "not yet computed" indicator
+          read_computed :under_price, -1 #       -1 is the "not yet computed" indicator
         end
 
         def to_human

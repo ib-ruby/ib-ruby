@@ -161,7 +161,7 @@ module IB
       msg_id = @server[:socket].read_int
 
       # Debug:
-      unless [1, 2, 4, 6, 7, 8, 9, 21, 53].include? msg_id
+      unless [1, 2, 4, 6, 7, 8, 9, 12, 21, 53].include? msg_id
         puts "Got message #{msg_id} (#{Messages::Incoming::Table[msg_id]})"
       end
 
@@ -180,7 +180,8 @@ module IB
     end
 
     # Start reader thread that continuously reads messages from server in background.
-    # If you don't start reader, you should manually poll @server[:socket] for messages.
+    # If you don't start reader, you should manually poll @server[:socket] for messages
+    # or use #process_messages(msec) API.
     def start_reader
       Thread.abort_on_exception = true
       @reader_running = true
