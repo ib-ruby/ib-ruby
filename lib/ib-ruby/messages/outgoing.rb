@@ -83,11 +83,11 @@ module IB
       RequestGlobalCancel = def_message 58
 
       # Data format is: @data = { :id => ticker_id}
-      CancelScannerSubscription = def_message 23
       CancelMarketData = def_message 2
+      CancelMarketDepth = def_message 11
+      CancelScannerSubscription = def_message 23
       CancelHistoricalData = def_message 25
       CancelRealTimeBars = def_message 51
-      CancelMarketDepth = def_message 11
 
       # Data format is: @data = { :id => request_id }
       CancelFundamentalData = def_message 53
@@ -114,7 +114,7 @@ module IB
       ReplaceFA = def_message 19, 1, :fa_data_type, :xml
 
       # Data is { :subscribe => boolean,
-      #           :account_code => String: only necessary for advisor accounts. Set it
+      #           :account_code => String: Advisor accounts only. Set it
       #                            to empty ('') for a standard account. }
       class RequestAccountData < AbstractMessage
         @message_id = 6
@@ -341,10 +341,7 @@ module IB
 
         def encode
           [super,
-           @data[:contract].serialize_short(:con_id),
-           @data[:contract].include_expired,
-           @data[:contract].sec_id_type,
-           @data[:contract].sec_id]
+           @data[:contract].serialize_short(:con_id, :include_expired, :sec_id)]
         end
       end # RequestContractData
       RequestContractDetails = RequestContractData # alias
@@ -395,74 +392,10 @@ module IB
       class PlaceOrder < AbstractMessage
         @message_id = 3
         @version = 31
-        # int VERSION = (m_serverVersion < MIN_SERVER_VER_NOT_HELD) ? 27 : 31;
 
         def encode
           [super,
-           @data[:contract].serialize_long(:sec_id),
-           @data[:order].action, # send main order fields
-           @data[:order].total_quantity,
-           @data[:order].order_type,
-           @data[:order].limit_price,
-           @data[:order].aux_price,
-           @data[:order].tif, # send extended order fields
-           @data[:order].oca_group,
-           @data[:order].account,
-           @data[:order].open_close,
-           @data[:order].origin,
-           @data[:order].order_ref,
-           @data[:order].transmit,
-           @data[:order].parent_id,
-           @data[:order].block_order,
-           @data[:order].sweep_to_fill,
-           @data[:order].display_size,
-           @data[:order].trigger_method,
-           @data[:order].outside_rth, # was: ignore_rth
-           @data[:order].hidden,
-           @data[:contract].serialize_combo_legs(:long),
-           '', # send deprecated shares_allocation field
-           @data[:order].discretionary_amount,
-           @data[:order].good_after_time,
-           @data[:order].good_till_date,
-           @data[:order].fa_group,
-           @data[:order].fa_method,
-           @data[:order].fa_percentage,
-           @data[:order].fa_profile,
-           #                                    Institutional short sale slot fields:
-           @data[:order].short_sale_slot, #     0 only for retail, 1 or 2 for institution
-           @data[:order].designated_location, # only populate when short_sale_slot == 2
-           @data[:order].oca_type,
-           @data[:order].rule_80a,
-           @data[:order].settling_firm,
-           @data[:order].all_or_none,
-           @data[:order].min_quantity || EOL,
-           @data[:order].percent_offset || EOL,
-           @data[:order].etrade_only,
-           @data[:order].firm_quote_only,
-           @data[:order].nbbo_price_cap || EOL,
-           @data[:order].auction_strategy || EOL,
-           @data[:order].starting_price || EOL,
-           @data[:order].stock_ref_price || EOL,
-           @data[:order].delta || EOL,
-           @data[:order].stock_range_lower || EOL,
-           @data[:order].stock_range_upper || EOL,
-           @data[:order].override_percentage_constraints,
-           @data[:order].volatility || EOL, #              Volatility orders
-           @data[:order].volatility_type || EOL, #         Volatility orders
-           @data[:order].delta_neutral_order_type, #       Volatility orders
-           @data[:order].delta_neutral_aux_price || EOL, # Volatility orders
-           @data[:order].continuous_update, #              Volatility orders
-           @data[:order].reference_price_type || EOL, #    Volatility orders
-           @data[:order].trail_stop_price || EOL, # TRAIL_STOP_LIMIT stop price
-           @data[:order].scale_init_level_size || EOL, # Scale Orders
-           @data[:order].scale_subs_level_size || EOL, # Scale Orders
-           @data[:order].scale_price_increment || EOL, # Scale Orders
-           @data[:order].clearing_account,
-           @data[:order].clearing_intent,
-           @data[:order].not_held,
-           @data[:contract].serialize_under_comp,
-           @data[:order].serialize_algo,
-           @data[:order].what_if]
+           @data[:order].serialize_with(@data[:contract])]
         end
       end # PlaceOrder
 
@@ -483,7 +416,6 @@ module IB
         @version = 3
 
         def encode
-
           [super,
            @data[:client_id],
            @data[:acct_code],
@@ -492,7 +424,7 @@ module IB
            @data[:sec_type],
            @data[:exchange],
            @data[:side]]
-        end # encode
+        end
       end # RequestExecutions
 
       # Send this message to receive Reuters global fundamental data. There must be
@@ -503,8 +435,7 @@ module IB
       #          :report_type => String: one of the following:
       #                             Estimates
       #                             Financial Statements
-      #                             Summary
-      #        }
+      #                             Summary   }
       class RequestFundamentalData < AbstractMessage
         @message_id = 52
 
@@ -589,32 +520,3 @@ __END__
     private static final int CANCEL_CALC_IMPLIED_VOLAT = 56;
     private static final int CANCEL_CALC_OPTION_PRICE = 57;
     private static final int REQ_GLOBAL_CANCEL = 58;
-
-
-3           @data[:contract].con_id, # part of serialize?
-           @data[:contract].serialize,
-
-no_expiry
-1           @data[:contract].symbol, # Yet another Contract serialization!
-           @data[:contract].sec_type,
-           @data[:contract].exchange,
-           @data[:contract].primary_exchange,
-           @data[:contract].currency,
-           @data[:contract].local_symbol,
-
-sec_id
-1           @data[:contract].serialize,
-           @data[:contract].sec_id_type,
-           @data[:contract].sec_id,
-
-no_primary_exchange
-2           @data[:contract].serialize(:short),
-
-1           @data[:contract].con_id, # part of serialize?
-           @data[:contract].serialize(:short),
-
-1           contract.serialize,
-
-include_expired
-1           contract.serialize,
-           contract.include_expired,

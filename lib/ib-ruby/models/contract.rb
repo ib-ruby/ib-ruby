@@ -165,7 +165,7 @@ module IB
         @strike = 0
       end
 
-      # This returns an Array of data from the given contract, in standard format.
+      # This returns an Array of data from the given contract.
       # Different messages serialize contracts differently. Go figure.
       # Note that it does NOT include the combo legs.
       def serialize(*fields)

@@ -258,7 +258,75 @@ module IB
         super opts
       end
 
-      def serialize_algo(*args)
+      # This returns an Array of data from the given order,
+      # mixed with data from associated contract. Ugly mix, indeed.
+      def serialize_with contract
+        [contract.serialize_long(:sec_id),
+         action, # main order fields
+         total_quantity,
+         order_type,
+         limit_price,
+         aux_price,
+         tif, # xtended order fields
+         oca_group,
+         account,
+         open_close,
+         origin,
+         order_ref,
+         transmit,
+         parent_id,
+         block_order,
+         sweep_to_fill,
+         display_size,
+         trigger_method,
+         outside_rth, # was: ignore_rth
+         hidden,
+         contract.serialize_combo_legs(:long),
+         '', # deprecated shares_allocation field
+         discretionary_amount,
+         good_after_time,
+         good_till_date,
+         fa_group,
+         fa_method,
+         fa_percentage,
+         fa_profile,
+         short_sale_slot, #     0 only for retail, 1 or 2 for institution  (Institutional)
+         designated_location, # only populate when short_sale_slot == 2    (Institutional)
+         oca_type,
+         rule_80a,
+         settling_firm,
+         all_or_none,
+         min_quantity || EOL,
+         percent_offset || EOL,
+         etrade_only,
+         firm_quote_only,
+         nbbo_price_cap || EOL,
+         auction_strategy || EOL,
+         starting_price || EOL,
+         stock_ref_price || EOL,
+         delta || EOL,
+         stock_range_lower || EOL,
+         stock_range_upper || EOL,
+         override_percentage_constraints,
+         volatility || EOL, #              Volatility orders
+         volatility_type || EOL, #         Volatility orders
+         delta_neutral_order_type, #       Volatility orders
+         delta_neutral_aux_price || EOL, # Volatility orders
+         continuous_update, #              Volatility orders
+         reference_price_type || EOL, #    Volatility orders
+         trail_stop_price || EOL, #        TRAIL_STOP_LIMIT stop price
+         scale_init_level_size || EOL, #   Scale Orders
+         scale_subs_level_size || EOL, #   Scale Orders
+         scale_price_increment || EOL, #   Scale Orders
+         clearing_account,
+         clearing_intent,
+         not_held,
+         contract.serialize_under_comp,
+         serialize_algo,
+         what_if]
+      end
+
+      def serialize_algo
         if algo_strategy.empty? || algo_strategy.nil?
           ['']
         else
