@@ -194,12 +194,12 @@ describe IB::Models::Contract do
     subject { stock = IB::Models::Contract.new properties }
 
     it "serializes long" do
-      subject.serialize(:long).should ==
+      subject.serialize_long.should ==
           ["TEST", IB::SECURITY_TYPES[:stock], "200609", 1234, "PUT", 123, "SMART", nil, "USD", "baz"]
     end
 
     it "serializes short" do
-      subject.serialize(:short).should ==
+      subject.serialize_short.should ==
           ["TEST", IB::SECURITY_TYPES[:stock], "200609", 1234, "PUT", 123, "SMART", "USD", "baz"]
     end
   end #serialization

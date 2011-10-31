@@ -169,17 +169,17 @@ module IB
       # Different messages serialize contracts differently. Go figure.
       # Note that it does NOT include the combo legs.
       def serialize(*fields)
-        [(fields.include? :con_id ? [con_id] : []),
+        [(fields.include?(:con_id) ? [con_id] : []),
          symbol,
          sec_type,
-         (fields.include? :option ? [expiry, strike, right, multiplier] : []),
+         (fields.include?(:option) ? [expiry, strike, right, multiplier] : []),
          exchange,
-         (fields.include? :primary_exchange ? [primary_exchange] : []),
+         (fields.include?(:primary_exchange) ? [primary_exchange] : []),
          currency,
          local_symbol,
-         (fields.include? :sec_id ? [sec_id_type, sec_id] : []),
-         (fields.include? :include_expired ? [include_expired] : []),
-        ]
+         (fields.include?(:sec_id) ? [sec_id_type, sec_id] : []),
+         (fields.include?(:include_expired) ? [include_expired] : []),
+        ].flatten
       end
 
       def serialize_long(*fields)
