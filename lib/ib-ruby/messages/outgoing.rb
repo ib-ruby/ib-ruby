@@ -78,6 +78,8 @@ module IB
       CancelNewsBulletins = def_message 13
       RequestAllOpenOrders = def_message 16
       RequestManagedAccounts = def_message 17
+      # Requests an XML document that describes the valid parameters that a scanner
+      # subscription can have (for outgoing RequestScannerSubscription message).
       RequestScannerParameters = def_message 24
       RequestCurrentTime = def_message 49
       RequestGlobalCancel = def_message 58
@@ -112,53 +114,84 @@ module IB
       RequestFA = def_message 18, 1, :fa_data_type
       # data = { :fa_data_type => int, :xml => String }
       ReplaceFA = def_message 19, 1, :fa_data_type, :xml
-
-      # Data is { :subscribe => boolean,
-      #           :account_code => String: Advisor accounts only. Set it
-      #                            to empty ('') for a standard account. }
-      class RequestAccountData < AbstractMessage
-        @message_id = 6
-        @version = 2
-
-        def encode
-          [super,
-           @data[:subscribe],
-           @data[:account_code] || '']
-        end
-      end
+      # @data = { :subscribe => boolean,
+      #           :account_code => Advisor accounts only. Empty ('') for a standard account. }
+      RequestAccountData = def_message 6, 2, :subscribe, :account_code
       RequestAccountUpdates = RequestAccountData
 
 
       ### Defining (complex) Outgoing Message classes for IB:
 
-      # data = { :id => ticker_id (int), :subscription => ScannerSubscription}
+      # Start receiving market scanner results through the ScannerData messages.
+      # @data = { :id => ticker_id (int),
+      #  :number_of_rows => int: number of rows of data to return for a query.
+      #  :instrument => The instrument type for the scan. Values include
+      #                                'STK', - US stocks
+      #                                'STOCK.HK' - Asian stocks
+      #                                'STOCK.EU' - European stocks
+      #  :location_code => Legal Values include:
+      #                           • STK.US - US stocks
+      #                           • STK.US.MAJOR - US stocks (without pink sheet)
+      #                           • STK.US.MINOR - US stocks (only pink sheet)
+      #                           • STK.HK.SEHK - Hong Kong stocks
+      #                           • STK.HK.ASX - Australian Stocks
+      #                           • STK.EU - European stocks
+      #  :scan_code => The type of the scan, such as HIGH_OPT_VOLUME_PUT_CALL_RATIO.
+      #  :above_price => double: Only contracts with a price above this value.
+      #  :below_price => double: Only contracts with a price below this value.
+      #  :above_volume => int: Only contracts with a volume above this value.
+      #  :market_cap_above => double: Only contracts with a market cap above this
+      #  :market_cap_below => double: Only contracts with a market cap below this value.
+      #  :moody_rating_above => Only contracts with a Moody rating above this value.
+      #  :moody_rating_below => Only contracts with a Moody rating below this value.
+      #  :sp_rating_above => Only contracts with an S&P rating above this value.
+      #  :sp_rating_below => Only contracts with an S&P rating below this value.
+      #  :maturity_date_above => Only contracts with a maturity date later than this
+      #  :maturity_date_below => Only contracts with a maturity date earlier than this
+      #  :coupon_rate_above => double: Only contracts with a coupon rate above this
+      #  :coupon_rate_below => double: Only contracts with a coupon rate below this
+      #  :exclude_convertible => Exclude convertible bonds.
+      #  :scanner_setting_pairs => Used with the scan_code to help further narrow your query.
+      #                            Scanner Setting Pairs are delimited by slashes, making
+      #                            this parameter open ended. Example is "Annual,true" -
+      #                            when used with 'Top Option Implied Vol % Gainers' scan
+      #                            would return annualized volatilities.
+      #  :average_option_volume_above =>  int: Only contracts with average volume above this
+      #  :stock_type_filter => Valid values are:
+      #                          'ALL' (excludes nothing)
+      #                          'STOCK' (excludes ETFs)
+      #                          'ETF' (includes ETFs) }
+      # ------------
+      # To learn all valid parameter values that a scanner subscription can have,
+      # first subscribe to ScannerParameters and send RequestScannerParameters message.
+      # Available scanner parameters values will be listed in received XML document.
       class RequestScannerSubscription < AbstractMessage
         @message_id = 22
         @version = 3
 
         def encode
           [super,
-           @data[:subscription].number_of_rows || EOL,
-           @data[:subscription].instrument,
-           @data[:subscription].location_code,
-           @data[:subscription].scan_code,
-           @data[:subscription].above_price || EOL,
-           @data[:subscription].below_price || EOL,
-           @data[:subscription].above_volume || EOL,
-           @data[:subscription].market_cap_above || EOL,
-           @data[:subscription].market_cap_below || EOL,
-           @data[:subscription].moody_rating_above,
-           @data[:subscription].moody_rating_below,
-           @data[:subscription].sp_rating_above,
-           @data[:subscription].sp_rating_below,
-           @data[:subscription].maturity_date_above,
-           @data[:subscription].maturity_date_below,
-           @data[:subscription].coupon_rate_above || EOL,
-           @data[:subscription].coupon_rate_below || EOL,
-           @data[:subscription].exclude_convertible,
-           @data[:subscription].average_option_volume_above,
-           @data[:subscription].scanner_setting_pairs,
-           @data[:subscription].stock_type_filter
+           @data[:number_of_rows] || -1, # was: EOL,
+           @data[:instrument],
+           @data[:location_code],
+           @data[:scan_code],
+           @data[:above_price] || EOL,
+           @data[:below_price] || EOL,
+           @data[:above_volume] || EOL,
+           @data[:market_cap_above] || EOL,
+           @data[:market_cap_below] || EOL,
+           @data[:moody_rating_above],
+           @data[:moody_rating_below],
+           @data[:sp_rating_above],
+           @data[:sp_rating_below],
+           @data[:maturity_date_above],
+           @data[:maturity_date_below],
+           @data[:coupon_rate_above] || EOL,
+           @data[:coupon_rate_below] || EOL,
+           @data[:exclude_convertible],
+           @data[:average_option_volume_above] || EOL, # ?
+           @data[:scanner_setting_pairs],
+           @data[:stock_type_filter]
           ]
         end
       end # RequestScannerSubscription
@@ -433,9 +466,7 @@ module IB
       # data = { :id => int: :request_id,
       #          :contract => Contract,
       #          :report_type => String: one of the following:
-      #                             Estimates
-      #                             Financial Statements
-      #                             Summary   }
+      #                          'Estimates', 'Financial Statements', 'Summary'   }
       class RequestFundamentalData < AbstractMessage
         @message_id = 52
 

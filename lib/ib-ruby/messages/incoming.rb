@@ -172,7 +172,7 @@ module IB
       #                                 FA configuration information.
 
       # Receives an XML document that describes the valid parameters that a scanner
-      # subscription can have.
+      # subscription can have (for outgoing RequestScannerSubscription message).
       ScannerParameters = def_message 19, [:xml, :string]
 
       # Receives the current system time on the server side.
@@ -300,12 +300,12 @@ module IB
           @data[:id] = @socket.read_int # ticker_id
           @data[:tick_type] = @socket.read_int
           read_computed :implied_volatility, -1 #-1 is the "not yet computed" indicator
-          read_computed :delta, -2 #            -2 is the "not yet computed" indicator
+          read_computed :delta, -2 #             -2 is the "not yet computed" indicator
           read_computed :option_price, -1 #      -1 is the "not yet computed" indicator
           read_computed :pv_dividend, -1 #       -1 is the "not yet computed" indicator
-          read_computed :gamma, -2 #            -2 is the "not yet computed" indicator
-          read_computed :vega, -2 #             -2 is the "not yet computed" indicator
-          read_computed :theta, -2 #            -2 is the "not yet computed" indicator
+          read_computed :gamma, -2 #             -2 is the "not yet computed" indicator
+          read_computed :vega, -2 #              -2 is the "not yet computed" indicator
+          read_computed :theta, -2 #             -2 is the "not yet computed" indicator
           read_computed :under_price, -1 #       -1 is the "not yet computed" indicator
         end
 
@@ -537,6 +537,7 @@ module IB
                                    :order_types => @socket.read_string,
                                    :valid_exchanges => @socket.read_string,
                                    :price_magnifier => @socket.read_int,
+
                                    :under_con_id => @socket.read_int,
                                    :long_name => @socket.read_string,
                                    :primary_exchange => @socket.read_string,
@@ -549,6 +550,7 @@ module IB
                                    :liquid_hours => @socket.read_string
         end
       end # ContractData
+      ContractDetails = ContractData
 
       class ExecutionData < AbstractMessage
         @message_id = 11

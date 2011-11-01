@@ -12,7 +12,7 @@ Ruby Implementation of the Interactive Broker' Trader Work Station (TWS) API v.9
 == FEATURES/PROBLEMS:
 
 * This is a BETA release, and should not be used for live trading.
-  Any features contained with are AS-IS and may not work in all conditions
+  Any features contained within are AS-IS and may not work in all conditions
 * This code is not sanctioned or supported by Interactive Brokers
 
 == REQUIREMENTS:
@@ -33,7 +33,7 @@ connections on localhost.
 
 == SYNOPSIS:
 
-First, start up Interactive Broker's Trader Work Station.
+First, start up Interactive Broker's Trader Work Station or Gateway.
 Make sure it is configured to allow API connections on localhost.
 
   >> require 'ib-ruby'
@@ -41,9 +41,9 @@ Make sure it is configured to allow API connections on localhost.
   >> ib.subscribe(:Alert, :AccountValue) { |msg| puts msg.to_human }
   >> ib.send_message :RequestAccountData, :subscribe => true
 
-Essentially, all interaction of your code and TWS can be described as an exchange
-of messages. You subscribe to message types you're interested in using
-IB::Connection#subscribe and request data from TWS using IB::Connection#send.
+Essentially, all interaction of your code and TWS can be described as exchange
+of messages. You subscribe to message type(s) you're interested in using
+IB::Connection#subscribe and request data from TWS using IB::Connection#send_message.
 The code blocks (or procs) given to #subscribe will be executed when a message of
 requested type is received, with the received message as its argument.
 
