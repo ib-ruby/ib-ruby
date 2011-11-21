@@ -30,7 +30,7 @@ ib.subscribe(:MarketDepth) do |msg|
   puts @market[msg.data[:id]].description + ": " + msg.to_human
 end
 
-# Now we actually request market data for the symbols we're interested in.
+# Now we actually request L2 market data for the symbols we're interested in.
 @market.each_pair do |id, contract|
   ib.send_message :RequestMarketDepth,
                   :id => id,

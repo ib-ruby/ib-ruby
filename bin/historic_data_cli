@@ -26,8 +26,6 @@ opt = Getopt::Long.getopts(
     ["--header", BOOLEAN],
     ["--dateformat", REQUIRED],
     ["--nonregularhours", BOOLEAN],
-    ["--verbose", BOOLEAN],
-    ["--veryverbose", BOOLEAN]
 )
 
 if opt["help"] || opt["security"].nil? || opt["security"].empty?
@@ -107,12 +105,8 @@ Possible values (from the IB documentation):
 
 --header : if present, prints a 1 line CSV header describing the fields in the CSV.
 
---veryverbose : if present, prints very verbose debugging info.
---verbose : if present, prints all messages received from IB, and print the data in human-readable
-  format.
-
- Otherwise, in the default mode, prints only the historic data (and any errors), and prints the
- data in CSV format.
+ Otherwise, in the default mode, prints only the historic data (and any errors),
+ and prints the data in CSV format.
 
 ENDHELP
 
@@ -171,9 +165,6 @@ REGULAR_HOURS_ONLY = opt["nonregularhours"] ? 0 : 1
 
 DATE_FORMAT = (opt["dateformat"] && opt["dateformat"].to_i) || 1
 
-VERYVERBOSE = !opt["veryverbose"].nil?
-VERBOSE = !opt["verbose"].nil?
-
 #
 # Definition of what we want market data for.  We have to keep track
 # of what ticker id corresponds to what symbol ourselves, because the
@@ -186,16 +177,7 @@ VERBOSE = !opt["verbose"].nil?
 @market = {123 => opt["security"]}
 
 # First, connect to IB TWS.
-ib = IB::IB.new
-
-# Default level is quiet, only warnings printed.
-# IB::IBLogger.level = Logger::Severity::ERROR
-
-# For verbose printing of each message:
-# IB::IBLogger.level = Logger::Severity::INFO if VERBOSE
-
-# For very verbose debug messages:
-# IB::IBLogger.level = Logger::Severity::DEBUG if VERYVERBOSE
+ib = IB::Connection.new
 
 puts "datetime,open,high,low,close,volume,wap,has_gaps" if !opt["header"].nil?
 
@@ -211,43 +193,38 @@ lastMessageTime = Queue.new # for communicating with the reader thread.
 # up in local memory to figure out what security it relates to.
 # The incoming message packet from TWS just identifies it by ticker id.
 #
-ib.subscribe(IB::IncomingMessages::HistoricalData, lambda { |msg|
+ib.subscribe(:HistoricalData) do |msg|
   STDERR.puts @market[msg.data[:req_id]].description + ": " + msg.data[:item_count].to_s("F") + " items:" if VERBOSE
 
-  msg.data[:history].each { |datum|
-    puts(if VERBOSE
-           datum.to_s
-         else
-           "#{datum.date},#{datum.open.to_s("F")},#{datum.high.to_s("F")},#{datum.low.to_s("F")}," +
-               "#{datum.close.to_s("F")},#{datum.volume},#{datum.wap.to_s("F")},#{datum.has_gaps}"
-         end
-    )
-  }
+  msg.data[:results].each do |datum|
+    if VERBOSE
+      puts datum.to_s
+    else
+      puts "#{datum.date},#{datum.open},#{datum.high},#{datum.low}," +
+               "#{datum.close},#{datum.volume},#{datum.wap},#{datum.has_gaps}"
+    end
+  end
   lastMessageTime.push(Time.now)
-})
+end
 
 # Now we actually request historical data for the symbols we're
 # interested in.  TWS will respond with a HistoricalData message,
 # which will be received by the code above.
-
 @market.each_pair { |id, contract|
-  msg = IB::OutgoingMessages::RequestHistoricalData.new({
-                                                            :ticker_id => id,
-                                                            :contract => contract,
-                                                            :end_date_time => END_DATE_TIME,
-                                                            :duration => DURATION, # seconds == 1 hour
-                                                            :bar_size => BAR_SIZE, # 1 minute bars
-                                                            :what_to_show => WHAT,
-                                                            :use_RTH => REGULAR_HOURS_ONLY,
-                                                            :format_date => DATE_FORMAT
-                                                        })
-  ib.send_message(msg)
-}
+  ib.send_message :RequestHistoricalData,
+                  :id => id,
+                  :contract => contract,
+                  :end_date_time => END_DATE_TIME,
+                  :duration => DURATION, # seconds == 1 hour
+                  :bar_size => BAR_SIZE, # 1 minute bars
+                  :what_to_show => WHAT,
+                  :use_RTH => REGULAR_HOURS_ONLY,
+                  :format_date => DATE_FORMAT
 
+}
 
 # A complication here is that IB does not send any indication when all historic data is done being delivered.
 # So we have to guess - when there is no more new data for some period, we interpret that as "end of data" and exit.
-
 while true
   lastTime = lastMessageTime.pop # blocks until a message is ready on the queue
   sleep 2 # .. wait ..

@@ -46,7 +46,6 @@ end
 ib.subscribe(:TickPrice, :TickSize, :TickString) { |msg| show_sales_and_size(msg) }
 
 # Now we actually request market data for the symbols we're interested in.
-
 @market.each_pair do |id, contract|
   ib.send_message :RequestMarketData, :id => id, :contract => contract
 end

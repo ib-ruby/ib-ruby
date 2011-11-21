@@ -27,7 +27,7 @@ ib = IB::Connection.new
 # Subscribe to TWS alerts/errors
 ib.subscribe(:Alert) { |msg| puts msg.to_human }
 
-# Now, subscribe to HistoricalData incoming events.  The code passed in the block
+# Subscribe to HistoricalData incoming events.  The code passed in the block
 # will be executed when a message of that type is received, with the received
 # message as its argument. In this case, we just print out the data.
 #
