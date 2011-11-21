@@ -1,6 +1,13 @@
 #!/usr/bin/env ruby -w
 #
-# Copyright (C) 2007 Paul Legato.
+##########################################
+#
+# AccountInfo.rb - This example connects to a TWS instance running on
+# localhost and prints some general information about your account to STDOUT.
+#
+##########################################
+#
+# Copyright (C) 2007-2011 Paul Legato.
 # 
 # This library is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as
@@ -17,6 +24,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 #
+##########################################
 
 $:.push(File.dirname(__FILE__) + "/../")
 
