@@ -1,5 +1,6 @@
+# -*- coding: utf-8 -*-
 #
-# Copyright (C) 2006 Blue Voodoo Magic LLC.
+# Copyright (C) 2006-2011 Paul Legato.
 #
 # This library is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as
