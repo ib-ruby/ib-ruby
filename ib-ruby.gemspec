@@ -3,11 +3,11 @@
 Gem::Specification.new do |gem|
   gem.name = "ib-ruby"
   gem.version = File.open('VERSION').read.strip # = ::Mix::VERSION # - conflicts with Bundler
-  gem.summary = "Ruby Implementation of the Interactive Broker' TWS API"
-  gem.description = "Ruby Implementation of the Interactive Broker' TWS API"
-  gem.authors = ["arvicco"]
-  gem.email = "arvitallian@gmail.com"
-  gem.homepage = "http://github.com/arvicco/ib-ruby"
+  gem.summary = "Ruby Implementation of the Interactive Brokers TWS API"
+  gem.description = "Ruby Implementation of the Interactive Brokers TWS API"
+  gem.authors = ["Paul Legato", "arvicco"]
+  gem.email = ["pjlegato@gmail.com", "arvitallian@gmail.com"]
+  gem.homepage = "https://github.com/pjlegato/ib-ruby"
   gem.platform = Gem::Platform::RUBY
   gem.date = Time.now.strftime "%Y-%m-%d"
 
@@ -18,11 +18,6 @@ Gem::Specification.new do |gem|
   gem.executables = (Dir['bin/**/*'] & versioned).map { |file| File.basename(file) }
   gem.test_files = Dir['spec/**/*'] & versioned
   gem.require_paths = ["lib"]
-
-  # RDoc setup
-  gem.has_rdoc = true
-  gem.rdoc_options.concat %W{--charset UTF-8 --main README.rdoc --title mix}
-  gem.extra_rdoc_files = ["LICENSE", "HISTORY", "README.rdoc"]
 
   # Dependencies
   gem.add_dependency("bundler", [">= 1.0.13"])
