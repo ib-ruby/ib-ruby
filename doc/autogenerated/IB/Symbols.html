@@ -1,0 +1,447 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>
+  Module: IB::Symbols
+  
+    &mdash; Documentation by YARD 0.7.3
+  
+</title>
+
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" charset="utf-8" />
+
+  <link rel="stylesheet" href="../css/common.css" type="text/css" media="screen" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  relpath = '..';
+  if (relpath != '') relpath += '/';
+</script>
+
+  <script type="text/javascript" charset="utf-8" src="../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <script type="text/javascript" charset="utf-8">
+      if (window.top.frames.main) document.body.className = 'frames';
+    </script>
+    
+    <div id="header">
+      <div id="menu">
+  
+    <a href="../_index.html">Index (S)</a> &raquo; 
+    <span class='title'><span class='object_link'><a href="../IB.html" title="IB (module)">IB</a></span></span>
+     &raquo; 
+    <span class="title">Symbols</span>
+  
+  
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a id="class_list_link" href="#">Class List</a>
+  
+    <a id="method_list_link" href="#">Method List</a>
+  
+    <a id="file_list_link" href="#">File List</a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+    
+    <iframe id="search_frame"></iframe>
+    
+    <div id="content"><h1>Module: IB::Symbols
+  
+  
+  
+</h1>
+
+<dl class="box">
+  
+  
+    
+  
+    
+  
+  
+  
+    <dt class="r1 last">Defined in:</dt>
+    <dd class="r1 last">lib/ib-ruby/symbols.rb<span class="defines">,<br />
+  lib/ib-ruby/symbols/forex.rb,<br /> lib/ib-ruby/symbols/stocks.rb,<br /> lib/ib-ruby/symbols/options.rb,<br /> lib/ib-ruby/symbols/futures.rb</span>
+</dd>
+  
+</dl>
+<div class="clear"></div>
+
+
+  <h2>Constant Summary</h2>
+  
+    <dl class="constants">
+      
+        <dt id="Forex-constant" class="">Forex =
+          
+        </dt>
+        <dd><pre class="code"><span class='lbrace'>{</span>
+    <span class='symbol'>:audusd</span> <span class='op'>=&gt;</span> <span class='const'>Models</span><span class='op'>::</span><span class='const'>Contract</span><span class='period'>.</span><span class='id new'>new</span><span class='lparen'>(</span><span class='symbol'>:symbol</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>AUD</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                    <span class='symbol'>:exchange</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>IDEALPRO</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                    <span class='symbol'>:currency</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>USD</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                    <span class='symbol'>:sec_type</span> <span class='op'>=&gt;</span> <span class='const'>SECURITY_TYPES</span><span class='lbracket'>[</span><span class='symbol'>:forex</span><span class='rbracket'>]</span><span class='comma'>,</span>
+                                    <span class='symbol'>:description</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>AUDUSD</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='comma'>,</span>
+
+    <span class='symbol'>:gbpusd</span> <span class='op'>=&gt;</span> <span class='const'>Models</span><span class='op'>::</span><span class='const'>Contract</span><span class='period'>.</span><span class='id new'>new</span><span class='lparen'>(</span><span class='symbol'>:symbol</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>GBP</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                    <span class='symbol'>:exchange</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>IDEALPRO</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                    <span class='symbol'>:currency</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>USD</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                    <span class='symbol'>:sec_type</span> <span class='op'>=&gt;</span> <span class='const'>SECURITY_TYPES</span><span class='lbracket'>[</span><span class='symbol'>:forex</span><span class='rbracket'>]</span><span class='comma'>,</span>
+                                    <span class='symbol'>:description</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>GBPUSD</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='comma'>,</span>
+
+    <span class='symbol'>:euraud</span> <span class='op'>=&gt;</span> <span class='const'>Models</span><span class='op'>::</span><span class='const'>Contract</span><span class='period'>.</span><span class='id new'>new</span><span class='lparen'>(</span><span class='symbol'>:symbol</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>EUR</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                    <span class='symbol'>:exchange</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>IDEALPRO</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                    <span class='symbol'>:currency</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>AUD</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                    <span class='symbol'>:sec_type</span> <span class='op'>=&gt;</span> <span class='const'>SECURITY_TYPES</span><span class='lbracket'>[</span><span class='symbol'>:forex</span><span class='rbracket'>]</span><span class='comma'>,</span>
+                                    <span class='symbol'>:description</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>EURAUD</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='comma'>,</span>
+
+    <span class='symbol'>:eurgbp</span> <span class='op'>=&gt;</span> <span class='const'>Models</span><span class='op'>::</span><span class='const'>Contract</span><span class='period'>.</span><span class='id new'>new</span><span class='lparen'>(</span><span class='symbol'>:symbol</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>EUR</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                    <span class='symbol'>:exchange</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>IDEALPRO</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                    <span class='symbol'>:currency</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>GBP</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                    <span class='symbol'>:sec_type</span> <span class='op'>=&gt;</span> <span class='const'>SECURITY_TYPES</span><span class='lbracket'>[</span><span class='symbol'>:forex</span><span class='rbracket'>]</span><span class='comma'>,</span>
+                                    <span class='symbol'>:description</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>EURGBP</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='comma'>,</span>
+
+    <span class='symbol'>:eurjpy</span> <span class='op'>=&gt;</span> <span class='const'>Models</span><span class='op'>::</span><span class='const'>Contract</span><span class='period'>.</span><span class='id new'>new</span><span class='lparen'>(</span><span class='symbol'>:symbol</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>EUR</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                    <span class='symbol'>:exchange</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>IDEALPRO</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                    <span class='symbol'>:currency</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>JPY</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                    <span class='symbol'>:sec_type</span> <span class='op'>=&gt;</span> <span class='const'>SECURITY_TYPES</span><span class='lbracket'>[</span><span class='symbol'>:forex</span><span class='rbracket'>]</span><span class='comma'>,</span>
+                                    <span class='symbol'>:description</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>EURJPY</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='comma'>,</span>
+
+    <span class='symbol'>:eurusd</span> <span class='op'>=&gt;</span> <span class='const'>Models</span><span class='op'>::</span><span class='const'>Contract</span><span class='period'>.</span><span class='id new'>new</span><span class='lparen'>(</span><span class='symbol'>:symbol</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>EUR</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                    <span class='symbol'>:exchange</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>IDEALPRO</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                    <span class='symbol'>:currency</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>USD</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                    <span class='symbol'>:sec_type</span> <span class='op'>=&gt;</span> <span class='const'>SECURITY_TYPES</span><span class='lbracket'>[</span><span class='symbol'>:forex</span><span class='rbracket'>]</span><span class='comma'>,</span>
+                                    <span class='symbol'>:description</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>EURUSD</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='comma'>,</span>
+
+    <span class='symbol'>:eurcad</span> <span class='op'>=&gt;</span> <span class='const'>Models</span><span class='op'>::</span><span class='const'>Contract</span><span class='period'>.</span><span class='id new'>new</span><span class='lparen'>(</span><span class='symbol'>:symbol</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>EUR</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                    <span class='symbol'>:exchange</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>IDEALPRO</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                    <span class='symbol'>:currency</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>CAD</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                    <span class='symbol'>:sec_type</span> <span class='op'>=&gt;</span> <span class='const'>SECURITY_TYPES</span><span class='lbracket'>[</span><span class='symbol'>:forex</span><span class='rbracket'>]</span><span class='comma'>,</span>
+                                    <span class='symbol'>:description</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>EURCAD</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='comma'>,</span>
+
+    <span class='symbol'>:usdchf</span> <span class='op'>=&gt;</span> <span class='const'>Models</span><span class='op'>::</span><span class='const'>Contract</span><span class='period'>.</span><span class='id new'>new</span><span class='lparen'>(</span><span class='symbol'>:symbol</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>USD</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                    <span class='symbol'>:exchange</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>IDEALPRO</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                    <span class='symbol'>:currency</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>CHF</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                    <span class='symbol'>:sec_type</span> <span class='op'>=&gt;</span> <span class='const'>SECURITY_TYPES</span><span class='lbracket'>[</span><span class='symbol'>:forex</span><span class='rbracket'>]</span><span class='comma'>,</span>
+                                    <span class='symbol'>:description</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>USDCHF</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='comma'>,</span>
+
+    <span class='symbol'>:usdcad</span> <span class='op'>=&gt;</span> <span class='const'>Models</span><span class='op'>::</span><span class='const'>Contract</span><span class='period'>.</span><span class='id new'>new</span><span class='lparen'>(</span><span class='symbol'>:symbol</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>USD</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                    <span class='symbol'>:exchange</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>IDEALPRO</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                    <span class='symbol'>:currency</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>CAD</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                    <span class='symbol'>:sec_type</span> <span class='op'>=&gt;</span> <span class='const'>SECURITY_TYPES</span><span class='lbracket'>[</span><span class='symbol'>:forex</span><span class='rbracket'>]</span><span class='comma'>,</span>
+                                    <span class='symbol'>:description</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>USDCAD</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='comma'>,</span>
+
+    <span class='symbol'>:usdjpy</span> <span class='op'>=&gt;</span> <span class='const'>Models</span><span class='op'>::</span><span class='const'>Contract</span><span class='period'>.</span><span class='id new'>new</span><span class='lparen'>(</span><span class='symbol'>:symbol</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>USD</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                    <span class='symbol'>:exchange</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>IDEALPRO</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                    <span class='symbol'>:currency</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>JPY</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                    <span class='symbol'>:sec_type</span> <span class='op'>=&gt;</span> <span class='const'>SECURITY_TYPES</span><span class='lbracket'>[</span><span class='symbol'>:forex</span><span class='rbracket'>]</span><span class='comma'>,</span>
+                                    <span class='symbol'>:description</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>USDJPY</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+<span class='rbrace'>}</span></pre></dd>
+      
+        <dt id="Stocks-constant" class="">Stocks =
+          
+        </dt>
+        <dd><pre class="code"><span class='lbrace'>{</span><span class='symbol'>:wfc</span> <span class='op'>=&gt;</span> <span class='const'>Models</span><span class='op'>::</span><span class='const'>Contract</span><span class='period'>.</span><span class='id new'>new</span><span class='lparen'>(</span><span class='symbol'>:symbol</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>WFC</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                              <span class='symbol'>:exchange</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>NYSE</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                              <span class='symbol'>:currency</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>USD</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                              <span class='symbol'>:sec_type</span> <span class='op'>=&gt;</span> <span class='const'>SECURITY_TYPES</span><span class='lbracket'>[</span><span class='symbol'>:stock</span><span class='rbracket'>]</span><span class='comma'>,</span>
+                              <span class='symbol'>:description</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Wells Fargo</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='comma'>,</span>
+<span class='symbol'>:wrong</span> <span class='op'>=&gt;</span> <span class='const'>Models</span><span class='op'>::</span><span class='const'>Contract</span><span class='period'>.</span><span class='id new'>new</span><span class='lparen'>(</span><span class='symbol'>:symbol</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>QEEUUE</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                              <span class='symbol'>:exchange</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>NYSE</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                              <span class='symbol'>:currency</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>USD</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                              <span class='symbol'>:sec_type</span> <span class='op'>=&gt;</span> <span class='const'>SECURITY_TYPES</span><span class='lbracket'>[</span><span class='symbol'>:stock</span><span class='rbracket'>]</span><span class='comma'>,</span>
+                              <span class='symbol'>:description</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Inexistent stock</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='comma'>,</span>
+<span class='rbrace'>}</span></pre></dd>
+      
+        <dt id="Options-constant" class="">Options =
+          
+        </dt>
+        <dd><pre class="code"><span class='lbrace'>{</span><span class='symbol'>:wfc20</span> <span class='op'>=&gt;</span> <span class='const'>Models</span><span class='op'>::</span><span class='const'>Contract</span><span class='period'>.</span><span class='id new'>new</span><span class='lparen'>(</span><span class='symbol'>:symbol</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>WFC</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                <span class='symbol'>:exchange</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>SMART</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                <span class='symbol'>:expiry</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>201112</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                <span class='symbol'>:right</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>CALL</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                <span class='symbol'>:strike</span> <span class='op'>=&gt;</span> <span class='float'>20.0</span><span class='comma'>,</span>
+                                <span class='symbol'>:sec_type</span> <span class='op'>=&gt;</span> <span class='const'>SECURITY_TYPES</span><span class='lbracket'>[</span><span class='symbol'>:option</span><span class='rbracket'>]</span><span class='comma'>,</span>
+                                <span class='symbol'>:description</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Wells Fargo 20 Call 2011-12</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='comma'>,</span>
+ <span class='symbol'>:z50</span> <span class='op'>=&gt;</span> <span class='const'>Models</span><span class='op'>::</span><span class='const'>Contract</span><span class='period'>.</span><span class='id new'>new</span><span class='lparen'>(</span><span class='symbol'>:symbol</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Z</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                              <span class='symbol'>:exchange</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>LIFFE</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                              <span class='symbol'>:expiry</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>201112</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                              <span class='symbol'>:right</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>CALL</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                              <span class='symbol'>:strike</span> <span class='op'>=&gt;</span> <span class='float'>50.0</span><span class='comma'>,</span>
+                              <span class='symbol'>:sec_type</span> <span class='op'>=&gt;</span> <span class='const'>SECURITY_TYPES</span><span class='lbracket'>[</span><span class='symbol'>:option</span><span class='rbracket'>]</span><span class='comma'>,</span>
+                              <span class='symbol'>:description</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'> FTSE-100 index 50 Call 2011-12</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='comma'>,</span>
+
+<span class='rbrace'>}</span></pre></dd>
+      
+        <dt id="Futures-constant" class="">Futures =
+          
+        </dt>
+        <dd><pre class="code"><span class='lbrace'>{</span>
+    <span class='symbol'>:ym</span> <span class='op'>=&gt;</span> <span class='const'>Models</span><span class='op'>::</span><span class='const'>Contract</span><span class='period'>.</span><span class='id new'>new</span><span class='lparen'>(</span><span class='symbol'>:symbol</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>YM</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                <span class='symbol'>:expiry</span> <span class='op'>=&gt;</span> <span class='kw'>self</span><span class='period'>.</span><span class='id next_expiry'>next_expiry</span><span class='lparen'>(</span><span class='const'>Time</span><span class='period'>.</span><span class='id now'>now</span><span class='rparen'>)</span><span class='comma'>,</span>
+                                <span class='symbol'>:exchange</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>ECBOT</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                <span class='symbol'>:currency</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>USD</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                <span class='symbol'>:sec_type</span> <span class='op'>=&gt;</span> <span class='const'>SECURITY_TYPES</span><span class='lbracket'>[</span><span class='symbol'>:future</span><span class='rbracket'>]</span><span class='comma'>,</span>
+                                <span class='symbol'>:description</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Mini Dow Jones Industrial</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='comma'>,</span>
+
+    <span class='symbol'>:es</span> <span class='op'>=&gt;</span> <span class='const'>Models</span><span class='op'>::</span><span class='const'>Contract</span><span class='period'>.</span><span class='id new'>new</span><span class='lparen'>(</span><span class='symbol'>:symbol</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>ES</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                <span class='symbol'>:expiry</span> <span class='op'>=&gt;</span> <span class='kw'>self</span><span class='period'>.</span><span class='id next_expiry'>next_expiry</span><span class='lparen'>(</span><span class='const'>Time</span><span class='period'>.</span><span class='id now'>now</span><span class='rparen'>)</span><span class='comma'>,</span>
+                                <span class='symbol'>:exchange</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>GLOBEX</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                <span class='symbol'>:currency</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>USD</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                <span class='symbol'>:sec_type</span> <span class='op'>=&gt;</span> <span class='const'>SECURITY_TYPES</span><span class='lbracket'>[</span><span class='symbol'>:future</span><span class='rbracket'>]</span><span class='comma'>,</span>
+                                <span class='symbol'>:multiplier</span> <span class='op'>=&gt;</span> <span class='int'>50</span><span class='comma'>,</span>
+                                <span class='symbol'>:description</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>E-Mini S&amp;P 500</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='comma'>,</span>
+
+    <span class='symbol'>:gbp</span> <span class='op'>=&gt;</span> <span class='const'>Models</span><span class='op'>::</span><span class='const'>Contract</span><span class='period'>.</span><span class='id new'>new</span><span class='lparen'>(</span><span class='symbol'>:symbol</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>GBP</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                 <span class='symbol'>:expiry</span> <span class='op'>=&gt;</span> <span class='kw'>self</span><span class='period'>.</span><span class='id next_expiry'>next_expiry</span><span class='lparen'>(</span><span class='const'>Time</span><span class='period'>.</span><span class='id now'>now</span><span class='rparen'>)</span><span class='comma'>,</span>
+                                 <span class='symbol'>:exchange</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>GLOBEX</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                 <span class='symbol'>:currency</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>USD</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                 <span class='symbol'>:sec_type</span> <span class='op'>=&gt;</span> <span class='const'>SECURITY_TYPES</span><span class='lbracket'>[</span><span class='symbol'>:future</span><span class='rbracket'>]</span><span class='comma'>,</span>
+                                 <span class='symbol'>:multiplier</span> <span class='op'>=&gt;</span> <span class='int'>62500</span><span class='comma'>,</span>
+                                 <span class='symbol'>:description</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>British Pounds</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='comma'>,</span>
+
+    <span class='symbol'>:eur</span> <span class='op'>=&gt;</span> <span class='const'>Models</span><span class='op'>::</span><span class='const'>Contract</span><span class='period'>.</span><span class='id new'>new</span><span class='lparen'>(</span><span class='symbol'>:symbol</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>EUR</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                 <span class='symbol'>:expiry</span> <span class='op'>=&gt;</span> <span class='kw'>self</span><span class='period'>.</span><span class='id next_expiry'>next_expiry</span><span class='lparen'>(</span><span class='const'>Time</span><span class='period'>.</span><span class='id now'>now</span><span class='rparen'>)</span><span class='comma'>,</span>
+                                 <span class='symbol'>:exchange</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>GLOBEX</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                 <span class='symbol'>:currency</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>USD</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                 <span class='symbol'>:sec_type</span> <span class='op'>=&gt;</span> <span class='const'>SECURITY_TYPES</span><span class='lbracket'>[</span><span class='symbol'>:future</span><span class='rbracket'>]</span><span class='comma'>,</span>
+                                 <span class='symbol'>:multiplier</span> <span class='op'>=&gt;</span> <span class='int'>12500</span><span class='comma'>,</span>
+                                 <span class='symbol'>:description</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Euro FX</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='comma'>,</span>
+
+    <span class='symbol'>:jpy</span> <span class='op'>=&gt;</span> <span class='const'>Models</span><span class='op'>::</span><span class='const'>Contract</span><span class='period'>.</span><span class='id new'>new</span><span class='lparen'>(</span><span class='symbol'>:symbol</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>JPY</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                 <span class='symbol'>:expiry</span> <span class='op'>=&gt;</span> <span class='kw'>self</span><span class='period'>.</span><span class='id next_expiry'>next_expiry</span><span class='lparen'>(</span><span class='const'>Time</span><span class='period'>.</span><span class='id now'>now</span><span class='rparen'>)</span><span class='comma'>,</span>
+                                 <span class='symbol'>:exchange</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>GLOBEX</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                 <span class='symbol'>:currency</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>USD</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                 <span class='symbol'>:sec_type</span> <span class='op'>=&gt;</span> <span class='const'>SECURITY_TYPES</span><span class='lbracket'>[</span><span class='symbol'>:future</span><span class='rbracket'>]</span><span class='comma'>,</span>
+                                 <span class='symbol'>:multiplier</span> <span class='op'>=&gt;</span> <span class='int'>12500000</span><span class='comma'>,</span>
+                                 <span class='symbol'>:description</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Japanese Yen</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='comma'>,</span>
+
+    <span class='symbol'>:hsi</span> <span class='op'>=&gt;</span> <span class='const'>Models</span><span class='op'>::</span><span class='const'>Contract</span><span class='period'>.</span><span class='id new'>new</span><span class='lparen'>(</span><span class='symbol'>:symbol</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>HSI</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                 <span class='symbol'>:expiry</span> <span class='op'>=&gt;</span> <span class='kw'>self</span><span class='period'>.</span><span class='id next_expiry'>next_expiry</span><span class='lparen'>(</span><span class='const'>Time</span><span class='period'>.</span><span class='id now'>now</span><span class='rparen'>)</span><span class='comma'>,</span>
+                                 <span class='symbol'>:exchange</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>HKFE</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                 <span class='symbol'>:currency</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>HKD</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                 <span class='symbol'>:sec_type</span> <span class='op'>=&gt;</span> <span class='const'>SECURITY_TYPES</span><span class='lbracket'>[</span><span class='symbol'>:future</span><span class='rbracket'>]</span><span class='comma'>,</span>
+                                 <span class='symbol'>:multiplier</span> <span class='op'>=&gt;</span> <span class='int'>50</span><span class='comma'>,</span>
+                                 <span class='symbol'>:description</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Hang Seng Index</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+<span class='rbrace'>}</span></pre></dd>
+      
+    </dl>
+  
+
+
+
+
+
+  
+    <h2>
+      Class Method Summary
+      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#next_expiry-class_method" title="next_expiry (class method)">+ (Object) <strong>next_expiry</strong>(time) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#next_quarter_month-class_method" title="next_quarter_month (class method)">+ (Object) <strong>next_quarter_month</strong>(time) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Get the next valid quarter month >= today, for finding the
+front month of quarterly futures.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#next_quarter_year-class_method" title="next_quarter_year (class method)">+ (Object) <strong>next_quarter_year</strong>(time) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+    
+    
+      <div class="method_details first">
+  <p class="signature first" id="next_expiry-class_method">
+  
+    + (<tt>Object</tt>) <strong>next_expiry</strong>(time) 
+  
+
+  
+</p><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+33
+34
+35</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/symbols/futures.rb', line 33</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id next_expiry'>next_expiry</span><span class='lparen'>(</span><span class='id time'>time</span><span class='rparen'>)</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span> <span class='kw'>self</span><span class='period'>.</span><span class='id next_quarter_year'>next_quarter_year</span><span class='lparen'>(</span><span class='id time'>time</span><span class='rparen'>)</span> <span class='rbrace'>}</span><span class='embexpr_beg'>#{</span> <span class='kw'>self</span><span class='period'>.</span><span class='id next_quarter_month'>next_quarter_month</span><span class='lparen'>(</span><span class='id time'>time</span><span class='rparen'>)</span> <span class='rbrace'>}</span><span class='tstring_end'>&quot;</span></span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="next_quarter_month-class_method">
+  
+    + (<tt>Object</tt>) <strong>next_quarter_month</strong>(time) 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Get the next valid quarter month >= today, for finding the
+front month of quarterly futures.</p>
+
+<p>N.B. This will not work as expected near/after expiration during that month, as
+volume rolls over to the next quarter even though the current month is still valid!</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+21
+22
+23</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/symbols/futures.rb', line 21</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id next_quarter_month'>next_quarter_month</span><span class='lparen'>(</span><span class='id time'>time</span><span class='rparen'>)</span>
+  <span class='id sprintf'>sprintf</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>%02d</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='int'>3</span><span class='comma'>,</span> <span class='int'>6</span><span class='comma'>,</span> <span class='int'>9</span><span class='comma'>,</span> <span class='int'>12</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id find'>find</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id month'>month</span><span class='op'>|</span> <span class='id month'>month</span> <span class='op'>&gt;=</span> <span class='id time'>time</span><span class='period'>.</span><span class='id month'>month</span> <span class='rbrace'>}</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="next_quarter_year-class_method">
+  
+    + (<tt>Object</tt>) <strong>next_quarter_year</strong>(time) 
+  
+
+  
+</p><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+25
+26
+27
+28
+29
+30
+31</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/symbols/futures.rb', line 25</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id next_quarter_year'>next_quarter_year</span><span class='lparen'>(</span><span class='id time'>time</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='kw'>self</span><span class='period'>.</span><span class='id next_quarter_month'>next_quarter_month</span><span class='lparen'>(</span><span class='id time'>time</span><span class='rparen'>)</span><span class='period'>.</span><span class='id to_i'>to_i</span> <span class='op'>&lt;</span> <span class='id time'>time</span><span class='period'>.</span><span class='id month'>month</span>
+    <span class='id time'>time</span><span class='period'>.</span><span class='id year'>year</span> <span class='op'>+</span> <span class='int'>1</span>
+  <span class='kw'>else</span>
+    <span class='id time'>time</span><span class='period'>.</span><span class='id year'>year</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+    
+    <div id="footer">
+  Generated on Tue Nov 22 01:30:22 2011 by 
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.7.3 (ruby-1.9.2).
+</div>
+
+  </body>
+</html>

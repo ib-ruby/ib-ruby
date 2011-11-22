@@ -1,0 +1,149 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>
+  File: README
+  
+    &mdash; Documentation by YARD 0.7.3
+  
+</title>
+
+  <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" charset="utf-8" />
+
+  <link rel="stylesheet" href="css/common.css" type="text/css" media="screen" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  relpath = '';
+  if (relpath != '') relpath += '/';
+</script>
+
+  <script type="text/javascript" charset="utf-8" src="js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="js/app.js"></script>
+
+
+  </head>
+  <body>
+    <script type="text/javascript" charset="utf-8">
+      if (window.top.frames.main) document.body.className = 'frames';
+    </script>
+    
+    <div id="header">
+      <div id="menu">
+  
+    <a href="_index.html" title="Index">Index</a> &raquo; 
+    <span class="title">File: README</span>
+  
+  
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a id="class_list_link" href="#">Class List</a>
+  
+    <a id="method_list_link" href="#">Method List</a>
+  
+    <a id="file_list_link" href="#">File List</a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+    
+    <iframe id="search_frame"></iframe>
+    
+    <div id="content"><div id='filecontents'><h1>ib-ruby</h1>
+
+<p>Ruby Implementation of the Interactive Brokers Trader Workstation (TWS) API v.965.</p>
+
+<p>Copyright (C) 2006-2011 Paul Legato, Wes Devauld, and Ar Vicco.</p>
+
+<p><a href="https://github.com/pjlegato/ib-ruby">https://github.com/pjlegato/ib-ruby</a></p>
+
+<p><strong>WARNING:</strong> This software is provided <strong>AS-IS</strong> with <strong>NO WARRANTY</strong>, express or
+implied. Your use of this software is at your own risk. It may contain
+any number of bugs, known or unknown, which might cause you to lose
+money if you use it. You've been warned.</p>
+
+<p><strong>It is specifically NOT RECOMMENDED that this code be used for live trading.</strong></p>
+
+<p>This code is not sanctioned or supported by Interactive Brokers
+This software is available under the LGPL. See the file LICENSE for full licensing details.</p>
+
+<h2>REQUIREMENTS:</h2>
+
+<p>Either the Interactive Brokers
+<a href="http://www.interactivebrokers.com/en/p.php?f=tws">TWS</a>or
+<a href="http://www.interactivebrokers.com/en/control/systemstandalone-ibGateway.php?os=unix&amp;ib_entity=llc">IB Gateway</a>
+software must be installed and configured to allow API connections
+from the computer you plan to run ib-ruby on, which is typically
+localhost if you're running ib-ruby on the same machine as TWS.</p>
+
+<h2>INSTALLATION:</h2>
+
+<h3>From RubyGems</h3>
+
+<pre class="code">$ sudo gem install ib-ruby
+</pre>
+
+<h3>From Source</h3>
+
+<pre class="code">$ git clone https://github.com/pjlegato/ib-ruby
+$ cd ib-ruby; rake gem:install
+</pre>
+
+<h2>SYNOPSIS:</h2>
+
+<p>First, start up Interactive Broker's Trader Work Station or Gateway.
+Make sure it is configured to allow API connections on localhost.</p>
+
+<pre class="code">&gt;&gt; require 'ib-ruby'
+&gt;&gt; ib = IB::Connection.new
+&gt;&gt; ib.subscribe(:Alert, :AccountValue) { |msg| puts msg.to_human }
+&gt;&gt; ib.send_message :RequestAccountData, :subscribe =&gt; true
+</pre>
+
+<p>Your code and TWS interact via an exchange of messages. You
+subscribe to message types you're interested in using
+<code>IB::Connection#subscribe</code> and request data from TWS using
+<code>IB::Connection#send_message</code>.</p>
+
+<p>The code blocks (or procs) given to <code>#subscribe</code> will be executed when
+a message of the requested type is received, with the received message as
+its argument.</p>
+
+<p>See <code>lib/ib-ruby/messages</code> for a full list of supported incoming/outgoing messages and
+their attributes. The original TWS docs and code samples can be found
+in the <code>misc/</code> folder.</p>
+
+<p>The sample scripts in the <code>bin/</code> directory provide examples of how
+common tasks can be achieved using ib-ruby.</p>
+
+<h2>LICENSE:</h2>
+
+<p>This library is free software; you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation; either version 2.1 of the
+License, or (at your option) any later version.</p>
+
+<p>This library is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+Lesser General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301 USA</p>
+</div></div>
+    
+    <div id="footer">
+  Generated on Tue Nov 22 01:30:22 2011 by 
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.7.3 (ruby-1.9.2).
+</div>
+
+  </body>
+</html>

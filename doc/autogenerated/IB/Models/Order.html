@@ -1,0 +1,5662 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>
+  Class: IB::Models::Order
+  
+    &mdash; Documentation by YARD 0.7.3
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" media="screen" charset="utf-8" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" media="screen" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  relpath = '../..';
+  if (relpath != '') relpath += '/';
+</script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <script type="text/javascript" charset="utf-8">
+      if (window.top.frames.main) document.body.className = 'frames';
+    </script>
+    
+    <div id="header">
+      <div id="menu">
+  
+    <a href="../../_index.html">Index (O)</a> &raquo; 
+    <span class='title'><span class='object_link'><a href="../../IB.html" title="IB (module)">IB</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Models.html" title="IB::Models (module)">Models</a></span></span>
+     &raquo; 
+    <span class="title">Order</span>
+  
+  
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a id="class_list_link" href="#">Class List</a>
+  
+    <a id="method_list_link" href="#">Method List</a>
+  
+    <a id="file_list_link" href="#">File List</a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+    
+    <iframe id="search_frame"></iframe>
+    
+    <div id="content"><h1>Class: IB::Models::Order
+  
+  
+  
+</h1>
+
+<dl class="box">
+  
+    <dt class="r1">Inherits:</dt>
+    <dd class="r1">
+      <span class="inheritName"><span class='object_link'><a href="Model.html" title="IB::Models::Model (class)">Model</a></span></span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next"><span class='object_link'><a href="Model.html" title="IB::Models::Model (class)">Model</a></span></li>
+          
+            <li class="next">IB::Models::Order</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+      </dd>
+    
+  
+  
+    
+  
+    
+  
+  
+  
+    <dt class="r2 last">Defined in:</dt>
+    <dd class="r2 last">lib/ib-ruby/models/order.rb</dd>
+  
+</dl>
+<div class="clear"></div>
+
+
+  <h2>Constant Summary</h2>
+  
+    <dl class="constants">
+      
+        <dt id="Origin_Customer-constant" class="">Origin_Customer =
+          <div class="docstring">
+  <div class="discussion">
+    <p>Constants used in Order objects. Drawn from Order.java</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='int'>0</span></pre></dd>
+      
+        <dt id="Origin_Firm-constant" class="">Origin_Firm =
+          
+        </dt>
+        <dd><pre class="code"><span class='int'>1</span></pre></dd>
+      
+        <dt id="Opt_Unknown-constant" class="">Opt_Unknown =
+          
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>?</span><span class='tstring_end'>'</span></span></pre></dd>
+      
+        <dt id="Opt_Broker_Dealer-constant" class="">Opt_Broker_Dealer =
+          
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>b</span><span class='tstring_end'>'</span></span></pre></dd>
+      
+        <dt id="Opt_Customer-constant" class="">Opt_Customer =
+          
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>c</span><span class='tstring_end'>'</span></span></pre></dd>
+      
+        <dt id="Opt_Firm-constant" class="">Opt_Firm =
+          
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>f</span><span class='tstring_end'>'</span></span></pre></dd>
+      
+        <dt id="Opt_Isemm-constant" class="">Opt_Isemm =
+          
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>m</span><span class='tstring_end'>'</span></span></pre></dd>
+      
+        <dt id="Opt_Farmm-constant" class="">Opt_Farmm =
+          
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>n</span><span class='tstring_end'>'</span></span></pre></dd>
+      
+        <dt id="Opt_Specialist-constant" class="">Opt_Specialist =
+          
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>y</span><span class='tstring_end'>'</span></span></pre></dd>
+      
+        <dt id="OCA_Cancel_with_block-constant" class="">OCA_Cancel_with_block =
+          
+        </dt>
+        <dd><pre class="code"><span class='int'>1</span></pre></dd>
+      
+        <dt id="OCA_Reduce_with_block-constant" class="">OCA_Reduce_with_block =
+          
+        </dt>
+        <dd><pre class="code"><span class='int'>2</span></pre></dd>
+      
+        <dt id="OCA_Reduce_non_block-constant" class="">OCA_Reduce_non_block =
+          
+        </dt>
+        <dd><pre class="code"><span class='int'>3</span></pre></dd>
+      
+        <dt id="Box_Auction_Match-constant" class="">Box_Auction_Match =
+          <div class="docstring">
+  <div class="discussion">
+    <p>Box orders consts:</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='int'>1</span></pre></dd>
+      
+        <dt id="Box_Auction_Improvement-constant" class="">Box_Auction_Improvement =
+          
+        </dt>
+        <dd><pre class="code"><span class='int'>2</span></pre></dd>
+      
+        <dt id="Box_Auction_Transparent-constant" class="">Box_Auction_Transparent =
+          
+        </dt>
+        <dd><pre class="code"><span class='int'>3</span></pre></dd>
+      
+        <dt id="Volatility_Type_Daily-constant" class="">Volatility_Type_Daily =
+          <div class="docstring">
+  <div class="discussion">
+    <p>Volatility orders consts:</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='int'>1</span></pre></dd>
+      
+        <dt id="Volatility_Type_Annual-constant" class="">Volatility_Type_Annual =
+          
+        </dt>
+        <dd><pre class="code"><span class='int'>2</span></pre></dd>
+      
+        <dt id="Volatility_Ref_Price_Average-constant" class="">Volatility_Ref_Price_Average =
+          
+        </dt>
+        <dd><pre class="code"><span class='int'>1</span></pre></dd>
+      
+        <dt id="Volatility_Ref_Price_BidOrAsk-constant" class="">Volatility_Ref_Price_BidOrAsk =
+          
+        </dt>
+        <dd><pre class="code"><span class='int'>2</span></pre></dd>
+      
+        <dt id="Max_Value-constant" class="">Max_Value =
+          <div class="docstring">
+  <div class="discussion">
+    <p>No idea why IB uses a large number as the default for some fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='int'>99999999</span></pre></dd>
+      
+    </dl>
+  
+
+
+  
+  
+  
+  
+  <h2>Instance Attribute Summary <small>(<a href="#" class="summary_toggle">collapse</a>)</small></h2>
+  <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#account-instance_method" title="#account (instance method)">- (Object) <strong>account</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#action-instance_method" title="#action (instance method)">- (Object) <strong>action</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#algo_params-instance_method" title="#algo_params (instance method)">- (Object) <strong>algo_params</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#algo_strategy-instance_method" title="#algo_strategy (instance method)">- (Object) <strong>algo_strategy</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#all_or_none-instance_method" title="#all_or_none (instance method)">- (Object) <strong>all_or_none</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#auction_strategy-instance_method" title="#auction_strategy (instance method)">- (Object) <strong>auction_strategy</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#aux_price-instance_method" title="#aux_price (instance method)">- (Object) <strong>aux_price</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#basis_points-instance_method" title="#basis_points (instance method)">- (Object) <strong>basis_points</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#basis_points_type-instance_method" title="#basis_points_type (instance method)">- (Object) <strong>basis_points_type</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#block_order-instance_method" title="#block_order (instance method)">- (Object) <strong>block_order</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#clearing_account-instance_method" title="#clearing_account (instance method)">- (Object) <strong>clearing_account</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#clearing_intent-instance_method" title="#clearing_intent (instance method)">- (Object) <strong>clearing_intent</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#client_id-instance_method" title="#client_id (instance method)">- (Object) <strong>client_id</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#commission-instance_method" title="#commission (instance method)">- (Object) <strong>commission</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Some Order properties (received back from IB) are separated into
+OrderState object.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#commission_currency-instance_method" title="#commission_currency (instance method)">- (Object) <strong>commission_currency</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Some Order properties (received back from IB) are separated into
+OrderState object.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#continuous_update-instance_method" title="#continuous_update (instance method)">- (Object) <strong>continuous_update</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#delta-instance_method" title="#delta (instance method)">- (Object) <strong>delta</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#delta_neutral_aux_price-instance_method" title="#delta_neutral_aux_price (instance method)">- (Object) <strong>delta_neutral_aux_price</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#delta_neutral_order_type-instance_method" title="#delta_neutral_order_type (instance method)">- (Object) <strong>delta_neutral_order_type</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#designated_location-instance_method" title="#designated_location (instance method)">- (Object) <strong>designated_location</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#discretionary_amount-instance_method" title="#discretionary_amount (instance method)">- (Object) <strong>discretionary_amount</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#display_size-instance_method" title="#display_size (instance method)">- (Object) <strong>display_size</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#equity_with_loan-instance_method" title="#equity_with_loan (instance method)">- (Object) <strong>equity_with_loan</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Some Order properties (received back from IB) are separated into
+OrderState object.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#etrade_only-instance_method" title="#etrade_only (instance method)">- (Object) <strong>etrade_only</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#exempt_code-instance_method" title="#exempt_code (instance method)">- (Object) <strong>exempt_code</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#fa_group-instance_method" title="#fa_group (instance method)">- (Object) <strong>fa_group</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#fa_method-instance_method" title="#fa_method (instance method)">- (Object) <strong>fa_method</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#fa_percentage-instance_method" title="#fa_percentage (instance method)">- (Object) <strong>fa_percentage</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#fa_profile-instance_method" title="#fa_profile (instance method)">- (Object) <strong>fa_profile</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#firm_quote_only-instance_method" title="#firm_quote_only (instance method)">- (Object) <strong>firm_quote_only</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#good_after_time-instance_method" title="#good_after_time (instance method)">- (Object) <strong>good_after_time</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#good_till_date-instance_method" title="#good_till_date (instance method)">- (Object) <strong>good_till_date</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#hidden-instance_method" title="#hidden (instance method)">- (Object) <strong>hidden</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#id-instance_method" title="#id (instance method)">- (Object) <strong>id</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#init_margin-instance_method" title="#init_margin (instance method)">- (Object) <strong>init_margin</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Some Order properties (received back from IB) are separated into
+OrderState object.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#limit_price-instance_method" title="#limit_price (instance method)">- (Object) <strong>limit_price</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#maint_margin-instance_method" title="#maint_margin (instance method)">- (Object) <strong>maint_margin</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Some Order properties (received back from IB) are separated into
+OrderState object.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#max_commission-instance_method" title="#max_commission (instance method)">- (Object) <strong>max_commission</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Some Order properties (received back from IB) are separated into
+OrderState object.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#min_commission-instance_method" title="#min_commission (instance method)">- (Object) <strong>min_commission</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Some Order properties (received back from IB) are separated into
+OrderState object.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#min_quantity-instance_method" title="#min_quantity (instance method)">- (Object) <strong>min_quantity</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#nbbo_price_cap-instance_method" title="#nbbo_price_cap (instance method)">- (Object) <strong>nbbo_price_cap</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#not_held-instance_method" title="#not_held (instance method)">- (Object) <strong>not_held</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#oca_group-instance_method" title="#oca_group (instance method)">- (Object) <strong>oca_group</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#oca_type-instance_method" title="#oca_type (instance method)">- (Object) <strong>oca_type</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#open_close-instance_method" title="#open_close (instance method)">- (Object) <strong>open_close</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#order_ref-instance_method" title="#order_ref (instance method)">- (Object) <strong>order_ref</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#order_type-instance_method" title="#order_type (instance method)">- (Object) <strong>order_type</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#origin-instance_method" title="#origin (instance method)">- (Object) <strong>origin</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#outside_rth-instance_method" title="#outside_rth (instance method)">- (Object) <strong>outside_rth</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#override_percentage_constraints-instance_method" title="#override_percentage_constraints (instance method)">- (Object) <strong>override_percentage_constraints</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#parent_id-instance_method" title="#parent_id (instance method)">- (Object) <strong>parent_id</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#percent_offset-instance_method" title="#percent_offset (instance method)">- (Object) <strong>percent_offset</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#perm_id-instance_method" title="#perm_id (instance method)">- (Object) <strong>perm_id</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#reference_price_type-instance_method" title="#reference_price_type (instance method)">- (Object) <strong>reference_price_type</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#rule_80a-instance_method" title="#rule_80a (instance method)">- (Object) <strong>rule_80a</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#scale_init_level_size-instance_method" title="#scale_init_level_size (instance method)">- (Object) <strong>scale_init_level_size</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#scale_price_increment-instance_method" title="#scale_price_increment (instance method)">- (Object) <strong>scale_price_increment</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#scale_subs_level_size-instance_method" title="#scale_subs_level_size (instance method)">- (Object) <strong>scale_subs_level_size</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#settling_firm-instance_method" title="#settling_firm (instance method)">- (Object) <strong>settling_firm</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#short_sale_slot-instance_method" title="#short_sale_slot (instance method)">- (Object) <strong>short_sale_slot</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#starting_price-instance_method" title="#starting_price (instance method)">- (Object) <strong>starting_price</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#status-instance_method" title="#status (instance method)">- (Object) <strong>status</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Some Order properties (received back from IB) are separated into
+OrderState object.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#stock_range_lower-instance_method" title="#stock_range_lower (instance method)">- (Object) <strong>stock_range_lower</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#stock_range_upper-instance_method" title="#stock_range_upper (instance method)">- (Object) <strong>stock_range_upper</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#stock_ref_price-instance_method" title="#stock_ref_price (instance method)">- (Object) <strong>stock_ref_price</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#sweep_to_fill-instance_method" title="#sweep_to_fill (instance method)">- (Object) <strong>sweep_to_fill</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#tif-instance_method" title="#tif (instance method)">- (Object) <strong>tif</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#total_quantity-instance_method" title="#total_quantity (instance method)">- (Object) <strong>total_quantity</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#trail_stop_price-instance_method" title="#trail_stop_price (instance method)">- (Object) <strong>trail_stop_price</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#transmit-instance_method" title="#transmit (instance method)">- (Object) <strong>transmit</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#trigger_method-instance_method" title="#trigger_method (instance method)">- (Object) <strong>trigger_method</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#volatility-instance_method" title="#volatility (instance method)">- (Object) <strong>volatility</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#volatility_type-instance_method" title="#volatility_type (instance method)">- (Object) <strong>volatility_type</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#warning_text-instance_method" title="#warning_text (instance method)">- (Object) <strong>warning_text</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Some Order properties (received back from IB) are separated into
+OrderState object.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#what_if-instance_method" title="#what_if (instance method)">- (Object) <strong>what_if</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Main order fields.</p>
+</div></span>
+  
+</li>
+
+    
+  </ul>
+
+
+
+  
+  
+  
+  
+  
+  <h3 class="inherited">Attributes inherited from <span class='object_link'><a href="Model.html" title="IB::Models::Model (class)">Model</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Model.html#created_at-instance_method" title="IB::Models::Model#created_at (method)">created_at</a></span></p>
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">- (Order) <strong>initialize</strong>(opts = {}) </a>
+    
+
+    
+  </span>
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A new instance of Order.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#serialize_algo-instance_method" title="#serialize_algo (instance method)">- (Object) <strong>serialize_algo</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#serialize_with-instance_method" title="#serialize_with (instance method)">- (Object) <strong>serialize_with</strong>(contract) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>This returns an Array of data from the given order,
+mixed with data from associated contract.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+  
+  
+  <div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <p class="signature first" id="initialize-instance_method">
+  
+    - (<tt><span class='object_link'><a href="" title="IB::Models::Order (class)">Order</a></span></tt>) <strong>initialize</strong>(opts = {}) 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>A new instance of Order</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258
+259</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 219</span>
+
+<span class='kw'>def</span> <span class='id initialize'>initialize</span> <span class='id opts'>opts</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+  <span class='comment'># Assign defaults first!
+</span>  <span class='ivar'>@outside_rth</span> <span class='op'>=</span> <span class='kw'>false</span>
+  <span class='ivar'>@open_close</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>O</span><span class='tstring_end'>&quot;</span></span>
+  <span class='ivar'>@origin</span> <span class='op'>=</span> <span class='const'>Origin_Customer</span>
+  <span class='ivar'>@transmit</span> <span class='op'>=</span> <span class='kw'>true</span>
+  <span class='ivar'>@designated_location</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_end'>'</span></span>
+  <span class='ivar'>@exempt_code</span> <span class='op'>=</span> <span class='op'>-</span><span class='int'>1</span>
+  <span class='ivar'>@delta_neutral_order_type</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_end'>'</span></span>
+  <span class='ivar'>@what_if</span> <span class='op'>=</span> <span class='kw'>false</span>
+  <span class='ivar'>@not_held</span> <span class='op'>=</span> <span class='kw'>false</span>
+  <span class='ivar'>@algo_strategy</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_end'>'</span></span>
+  <span class='ivar'>@algo_params</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+
+  <span class='comment'># TODO: Initialize with nil instead of Max_Value, or change
+</span>  <span class='comment'>#       Order sending code in IB::Messages::Outgoing::PlaceOrder
+</span>  <span class='comment'>#@min_quantity = Max_Value
+</span>  <span class='comment'>#@percent_offset = Max_Value # -&quot;-
+</span>  <span class='comment'>#@nbbo_price_cap = Max_Value # -&quot;-
+</span>  <span class='comment'>#@starting_price = Max_Value # -&quot;-
+</span>  <span class='comment'>#@stock_ref_price = Max_Value # -&quot;-
+</span>  <span class='comment'>#@delta = Max_Value
+</span>  <span class='comment'>#@stock_range_lower = Max_Value # -&quot;-
+</span>  <span class='comment'>#@stock_range_upper = Max_Value # -&quot;-
+</span>  <span class='comment'>#@volatility = Max_Value # -&quot;-
+</span>  <span class='comment'>#@volatility_type = Max_Value # -&quot;-
+</span>  <span class='comment'>#@delta_neutral_aux_price = Max_Value # -&quot;-
+</span>  <span class='comment'>#@reference_price_type = Max_Value # -&quot;-
+</span>  <span class='comment'>#@trail_stop_price = Max_Value # -&quot;-
+</span>  <span class='comment'>#@basis_points = Max_Value # -&quot;-
+</span>  <span class='comment'>#@basis_points_type = Max_Value # -&quot;-
+</span>  <span class='comment'>#@scale_init_level_size = Max_Value # -&quot;-
+</span>  <span class='comment'>#@scale_subs_level_size = Max_Value # -&quot;-
+</span>  <span class='comment'>#@scale_price_increment = Max_Value # -&quot;-
+</span>  <span class='comment'>#@reference_price_type = Max_Value # -&quot;-
+</span>  <span class='comment'>#@reference_price_type = Max_Value # -&quot;-
+</span>  <span class='comment'>#@reference_price_type = Max_Value # -&quot;-
+</span>  <span class='comment'>#@reference_price_type = Max_Value # -&quot;-
+</span>
+  <span class='kw'>super</span> <span class='id opts'>opts</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+  <div id="instance_attr_details" class="attr_details">
+    <h2>Instance Attribute Details</h2>
+    
+      
+      <span id="account=-instance_method"></span>
+      <span id="account-instance_method"></span>
+      <div class="method_details first">
+  <p class="signature first" id="account-instance_method">
+  
+    - (<tt>Object</tt>) <strong>account</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id account'>account</span>
+  <span class='ivar'>@account</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="action=-instance_method"></span>
+      <span id="action-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="action-instance_method">
+  
+    - (<tt>Object</tt>) <strong>action</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id action'>action</span>
+  <span class='ivar'>@action</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="algo_params=-instance_method"></span>
+      <span id="algo_params-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="algo_params-instance_method">
+  
+    - (<tt>Object</tt>) <strong>algo_params</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id algo_params'>algo_params</span>
+  <span class='ivar'>@algo_params</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="algo_strategy=-instance_method"></span>
+      <span id="algo_strategy-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="algo_strategy-instance_method">
+  
+    - (<tt>Object</tt>) <strong>algo_strategy</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id algo_strategy'>algo_strategy</span>
+  <span class='ivar'>@algo_strategy</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="all_or_none=-instance_method"></span>
+      <span id="all_or_none-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="all_or_none-instance_method">
+  
+    - (<tt>Object</tt>) <strong>all_or_none</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id all_or_none'>all_or_none</span>
+  <span class='ivar'>@all_or_none</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="auction_strategy=-instance_method"></span>
+      <span id="auction_strategy-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="auction_strategy-instance_method">
+  
+    - (<tt>Object</tt>) <strong>auction_strategy</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id auction_strategy'>auction_strategy</span>
+  <span class='ivar'>@auction_strategy</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="aux_price=-instance_method"></span>
+      <span id="aux_price-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="aux_price-instance_method">
+  
+    - (<tt>Object</tt>) <strong>aux_price</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id aux_price'>aux_price</span>
+  <span class='ivar'>@aux_price</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="basis_points=-instance_method"></span>
+      <span id="basis_points-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="basis_points-instance_method">
+  
+    - (<tt>Object</tt>) <strong>basis_points</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id basis_points'>basis_points</span>
+  <span class='ivar'>@basis_points</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="basis_points_type=-instance_method"></span>
+      <span id="basis_points_type-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="basis_points_type-instance_method">
+  
+    - (<tt>Object</tt>) <strong>basis_points_type</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id basis_points_type'>basis_points_type</span>
+  <span class='ivar'>@basis_points_type</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="block_order=-instance_method"></span>
+      <span id="block_order-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="block_order-instance_method">
+  
+    - (<tt>Object</tt>) <strong>block_order</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id block_order'>block_order</span>
+  <span class='ivar'>@block_order</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="clearing_account=-instance_method"></span>
+      <span id="clearing_account-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="clearing_account-instance_method">
+  
+    - (<tt>Object</tt>) <strong>clearing_account</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id clearing_account'>clearing_account</span>
+  <span class='ivar'>@clearing_account</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="clearing_intent=-instance_method"></span>
+      <span id="clearing_intent-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="clearing_intent-instance_method">
+  
+    - (<tt>Object</tt>) <strong>clearing_intent</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id clearing_intent'>clearing_intent</span>
+  <span class='ivar'>@clearing_intent</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="client_id=-instance_method"></span>
+      <span id="client_id-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="client_id-instance_method">
+  
+    - (<tt>Object</tt>) <strong>client_id</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id client_id'>client_id</span>
+  <span class='ivar'>@client_id</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="commission=-instance_method"></span>
+      <span id="commission-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="commission-instance_method">
+  
+    - (<tt>Object</tt>) <strong>commission</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Some Order properties (received back from IB) are separated into
+OrderState object. Here, they are lumped into Order proper: see OrderState.java</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+203
+204
+205</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 203</span>
+
+<span class='kw'>def</span> <span class='id commission'>commission</span>
+  <span class='ivar'>@commission</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="commission_currency=-instance_method"></span>
+      <span id="commission_currency-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="commission_currency-instance_method">
+  
+    - (<tt>Object</tt>) <strong>commission_currency</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Some Order properties (received back from IB) are separated into
+OrderState object. Here, they are lumped into Order proper: see OrderState.java</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+203
+204
+205</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 203</span>
+
+<span class='kw'>def</span> <span class='id commission_currency'>commission_currency</span>
+  <span class='ivar'>@commission_currency</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="continuous_update=-instance_method"></span>
+      <span id="continuous_update-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="continuous_update-instance_method">
+  
+    - (<tt>Object</tt>) <strong>continuous_update</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id continuous_update'>continuous_update</span>
+  <span class='ivar'>@continuous_update</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="delta=-instance_method"></span>
+      <span id="delta-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="delta-instance_method">
+  
+    - (<tt>Object</tt>) <strong>delta</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id delta'>delta</span>
+  <span class='ivar'>@delta</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="delta_neutral_aux_price=-instance_method"></span>
+      <span id="delta_neutral_aux_price-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="delta_neutral_aux_price-instance_method">
+  
+    - (<tt>Object</tt>) <strong>delta_neutral_aux_price</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id delta_neutral_aux_price'>delta_neutral_aux_price</span>
+  <span class='ivar'>@delta_neutral_aux_price</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="delta_neutral_order_type=-instance_method"></span>
+      <span id="delta_neutral_order_type-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="delta_neutral_order_type-instance_method">
+  
+    - (<tt>Object</tt>) <strong>delta_neutral_order_type</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id delta_neutral_order_type'>delta_neutral_order_type</span>
+  <span class='ivar'>@delta_neutral_order_type</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="designated_location=-instance_method"></span>
+      <span id="designated_location-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="designated_location-instance_method">
+  
+    - (<tt>Object</tt>) <strong>designated_location</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id designated_location'>designated_location</span>
+  <span class='ivar'>@designated_location</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="discretionary_amount=-instance_method"></span>
+      <span id="discretionary_amount-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="discretionary_amount-instance_method">
+  
+    - (<tt>Object</tt>) <strong>discretionary_amount</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id discretionary_amount'>discretionary_amount</span>
+  <span class='ivar'>@discretionary_amount</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="display_size=-instance_method"></span>
+      <span id="display_size-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="display_size-instance_method">
+  
+    - (<tt>Object</tt>) <strong>display_size</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id display_size'>display_size</span>
+  <span class='ivar'>@display_size</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="equity_with_loan=-instance_method"></span>
+      <span id="equity_with_loan-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="equity_with_loan-instance_method">
+  
+    - (<tt>Object</tt>) <strong>equity_with_loan</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Some Order properties (received back from IB) are separated into
+OrderState object. Here, they are lumped into Order proper: see OrderState.java</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+203
+204
+205</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 203</span>
+
+<span class='kw'>def</span> <span class='id equity_with_loan'>equity_with_loan</span>
+  <span class='ivar'>@equity_with_loan</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="etrade_only=-instance_method"></span>
+      <span id="etrade_only-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="etrade_only-instance_method">
+  
+    - (<tt>Object</tt>) <strong>etrade_only</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id etrade_only'>etrade_only</span>
+  <span class='ivar'>@etrade_only</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="exempt_code=-instance_method"></span>
+      <span id="exempt_code-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="exempt_code-instance_method">
+  
+    - (<tt>Object</tt>) <strong>exempt_code</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id exempt_code'>exempt_code</span>
+  <span class='ivar'>@exempt_code</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="fa_group=-instance_method"></span>
+      <span id="fa_group-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="fa_group-instance_method">
+  
+    - (<tt>Object</tt>) <strong>fa_group</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id fa_group'>fa_group</span>
+  <span class='ivar'>@fa_group</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="fa_method=-instance_method"></span>
+      <span id="fa_method-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="fa_method-instance_method">
+  
+    - (<tt>Object</tt>) <strong>fa_method</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id fa_method'>fa_method</span>
+  <span class='ivar'>@fa_method</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="fa_percentage=-instance_method"></span>
+      <span id="fa_percentage-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="fa_percentage-instance_method">
+  
+    - (<tt>Object</tt>) <strong>fa_percentage</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id fa_percentage'>fa_percentage</span>
+  <span class='ivar'>@fa_percentage</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="fa_profile=-instance_method"></span>
+      <span id="fa_profile-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="fa_profile-instance_method">
+  
+    - (<tt>Object</tt>) <strong>fa_profile</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id fa_profile'>fa_profile</span>
+  <span class='ivar'>@fa_profile</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="firm_quote_only=-instance_method"></span>
+      <span id="firm_quote_only-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="firm_quote_only-instance_method">
+  
+    - (<tt>Object</tt>) <strong>firm_quote_only</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id firm_quote_only'>firm_quote_only</span>
+  <span class='ivar'>@firm_quote_only</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="good_after_time=-instance_method"></span>
+      <span id="good_after_time-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="good_after_time-instance_method">
+  
+    - (<tt>Object</tt>) <strong>good_after_time</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id good_after_time'>good_after_time</span>
+  <span class='ivar'>@good_after_time</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="good_till_date=-instance_method"></span>
+      <span id="good_till_date-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="good_till_date-instance_method">
+  
+    - (<tt>Object</tt>) <strong>good_till_date</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id good_till_date'>good_till_date</span>
+  <span class='ivar'>@good_till_date</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="hidden=-instance_method"></span>
+      <span id="hidden-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="hidden-instance_method">
+  
+    - (<tt>Object</tt>) <strong>hidden</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id hidden'>hidden</span>
+  <span class='ivar'>@hidden</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="id=-instance_method"></span>
+      <span id="id-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="id-instance_method">
+  
+    - (<tt>Object</tt>) <strong>id</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id id'>id</span>
+  <span class='ivar'>@id</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="init_margin=-instance_method"></span>
+      <span id="init_margin-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="init_margin-instance_method">
+  
+    - (<tt>Object</tt>) <strong>init_margin</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Some Order properties (received back from IB) are separated into
+OrderState object. Here, they are lumped into Order proper: see OrderState.java</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+203
+204
+205</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 203</span>
+
+<span class='kw'>def</span> <span class='id init_margin'>init_margin</span>
+  <span class='ivar'>@init_margin</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="limit_price=-instance_method"></span>
+      <span id="limit_price-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="limit_price-instance_method">
+  
+    - (<tt>Object</tt>) <strong>limit_price</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id limit_price'>limit_price</span>
+  <span class='ivar'>@limit_price</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="maint_margin=-instance_method"></span>
+      <span id="maint_margin-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="maint_margin-instance_method">
+  
+    - (<tt>Object</tt>) <strong>maint_margin</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Some Order properties (received back from IB) are separated into
+OrderState object. Here, they are lumped into Order proper: see OrderState.java</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+203
+204
+205</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 203</span>
+
+<span class='kw'>def</span> <span class='id maint_margin'>maint_margin</span>
+  <span class='ivar'>@maint_margin</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="max_commission=-instance_method"></span>
+      <span id="max_commission-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="max_commission-instance_method">
+  
+    - (<tt>Object</tt>) <strong>max_commission</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Some Order properties (received back from IB) are separated into
+OrderState object. Here, they are lumped into Order proper: see OrderState.java</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+203
+204
+205</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 203</span>
+
+<span class='kw'>def</span> <span class='id max_commission'>max_commission</span>
+  <span class='ivar'>@max_commission</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="min_commission=-instance_method"></span>
+      <span id="min_commission-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="min_commission-instance_method">
+  
+    - (<tt>Object</tt>) <strong>min_commission</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Some Order properties (received back from IB) are separated into
+OrderState object. Here, they are lumped into Order proper: see OrderState.java</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+203
+204
+205</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 203</span>
+
+<span class='kw'>def</span> <span class='id min_commission'>min_commission</span>
+  <span class='ivar'>@min_commission</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="min_quantity=-instance_method"></span>
+      <span id="min_quantity-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="min_quantity-instance_method">
+  
+    - (<tt>Object</tt>) <strong>min_quantity</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id min_quantity'>min_quantity</span>
+  <span class='ivar'>@min_quantity</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="nbbo_price_cap=-instance_method"></span>
+      <span id="nbbo_price_cap-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="nbbo_price_cap-instance_method">
+  
+    - (<tt>Object</tt>) <strong>nbbo_price_cap</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id nbbo_price_cap'>nbbo_price_cap</span>
+  <span class='ivar'>@nbbo_price_cap</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="not_held=-instance_method"></span>
+      <span id="not_held-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="not_held-instance_method">
+  
+    - (<tt>Object</tt>) <strong>not_held</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id not_held'>not_held</span>
+  <span class='ivar'>@not_held</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="oca_group=-instance_method"></span>
+      <span id="oca_group-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="oca_group-instance_method">
+  
+    - (<tt>Object</tt>) <strong>oca_group</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id oca_group'>oca_group</span>
+  <span class='ivar'>@oca_group</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="oca_type=-instance_method"></span>
+      <span id="oca_type-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="oca_type-instance_method">
+  
+    - (<tt>Object</tt>) <strong>oca_type</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id oca_type'>oca_type</span>
+  <span class='ivar'>@oca_type</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="open_close=-instance_method"></span>
+      <span id="open_close-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="open_close-instance_method">
+  
+    - (<tt>Object</tt>) <strong>open_close</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id open_close'>open_close</span>
+  <span class='ivar'>@open_close</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="order_ref=-instance_method"></span>
+      <span id="order_ref-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="order_ref-instance_method">
+  
+    - (<tt>Object</tt>) <strong>order_ref</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id order_ref'>order_ref</span>
+  <span class='ivar'>@order_ref</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="order_type=-instance_method"></span>
+      <span id="order_type-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="order_type-instance_method">
+  
+    - (<tt>Object</tt>) <strong>order_type</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id order_type'>order_type</span>
+  <span class='ivar'>@order_type</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="origin=-instance_method"></span>
+      <span id="origin-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="origin-instance_method">
+  
+    - (<tt>Object</tt>) <strong>origin</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id origin'>origin</span>
+  <span class='ivar'>@origin</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="outside_rth=-instance_method"></span>
+      <span id="outside_rth-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="outside_rth-instance_method">
+  
+    - (<tt>Object</tt>) <strong>outside_rth</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id outside_rth'>outside_rth</span>
+  <span class='ivar'>@outside_rth</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="override_percentage_constraints=-instance_method"></span>
+      <span id="override_percentage_constraints-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="override_percentage_constraints-instance_method">
+  
+    - (<tt>Object</tt>) <strong>override_percentage_constraints</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id override_percentage_constraints'>override_percentage_constraints</span>
+  <span class='ivar'>@override_percentage_constraints</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="parent_id=-instance_method"></span>
+      <span id="parent_id-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="parent_id-instance_method">
+  
+    - (<tt>Object</tt>) <strong>parent_id</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id parent_id'>parent_id</span>
+  <span class='ivar'>@parent_id</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="percent_offset=-instance_method"></span>
+      <span id="percent_offset-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="percent_offset-instance_method">
+  
+    - (<tt>Object</tt>) <strong>percent_offset</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id percent_offset'>percent_offset</span>
+  <span class='ivar'>@percent_offset</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="perm_id=-instance_method"></span>
+      <span id="perm_id-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="perm_id-instance_method">
+  
+    - (<tt>Object</tt>) <strong>perm_id</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id perm_id'>perm_id</span>
+  <span class='ivar'>@perm_id</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="reference_price_type=-instance_method"></span>
+      <span id="reference_price_type-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="reference_price_type-instance_method">
+  
+    - (<tt>Object</tt>) <strong>reference_price_type</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id reference_price_type'>reference_price_type</span>
+  <span class='ivar'>@reference_price_type</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="rule_80a=-instance_method"></span>
+      <span id="rule_80a-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="rule_80a-instance_method">
+  
+    - (<tt>Object</tt>) <strong>rule_80a</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id rule_80a'>rule_80a</span>
+  <span class='ivar'>@rule_80a</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="scale_init_level_size=-instance_method"></span>
+      <span id="scale_init_level_size-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="scale_init_level_size-instance_method">
+  
+    - (<tt>Object</tt>) <strong>scale_init_level_size</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id scale_init_level_size'>scale_init_level_size</span>
+  <span class='ivar'>@scale_init_level_size</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="scale_price_increment=-instance_method"></span>
+      <span id="scale_price_increment-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="scale_price_increment-instance_method">
+  
+    - (<tt>Object</tt>) <strong>scale_price_increment</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id scale_price_increment'>scale_price_increment</span>
+  <span class='ivar'>@scale_price_increment</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="scale_subs_level_size=-instance_method"></span>
+      <span id="scale_subs_level_size-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="scale_subs_level_size-instance_method">
+  
+    - (<tt>Object</tt>) <strong>scale_subs_level_size</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id scale_subs_level_size'>scale_subs_level_size</span>
+  <span class='ivar'>@scale_subs_level_size</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="settling_firm=-instance_method"></span>
+      <span id="settling_firm-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="settling_firm-instance_method">
+  
+    - (<tt>Object</tt>) <strong>settling_firm</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id settling_firm'>settling_firm</span>
+  <span class='ivar'>@settling_firm</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="short_sale_slot=-instance_method"></span>
+      <span id="short_sale_slot-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="short_sale_slot-instance_method">
+  
+    - (<tt>Object</tt>) <strong>short_sale_slot</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id short_sale_slot'>short_sale_slot</span>
+  <span class='ivar'>@short_sale_slot</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="starting_price=-instance_method"></span>
+      <span id="starting_price-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="starting_price-instance_method">
+  
+    - (<tt>Object</tt>) <strong>starting_price</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id starting_price'>starting_price</span>
+  <span class='ivar'>@starting_price</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="status=-instance_method"></span>
+      <span id="status-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="status-instance_method">
+  
+    - (<tt>Object</tt>) <strong>status</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Some Order properties (received back from IB) are separated into
+OrderState object. Here, they are lumped into Order proper: see OrderState.java</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+203
+204
+205</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 203</span>
+
+<span class='kw'>def</span> <span class='id status'>status</span>
+  <span class='ivar'>@status</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="stock_range_lower=-instance_method"></span>
+      <span id="stock_range_lower-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="stock_range_lower-instance_method">
+  
+    - (<tt>Object</tt>) <strong>stock_range_lower</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id stock_range_lower'>stock_range_lower</span>
+  <span class='ivar'>@stock_range_lower</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="stock_range_upper=-instance_method"></span>
+      <span id="stock_range_upper-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="stock_range_upper-instance_method">
+  
+    - (<tt>Object</tt>) <strong>stock_range_upper</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id stock_range_upper'>stock_range_upper</span>
+  <span class='ivar'>@stock_range_upper</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="stock_ref_price=-instance_method"></span>
+      <span id="stock_ref_price-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="stock_ref_price-instance_method">
+  
+    - (<tt>Object</tt>) <strong>stock_ref_price</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id stock_ref_price'>stock_ref_price</span>
+  <span class='ivar'>@stock_ref_price</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="sweep_to_fill=-instance_method"></span>
+      <span id="sweep_to_fill-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="sweep_to_fill-instance_method">
+  
+    - (<tt>Object</tt>) <strong>sweep_to_fill</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id sweep_to_fill'>sweep_to_fill</span>
+  <span class='ivar'>@sweep_to_fill</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="tif=-instance_method"></span>
+      <span id="tif-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="tif-instance_method">
+  
+    - (<tt>Object</tt>) <strong>tif</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id tif'>tif</span>
+  <span class='ivar'>@tif</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="total_quantity=-instance_method"></span>
+      <span id="total_quantity-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="total_quantity-instance_method">
+  
+    - (<tt>Object</tt>) <strong>total_quantity</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id total_quantity'>total_quantity</span>
+  <span class='ivar'>@total_quantity</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="trail_stop_price=-instance_method"></span>
+      <span id="trail_stop_price-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="trail_stop_price-instance_method">
+  
+    - (<tt>Object</tt>) <strong>trail_stop_price</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id trail_stop_price'>trail_stop_price</span>
+  <span class='ivar'>@trail_stop_price</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="transmit=-instance_method"></span>
+      <span id="transmit-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="transmit-instance_method">
+  
+    - (<tt>Object</tt>) <strong>transmit</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id transmit'>transmit</span>
+  <span class='ivar'>@transmit</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="trigger_method=-instance_method"></span>
+      <span id="trigger_method-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="trigger_method-instance_method">
+  
+    - (<tt>Object</tt>) <strong>trigger_method</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id trigger_method'>trigger_method</span>
+  <span class='ivar'>@trigger_method</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="volatility=-instance_method"></span>
+      <span id="volatility-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="volatility-instance_method">
+  
+    - (<tt>Object</tt>) <strong>volatility</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id volatility'>volatility</span>
+  <span class='ivar'>@volatility</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="volatility_type=-instance_method"></span>
+      <span id="volatility_type-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="volatility_type-instance_method">
+  
+    - (<tt>Object</tt>) <strong>volatility_type</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id volatility_type'>volatility_type</span>
+  <span class='ivar'>@volatility_type</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="warning_text=-instance_method"></span>
+      <span id="warning_text-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="warning_text-instance_method">
+  
+    - (<tt>Object</tt>) <strong>warning_text</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Some Order properties (received back from IB) are separated into
+OrderState object. Here, they are lumped into Order proper: see OrderState.java</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+203
+204
+205</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 203</span>
+
+<span class='kw'>def</span> <span class='id warning_text'>warning_text</span>
+  <span class='ivar'>@warning_text</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="what_if=-instance_method"></span>
+      <span id="what_if-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="what_if-instance_method">
+  
+    - (<tt>Object</tt>) <strong>what_if</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Main order fields</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id what_if'>what_if</span>
+  <span class='ivar'>@what_if</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+    
+    
+      <div class="method_details first">
+  <p class="signature first" id="serialize_algo-instance_method">
+  
+    - (<tt>Object</tt>) <strong>serialize_algo</strong> 
+  
+
+  
+</p><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+329
+330
+331
+332
+333
+334
+335
+336
+337</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 329</span>
+
+<span class='kw'>def</span> <span class='id serialize_algo'>serialize_algo</span>
+  <span class='kw'>if</span> <span class='id algo_strategy'>algo_strategy</span><span class='period'>.</span><span class='id empty?'>empty?</span> <span class='op'>||</span> <span class='id algo_strategy'>algo_strategy</span><span class='period'>.</span><span class='id nil?'>nil?</span>
+    <span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_end'>'</span></span><span class='rbracket'>]</span>
+  <span class='kw'>else</span>
+    <span class='lbracket'>[</span><span class='id algo_strategy'>algo_strategy</span><span class='comma'>,</span>
+     <span class='id algo_params'>algo_params</span><span class='period'>.</span><span class='id size'>size</span><span class='comma'>,</span>
+     <span class='id algo_params'>algo_params</span><span class='period'>.</span><span class='id to_a'>to_a</span><span class='rbracket'>]</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="serialize_with-instance_method">
+  
+    - (<tt>Object</tt>) <strong>serialize_with</strong>(contract) 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>This returns an Array of data from the given order,
+mixed with data from associated contract. Ugly mix, indeed.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+302
+303
+304
+305
+306
+307
+308
+309
+310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321
+322
+323
+324
+325
+326
+327</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/models/order.rb', line 263</span>
+
+<span class='kw'>def</span> <span class='id serialize_with'>serialize_with</span> <span class='id contract'>contract</span>
+  <span class='lbracket'>[</span><span class='id contract'>contract</span><span class='period'>.</span><span class='id serialize_long'>serialize_long</span><span class='lparen'>(</span><span class='symbol'>:sec_id</span><span class='rparen'>)</span><span class='comma'>,</span>
+   <span class='id action'>action</span><span class='comma'>,</span> <span class='comment'># main order fields
+</span>   <span class='id total_quantity'>total_quantity</span><span class='comma'>,</span>
+   <span class='id order_type'>order_type</span><span class='comma'>,</span>
+   <span class='id limit_price'>limit_price</span><span class='comma'>,</span>
+   <span class='id aux_price'>aux_price</span><span class='comma'>,</span>
+   <span class='id tif'>tif</span><span class='comma'>,</span> <span class='comment'># xtended order fields
+</span>   <span class='id oca_group'>oca_group</span><span class='comma'>,</span>
+   <span class='id account'>account</span><span class='comma'>,</span>
+   <span class='id open_close'>open_close</span><span class='comma'>,</span>
+   <span class='id origin'>origin</span><span class='comma'>,</span>
+   <span class='id order_ref'>order_ref</span><span class='comma'>,</span>
+   <span class='id transmit'>transmit</span><span class='comma'>,</span>
+   <span class='id parent_id'>parent_id</span><span class='comma'>,</span>
+   <span class='id block_order'>block_order</span><span class='comma'>,</span>
+   <span class='id sweep_to_fill'>sweep_to_fill</span><span class='comma'>,</span>
+   <span class='id display_size'>display_size</span><span class='comma'>,</span>
+   <span class='id trigger_method'>trigger_method</span><span class='comma'>,</span>
+   <span class='id outside_rth'>outside_rth</span><span class='comma'>,</span> <span class='comment'># was: ignore_rth
+</span>   <span class='id hidden'>hidden</span><span class='comma'>,</span>
+   <span class='id contract'>contract</span><span class='period'>.</span><span class='id serialize_combo_legs'>serialize_combo_legs</span><span class='lparen'>(</span><span class='symbol'>:long</span><span class='rparen'>)</span><span class='comma'>,</span>
+   <span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_end'>'</span></span><span class='comma'>,</span> <span class='comment'># deprecated shares_allocation field
+</span>   <span class='id discretionary_amount'>discretionary_amount</span><span class='comma'>,</span>
+   <span class='id good_after_time'>good_after_time</span><span class='comma'>,</span>
+   <span class='id good_till_date'>good_till_date</span><span class='comma'>,</span>
+   <span class='id fa_group'>fa_group</span><span class='comma'>,</span>
+   <span class='id fa_method'>fa_method</span><span class='comma'>,</span>
+   <span class='id fa_percentage'>fa_percentage</span><span class='comma'>,</span>
+   <span class='id fa_profile'>fa_profile</span><span class='comma'>,</span>
+   <span class='id short_sale_slot'>short_sale_slot</span><span class='comma'>,</span> <span class='comment'>#     0 only for retail, 1 or 2 for institution  (Institutional)
+</span>   <span class='id designated_location'>designated_location</span><span class='comma'>,</span> <span class='comment'># only populate when short_sale_slot == 2    (Institutional)
+</span>   <span class='id oca_type'>oca_type</span><span class='comma'>,</span>
+   <span class='id rule_80a'>rule_80a</span><span class='comma'>,</span>
+   <span class='id settling_firm'>settling_firm</span><span class='comma'>,</span>
+   <span class='id all_or_none'>all_or_none</span><span class='comma'>,</span>
+   <span class='id min_quantity'>min_quantity</span> <span class='op'>||</span> <span class='const'>EOL</span><span class='comma'>,</span>
+   <span class='id percent_offset'>percent_offset</span> <span class='op'>||</span> <span class='const'>EOL</span><span class='comma'>,</span>
+   <span class='id etrade_only'>etrade_only</span><span class='comma'>,</span>
+   <span class='id firm_quote_only'>firm_quote_only</span><span class='comma'>,</span>
+   <span class='id nbbo_price_cap'>nbbo_price_cap</span> <span class='op'>||</span> <span class='const'>EOL</span><span class='comma'>,</span>
+   <span class='id auction_strategy'>auction_strategy</span> <span class='op'>||</span> <span class='const'>EOL</span><span class='comma'>,</span>
+   <span class='id starting_price'>starting_price</span> <span class='op'>||</span> <span class='const'>EOL</span><span class='comma'>,</span>
+   <span class='id stock_ref_price'>stock_ref_price</span> <span class='op'>||</span> <span class='const'>EOL</span><span class='comma'>,</span>
+   <span class='id delta'>delta</span> <span class='op'>||</span> <span class='const'>EOL</span><span class='comma'>,</span>
+   <span class='id stock_range_lower'>stock_range_lower</span> <span class='op'>||</span> <span class='const'>EOL</span><span class='comma'>,</span>
+   <span class='id stock_range_upper'>stock_range_upper</span> <span class='op'>||</span> <span class='const'>EOL</span><span class='comma'>,</span>
+   <span class='id override_percentage_constraints'>override_percentage_constraints</span><span class='comma'>,</span>
+   <span class='id volatility'>volatility</span> <span class='op'>||</span> <span class='const'>EOL</span><span class='comma'>,</span> <span class='comment'>#              Volatility orders
+</span>   <span class='id volatility_type'>volatility_type</span> <span class='op'>||</span> <span class='const'>EOL</span><span class='comma'>,</span> <span class='comment'>#         Volatility orders
+</span>   <span class='id delta_neutral_order_type'>delta_neutral_order_type</span><span class='comma'>,</span> <span class='comment'>#       Volatility orders
+</span>   <span class='id delta_neutral_aux_price'>delta_neutral_aux_price</span> <span class='op'>||</span> <span class='const'>EOL</span><span class='comma'>,</span> <span class='comment'># Volatility orders
+</span>   <span class='id continuous_update'>continuous_update</span><span class='comma'>,</span> <span class='comment'>#              Volatility orders
+</span>   <span class='id reference_price_type'>reference_price_type</span> <span class='op'>||</span> <span class='const'>EOL</span><span class='comma'>,</span> <span class='comment'>#    Volatility orders
+</span>   <span class='id trail_stop_price'>trail_stop_price</span> <span class='op'>||</span> <span class='const'>EOL</span><span class='comma'>,</span> <span class='comment'>#        TRAIL_STOP_LIMIT stop price
+</span>   <span class='id scale_init_level_size'>scale_init_level_size</span> <span class='op'>||</span> <span class='const'>EOL</span><span class='comma'>,</span> <span class='comment'>#   Scale Orders
+</span>   <span class='id scale_subs_level_size'>scale_subs_level_size</span> <span class='op'>||</span> <span class='const'>EOL</span><span class='comma'>,</span> <span class='comment'>#   Scale Orders
+</span>   <span class='id scale_price_increment'>scale_price_increment</span> <span class='op'>||</span> <span class='const'>EOL</span><span class='comma'>,</span> <span class='comment'>#   Scale Orders
+</span>   <span class='id clearing_account'>clearing_account</span><span class='comma'>,</span>
+   <span class='id clearing_intent'>clearing_intent</span><span class='comma'>,</span>
+   <span class='id not_held'>not_held</span><span class='comma'>,</span>
+   <span class='id contract'>contract</span><span class='period'>.</span><span class='id serialize_under_comp'>serialize_under_comp</span><span class='comma'>,</span>
+   <span class='id serialize_algo'>serialize_algo</span><span class='comma'>,</span>
+   <span class='id what_if'>what_if</span><span class='rbracket'>]</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+    
+    <div id="footer">
+  Generated on Tue Nov 22 01:30:23 2011 by 
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.7.3 (ruby-1.9.2).
+</div>
+
+  </body>
+</html>

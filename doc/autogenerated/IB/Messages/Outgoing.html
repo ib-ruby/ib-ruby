@@ -1,0 +1,500 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>
+  Module: IB::Messages::Outgoing
+  
+    &mdash; Documentation by YARD 0.7.3
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" media="screen" charset="utf-8" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" media="screen" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  relpath = '../..';
+  if (relpath != '') relpath += '/';
+</script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <script type="text/javascript" charset="utf-8">
+      if (window.top.frames.main) document.body.className = 'frames';
+    </script>
+    
+    <div id="header">
+      <div id="menu">
+  
+    <a href="../../_index.html">Index (O)</a> &raquo; 
+    <span class='title'><span class='object_link'><a href="../../IB.html" title="IB (module)">IB</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Messages.html" title="IB::Messages (module)">Messages</a></span></span>
+     &raquo; 
+    <span class="title">Outgoing</span>
+  
+  
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a id="class_list_link" href="#">Class List</a>
+  
+    <a id="method_list_link" href="#">Method List</a>
+  
+    <a id="file_list_link" href="#">File List</a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+    
+    <iframe id="search_frame"></iframe>
+    
+    <div id="content"><h1>Module: IB::Messages::Outgoing
+  
+  
+  
+</h1>
+
+<dl class="box">
+  
+  
+    
+  
+    
+  
+  
+  
+    <dt class="r1 last">Defined in:</dt>
+    <dd class="r1 last">lib/ib-ruby/messages/outgoing.rb</dd>
+  
+</dl>
+<div class="clear"></div>
+
+<h2>Defined Under Namespace</h2>
+<p class="children">
+   
+    
+   
+    
+      <strong class="classes">Classes:</strong> <span class='object_link'><a href="Outgoing/AbstractMessage.html" title="IB::Messages::Outgoing::AbstractMessage (class)">AbstractMessage</a></span>, <span class='object_link'><a href="Outgoing/ExerciseOptions.html" title="IB::Messages::Outgoing::ExerciseOptions (class)">ExerciseOptions</a></span>, <span class='object_link'><a href="Outgoing/PlaceOrder.html" title="IB::Messages::Outgoing::PlaceOrder (class)">PlaceOrder</a></span>, <span class='object_link'><a href="Outgoing/RequestContractData.html" title="IB::Messages::Outgoing::RequestContractData (class)">RequestContractData</a></span>, <span class='object_link'><a href="Outgoing/RequestExecutions.html" title="IB::Messages::Outgoing::RequestExecutions (class)">RequestExecutions</a></span>, <span class='object_link'><a href="Outgoing/RequestFundamentalData.html" title="IB::Messages::Outgoing::RequestFundamentalData (class)">RequestFundamentalData</a></span>, <span class='object_link'><a href="Outgoing/RequestHistoricalData.html" title="IB::Messages::Outgoing::RequestHistoricalData (class)">RequestHistoricalData</a></span>, <span class='object_link'><a href="Outgoing/RequestImpliedVolatility.html" title="IB::Messages::Outgoing::RequestImpliedVolatility (class)">RequestImpliedVolatility</a></span>, <span class='object_link'><a href="Outgoing/RequestMarketData.html" title="IB::Messages::Outgoing::RequestMarketData (class)">RequestMarketData</a></span>, <span class='object_link'><a href="Outgoing/RequestMarketDepth.html" title="IB::Messages::Outgoing::RequestMarketDepth (class)">RequestMarketDepth</a></span>, <span class='object_link'><a href="Outgoing/RequestOptionPrice.html" title="IB::Messages::Outgoing::RequestOptionPrice (class)">RequestOptionPrice</a></span>, <span class='object_link'><a href="Outgoing/RequestRealTimeBars.html" title="IB::Messages::Outgoing::RequestRealTimeBars (class)">RequestRealTimeBars</a></span>, <span class='object_link'><a href="Outgoing/RequestScannerSubscription.html" title="IB::Messages::Outgoing::RequestScannerSubscription (class)">RequestScannerSubscription</a></span>
+    
+  
+</p>
+
+  <h2>Constant Summary</h2>
+  
+    <dl class="constants">
+      
+        <dt id="RequestOpenOrders-constant" class="">RequestOpenOrders =
+          <div class="docstring">
+  <div class="discussion">
+    <p>Empty messages (no data)</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>5</span></pre></dd>
+      
+        <dt id="CancelNewsBulletins-constant" class="">CancelNewsBulletins =
+          
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>13</span></pre></dd>
+      
+        <dt id="RequestAllOpenOrders-constant" class="">RequestAllOpenOrders =
+          
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>16</span></pre></dd>
+      
+        <dt id="RequestManagedAccounts-constant" class="">RequestManagedAccounts =
+          
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>17</span></pre></dd>
+      
+        <dt id="RequestScannerParameters-constant" class="">RequestScannerParameters =
+          <div class="docstring">
+  <div class="discussion">
+    <p>Requests an XML document that describes the valid parameters that a scanner
+subscription can have (for outgoing RequestScannerSubscription message).</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>24</span></pre></dd>
+      
+        <dt id="RequestCurrentTime-constant" class="">RequestCurrentTime =
+          
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>49</span></pre></dd>
+      
+        <dt id="RequestGlobalCancel-constant" class="">RequestGlobalCancel =
+          
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>58</span></pre></dd>
+      
+        <dt id="CancelMarketData-constant" class="">CancelMarketData =
+          <div class="docstring">
+  <div class="discussion">
+    <p>Data format is: @data = { :id => ticker_id}</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>2</span></pre></dd>
+      
+        <dt id="CancelMarketDepth-constant" class="">CancelMarketDepth =
+          
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>11</span></pre></dd>
+      
+        <dt id="CancelScannerSubscription-constant" class="">CancelScannerSubscription =
+          
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>23</span></pre></dd>
+      
+        <dt id="CancelHistoricalData-constant" class="">CancelHistoricalData =
+          
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>25</span></pre></dd>
+      
+        <dt id="CancelRealTimeBars-constant" class="">CancelRealTimeBars =
+          
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>51</span></pre></dd>
+      
+        <dt id="CancelFundamentalData-constant" class="">CancelFundamentalData =
+          <div class="docstring">
+  <div class="discussion">
+    <p>Data format is: @data = { :id => request_id }</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>53</span></pre></dd>
+      
+        <dt id="CancelImpliedVolatility-constant" class="">CancelImpliedVolatility =
+          
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>56</span></pre></dd>
+      
+        <dt id="CancelCalculateImpliedVolatility-constant" class="">CancelCalculateImpliedVolatility =
+          
+        </dt>
+        <dd><pre class="code"><span class='const'>CancelImpliedVolatility</span></pre></dd>
+      
+        <dt id="CancelOptionPrice-constant" class="">CancelOptionPrice =
+          
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>57</span></pre></dd>
+      
+        <dt id="CancelCalculateOptionPrice-constant" class="">CancelCalculateOptionPrice =
+          
+        </dt>
+        <dd><pre class="code"><span class='const'>CancelOptionPrice</span></pre></dd>
+      
+        <dt id="CancelOrder-constant" class="">CancelOrder =
+          <div class="docstring">
+  <div class="discussion">
+    <p>Data format is: @data ={ :id => order-id-to-cancel }</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>4</span></pre></dd>
+      
+        <dt id="RequestIds-constant" class="">RequestIds =
+          <div class="docstring">
+  <div class="discussion">
+    <p>These messages contain just one or two keys, shown in the end of definition</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>8</span><span class='comma'>,</span> <span class='int'>1</span><span class='comma'>,</span> <span class='symbol'>:number_of_ids</span></pre></dd>
+      
+        <dt id="RequestNewsBulletins-constant" class="">RequestNewsBulletins =
+          <div class="docstring">
+  <div class="discussion">
+    <p>data = { :all_messages => boolean }</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>12</span><span class='comma'>,</span> <span class='int'>1</span><span class='comma'>,</span> <span class='symbol'>:all_messages</span></pre></dd>
+      
+        <dt id="SetServerLoglevel-constant" class="">SetServerLoglevel =
+          <div class="docstring">
+  <div class="discussion">
+    <p>data = { :log_level => int }</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>14</span><span class='comma'>,</span> <span class='int'>1</span><span class='comma'>,</span> <span class='symbol'>:log_level</span></pre></dd>
+      
+        <dt id="RequestAutoOpenOrders-constant" class="">RequestAutoOpenOrders =
+          <div class="docstring">
+  <div class="discussion">
+    <p>data = { :auto_bind => boolean }</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>15</span><span class='comma'>,</span> <span class='int'>1</span><span class='comma'>,</span> <span class='symbol'>:auto_bind</span></pre></dd>
+      
+        <dt id="RequestFA-constant" class="">RequestFA =
+          <div class="docstring">
+  <div class="discussion">
+    <p>data = { :fa_data_type => int }</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>18</span><span class='comma'>,</span> <span class='int'>1</span><span class='comma'>,</span> <span class='symbol'>:fa_data_type</span></pre></dd>
+      
+        <dt id="ReplaceFA-constant" class="">ReplaceFA =
+          <div class="docstring">
+  <div class="discussion">
+    <p>data = { :fa_data_type => int, :xml => String }</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>19</span><span class='comma'>,</span> <span class='int'>1</span><span class='comma'>,</span> <span class='symbol'>:fa_data_type</span><span class='comma'>,</span> <span class='symbol'>:xml</span></pre></dd>
+      
+        <dt id="RequestAccountData-constant" class="">RequestAccountData =
+          
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>6</span><span class='comma'>,</span> <span class='int'>2</span><span class='comma'>,</span> <span class='symbol'>:subscribe</span><span class='comma'>,</span> <span class='symbol'>:account_code</span></pre></dd>
+      
+        <dt id="RequestAccountUpdates-constant" class="">RequestAccountUpdates =
+          
+        </dt>
+        <dd><pre class="code"><span class='const'>RequestAccountData</span></pre></dd>
+      
+        <dt id="RequestContractDetails-constant" class="">RequestContractDetails =
+          <div class="docstring">
+  <div class="discussion">
+    <p>RequestContractData</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='const'>RequestContractData</span></pre></dd>
+      
+        <dt id="CalculateImpliedVolatility-constant" class="">CalculateImpliedVolatility =
+          <div class="docstring">
+  <div class="discussion">
+    <p>RequestImpliedVolatility</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='const'>RequestImpliedVolatility</span></pre></dd>
+      
+        <dt id="RequestCalculateImpliedVolatility-constant" class="">RequestCalculateImpliedVolatility =
+          
+        </dt>
+        <dd><pre class="code"><span class='const'>RequestImpliedVolatility</span></pre></dd>
+      
+        <dt id="CalculateOptionPrice-constant" class="">CalculateOptionPrice =
+          <div class="docstring">
+  <div class="discussion">
+    <p>RequestOptionPrice</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='const'>RequestOptionPrice</span></pre></dd>
+      
+        <dt id="RequestCalculateOptionPrice-constant" class="">RequestCalculateOptionPrice =
+          
+        </dt>
+        <dd><pre class="code"><span class='const'>RequestOptionPrice</span></pre></dd>
+      
+    </dl>
+  
+
+
+
+
+
+  
+    <h2>
+      Class Method Summary
+      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#def_message-class_method" title="def_message (class method)">+ (Object) <strong>def_message</strong>(message_id, version = 1, *keys) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Macro that defines short message classes using a one-liner.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+    
+    
+      <div class="method_details first">
+  <p class="signature first" id="def_message-class_method">
+  
+    + (<tt>Object</tt>) <strong>def_message</strong>(message_id, version = 1, *keys) 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Macro that defines short message classes using a one-liner</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/messages/outgoing.rb', line 63</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id def_message'>def_message</span> <span class='id message_id'>message_id</span><span class='comma'>,</span> <span class='id version'>version</span><span class='op'>=</span><span class='int'>1</span><span class='comma'>,</span> <span class='op'>*</span><span class='id keys'>keys</span>
+  <span class='const'>Class</span><span class='period'>.</span><span class='id new'>new</span><span class='lparen'>(</span><span class='const'>AbstractMessage</span><span class='rparen'>)</span> <span class='kw'>do</span>
+    <span class='ivar'>@message_id</span> <span class='op'>=</span> <span class='id message_id'>message_id</span>
+    <span class='ivar'>@version</span> <span class='op'>=</span> <span class='id version'>version</span>
+
+    <span class='id define_method'>define_method</span> <span class='symbol'>:encode</span> <span class='kw'>do</span>
+      <span class='lbracket'>[</span><span class='kw'>super</span><span class='lparen'>(</span><span class='rparen'>)</span><span class='comma'>,</span> <span class='id keys'>keys</span><span class='period'>.</span><span class='id map'>map</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id key'>key</span><span class='op'>|</span> <span class='ivar'>@data</span><span class='lbracket'>[</span><span class='id key'>key</span><span class='rbracket'>]</span> <span class='rbrace'>}</span><span class='rbracket'>]</span>
+    <span class='kw'>end</span> <span class='kw'>unless</span> <span class='id keys'>keys</span><span class='period'>.</span><span class='id empty?'>empty?</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+    
+    <div id="footer">
+  Generated on Tue Nov 22 01:30:23 2011 by 
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.7.3 (ruby-1.9.2).
+</div>
+
+  </body>
+</html>

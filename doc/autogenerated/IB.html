@@ -1,0 +1,370 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>
+  Module: IB
+  
+    &mdash; Documentation by YARD 0.7.3
+  
+</title>
+
+  <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" charset="utf-8" />
+
+  <link rel="stylesheet" href="css/common.css" type="text/css" media="screen" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  relpath = '';
+  if (relpath != '') relpath += '/';
+</script>
+
+  <script type="text/javascript" charset="utf-8" src="js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="js/app.js"></script>
+
+
+  </head>
+  <body>
+    <script type="text/javascript" charset="utf-8">
+      if (window.top.frames.main) document.body.className = 'frames';
+    </script>
+    
+    <div id="header">
+      <div id="menu">
+  
+    <a href="_index.html">Index (I)</a> &raquo; 
+    
+    
+    <span class="title">IB</span>
+  
+  
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a id="class_list_link" href="#">Class List</a>
+  
+    <a id="method_list_link" href="#">Method List</a>
+  
+    <a id="file_list_link" href="#">File List</a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+    
+    <iframe id="search_frame"></iframe>
+    
+    <div id="content"><h1>Module: IB
+  
+  
+  
+</h1>
+
+<dl class="box">
+  
+  
+    
+  
+    
+  
+  
+  
+    <dt class="r1 last">Defined in:</dt>
+    <dd class="r1 last">lib/ib-ruby/connection.rb<span class="defines">,<br />
+  lib/version.rb,<br /> lib/ib-ruby.rb,<br /> lib/ib-ruby/socket.rb,<br /> lib/ib-ruby/models.rb,<br /> lib/ib-ruby/symbols.rb,<br /> lib/ib-ruby/messages.rb,<br /> lib/ib-ruby/constants.rb,<br /> lib/ib-ruby/models/bar.rb,<br /> lib/ib-ruby/models/order.rb,<br /> lib/ib-ruby/models/model.rb,<br /> lib/ib-ruby/symbols/forex.rb,<br /> lib/ib-ruby/symbols/stocks.rb,<br /> lib/ib-ruby/symbols/options.rb,<br /> lib/ib-ruby/models/contract.rb,<br /> lib/ib-ruby/symbols/futures.rb,<br /> lib/ib-ruby/models/execution.rb,<br /> lib/ib-ruby/messages/outgoing.rb,<br /> lib/ib-ruby/messages/incoming.rb</span>
+</dd>
+  
+</dl>
+<div class="clear"></div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>TODO: Don't instantiate messages, use their classes as just namespace for .encode/decode
+TODO: realize Message#fire method that raises EWrapper events</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><h2>Defined Under Namespace</h2>
+<p class="children">
+   
+    
+      <strong class="modules">Modules:</strong> <span class='object_link'><a href="IB/Messages.html" title="IB::Messages (module)">Messages</a></span>, <span class='object_link'><a href="IB/Models.html" title="IB::Models (module)">Models</a></span>, <span class='object_link'><a href="IB/Symbols.html" title="IB::Symbols (module)">Symbols</a></span>
+    
+   
+    
+      <strong class="classes">Classes:</strong> <span class='object_link'><a href="IB/Connection.html" title="IB::Connection (class)">Connection</a></span>, <span class='object_link'><a href="IB/IBSocket.html" title="IB::IBSocket (class)">IBSocket</a></span>
+    
+  
+</p>
+
+  <h2>Constant Summary</h2>
+  
+    <dl class="constants">
+      
+        <dt id="VERSION_FILE-constant" class="">VERSION_FILE =
+          <div class="docstring">
+  <div class="discussion">
+    <p>:nodoc:</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='const'>Pathname</span><span class='period'>.</span><span class='id new'>new</span><span class='lparen'>(</span><span class='kw'>__FILE__</span><span class='rparen'>)</span><span class='period'>.</span><span class='id dirname'>dirname</span> <span class='op'>+</span> <span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>../VERSION</span><span class='tstring_end'>'</span></span></pre></dd>
+      
+        <dt id="VERSION-constant" class="">VERSION =
+          
+        </dt>
+        <dd><pre class="code"><span class='const'>VERSION_FILE</span><span class='period'>.</span><span class='id exist?'>exist?</span> <span class='op'>?</span> <span class='const'>VERSION_FILE</span><span class='period'>.</span><span class='id read'>read</span><span class='period'>.</span><span class='id strip'>strip</span> <span class='op'>:</span> <span class='kw'>nil</span></pre></dd>
+      
+        <dt id="Datatypes-constant" class="">Datatypes =
+          <div class="docstring">
+  <div class="discussion">
+    <p>Legacy alias</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='const'>Models</span></pre></dd>
+      
+        <dt id="IncomingMessages-constant" class="">IncomingMessages =
+          
+        </dt>
+        <dd><pre class="code"><span class='const'>Messages</span><span class='op'>::</span><span class='const'>Incoming</span></pre></dd>
+      
+        <dt id="OutgoingMessages-constant" class="">OutgoingMessages =
+          <div class="docstring">
+  <div class="discussion">
+    <p>Legacy alias
+Legacy alias</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='const'>Messages</span><span class='op'>::</span><span class='const'>Outgoing</span></pre></dd>
+      
+        <dt id="EOL-constant" class="">EOL =
+          <div class="docstring">
+  <div class="discussion">
+    <p>Widely used TWS constants:</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\0</span><span class='tstring_end'>&quot;</span></span></pre></dd>
+      
+        <dt id="FA_TYPES-constant" class="">FA_TYPES =
+          <div class="docstring">
+  <div class="discussion">
+    <p>FaMsgTypeName</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='lbrace'>{</span><span class='int'>1</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>GROUPS</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='comment'># FaMsgTypeName
+</span><span class='int'>2</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>PROFILES</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+<span class='int'>3</span> <span class='op'>=&gt;</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>ALIASES</span><span class='tstring_end'>&quot;</span></span><span class='rbrace'>}</span></pre></dd>
+      
+        <dt id="BAR_SIZES-constant" class="">BAR_SIZES =
+          <div class="docstring">
+  <div class="discussion">
+    <p>Enumeration of bar size types for convenience.
+Bar sizes less than 30 seconds do not work for some securities.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>1 sec</span><span class='tstring_end'>'</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>5 secs</span><span class='tstring_end'>'</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>15 secs</span><span class='tstring_end'>'</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>30 secs</span><span class='tstring_end'>'</span></span><span class='comma'>,</span>
+<span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>1 min</span><span class='tstring_end'>'</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>2 mins</span><span class='tstring_end'>'</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>3 mins</span><span class='tstring_end'>'</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>5 mins</span><span class='tstring_end'>'</span></span><span class='comma'>,</span>
+<span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>15 mins</span><span class='tstring_end'>'</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>30 mins</span><span class='tstring_end'>'</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>1 hour</span><span class='tstring_end'>'</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>1 day</span><span class='tstring_end'>'</span></span><span class='rbracket'>]</span></pre></dd>
+      
+        <dt id="DATA_TYPES-constant" class="">DATA_TYPES =
+          <div class="docstring">
+  <div class="discussion">
+    <p>Enumeration of data types</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='lbracket'>[</span><span class='symbol'>:trades</span><span class='comma'>,</span> <span class='symbol'>:midpoint</span><span class='comma'>,</span> <span class='symbol'>:bid</span><span class='comma'>,</span> <span class='symbol'>:ask</span><span class='rbracket'>]</span></pre></dd>
+      
+        <dt id="SECURITY_TYPES-constant" class="">SECURITY_TYPES =
+          <div class="docstring">
+  <div class="discussion">
+    <p>Valid security types (sec_type attribute of IB::Contract)</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='lbrace'>{</span><span class='symbol'>:stock</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>STK</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+<span class='symbol'>:option</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>OPT</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+<span class='symbol'>:future</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>FUT</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+<span class='symbol'>:index</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>IND</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+<span class='symbol'>:futures_option</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>FOP</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+<span class='symbol'>:forex</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>CASH</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+<span class='symbol'>:bag</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>BAG</span><span class='tstring_end'>&quot;</span></span><span class='rbrace'>}</span></pre></dd>
+      
+        <dt id="TICK_TYPES-constant" class="">TICK_TYPES =
+          <div class="docstring">
+  <div class="discussion">
+    <p>Tick types as received in TickPrice and TickSize messages (enumeration)</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='lbrace'>{</span>
+    <span class='comment'># int id =&gt; :Description #  Corresponding API Event/Function/Method
+</span>    <span class='int'>0</span> <span class='op'>=&gt;</span> <span class='symbol'>:bid_size</span><span class='comma'>,</span> <span class='comment'>#               tickSize()
+</span>    <span class='int'>1</span> <span class='op'>=&gt;</span> <span class='symbol'>:bid_price</span><span class='comma'>,</span> <span class='comment'>#              tickPrice()
+</span>    <span class='int'>2</span> <span class='op'>=&gt;</span> <span class='symbol'>:ask_price</span><span class='comma'>,</span> <span class='comment'>#              tickPrice()
+</span>    <span class='int'>3</span> <span class='op'>=&gt;</span> <span class='symbol'>:ask_size</span><span class='comma'>,</span> <span class='comment'>#               tickSize()
+</span>    <span class='int'>4</span> <span class='op'>=&gt;</span> <span class='symbol'>:last_price</span><span class='comma'>,</span> <span class='comment'>#             tickPrice()
+</span>    <span class='int'>5</span> <span class='op'>=&gt;</span> <span class='symbol'>:last_size</span><span class='comma'>,</span> <span class='comment'>#              tickSize()
+</span>    <span class='int'>6</span> <span class='op'>=&gt;</span> <span class='symbol'>:high</span><span class='comma'>,</span> <span class='comment'>#                   tickPrice()
+</span>    <span class='int'>7</span> <span class='op'>=&gt;</span> <span class='symbol'>:low</span><span class='comma'>,</span> <span class='comment'>#                    tickPrice()
+</span>    <span class='int'>8</span> <span class='op'>=&gt;</span> <span class='symbol'>:volume</span><span class='comma'>,</span> <span class='comment'>#                 tickSize()
+</span>    <span class='int'>9</span> <span class='op'>=&gt;</span> <span class='symbol'>:close_price</span><span class='comma'>,</span> <span class='comment'>#            tickPrice()
+</span>    <span class='int'>10</span> <span class='op'>=&gt;</span> <span class='symbol'>:bid_option</span><span class='comma'>,</span> <span class='comment'>#            tickOptionComputation() See Note 1 below
+</span>    <span class='int'>11</span> <span class='op'>=&gt;</span> <span class='symbol'>:ask_option</span><span class='comma'>,</span> <span class='comment'>#            tickOptionComputation() See =&gt; :Note 1 below
+</span>    <span class='int'>12</span> <span class='op'>=&gt;</span> <span class='symbol'>:last_option</span><span class='comma'>,</span> <span class='comment'>#           tickOptionComputation()  See Note 1 below
+</span>    <span class='int'>13</span> <span class='op'>=&gt;</span> <span class='symbol'>:model_option</span><span class='comma'>,</span> <span class='comment'>#          tickOptionComputation() See Note 1 below
+</span>    <span class='int'>14</span> <span class='op'>=&gt;</span> <span class='symbol'>:open_tick</span><span class='comma'>,</span> <span class='comment'>#             tickPrice()
+</span>    <span class='int'>15</span> <span class='op'>=&gt;</span> <span class='symbol'>:low_13_week</span><span class='comma'>,</span> <span class='comment'>#           tickPrice()
+</span>    <span class='int'>16</span> <span class='op'>=&gt;</span> <span class='symbol'>:high_13_week</span><span class='comma'>,</span> <span class='comment'>#          tickPrice()
+</span>    <span class='int'>17</span> <span class='op'>=&gt;</span> <span class='symbol'>:low_26_week</span><span class='comma'>,</span> <span class='comment'>#           tickPrice()
+</span>    <span class='int'>18</span> <span class='op'>=&gt;</span> <span class='symbol'>:high_26_week</span><span class='comma'>,</span> <span class='comment'>#          tickPrice()
+</span>    <span class='int'>19</span> <span class='op'>=&gt;</span> <span class='symbol'>:low_52_week</span><span class='comma'>,</span> <span class='comment'>#           tickPrice()
+</span>    <span class='int'>20</span> <span class='op'>=&gt;</span> <span class='symbol'>:high_52_week</span><span class='comma'>,</span> <span class='comment'>#          tickPrice()
+</span>    <span class='int'>21</span> <span class='op'>=&gt;</span> <span class='symbol'>:avg_volume</span><span class='comma'>,</span> <span class='comment'>#            tickSize()
+</span>    <span class='int'>22</span> <span class='op'>=&gt;</span> <span class='symbol'>:open_interest</span><span class='comma'>,</span> <span class='comment'>#         tickSize()
+</span>    <span class='int'>23</span> <span class='op'>=&gt;</span> <span class='symbol'>:option_historical_vol</span><span class='comma'>,</span> <span class='comment'># tickGeneric()
+</span>    <span class='int'>24</span> <span class='op'>=&gt;</span> <span class='symbol'>:option_implied_vol</span><span class='comma'>,</span> <span class='comment'>#    tickGeneric()
+</span>    <span class='int'>25</span> <span class='op'>=&gt;</span> <span class='symbol'>:option_bid_exch</span><span class='comma'>,</span> <span class='comment'>#   not USED
+</span>    <span class='int'>26</span> <span class='op'>=&gt;</span> <span class='symbol'>:option_ask_exch</span><span class='comma'>,</span> <span class='comment'>#   not USED
+</span>    <span class='int'>27</span> <span class='op'>=&gt;</span> <span class='symbol'>:option_call_open_interest</span><span class='comma'>,</span> <span class='comment'># tickSize()
+</span>    <span class='int'>28</span> <span class='op'>=&gt;</span> <span class='symbol'>:option_put_open_interest</span><span class='comma'>,</span> <span class='comment'>#  tickSize()
+</span>    <span class='int'>29</span> <span class='op'>=&gt;</span> <span class='symbol'>:option_call_volume</span><span class='comma'>,</span> <span class='comment'>#        tickSize()
+</span>    <span class='int'>30</span> <span class='op'>=&gt;</span> <span class='symbol'>:option_put_volume</span><span class='comma'>,</span> <span class='comment'>#         tickSize()
+</span>    <span class='int'>31</span> <span class='op'>=&gt;</span> <span class='symbol'>:index_future_premium</span><span class='comma'>,</span> <span class='comment'>#      tickGeneric()
+</span>    <span class='int'>32</span> <span class='op'>=&gt;</span> <span class='symbol'>:bid_exch</span><span class='comma'>,</span> <span class='comment'>#                  tickString()
+</span>    <span class='int'>33</span> <span class='op'>=&gt;</span> <span class='symbol'>:ask_exch</span><span class='comma'>,</span> <span class='comment'>#                  tickString()
+</span>    <span class='int'>34</span> <span class='op'>=&gt;</span> <span class='symbol'>:auction_volume</span><span class='comma'>,</span> <span class='comment'>#    not USED
+</span>    <span class='int'>35</span> <span class='op'>=&gt;</span> <span class='symbol'>:auction_price</span><span class='comma'>,</span> <span class='comment'>#     not USED
+</span>    <span class='int'>36</span> <span class='op'>=&gt;</span> <span class='symbol'>:auction_imbalance</span><span class='comma'>,</span> <span class='comment'># not USED
+</span>    <span class='int'>37</span> <span class='op'>=&gt;</span> <span class='symbol'>:mark_price</span><span class='comma'>,</span> <span class='comment'>#              tickPrice()
+</span>    <span class='int'>38</span> <span class='op'>=&gt;</span> <span class='symbol'>:bid_efp_computation</span><span class='comma'>,</span> <span class='comment'>#     tickEFP()
+</span>    <span class='int'>39</span> <span class='op'>=&gt;</span> <span class='symbol'>:ask_efp_computation</span><span class='comma'>,</span> <span class='comment'>#     tickEFP()
+</span>    <span class='int'>40</span> <span class='op'>=&gt;</span> <span class='symbol'>:last_efp_computation</span><span class='comma'>,</span> <span class='comment'>#    tickEFP()
+</span>    <span class='int'>41</span> <span class='op'>=&gt;</span> <span class='symbol'>:open_efp_computation</span><span class='comma'>,</span> <span class='comment'>#    tickEFP()
+</span>    <span class='int'>42</span> <span class='op'>=&gt;</span> <span class='symbol'>:high_efp_computation</span><span class='comma'>,</span> <span class='comment'>#    tickEFP()
+</span>    <span class='int'>43</span> <span class='op'>=&gt;</span> <span class='symbol'>:low_efp_computation</span><span class='comma'>,</span> <span class='comment'>#     tickEFP()
+</span>    <span class='int'>44</span> <span class='op'>=&gt;</span> <span class='symbol'>:close_efp_computation</span><span class='comma'>,</span> <span class='comment'>#   tickEFP()
+</span>    <span class='int'>45</span> <span class='op'>=&gt;</span> <span class='symbol'>:last_timestamp</span><span class='comma'>,</span> <span class='comment'>#          tickString()
+</span>    <span class='int'>46</span> <span class='op'>=&gt;</span> <span class='symbol'>:shortable</span><span class='comma'>,</span> <span class='comment'>#               tickGeneric()
+</span>    <span class='int'>47</span> <span class='op'>=&gt;</span> <span class='symbol'>:fundamental_ratios</span><span class='comma'>,</span> <span class='comment'>#      tickString()
+</span>    <span class='int'>48</span> <span class='op'>=&gt;</span> <span class='symbol'>:rt_volume</span><span class='comma'>,</span> <span class='comment'>#               tickGeneric()
+</span>    <span class='int'>49</span> <span class='op'>=&gt;</span> <span class='symbol'>:halted</span><span class='comma'>,</span> <span class='comment'>#           see Note 2 below.
+</span>    <span class='int'>50</span> <span class='op'>=&gt;</span> <span class='symbol'>:bid_yield</span><span class='comma'>,</span> <span class='comment'>#               tickPrice() See Note 3 below
+</span>    <span class='int'>51</span> <span class='op'>=&gt;</span> <span class='symbol'>:asky_ield</span><span class='comma'>,</span> <span class='comment'>#               tickPrice() See Note 3 below
+</span>    <span class='int'>52</span> <span class='op'>=&gt;</span> <span class='symbol'>:last_yield</span><span class='comma'>,</span> <span class='comment'>#              tickPrice() See Note 3 below
+</span>    <span class='int'>53</span> <span class='op'>=&gt;</span> <span class='symbol'>:cust_option_computation</span><span class='comma'>,</span> <span class='comment'># tickOptionComputation()
+</span>    <span class='int'>54</span> <span class='op'>=&gt;</span> <span class='symbol'>:trade_count</span><span class='comma'>,</span> <span class='comment'>#             tickGeneric()
+</span>    <span class='int'>55</span> <span class='op'>=&gt;</span> <span class='symbol'>:trade_rate</span><span class='comma'>,</span> <span class='comment'>#              tickGeneric()
+</span>    <span class='int'>56</span> <span class='op'>=&gt;</span> <span class='symbol'>:volume_rate</span><span class='comma'>,</span> <span class='comment'>#             tickGeneric()
+</span>    <span class='int'>57</span> <span class='op'>=&gt;</span> <span class='symbol'>:last_rth_trade</span><span class='comma'>,</span> <span class='comment'>#            ?
+</span>    <span class='comment'>#   Note 1: Tick types BID_OPTION, ASK_OPTION, LAST_OPTION, and MODEL_OPTION return
+</span>    <span class='comment'>#           all Greeks (delta, gamma, vega, theta), the underlying price and the
+</span>    <span class='comment'>#           stock and option reference price when requested.
+</span>    <span class='comment'>#           MODEL_OPTION also returns model implied volatility.
+</span>    <span class='comment'>#   Note 2: When trading is halted for a contract, TWS receives a special tick:
+</span>    <span class='comment'>#           haltedLast=1. When trading is resumed, TWS receives haltedLast=0.
+</span>    <span class='comment'>#           A tick type, HALTED, tick ID= 49, is now available in regular market
+</span>    <span class='comment'>#           data via the API to indicate this halted state. Possible values for
+</span>    <span class='comment'>#           this new tick type are: 0 = Not halted, 1 = Halted.
+</span>    <span class='comment'>#   Note 3: Applies to bond contracts only.
+</span><span class='rbrace'>}</span></pre></dd>
+      
+        <dt id="IB-constant" class="">IB =
+          <div class="docstring">
+  <div class="discussion">
+    <p>class Connection</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='const'>Connection</span></pre></dd>
+      
+    </dl>
+  
+
+
+
+
+
+
+
+</div>
+    
+    <div id="footer">
+  Generated on Tue Nov 22 01:30:22 2011 by 
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.7.3 (ruby-1.9.2).
+</div>
+
+  </body>
+</html>

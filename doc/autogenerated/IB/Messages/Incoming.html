@@ -1,0 +1,645 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>
+  Module: IB::Messages::Incoming
+  
+    &mdash; Documentation by YARD 0.7.3
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" media="screen" charset="utf-8" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" media="screen" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  relpath = '../..';
+  if (relpath != '') relpath += '/';
+</script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <script type="text/javascript" charset="utf-8">
+      if (window.top.frames.main) document.body.className = 'frames';
+    </script>
+    
+    <div id="header">
+      <div id="menu">
+  
+    <a href="../../_index.html">Index (I)</a> &raquo; 
+    <span class='title'><span class='object_link'><a href="../../IB.html" title="IB (module)">IB</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Messages.html" title="IB::Messages (module)">Messages</a></span></span>
+     &raquo; 
+    <span class="title">Incoming</span>
+  
+  
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a id="class_list_link" href="#">Class List</a>
+  
+    <a id="method_list_link" href="#">Method List</a>
+  
+    <a id="file_list_link" href="#">File List</a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+    
+    <iframe id="search_frame"></iframe>
+    
+    <div id="content"><h1>Module: IB::Messages::Incoming
+  
+  
+  
+</h1>
+
+<dl class="box">
+  
+  
+    
+  
+    
+  
+  
+  
+    <dt class="r1 last">Defined in:</dt>
+    <dd class="r1 last">lib/ib-ruby/messages/incoming.rb</dd>
+  
+</dl>
+<div class="clear"></div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>Incoming IB messages</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><h2>Defined Under Namespace</h2>
+<p class="children">
+   
+    
+   
+    
+      <strong class="classes">Classes:</strong> <span class='object_link'><a href="Incoming/AbstractMessage.html" title="IB::Messages::Incoming::AbstractMessage (class)">AbstractMessage</a></span>, <span class='object_link'><a href="Incoming/AbstractTick.html" title="IB::Messages::Incoming::AbstractTick (class)">AbstractTick</a></span>, <span class='object_link'><a href="Incoming/BondContractData.html" title="IB::Messages::Incoming::BondContractData (class)">BondContractData</a></span>, <span class='object_link'><a href="Incoming/ContractData.html" title="IB::Messages::Incoming::ContractData (class)">ContractData</a></span>, <span class='object_link'><a href="Incoming/DeltaNeutralValidation.html" title="IB::Messages::Incoming::DeltaNeutralValidation (class)">DeltaNeutralValidation</a></span>, <span class='object_link'><a href="Incoming/ExecutionData.html" title="IB::Messages::Incoming::ExecutionData (class)">ExecutionData</a></span>, <span class='object_link'><a href="Incoming/HistoricalData.html" title="IB::Messages::Incoming::HistoricalData (class)">HistoricalData</a></span>, <span class='object_link'><a href="Incoming/OpenOrder.html" title="IB::Messages::Incoming::OpenOrder (class)">OpenOrder</a></span>, <span class='object_link'><a href="Incoming/PortfolioValue.html" title="IB::Messages::Incoming::PortfolioValue (class)">PortfolioValue</a></span>, <span class='object_link'><a href="Incoming/RealTimeBar.html" title="IB::Messages::Incoming::RealTimeBar (class)">RealTimeBar</a></span>, <span class='object_link'><a href="Incoming/ScannerData.html" title="IB::Messages::Incoming::ScannerData (class)">ScannerData</a></span>, <span class='object_link'><a href="Incoming/TickOption.html" title="IB::Messages::Incoming::TickOption (class)">TickOption</a></span>
+    
+  
+</p>
+
+  <h2>Constant Summary</h2>
+  
+    <dl class="constants">
+      
+        <dt id="Classes-constant" class="">Classes =
+          
+        </dt>
+        <dd><pre class="code"><span class='const'>Array</span><span class='period'>.</span><span class='id new'>new</span></pre></dd>
+      
+        <dt id="OrderStatus-constant" class="">OrderStatus =
+          <div class="docstring">
+  <div class="discussion">
+    <p>Actual message classes (short definitions):</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>3</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='symbol'>:id</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span><span class='comma'>,</span>
+<span class='lbracket'>[</span><span class='symbol'>:status</span><span class='comma'>,</span> <span class='symbol'>:string</span><span class='rbracket'>]</span><span class='comma'>,</span>
+<span class='lbracket'>[</span><span class='symbol'>:filled</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span><span class='comma'>,</span>
+<span class='lbracket'>[</span><span class='symbol'>:remaining</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span><span class='comma'>,</span>
+<span class='lbracket'>[</span><span class='symbol'>:average_fill_price</span><span class='comma'>,</span> <span class='symbol'>:decimal</span><span class='rbracket'>]</span><span class='comma'>,</span>
+<span class='lbracket'>[</span><span class='symbol'>:perm_id</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span><span class='comma'>,</span>
+<span class='lbracket'>[</span><span class='symbol'>:parent_id</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span><span class='comma'>,</span>
+<span class='lbracket'>[</span><span class='symbol'>:last_fill_price</span><span class='comma'>,</span> <span class='symbol'>:decimal</span><span class='rbracket'>]</span><span class='comma'>,</span>
+<span class='lbracket'>[</span><span class='symbol'>:client_id</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span><span class='comma'>,</span>
+<span class='lbracket'>[</span><span class='symbol'>:why_held</span><span class='comma'>,</span> <span class='symbol'>:string</span><span class='rbracket'>]</span></pre></dd>
+      
+        <dt id="AccountValue-constant" class="">AccountValue =
+          
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span><span class='lparen'>(</span><span class='int'>6</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='symbol'>:key</span><span class='comma'>,</span> <span class='symbol'>:string</span><span class='rbracket'>]</span><span class='comma'>,</span>
+                           <span class='lbracket'>[</span><span class='symbol'>:value</span><span class='comma'>,</span> <span class='symbol'>:string</span><span class='rbracket'>]</span><span class='comma'>,</span>
+                           <span class='lbracket'>[</span><span class='symbol'>:currency</span><span class='comma'>,</span> <span class='symbol'>:string</span><span class='rbracket'>]</span><span class='comma'>,</span>
+                           <span class='lbracket'>[</span><span class='symbol'>:account_name</span><span class='comma'>,</span> <span class='symbol'>:string</span><span class='rbracket'>]</span><span class='rparen'>)</span> <span class='kw'>do</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>&lt;AccountValue: </span><span class='embexpr_beg'>#{</span><span class='ivar'>@data</span><span class='lbracket'>[</span><span class='symbol'>:account_name</span><span class='rbracket'>]</span><span class='rbrace'>}</span><span class='tstring_content'>, </span><span class='embexpr_beg'>#{</span><span class='ivar'>@data</span><span class='lbracket'>[</span><span class='symbol'>:key</span><span class='rbracket'>]</span><span class='rbrace'>}</span><span class='tstring_content'>=</span><span class='embexpr_beg'>#{</span><span class='ivar'>@data</span><span class='lbracket'>[</span><span class='symbol'>:value</span><span class='rbracket'>]</span><span class='rbrace'>}</span><span class='tstring_content'> </span><span class='embexpr_beg'>#{</span><span class='ivar'>@data</span><span class='lbracket'>[</span><span class='symbol'>:currency</span><span class='rbracket'>]</span><span class='rbrace'>}</span><span class='tstring_content'>&gt;</span><span class='tstring_end'>&quot;</span></span>
+<span class='kw'>end</span></pre></dd>
+      
+        <dt id="AccountUpdateTime-constant" class="">AccountUpdateTime =
+          
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span><span class='lparen'>(</span><span class='int'>8</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='symbol'>:time_stamp</span><span class='comma'>,</span> <span class='symbol'>:string</span><span class='rbracket'>]</span><span class='rparen'>)</span> <span class='kw'>do</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>&lt;AccountUpdateTime: </span><span class='embexpr_beg'>#{</span><span class='ivar'>@data</span><span class='lbracket'>[</span><span class='symbol'>:time_stamp</span><span class='rbracket'>]</span><span class='rbrace'>}</span><span class='tstring_content'>&gt;</span><span class='tstring_end'>&quot;</span></span>
+<span class='kw'>end</span></pre></dd>
+      
+        <dt id="NextValidID-constant" class="">NextValidID =
+          <div class="docstring">
+  <div class="discussion">
+    <p>This message is always sent by TWS automatically at connect.
+The IB::Connection class subscribes to it automatically and stores
+the order id in its @next_order_id attribute.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>9</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='symbol'>:id</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span></pre></dd>
+      
+        <dt id="MarketDepth-constant" class="">MarketDepth =
+          
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>12</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='symbol'>:id</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span><span class='comma'>,</span>
+<span class='lbracket'>[</span><span class='symbol'>:position</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='comment'># The row Id of this market depth entry.
+</span><span class='lbracket'>[</span><span class='symbol'>:operation</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='comment'># How it should be applied to the market depth:
+</span><span class='comment'>#   0 = insert this new order into the row identified by :position
+</span><span class='comment'>#   1 = update the existing order in the row identified by :position
+</span><span class='comment'>#   2 = delete the existing order at the row identified by :position
+</span><span class='lbracket'>[</span><span class='symbol'>:side</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='comment'># side of the book: 0 = ask, 1 = bid
+</span><span class='lbracket'>[</span><span class='symbol'>:price</span><span class='comma'>,</span> <span class='symbol'>:decimal</span><span class='rbracket'>]</span><span class='comma'>,</span>
+<span class='lbracket'>[</span><span class='symbol'>:size</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span></pre></dd>
+      
+        <dt id="MarketDepthL2-constant" class="">MarketDepthL2 =
+          
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>13</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='symbol'>:id</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span><span class='comma'>,</span>
+<span class='lbracket'>[</span><span class='symbol'>:position</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='comment'># The row Id of this market depth entry.
+</span><span class='lbracket'>[</span><span class='symbol'>:market_maker</span><span class='comma'>,</span> <span class='symbol'>:string</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='comment'># The exchange hosting this order.
+</span><span class='lbracket'>[</span><span class='symbol'>:operation</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='comment'># How it should be applied to the market depth:
+</span><span class='comment'>#   0 = insert this new order into the row identified by :position
+</span><span class='comment'>#   1 = update the existing order in the row identified by :position
+</span><span class='comment'>#   2 = delete the existing order at the row identified by :position
+</span><span class='lbracket'>[</span><span class='symbol'>:side</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='comment'># side of the book: 0 = ask, 1 = bid
+</span><span class='lbracket'>[</span><span class='symbol'>:price</span><span class='comma'>,</span> <span class='symbol'>:decimal</span><span class='rbracket'>]</span><span class='comma'>,</span>
+<span class='lbracket'>[</span><span class='symbol'>:size</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span></pre></dd>
+      
+        <dt id="NewsBulletins-constant" class="">NewsBulletins =
+          
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>14</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='symbol'>:id</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='comment'># unique incrementing bulletin ID.
+</span><span class='lbracket'>[</span><span class='symbol'>:type</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='comment'># Type of bulletin. Valid values include:
+</span><span class='comment'>#     1 = Regular news bulletin
+</span><span class='comment'>#     2 = Exchange no longer available for trading
+</span><span class='comment'>#     3 = Exchange is available for trading
+</span><span class='lbracket'>[</span><span class='symbol'>:text</span><span class='comma'>,</span> <span class='symbol'>:string</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='comment'># The bulletin's message text.
+</span><span class='lbracket'>[</span><span class='symbol'>:exchange</span><span class='comma'>,</span> <span class='symbol'>:string</span><span class='rbracket'>]</span></pre></dd>
+      
+        <dt id="ManagedAccounts-constant" class="">ManagedAccounts =
+          
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>15</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='symbol'>:accounts_list</span><span class='comma'>,</span> <span class='symbol'>:string</span><span class='rbracket'>]</span></pre></dd>
+      
+        <dt id="ReceiveFA-constant" class="">ReceiveFA =
+          <div class="docstring">
+  <div class="discussion">
+    <p>Receives previously requested FA configuration information from TWS.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>16</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='symbol'>:type</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='comment'># type of Financial Advisor configuration data
+</span><span class='comment'>#                    being received from TWS. Valid values include:
+</span><span class='comment'>#                      1 = GROUPS
+</span><span class='comment'>#                      2 = PROFILE
+</span><span class='comment'>#                      3 = ACCOUNT ALIASES
+</span><span class='lbracket'>[</span><span class='symbol'>:xml</span><span class='comma'>,</span> <span class='symbol'>:string</span><span class='rbracket'>]</span></pre></dd>
+      
+        <dt id="ScannerParameters-constant" class="">ScannerParameters =
+          <div class="docstring">
+  <div class="discussion">
+    <p>Receives an XML document that describes the valid parameters that a scanner
+subscription can have (for outgoing RequestScannerSubscription message).</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>19</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='symbol'>:xml</span><span class='comma'>,</span> <span class='symbol'>:string</span><span class='rbracket'>]</span></pre></dd>
+      
+        <dt id="CurrentTime-constant" class="">CurrentTime =
+          <div class="docstring">
+  <div class="discussion">
+    <p>Receives the current system time on the server side.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>49</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='symbol'>:time</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span></pre></dd>
+      
+        <dt id="FundamentalData-constant" class="">FundamentalData =
+          <div class="docstring">
+  <div class="discussion">
+    <p>Receive Reuters global fundamental market data. There must be a subscription to
+Reuters Fundamental set up in Account Management before you can receive this data.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>50</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='symbol'>:id</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='comment'># request_id
+</span><span class='lbracket'>[</span><span class='symbol'>:data</span><span class='comma'>,</span> <span class='symbol'>:string</span><span class='rbracket'>]</span></pre></dd>
+      
+        <dt id="ContractDataEnd-constant" class="">ContractDataEnd =
+          <div class="docstring">
+  <div class="discussion">
+    <p>request_id</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>52</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='symbol'>:id</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span></pre></dd>
+      
+        <dt id="OpenOrderEnd-constant" class="">OpenOrderEnd =
+          
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>53</span></pre></dd>
+      
+        <dt id="AccountDownloadEnd-constant" class="">AccountDownloadEnd =
+          
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>54</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='symbol'>:account_name</span><span class='comma'>,</span> <span class='symbol'>:string</span><span class='rbracket'>]</span></pre></dd>
+      
+        <dt id="ExecutionDataEnd-constant" class="">ExecutionDataEnd =
+          <div class="docstring">
+  <div class="discussion">
+    <p>request_id</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>55</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='symbol'>:id</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span></pre></dd>
+      
+        <dt id="TickSnapshotEnd-constant" class="">TickSnapshotEnd =
+          <div class="docstring">
+  <div class="discussion">
+    <p>request_id</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>57</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='symbol'>:id</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span></pre></dd>
+      
+        <dt id="TickPrice-constant" class="">TickPrice =
+          <div class="docstring">
+  <div class="discussion">
+    <p>The IB code seems to dispatch up to two wrapped objects for this message, a tickPrice
+and sometimes a tickSize, which seems to be identical to the TICK_SIZE object.</p>
+
+<p>Important note from
+<a href="http://chuckcaplan.com/twsapi/index.php/void%20tickPrice%28%29">http://chuckcaplan.com/twsapi/index.php/void%20tickPrice%28%29</a> :</p>
+
+<p>"The low you get is NOT the low for the day as you'd expect it
+to be. It appears IB calculates the low based on all
+transactions after 4pm the previous day. The most inaccurate
+results occur when the stock moves up in the 4-6pm aftermarket
+on the previous day and then gaps open upward in the
+morning. The low you receive from TWS can be easily be several
+points different from the actual 9:30am-4pm low for the day in
+cases like this. If you require a correct traded low for the
+day, you can't get it from the TWS API. One possible source to
+help build the right data would be to compare against what Yahoo
+lists on finance.yahoo.com/q?s=ticker under the "Day's Range"
+statistics (be careful here, because Yahoo will use anti-Denial
+of Service techniques to hang your connection if you try to
+request too many bytes in a short period of time from them). For
+most purposes, a good enough approach would start by replacing
+the TWS low for the day with Yahoo's day low when you first
+start watching a stock ticker; let's call this time T. Then,
+update your internal low if the bid or ask tick you receive is
+lower than that for the remainder of the day. You should check
+against Yahoo again at time T+20min to handle the occasional
+case where the stock set a new low for the day in between
+T-20min (the real time your original quote was from, taking into
+account the delay) and time T. After that you should have a
+correct enough low for the rest of the day as long as you keep
+updating based on the bid/ask. It could still get slightly off
+in a case where a short transaction setting a new low appears in
+between ticks of data that TWS sends you.  The high is probably
+distorted in the same way the low is, which would throw your
+results off if the stock traded after-hours and gapped down. It
+should be corrected in a similar way as described above if this
+is important to you."</p>
+
+<p>IB then emits at most 2 events on eWrapper:</p>
+
+<pre class="code">     <span class='id tickPrice'>tickPrice</span><span class='lparen'>(</span> <span class='id tickerId'>tickerId</span><span class='comma'>,</span> <span class='id tickType'>tickType</span><span class='comma'>,</span> <span class='id price'>price</span><span class='comma'>,</span> <span class='id canAutoExecute'>canAutoExecute</span><span class='rparen'>)</span>
+     <span class='id tickSize'>tickSize</span><span class='lparen'>(</span> <span class='id tickerId'>tickerId</span><span class='comma'>,</span> <span class='id sizeTickType'>sizeTickType</span><span class='comma'>,</span> <span class='id size'>size</span><span class='rparen'>)</span>
+</pre>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>1</span><span class='comma'>,</span> <span class='const'>AbstractTick</span><span class='comma'>,</span>
+<span class='lbracket'>[</span><span class='symbol'>:id</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='comment'># ticker_id
+</span><span class='lbracket'>[</span><span class='symbol'>:tick_type</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span><span class='comma'>,</span>
+<span class='lbracket'>[</span><span class='symbol'>:price</span><span class='comma'>,</span> <span class='symbol'>:decimal</span><span class='rbracket'>]</span><span class='comma'>,</span>
+<span class='lbracket'>[</span><span class='symbol'>:size</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span><span class='comma'>,</span>
+<span class='lbracket'>[</span><span class='symbol'>:can_auto_execute</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span></pre></dd>
+      
+        <dt id="TickSize-constant" class="">TickSize =
+          
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>2</span><span class='comma'>,</span> <span class='const'>AbstractTick</span><span class='comma'>,</span>
+<span class='lbracket'>[</span><span class='symbol'>:id</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='comment'># ticker_id
+</span><span class='lbracket'>[</span><span class='symbol'>:tick_type</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span><span class='comma'>,</span>
+<span class='lbracket'>[</span><span class='symbol'>:size</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span></pre></dd>
+      
+        <dt id="TickGeneric-constant" class="">TickGeneric =
+          
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>45</span><span class='comma'>,</span> <span class='const'>AbstractTick</span><span class='comma'>,</span>
+<span class='lbracket'>[</span><span class='symbol'>:id</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='comment'># ticker_id
+</span><span class='lbracket'>[</span><span class='symbol'>:tick_type</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span><span class='comma'>,</span>
+<span class='lbracket'>[</span><span class='symbol'>:value</span><span class='comma'>,</span> <span class='symbol'>:decimal</span><span class='rbracket'>]</span></pre></dd>
+      
+        <dt id="TickString-constant" class="">TickString =
+          
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>46</span><span class='comma'>,</span> <span class='const'>AbstractTick</span><span class='comma'>,</span>
+<span class='lbracket'>[</span><span class='symbol'>:id</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='comment'># ticker_id
+</span><span class='lbracket'>[</span><span class='symbol'>:tick_type</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span><span class='comma'>,</span>
+<span class='lbracket'>[</span><span class='symbol'>:value</span><span class='comma'>,</span> <span class='symbol'>:string</span><span class='rbracket'>]</span></pre></dd>
+      
+        <dt id="TickEFP-constant" class="">TickEFP =
+          
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>47</span><span class='comma'>,</span> <span class='const'>AbstractTick</span><span class='comma'>,</span>
+<span class='lbracket'>[</span><span class='symbol'>:id</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='comment'># ticker_id
+</span><span class='lbracket'>[</span><span class='symbol'>:tick_type</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span><span class='comma'>,</span>
+<span class='lbracket'>[</span><span class='symbol'>:basis_points</span><span class='comma'>,</span> <span class='symbol'>:decimal</span><span class='rbracket'>]</span><span class='comma'>,</span>
+<span class='lbracket'>[</span><span class='symbol'>:formatted_basis_points</span><span class='comma'>,</span> <span class='symbol'>:string</span><span class='rbracket'>]</span><span class='comma'>,</span>
+<span class='lbracket'>[</span><span class='symbol'>:implied_futures_price</span><span class='comma'>,</span> <span class='symbol'>:decimal</span><span class='rbracket'>]</span><span class='comma'>,</span>
+<span class='lbracket'>[</span><span class='symbol'>:hold_days</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span><span class='comma'>,</span>
+<span class='lbracket'>[</span><span class='symbol'>:dividend_impact</span><span class='comma'>,</span> <span class='symbol'>:decimal</span><span class='rbracket'>]</span><span class='comma'>,</span>
+<span class='lbracket'>[</span><span class='symbol'>:dividends_to_expiry</span><span class='comma'>,</span> <span class='symbol'>:decimal</span><span class='rbracket'>]</span></pre></dd>
+      
+        <dt id="TickOptionComputation-constant" class="">TickOptionComputation =
+          <div class="docstring">
+  <div class="discussion">
+    <p>TickOption</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='const'>TickOption</span></pre></dd>
+      
+        <dt id="Alert-constant" class="">Alert =
+          <div class="docstring">
+  <div class="discussion">
+    <p>Called Error in Java code, but in fact this type of messages also
+deliver system alerts and additional (non-error) info from TWS.
+It has additional accessors: #code and #message, derived from @data</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='id def_message'>def_message</span> <span class='int'>4</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='symbol'>:id</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='symbol'>:code</span><span class='comma'>,</span> <span class='symbol'>:int</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='symbol'>:message</span><span class='comma'>,</span> <span class='symbol'>:string</span><span class='rbracket'>]</span></pre></dd>
+      
+        <dt id="Error-constant" class="">Error =
+          <div class="docstring">
+  <div class="discussion">
+    <p>class ErrorMessage</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='const'>Alert</span></pre></dd>
+      
+        <dt id="ErrorMessage-constant" class="">ErrorMessage =
+          
+        </dt>
+        <dd><pre class="code"><span class='const'>Alert</span></pre></dd>
+      
+        <dt id="ContractDetails-constant" class="">ContractDetails =
+          <div class="docstring">
+  <div class="discussion">
+    <p>ContractData</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='const'>ContractData</span></pre></dd>
+      
+        <dt id="RealTimeBars-constant" class="">RealTimeBars =
+          <div class="docstring">
+  <div class="discussion">
+    <p>RealTimeBar</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='const'>RealTimeBar</span></pre></dd>
+      
+        <dt id="Table-constant" class="">Table =
+          <div class="docstring">
+  <div class="discussion">
+    <p>DeltaNeutralValidation</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='const'>Hash</span><span class='period'>.</span><span class='id new'>new</span></pre></dd>
+      
+    </dl>
+  
+
+
+
+
+
+  
+    <h2>
+      Class Method Summary
+      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#def_message-class_method" title="def_message (class method)">+ (Object) <strong>def_message</strong>(message_id, *keys, &amp;to_human) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Macro that defines short message classes using a one-liner.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+    
+    
+      <div class="method_details first">
+  <p class="signature first" id="def_message-class_method">
+  
+    + (<tt>Object</tt>) <strong>def_message</strong>(message_id, *keys, &amp;to_human) 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Macro that defines short message classes using a one-liner</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/messages/incoming.rb', line 86</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id def_message'>def_message</span> <span class='id message_id'>message_id</span><span class='comma'>,</span> <span class='op'>*</span><span class='id keys'>keys</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id to_human'>to_human</span>
+  <span class='id base'>base</span> <span class='op'>=</span> <span class='id keys'>keys</span><span class='period'>.</span><span class='id first'>first</span><span class='period'>.</span><span class='id is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Class</span><span class='rparen'>)</span> <span class='op'>?</span> <span class='id keys'>keys</span><span class='period'>.</span><span class='id shift'>shift</span> <span class='op'>:</span> <span class='const'>AbstractMessage</span>
+  <span class='const'>Class</span><span class='period'>.</span><span class='id new'>new</span><span class='lparen'>(</span><span class='id base'>base</span><span class='rparen'>)</span> <span class='kw'>do</span>
+    <span class='ivar'>@message_id</span> <span class='op'>=</span> <span class='id message_id'>message_id</span>
+
+    <span class='id define_method'>define_method</span><span class='lparen'>(</span><span class='symbol'>:load</span><span class='rparen'>)</span> <span class='kw'>do</span>
+      <span class='kw'>super</span><span class='lparen'>(</span><span class='rparen'>)</span>
+      <span class='id load_map'>load_map</span> <span class='op'>*</span><span class='id keys'>keys</span>
+    <span class='kw'>end</span>
+
+    <span class='id define_method'>define_method</span><span class='lparen'>(</span><span class='symbol'>:to_human</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id to_human'>to_human</span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id to_human'>to_human</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+    
+    <div id="footer">
+  Generated on Tue Nov 22 01:30:24 2011 by 
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.7.3 (ruby-1.9.2).
+</div>
+
+  </body>
+</html>

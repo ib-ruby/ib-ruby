@@ -1,0 +1,638 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>
+  Class: IB::Messages::Incoming::AbstractMessage
+  
+    &mdash; Documentation by YARD 0.7.3
+  
+</title>
+
+  <link rel="stylesheet" href="../../../css/style.css" type="text/css" media="screen" charset="utf-8" />
+
+  <link rel="stylesheet" href="../../../css/common.css" type="text/css" media="screen" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  relpath = '../../..';
+  if (relpath != '') relpath += '/';
+</script>
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <script type="text/javascript" charset="utf-8">
+      if (window.top.frames.main) document.body.className = 'frames';
+    </script>
+    
+    <div id="header">
+      <div id="menu">
+  
+    <a href="../../../_index.html">Index (A)</a> &raquo; 
+    <span class='title'><span class='object_link'><a href="../../../IB.html" title="IB (module)">IB</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../../Messages.html" title="IB::Messages (module)">Messages</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Incoming.html" title="IB::Messages::Incoming (module)">Incoming</a></span></span>
+     &raquo; 
+    <span class="title">AbstractMessage</span>
+  
+  
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a id="class_list_link" href="#">Class List</a>
+  
+    <a id="method_list_link" href="#">Method List</a>
+  
+    <a id="file_list_link" href="#">File List</a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+    
+    <iframe id="search_frame"></iframe>
+    
+    <div id="content"><h1>Class: IB::Messages::Incoming::AbstractMessage
+  
+  
+  
+</h1>
+
+<dl class="box">
+  
+    <dt class="r1">Inherits:</dt>
+    <dd class="r1">
+      <span class="inheritName">Object</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">IB::Messages::Incoming::AbstractMessage</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+      </dd>
+    
+  
+  
+    
+  
+    
+  
+  
+  
+    <dt class="r2 last">Defined in:</dt>
+    <dd class="r2 last">lib/ib-ruby/messages/incoming.rb</dd>
+  
+</dl>
+<div class="clear"></div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>This is just a basic generic message from the server.</p>
+
+<p>Class variables:
+Instance attributes (at least):
+Override the load(socket) method in your subclass to do actual reading into @data.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<h3>Version:</h3>
+<ul class="version">
+  
+    <li>
+      
+      
+      
+      
+        
+        <div class='inline'><ul>
+<li>int: current version of message format.</li>
+</ul>
+
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><div id="subclasses">
+  <h2>Direct Known Subclasses</h2>
+  <p class="children"><span class='object_link'><a href="AbstractTick.html" title="IB::Messages::Incoming::AbstractTick (class)">AbstractTick</a></span>, <span class='object_link'><a href="BondContractData.html" title="IB::Messages::Incoming::BondContractData (class)">BondContractData</a></span>, <span class='object_link'><a href="ContractData.html" title="IB::Messages::Incoming::ContractData (class)">ContractData</a></span>, <span class='object_link'><a href="DeltaNeutralValidation.html" title="IB::Messages::Incoming::DeltaNeutralValidation (class)">DeltaNeutralValidation</a></span>, <span class='object_link'><a href="ExecutionData.html" title="IB::Messages::Incoming::ExecutionData (class)">ExecutionData</a></span>, <span class='object_link'><a href="HistoricalData.html" title="IB::Messages::Incoming::HistoricalData (class)">HistoricalData</a></span>, <span class='object_link'><a href="OpenOrder.html" title="IB::Messages::Incoming::OpenOrder (class)">OpenOrder</a></span>, <span class='object_link'><a href="PortfolioValue.html" title="IB::Messages::Incoming::PortfolioValue (class)">PortfolioValue</a></span>, <span class='object_link'><a href="RealTimeBar.html" title="IB::Messages::Incoming::RealTimeBar (class)">RealTimeBar</a></span>, <span class='object_link'><a href="ScannerData.html" title="IB::Messages::Incoming::ScannerData (class)">ScannerData</a></span></p>
+</div>
+
+
+  <h2>Instance Attribute Summary <small>(<a href="#" class="summary_toggle">collapse</a>)</small></h2>
+  <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#created_at-instance_method" title="#created_at (instance method)">- (Object) <strong>created_at</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute created_at.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#data-instance_method" title="#data (instance method)">- (Object) <strong>data</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute data.</p>
+</div></span>
+  
+</li>
+
+    
+  </ul>
+
+
+
+
+  
+    <h2>
+      Class Method Summary
+      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#message_id-class_method" title="message_id (class method)">+ (Object) <strong>message_id</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+    <h2>
+      Instance Method Summary
+      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">- (AbstractMessage) <strong>initialize</strong>(socket) </a>
+    
+
+    
+  </span>
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A new instance of AbstractMessage.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="protected ">
+  <span class="summary_signature">
+    
+      <a href="#load-instance_method" title="#load (instance method)">- (Object) <strong>load</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  <span class="note title protected">protected</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Every message loads received message version first.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="protected ">
+  <span class="summary_signature">
+    
+      <a href="#load_map-instance_method" title="#load_map (instance method)">- (Object) <strong>load_map</strong>(*map) </a>
+    
+
+    
+  </span>
+  
+  
+  <span class="note title protected">protected</span>
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Load @data from the socket according to the given map.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#to_human-instance_method" title="#to_human (instance method)">- (Object) <strong>to_human</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <p class="signature first" id="initialize-instance_method">
+  
+    - (<tt><span class='object_link'><a href="" title="IB::Messages::Incoming::AbstractMessage (class)">AbstractMessage</a></span></tt>) <strong>initialize</strong>(socket) 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>A new instance of AbstractMessage</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<h3>Raises:</h3>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Exception</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/messages/incoming.rb', line 38</span>
+
+<span class='kw'>def</span> <span class='id initialize'>initialize</span> <span class='id socket'>socket</span>
+  <span class='id raise'>raise</span> <span class='const'>Exception</span><span class='period'>.</span><span class='id new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Don't use AbstractMessage directly; use the subclass for your specific message type</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='kw'>self</span><span class='period'>.</span><span class='id class'>class</span><span class='period'>.</span><span class='id name'>name</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>AbstractMessage</span><span class='tstring_end'>&quot;</span></span>
+  <span class='ivar'>@created_at</span> <span class='op'>=</span> <span class='const'>Time</span><span class='period'>.</span><span class='id now'>now</span>
+  <span class='ivar'>@data</span> <span class='op'>=</span> <span class='const'>Hash</span><span class='period'>.</span><span class='id new'>new</span>
+  <span class='ivar'>@socket</span> <span class='op'>=</span> <span class='id socket'>socket</span>
+
+  <span class='kw'>self</span><span class='period'>.</span><span class='id load'>load</span><span class='lparen'>(</span><span class='rparen'>)</span>
+
+  <span class='ivar'>@socket</span> <span class='op'>=</span> <span class='kw'>nil</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+  <div id="instance_attr_details" class="attr_details">
+    <h2>Instance Attribute Details</h2>
+    
+      
+      <span id="created_at=-instance_method"></span>
+      <span id="created_at-instance_method"></span>
+      <div class="method_details first">
+  <p class="signature first" id="created_at-instance_method">
+  
+    - (<tt>Object</tt>) <strong>created_at</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute created_at</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+27
+28
+29</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/messages/incoming.rb', line 27</span>
+
+<span class='kw'>def</span> <span class='id created_at'>created_at</span>
+  <span class='ivar'>@created_at</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="data=-instance_method"></span>
+      <span id="data-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="data-instance_method">
+  
+    - (<tt>Object</tt>) <strong>data</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute data</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+27
+28
+29</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/messages/incoming.rb', line 27</span>
+
+<span class='kw'>def</span> <span class='id data'>data</span>
+  <span class='ivar'>@data</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+    
+    
+      <div class="method_details first">
+  <p class="signature first" id="message_id-class_method">
+  
+    + (<tt>Object</tt>) <strong>message_id</strong> 
+  
+
+  
+</p><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+34
+35
+36</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/messages/incoming.rb', line 34</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id message_id'>message_id</span>
+  <span class='ivar'>@message_id</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+    
+    
+      <div class="method_details first">
+  <p class="signature first" id="load-instance_method">
+  
+    - (<tt>Object</tt>) <strong>load</strong>  <span class="extras">(protected)</span>
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Every message loads received message version first</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+56
+57
+58</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/messages/incoming.rb', line 56</span>
+
+<span class='kw'>def</span> <span class='id load'>load</span>
+  <span class='ivar'>@data</span><span class='lbracket'>[</span><span class='symbol'>:version</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='ivar'>@socket</span><span class='period'>.</span><span class='id read_int'>read_int</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="load_map-instance_method">
+  
+    - (<tt>Object</tt>) <strong>load_map</strong>(*map)  <span class="extras">(protected)</span>
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>Load @data from the socket according to the given map.</p>
+
+<p>map is a series of Arrays in the format [ [ :name, :type ] ],
+type identifiers must have a corresponding read_type method on socket (read_int, etc.).
+[:version, :int ] is loaded first, by default</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+66
+67
+68</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/messages/incoming.rb', line 66</span>
+
+<span class='kw'>def</span> <span class='id load_map'>load_map</span><span class='lparen'>(</span><span class='op'>*</span><span class='id map'>map</span><span class='rparen'>)</span>
+  <span class='id map'>map</span><span class='period'>.</span><span class='id each'>each</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='lparen'>(</span><span class='id name'>name</span><span class='comma'>,</span> <span class='id type'>type</span><span class='rparen'>)</span><span class='op'>|</span> <span class='ivar'>@data</span><span class='lbracket'>[</span><span class='id name'>name</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='ivar'>@socket</span><span class='period'>.</span><span class='id __send__'>__send__</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>read_</span><span class='embexpr_beg'>#{</span><span class='id type'>type</span><span class='rbrace'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="to_human-instance_method">
+  
+    - (<tt>Object</tt>) <strong>to_human</strong> 
+  
+
+  
+</p><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+49
+50
+51</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/ib-ruby/messages/incoming.rb', line 49</span>
+
+<span class='kw'>def</span> <span class='id to_human'>to_human</span>
+  <span class='kw'>self</span><span class='period'>.</span><span class='id inspect'>inspect</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+    
+    <div id="footer">
+  Generated on Tue Nov 22 01:30:24 2011 by 
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.7.3 (ruby-1.9.2).
+</div>
+
+  </body>
+</html>
