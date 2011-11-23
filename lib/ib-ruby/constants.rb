@@ -97,4 +97,21 @@ module IB
       #           this new tick type are: 0 = Not halted, 1 = Halted.
       #   Note 3: Applies to bond contracts only.
   }
+
+  #
+  # Market depth messages contain these "operation" codes to tell you
+  # what to do with the data.
+  #
+  # See also http://www.interactivebrokers.com/php/apiUsersGuide/apiguide/java/updatemktdepth.htm
+  #
+  MARKET_DEPTH_OPERATIONS = {
+    0 => :insert, # New order, insert into the row identified by :position
+    1 => :update, # Update the existing order at the row identified by :position
+    2 => :delete  # Delete the existing order at the row identified by :position
+  }
+
+  MARKET_DEPTH_SIDES = {
+    0 => :ask,
+    1 => :bid
+  }
 end # module IB
