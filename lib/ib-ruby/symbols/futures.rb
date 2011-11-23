@@ -17,7 +17,6 @@ module IB
     #
     # N.B. This will not work as expected near/after expiration during that month, as
     # volume rolls over to the next quarter even though the current month is still valid!
-    #
     def self.next_quarter_month(time)
       sprintf("%02d", [3, 6, 9, 12].find { |month| month >= time.month })
     end
@@ -30,6 +29,18 @@ module IB
       end
     end
 
+    #
+    # WARNING: This is currently broken. It returns the next
+    # quarterly expiration month after the current month. Many futures
+    # instruments have monthly contracts for the near months. This
+    # method will not work for such contracts; it will return the next
+    # quarter after the current month, even though the present month
+    # has the majority of the trading volume.
+    #
+    # For example, in early November of 2011, many contracts have the
+    # vast majority of their volume in the Nov 2011 contract, but this
+    # method will return the Dec 2011 contract instead.
+    #
     def self.next_expiry(time)
       "#{ self.next_quarter_year(time) }#{ self.next_quarter_month(time) }"
     end
