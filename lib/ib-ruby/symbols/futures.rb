@@ -49,8 +49,11 @@ module IB
     # Convenience method; generates a Models::Contract instance for a futures
     # contract with the given parameters.
     #
-    # If expiry is nil, it will attempt to guess the next expiration
-    # date. This date may be inaccurate near rollover time.
+    # If expiry is nil, it will use the end month of the current
+    # quarter. This will be wrong for most contracts most of the time,
+    # since most contracts have the majority of their volume in a
+    # nearby intraquarter month. It is recommended that you specify an
+    # expiration date manually until next_expiry is fixed.
     #
     def self.future(base_symbol, exchange, currency, description="", expiry=nil)
       Models::Contract.new(:symbol => base_symbol,
