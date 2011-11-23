@@ -38,9 +38,12 @@ module IB
     # Convenience method; generates a Models::Contract instance for a futures
     # contract with the given parameters.
     #
-    def self.future(base_symbol, exchange, currency, description="")
+    # If expiry is nil, it will attempt to guess the next expiration
+    # date. This date may be inaccurate near rollover time.
+    #
+    def self.future(base_symbol, exchange, currency, description="", expiry=nil)
       Models::Contract.new(:symbol => base_symbol,
-                           :expiry => self.next_expiry(Time.now),
+                           :expiry => expiry.nil? ? self.next_expiry(Time.now) : expiry,
                            :exchange => exchange,
                            :currency => currency,
                            :sec_type => SECURITY_TYPES[:future],
