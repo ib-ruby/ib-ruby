@@ -34,6 +34,20 @@ module IB
       "#{ self.next_quarter_year(time) }#{ self.next_quarter_month(time) }"
     end
 
+    #
+    # Convenience method; generates a Models::Contract instance for a futures
+    # contract with the given parameters.
+    #
+    def self.future(base_symbol, exchange, currency, description="")
+      Models::Contract.new(:symbol => base_symbol,
+                           :expiry => self.next_expiry(Time.now),
+                           :exchange => exchange,
+                           :currency => currency,
+                           :sec_type => SECURITY_TYPES[:future],
+                           :description => description)
+    end
+
+
     Futures ={
         :ym => Models::Contract.new(:symbol => "YM",
                                     :expiry => self.next_expiry(Time.now),
