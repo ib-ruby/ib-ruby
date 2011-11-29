@@ -161,9 +161,9 @@ module IB
       msg_id = @server[:socket].read_int
 
       # Debug:
-      unless [1, 2, 4, 6, 7, 8, 9, 12, 21, 53].include? msg_id
-        puts "Got message #{msg_id} (#{Messages::Incoming::Table[msg_id]})"
-      end
+      #unless [1, 2, 4, 6, 7, 8, 9, 12, 21, 53].include? msg_id
+      #  puts "Got message #{msg_id} (#{Messages::Incoming::Table[msg_id]})"
+      #end
 
       # Create new instance of the appropriate message type, and have it read the message.
       # NB: Failure here usually means unsupported message type received
