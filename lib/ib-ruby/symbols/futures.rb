@@ -52,8 +52,12 @@ module IB
     # If expiry is nil, it will use the end month of the current
     # quarter. This will be wrong for most contracts most of the time,
     # since most contracts have the majority of their volume in a
-    # nearby intraquarter month. It is recommended that you specify an
-    # expiration date manually until next_expiry is fixed.
+    # nearby intraquarter month. 
+    #
+    # It is recommended that you specify an expiration date manually
+    # until next_expiry is fixed. Expiry should be a string in the
+    # format "YYYYMM", where YYYY is the 4 digit year and MM is the 2
+    # digit month. For example, November 2011 is "201111".
     #
     def self.future(base_symbol, exchange, currency, description="", expiry=nil)
       Models::Contract.new(:symbol => base_symbol,
