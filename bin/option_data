@@ -14,7 +14,8 @@ require 'ib-ruby'
 # corresponds to what symbol ourselves, because the ticks don't include any other
 # identifying information. The choice of ticker ids is, as far as I can tell, arbitrary.
 @market = {123 => IB::Symbols::Options[:wfc20],
-           125 => IB::Symbols::Options[:z50]}
+           125 => IB::Symbols::Options[:z50],
+           127 => IB::Symbols::Options[:spy]}
 
 # First, connect to IB TWS.
 ib = IB::Connection.new
@@ -28,7 +29,7 @@ ib.subscribe(:Alert) { |msg| puts msg.to_human }
 #
 # (N.B. The description field is not from IB TWS. It is defined
 #  locally in forex.rb, and is just arbitrary text.)
-ib.subscribe(:TickPrice, :TickSize, :TickOption) do |msg|
+ib.subscribe(:TickPrice, :TickSize, :TickOption, :TickString) do |msg|
   puts @market[msg.data[:id]].description + ": " + msg.to_human
 end
 
