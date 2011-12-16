@@ -57,3 +57,7 @@
 == 0.5.2 / 2011-10-30
 
 * Add nonblocking Connection#process_messages API
+
+== 0.5.4 / 2011-12-16
+
+* Placing Version source file into its proper place

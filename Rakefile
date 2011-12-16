@@ -14,7 +14,7 @@ PKG_PATH = BASE_PATH + 'pkg'
 DOC_PATH = BASE_PATH + 'rdoc'
 
 $LOAD_PATH.unshift LIB_PATH.to_s
-require 'version'
+require 'ib-ruby/version'
 
 NAME = 'ib-ruby'
 CLASS_NAME = IB
