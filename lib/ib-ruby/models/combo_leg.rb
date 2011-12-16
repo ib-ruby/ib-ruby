@@ -12,7 +12,6 @@ module IB
       CLOSE = 2 # Close. This value is only valid for institutional customers.
       UNKNOWN = 3
 
-
       attr_accessor :con_id, # int: The unique contract identifier specifying the security.
                     :ratio, # int: Select the relative number of contracts for the leg you
                     #              are constructing. To help determine the ratio for a

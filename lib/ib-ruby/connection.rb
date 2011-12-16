@@ -191,6 +191,6 @@ module IB
     end
 
   end # class Connection
-  IB = Connection # Legacy alias
+  #IB = Connection # Legacy alias
 
 end # module IB
