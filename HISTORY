@@ -61,3 +61,7 @@
 == 0.5.4 / 2011-12-16
 
 * Placing Version source file into its proper place
+
+== 0.5.5 / 2011-12-16
+
+* ComboLeg serialization signature changed

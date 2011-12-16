@@ -168,7 +168,7 @@ module IB
       # This returns an Array of data from the given contract.
       # Different messages serialize contracts differently. Go figure.
       # Note that it does NOT include the combo legs.
-      def serialize(*fields)
+      def serialize *fields
         [(fields.include?(:con_id) ? [con_id] : []),
          symbol,
          sec_type,
@@ -182,12 +182,12 @@ module IB
         ].flatten
       end
 
-      def serialize_long(*fields)
-        serialize(:option, :primary_exchange, *fields)
+      def serialize_long *fields
+        serialize :option, :primary_exchange, *fields
       end
 
-      def serialize_short(*fields)
-        serialize(:option, *fields)
+      def serialize_short *fields
+        serialize :option, *fields
       end
 
       # This produces a string uniquely identifying this contract, in the format used
@@ -202,12 +202,12 @@ module IB
       # expiring in September, 2008, the string is:
       #
       #    GBP:FUT:200809:::62500:GLOBEX::USD:
-      def serialize_ib_ruby(version)
+      def serialize_ib_ruby version
         serialize.join(":")
       end
 
       # This returns a Contract initialized from the serialize_ib_ruby format string.
-      def self.from_ib_ruby(string)
+      def self.from_ib_ruby string
         c = Contract.new
         c.symbol, c.sec_type, c.expiry, c.strike, c.right, c.multiplier,
             c.exchange, c.primary_exchange, c.currency, c.local_symbol = string.split(":")
@@ -215,7 +215,7 @@ module IB
       end
 
       # Serialize under_comp parameters
-      def serialize_under_comp(*args)
+      def serialize_under_comp *args
         # EClientSocket.java, line 471:
         if under_comp
           [true,
@@ -228,12 +228,14 @@ module IB
       end
 
       # Some messages send open_close too, some don't. WTF.
-      def serialize_combo_legs(type = :short)
-        # No idea what "BAG" means. Copied from the Java code.
+      # "BAG" is not really a contract, but a combination (combo) of securities.
+      # AKA basket or bag of securities. Individual securities in combo are represented
+      # by ComboLeg objects.
+      def serialize_combo_legs *fields
         return [] unless sec_type.upcase == "BAG"
         return [0] if combo_legs.empty? || combo_legs.nil?
         [combo_legs.size,
-         combo_legs.map { |leg| leg.serialize(type) }]
+         combo_legs.map { |leg| leg.serialize *fields }]
       end
 
       def to_human
@@ -289,15 +291,14 @@ module IB
         end
 
         # Some messages include open_close, some don't. wtf.
-        def serialize(type = :short)
+        def serialize *fields
           [con_id,
            ratio,
            action,
-           exchange] +
-              type == :short ? [] : [open_close,
-                                     short_sale_slot,
-                                     designated_location,
-                                     exempt_code]
+           exchange,
+           (fields.include?(:extended) ? [open_close, short_sale_slot,
+                                          designated_location, exempt_code] : [])
+          ].flatten
         end
       end # ComboLeg
 

@@ -281,7 +281,7 @@ module IB
          trigger_method,
          outside_rth, # was: ignore_rth
          hidden,
-         contract.serialize_combo_legs(:long),
+         contract.serialize_combo_legs(:extended),
          '', # deprecated shares_allocation field
          discretionary_amount,
          good_after_time,
