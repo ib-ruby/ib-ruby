@@ -34,7 +34,7 @@ module IB
       def initialize opts = {}
         @con_id = 0
         @ratio = 0
-        @open_close = 0
+        @open_close = SAME
         @short_sale_slot = 0
         @designated_location = ''
         @exempt_code = -1

@@ -141,7 +141,7 @@ module IB
       def right=(x)
         x.upcase! if x.is_a?(String)
         x = nil if !x.nil? && x.empty?
-        x = nil if x == "0"
+        x = nil if x == "0" || x == "?"
         raise(ArgumentError.new("Invalid right \"#{x}\" (must be one of PUT, CALL, P, C)")) unless x.nil? || ["PUT", "CALL", "P", "C", "0"].include?(x)
         @right = x
       end

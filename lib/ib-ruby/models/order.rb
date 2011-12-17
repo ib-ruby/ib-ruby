@@ -261,7 +261,7 @@ module IB
       # This returns an Array of data from the given order,
       # mixed with data from associated contract. Ugly mix, indeed.
       def serialize_with contract
-        [contract.serialize_long(:sec_id),
+        [contract.serialize_long(:con_id, :sec_id),
          action, # main order fields
          total_quantity,
          order_type,
@@ -334,6 +334,14 @@ module IB
            algo_params.size,
            algo_params.to_a]
         end
+      end
+
+      def to_s #human
+        "<Order::" +  #self.class.
+            instance_variables.map do |key|
+              value = instance_variable_get(key)
+              " #{key}=#{value}" unless value.nil? || value == '' || value == 0
+            end.compact.join(',') + " >"
       end
 
     end # class Order

@@ -73,35 +73,46 @@ module IB
 
       ### Defining (short) Outgoing Message classes for IB:
 
-      # Empty messages (no data)
+      ## Empty messages (no data)
+
+      # Request the open orders that were placed from THIS client. Each open order
+      # will be fed back through the OpenOrder and OrderStatus messages.
+      # NB: Client with a client_id of 0 will also receive the TWS-owned open orders.
+      # These orders will be associated with the client and a new orderId will be
+      # generated. This association will persist over multiple API and TWS sessions.
       RequestOpenOrders = def_message 5
-      CancelNewsBulletins = def_message 13
+
+      # Request the open orders placed from all clients and also from TWS. Each open
+      # order will be fed back through the OpenOrder and OrderStatus messages.
       RequestAllOpenOrders = def_message 16
-      RequestManagedAccounts = def_message 17
+
       # Requests an XML document that describes the valid parameters that a scanner
       # subscription can have (for outgoing RequestScannerSubscription message).
       RequestScannerParameters = def_message 24
+
+      CancelNewsBulletins = def_message 13
+      RequestManagedAccounts = def_message 17
       RequestCurrentTime = def_message 49
       RequestGlobalCancel = def_message 58
 
-      # Data format is: @data = { :id => ticker_id}
+      ## Data format is: @data = { :id => ticker_id}
       CancelMarketData = def_message 2
       CancelMarketDepth = def_message 11
       CancelScannerSubscription = def_message 23
       CancelHistoricalData = def_message 25
       CancelRealTimeBars = def_message 51
 
-      # Data format is: @data = { :id => request_id }
+      ## Data format is: @data = { :id => request_id }
       CancelFundamentalData = def_message 53
       CancelImpliedVolatility = def_message 56
       CancelCalculateImpliedVolatility = CancelImpliedVolatility
       CancelOptionPrice = def_message 57
       CancelCalculateOptionPrice = CancelOptionPrice
 
-      # Data format is: @data ={ :id => order-id-to-cancel }
+      ## Data format is: @data ={ :id => order-id-to-cancel }
       CancelOrder = def_message 4
 
-      # These messages contain just one or two keys, shown in the end of definition
+      ## These messages contain just one or two keys, shown in the end of definition
       # @data = { :number_of_ids => int }
       RequestIds = def_message 8, 1, :number_of_ids
       # data = { :all_messages => boolean }

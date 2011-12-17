@@ -364,7 +364,8 @@ module IB
 
           @order = Models::Order.new :id => @socket.read_int
 
-          @contract = Models::Contract.new :symbol => @socket.read_string,
+          @contract = Models::Contract.new :con_id => @socket.read_string,
+                                           :symbol => @socket.read_string,
                                            :sec_type => @socket.read_string,
                                            :expiry => @socket.read_string,
                                            :strike => @socket.read_decimal,
@@ -397,7 +398,7 @@ module IB
           @order.fa_percentage = @socket.read_string
           @order.fa_profile = @socket.read_string
           @order.good_till_date = @socket.read_string
-          @order.rule_80A = @socket.read_string
+          @order.rule_80a = @socket.read_string
           @order.percent_offset = @socket.read_decimal
           @order.settling_firm = @socket.read_string
           @order.short_sale_slot = @socket.read_int
@@ -431,7 +432,7 @@ module IB
           @order.trail_stop_price = @socket.read_decimal
           @order.basis_points = @socket.read_decimal
           @order.basis_points_type = @socket.read_int
-          @order.combo_legs_description = @socket.read_string
+          @contract.combo_legs_description = @socket.read_string
           @order.scale_init_level_size = @socket.read_int_max
           @order.scale_subs_level_size = @socket.read_int_max
           @order.scale_price_increment = @socket.read_decimal_max

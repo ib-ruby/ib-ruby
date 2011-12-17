@@ -73,3 +73,7 @@
 == 0.5.7 / 2011-12-16
 
 * Option subclass of Contract added
+
+== 0.5.8 / 2011-12-16
+
+* Critical bugs in Order-related messages fixed
