@@ -12,8 +12,7 @@
 module IB
   module Symbols
 
-    # Get the next valid quarter month >= today, for finding the
-    # front month of quarterly futures.
+    # Get the next valid quarter month >= today, for finding the front month of quarterly futures.
     #
     # N.B. This will not work as expected near/after expiration during that month, as
     # volume rolls over to the next quarter even though the current month is still valid!
@@ -29,7 +28,6 @@ module IB
       end
     end
 
-    #
     # WARNING: This is currently broken. It returns the next
     # quarterly expiration month after the current month. Many futures
     # instruments have monthly contracts for the near months. This
@@ -45,14 +43,13 @@ module IB
       "#{ self.next_quarter_year(time) }#{ self.next_quarter_month(time) }"
     end
 
-    #
     # Convenience method; generates a Models::Contract instance for a futures
     # contract with the given parameters.
     #
     # If expiry is nil, it will use the end month of the current
     # quarter. This will be wrong for most contracts most of the time,
     # since most contracts have the majority of their volume in a
-    # nearby intraquarter month. 
+    # nearby intraquarter month.
     #
     # It is recommended that you specify an expiration date manually
     # until next_expiry is fixed. Expiry should be a string in the
@@ -67,7 +64,6 @@ module IB
                            :sec_type => SECURITY_TYPES[:future],
                            :description => description)
     end
-
 
     Futures ={
         :ym => Models::Contract.new(:symbol => "YM",
