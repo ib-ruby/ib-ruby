@@ -337,13 +337,16 @@ module IB
       end
 
       def to_s #human
-        "<Order::" +  #self.class.
-            instance_variables.map do |key|
-              value = instance_variable_get(key)
-              " #{key}=#{value}" unless value.nil? || value == '' || value == 0
-            end.compact.join(',') + " >"
+        "<Order:" + instance_variables.map do |key|
+          value = instance_variable_get(key)
+          " #{key}=#{value}" unless value.nil? || value == '' || value == 0
+        end.compact.join(',') + " >"
       end
 
+      def to_human
+        "<Order: #{@status} #{@order_type} #{@action} #{@total_quantity} @ #{@limit_price}" +
+        " #{@tif} id/perm: #{@id}/#{@perm_id}>"
+      end
     end # class Order
   end # module Models
 end # module IB

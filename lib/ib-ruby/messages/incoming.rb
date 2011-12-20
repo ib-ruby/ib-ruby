@@ -108,7 +108,14 @@ module IB
                                 [:parent_id, :int],
                                 [:last_fill_price, :decimal],
                                 [:client_id, :int],
-                                [:why_held, :string]
+                                [:why_held, :string] do
+        "<OrderStatus: #{@data[:status]} filled: #{@data[:filled]}/#{@data[:remaining]+@data[:filled]}" +
+            " @ last/avg: #{@data[:last_fill_price]}/#{@data[:average_fill_price]}" +
+            (@data[:parent_id] > 0 ? "parent_id: #{@data[:parent_id]}" : "") +
+            (@data[:why_held] != "" ? "why_held: #{@data[:why_held]}" : "") +
+            " id/perm: #{@data[:id]}/#{@data[:perm_id]}>"
+      end
+
 
       AccountValue = def_message(6, [:key, :string],
                                  [:value, :string],
@@ -473,6 +480,10 @@ module IB
           @order.max_commission = @socket.read_decimal_max
           @order.commission_currency = @socket.read_string
           @order.warning_text = @socket.read_string
+        end
+
+        def to_human
+          "<OpenOrder: #{@contract.to_human}: #{@order.to_human}>"
         end
       end # OpenOrder
 

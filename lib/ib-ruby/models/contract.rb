@@ -238,16 +238,21 @@ module IB
          combo_legs.map { |leg| leg.serialize *fields }]
       end
 
+      def to_s
+        "<Contract: " + instance_variables.map do |key|
+          unless key == :@summary
+            value = send(key[1..-1])
+            " #{key}=#{value}" unless value.nil? || value == '' || value == 0
+          end
+        end.compact.join(',') + " >"
+      end
+
       def to_human
-        "<Contract: " + [symbol, expiry, sec_type, strike, right, exchange, currency].join("-") + ">"
+        "<Contract: " + [symbol, sec_type, expiry, strike, right, exchange, currency].join("-") + ">"
       end
 
       def to_short
         "#{symbol}#{expiry}#{strike}#{right}#{exchange}#{currency}"
-      end
-
-      def to_s
-        to_human
       end
 
     end # class Contract
