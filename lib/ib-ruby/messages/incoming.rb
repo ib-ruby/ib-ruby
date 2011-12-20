@@ -371,15 +371,15 @@ module IB
 
           @order = Models::Order.new :id => @socket.read_int
 
-          @contract = Models::Contract.new :con_id => @socket.read_string,
-                                           :symbol => @socket.read_string,
-                                           :sec_type => @socket.read_string,
-                                           :expiry => @socket.read_string,
-                                           :strike => @socket.read_decimal,
-                                           :right => @socket.read_string,
-                                           :exchange => @socket.read_string,
-                                           :currency => @socket.read_string,
-                                           :local_symbol => @socket.read_string
+          @contract = Models::Contract.build :con_id => @socket.read_string,
+                                             :symbol => @socket.read_string,
+                                             :sec_type => @socket.read_string,
+                                             :expiry => @socket.read_string,
+                                             :strike => @socket.read_decimal,
+                                             :right => @socket.read_string,
+                                             :exchange => @socket.read_string,
+                                             :currency => @socket.read_string,
+                                             :local_symbol => @socket.read_string
 
           @order.action = @socket.read_string
           @order.total_quantity = @socket.read_int
@@ -483,7 +483,7 @@ module IB
         end
 
         def to_human
-          "<OpenOrder: #{@contract.to_human}: #{@order.to_human}>"
+          "<OpenOrder: #{@contract.to_human} #{@order.to_human}>"
         end
       end # OpenOrder
 
@@ -495,16 +495,16 @@ module IB
         def load
           super
 
-          @contract = Models::Contract.new :con_id => @socket.read_int,
-                                           :symbol => @socket.read_string,
-                                           :sec_type => @socket.read_string,
-                                           :expiry => @socket.read_string,
-                                           :strike => @socket.read_decimal,
-                                           :right => @socket.read_string,
-                                           :multiplier => @socket.read_string,
-                                           :primary_exchange => @socket.read_string,
-                                           :currency => @socket.read_string,
-                                           :local_symbol => @socket.read_string
+          @contract = Models::Contract.build :con_id => @socket.read_int,
+                                             :symbol => @socket.read_string,
+                                             :sec_type => @socket.read_string,
+                                             :expiry => @socket.read_string,
+                                             :strike => @socket.read_decimal,
+                                             :right => @socket.read_string,
+                                             :multiplier => @socket.read_string,
+                                             :primary_exchange => @socket.read_string,
+                                             :currency => @socket.read_string,
+                                             :local_symbol => @socket.read_string
           load_map [:position, :int],
                    [:market_price, :decimal],
                    [:market_value, :decimal],
@@ -532,34 +532,34 @@ module IB
           load_map [:id, :int] # request id
 
           @contract =
-              Models::Contract.new :symbol => @socket.read_string,
-                                   :sec_type => @socket.read_string,
-                                   :expiry => @socket.read_string,
-                                   :strike => @socket.read_decimal,
-                                   :right => @socket.read_string,
-                                   :exchange => @socket.read_string,
-                                   :currency => @socket.read_string,
-                                   :local_symbol => @socket.read_string,
+              Models::Contract.build :symbol => @socket.read_string,
+                                     :sec_type => @socket.read_string,
+                                     :expiry => @socket.read_string,
+                                     :strike => @socket.read_decimal,
+                                     :right => @socket.read_string,
+                                     :exchange => @socket.read_string,
+                                     :currency => @socket.read_string,
+                                     :local_symbol => @socket.read_string,
 
-                                   :market_name => @socket.read_string,
-                                   :trading_class => @socket.read_string,
-                                   :con_id => @socket.read_int,
-                                   :min_tick => @socket.read_decimal,
-                                   :multiplier => @socket.read_string,
-                                   :order_types => @socket.read_string,
-                                   :valid_exchanges => @socket.read_string,
-                                   :price_magnifier => @socket.read_int,
+                                     :market_name => @socket.read_string,
+                                     :trading_class => @socket.read_string,
+                                     :con_id => @socket.read_int,
+                                     :min_tick => @socket.read_decimal,
+                                     :multiplier => @socket.read_string,
+                                     :order_types => @socket.read_string,
+                                     :valid_exchanges => @socket.read_string,
+                                     :price_magnifier => @socket.read_int,
 
-                                   :under_con_id => @socket.read_int,
-                                   :long_name => @socket.read_string,
-                                   :primary_exchange => @socket.read_string,
-                                   :contract_month => @socket.read_string,
-                                   :industry => @socket.read_string,
-                                   :category => @socket.read_string,
-                                   :subcategory => @socket.read_string,
-                                   :time_zone => @socket.read_string,
-                                   :trading_hours => @socket.read_string,
-                                   :liquid_hours => @socket.read_string
+                                     :under_con_id => @socket.read_int,
+                                     :long_name => @socket.read_string,
+                                     :primary_exchange => @socket.read_string,
+                                     :contract_month => @socket.read_string,
+                                     :industry => @socket.read_string,
+                                     :category => @socket.read_string,
+                                     :subcategory => @socket.read_string,
+                                     :time_zone => @socket.read_string,
+                                     :trading_hours => @socket.read_string,
+                                     :liquid_hours => @socket.read_string
         end
       end # ContractData
       ContractDetails = ContractData
@@ -575,15 +575,15 @@ module IB
                    [:order_id, :int]
 
           @contract =
-              Models::Contract.new :con_id => @socket.read_int,
-                                   :symbol => @socket.read_string,
-                                   :sec_type => @socket.read_string,
-                                   :expiry => @socket.read_string,
-                                   :strike => @socket.read_decimal,
-                                   :right => @socket.read_string,
-                                   :exchange => @socket.read_string,
-                                   :currency => @socket.read_string,
-                                   :local_symbol => @socket.read_string
+              Models::Contract.build :con_id => @socket.read_int,
+                                     :symbol => @socket.read_string,
+                                     :sec_type => @socket.read_string,
+                                     :expiry => @socket.read_string,
+                                     :strike => @socket.read_decimal,
+                                     :right => @socket.read_string,
+                                     :exchange => @socket.read_string,
+                                     :currency => @socket.read_string,
+                                     :local_symbol => @socket.read_string
           @execution =
               Models::Execution.new :order_id => @data[:order_id],
                                     :exec_id => @socket.read_string,
@@ -659,32 +659,32 @@ module IB
           load_map [:id, :int] # request id
 
           @contract =
-              Models::Contract.new :symbol => @socket.read_string,
-                                   :sec_type => @socket.read_string,
-                                   :cusip => @socket.read_string,
-                                   :coupon => @socket.read_decimal,
-                                   :maturity => @socket.read_string,
-                                   :issue_date => @socket.read_string,
-                                   :ratings => @socket.read_string,
-                                   :bond_type => @socket.read_string,
-                                   :coupon_type => @socket.read_string,
-                                   :convertible => @socket.read_boolean,
-                                   :callable => @socket.read_boolean,
-                                   :puttable => @socket.read_boolean,
-                                   :desc_append => @socket.read_string,
-                                   :exchange => @socket.read_string,
-                                   :currency => @socket.read_string,
-                                   :market_name => @socket.read_string,
-                                   :trading_class => @socket.read_string,
-                                   :con_id => @socket.read_int,
-                                   :min_tick => @socket.read_decimal,
-                                   :order_types => @socket.read_string,
-                                   :valid_exchanges => @socket.read_string,
-                                   :valid_next_option_date => @socket.read_string,
-                                   :valid_next_option_type => @socket.read_string,
-                                   :valid_next_option_partial => @socket.read_string,
-                                   :notes => @socket.read_string,
-                                   :long_name => @socket.read_string
+              Models::Contract.build :symbol => @socket.read_string,
+                                     :sec_type => @socket.read_string,
+                                     :cusip => @socket.read_string,
+                                     :coupon => @socket.read_decimal,
+                                     :maturity => @socket.read_string,
+                                     :issue_date => @socket.read_string,
+                                     :ratings => @socket.read_string,
+                                     :bond_type => @socket.read_string,
+                                     :coupon_type => @socket.read_string,
+                                     :convertible => @socket.read_boolean,
+                                     :callable => @socket.read_boolean,
+                                     :puttable => @socket.read_boolean,
+                                     :desc_append => @socket.read_string,
+                                     :exchange => @socket.read_string,
+                                     :currency => @socket.read_string,
+                                     :market_name => @socket.read_string,
+                                     :trading_class => @socket.read_string,
+                                     :con_id => @socket.read_int,
+                                     :min_tick => @socket.read_decimal,
+                                     :order_types => @socket.read_string,
+                                     :valid_exchanges => @socket.read_string,
+                                     :valid_next_option_date => @socket.read_string,
+                                     :valid_next_option_type => @socket.read_string,
+                                     :valid_next_option_partial => @socket.read_string,
+                                     :notes => @socket.read_string,
+                                     :long_name => @socket.read_string
         end
       end # BondContractData
 
@@ -709,17 +709,17 @@ module IB
 
           @data[:results] = Array.new(@data[:count]) do |index|
             {:rank => @socket.read_int,
-             :contract => Contract.new(:con_id => @socket.read_int,
-                                       :symbol => @socket.read_str,
-                                       :sec_type => @socket.read_str,
-                                       :expiry => @socket.read_str,
-                                       :strike => @socket.read_decimal,
-                                       :right => @socket.read_str,
-                                       :exchange => @socket.read_str,
-                                       :currency => @socket.read_str,
-                                       :local_symbol => @socket.read_str,
-                                       :market_name => @socket.read_str,
-                                       :trading_class => @socket.read_str),
+             :contract => Contract.build(:con_id => @socket.read_int,
+                                         :symbol => @socket.read_str,
+                                         :sec_type => @socket.read_str,
+                                         :expiry => @socket.read_str,
+                                         :strike => @socket.read_decimal,
+                                         :right => @socket.read_str,
+                                         :exchange => @socket.read_str,
+                                         :currency => @socket.read_str,
+                                         :local_symbol => @socket.read_str,
+                                         :market_name => @socket.read_str,
+                                         :trading_class => @socket.read_str),
              :distance => @socket.read_str,
              :benchmark => @socket.read_str,
              :projection => @socket.read_str,
@@ -776,10 +776,10 @@ module IB
           super
           load_map [:id, :int] # request id
 
-          @contract = Models::Contract.new :under_comp => true,
-                                           :under_con_id => @socket.read_int,
-                                           :under_delta => @socket.read_decimal,
-                                           :under_price => @socket.read_decimal
+          @contract = Models::Contract.build :under_comp => true,
+                                             :under_con_id => @socket.read_int,
+                                             :under_delta => @socket.read_decimal,
+                                             :under_price => @socket.read_decimal
         end
       end # DeltaNeutralValidation
 

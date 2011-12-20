@@ -13,12 +13,6 @@ module IB
           self.local_symbol = value.sub(/ /, ' '*(22-value.size))
         end
 
-        def initialize opts = {}
-          super opts
-          @sec_type = IB::SECURITY_TYPES[:option]
-          @description ||= osi ? osi : "#{symbol} #{strike} #{right} #{expiry}"
-        end
-
         # Make valid IB Contract definition from OSI (Option Symbology Initiative) code.
         # NB: Simply making a new Contract with *local_symbol* (osi) property set to a
         # valid OSI code works just as well, just do NOT set *expiry*, *right* or
@@ -48,7 +42,18 @@ module IB
               :strike => strike
         end
 
+        def initialize opts = {}
+          super opts
+          @sec_type = IB::SECURITY_TYPES[:option]
+          @description ||= osi ? osi : "#{symbol} #{strike} #{right} #{expiry}"
+        end
+
+        def to_human
+          "<Option: " + [symbol, expiry, right, strike, exchange, currency].join("-") + ">"
+        end
       end # class Option
+
+      TYPES[IB::SECURITY_TYPES[:option]] = Option
     end # class Contract
   end # module Models
 end # module IB

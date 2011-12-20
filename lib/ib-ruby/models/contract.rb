@@ -6,7 +6,27 @@ module IB
   module Models
     class Contract < Model
 
-      BAG_SEC_TYPE = "BAG"
+      # Specialized Contract subclasses representing different security types
+      TYPES = {}
+      #BAG_SEC_TYPE = "BAG"
+
+      # This returns a Contract initialized from the serialize_ib_ruby format string.
+      def self.build opts = {}
+        type = opts[:sec_type]
+        if TYPES[type]
+          TYPES[type].new opts
+        else
+          Contract.new opts
+        end
+      end
+
+      # This returns a Contract initialized from the serialize_ib_ruby format string.
+      def self.from_ib_ruby string
+        c = Contract.new
+        c.symbol, c.sec_type, c.expiry, c.strike, c.right, c.multiplier,
+            c.exchange, c.primary_exchange, c.currency, c.local_symbol = string.split(":")
+        c
+      end
 
       # Fields are Strings unless noted otherwise
       attr_accessor :con_id, # int: The unique contract identifier.
@@ -206,14 +226,6 @@ module IB
         serialize.join(":")
       end
 
-      # This returns a Contract initialized from the serialize_ib_ruby format string.
-      def self.from_ib_ruby string
-        c = Contract.new
-        c.symbol, c.sec_type, c.expiry, c.strike, c.right, c.multiplier,
-            c.exchange, c.primary_exchange, c.currency, c.local_symbol = string.split(":")
-        c
-      end
-
       # Serialize under_comp parameters
       def serialize_under_comp *args
         # EClientSocket.java, line 471:
@@ -258,3 +270,8 @@ module IB
     end # class Contract
   end # module Models
 end # module IB
+
+# TODO Where should we require this?
+require 'ib-ruby/models/contract/option'
+require 'ib-ruby/models/contract/bag'
+

@@ -81,3 +81,7 @@
 == 0.5.9 / 2011-12-16
 
 * Sample scripts to place and cancel orders added
+
+== 0.5.10 / 2011-12-19
+
+* Bag Contract subclass added
