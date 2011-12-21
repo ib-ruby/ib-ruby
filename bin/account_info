@@ -14,6 +14,9 @@ require 'ib-ruby'
 # First, connect to IB TWS.
 ib = IB::Connection.new
 
+# Set log level
+log.level = Logger::FATAL
+
 # Subscribe to TWS alerts/errors and account-related messages
 # that TWS sends in response to account data request
 ib.subscribe(:Alert, :AccountValue,

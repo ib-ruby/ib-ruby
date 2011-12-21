@@ -209,25 +209,25 @@ module IB
 
       # @data={:id => int: ticker_id - Must be a unique value. When the market data
       #                                returns, it will be identified by this tag,
-      #        :contract => Datatypes::Contract, requested contract.
-      #        :tick_list => String: comma delimited list of requested tick groups:
-      #           Group ID - Description - Requested Tick Types
-      #           100 - Option Volume (currently for stocks) - 29, 30
-      #           101 - Option Open Interest (currently for stocks) - 27, 28
-      #           104 - Historical Volatility (currently for stocks) - 23
-      #           106 - Option Implied Volatility (currently for stocks) - 24
-      #           162 - Index Future Premium - 31
-      #           165 - Miscellaneous Stats - 15, 16, 17, 18, 19, 20, 21
-      #           221 - Mark Price (used in TWS P&L computations) - 37
-      #           225 - Auction values (volume, price and imbalance) - 34, 35, 36
-      #           233 - RTVolume - 48
-      #           236 - Shortable - 46
-      #           256 - Inventory - ?
-      #           258 - Fundamental Ratios - 47
-      #           411 - Realtime Historical Volatility - 58
-      #        :snapshot => bool: Check to return a single snapshot of market data and
-      #                     have the market data subscription canceled. Do not enter any
-      #                     :tick_list values if you use snapshot. }
+      #      :contract => Datatypes::Contract, requested contract.
+      #      :tick_list => String: comma delimited list of requested tick groups:
+      #        Group ID - Description - Requested Tick Types
+      #        100 - Option Volume (currently for stocks) - 29, 30
+      #        101 - Option Open Interest (currently for stocks) - 27, 28
+      #        104 - Historical Volatility (currently for stocks) - 23
+      #        106 - Option Implied Volatility (currently for stocks) - 24
+      #        162 - Index Future Premium - 31
+      #        165 - Miscellaneous Stats - 15, 16, 17, 18, 19, 20, 21
+      #        221 - Mark Price (used in TWS P&L computations) - 37
+      #        225 - Auction values (volume, price and imbalance) - 34, 35, 36
+      #        233 - RTVolume - 48
+      #        236 - Shortable - 46
+      #        256 - Inventory - ?
+      #        258 - Fundamental Ratios - 47
+      #        411 - Realtime Historical Volatility - 58
+      #      :snapshot => bool: Check to return a single snapshot of market data and
+      #                   have the market data subscription canceled. Do not enter any
+      #                   :tick_list values if you use snapshot. }
       class RequestMarketData < AbstractMessage
         @message_id = 1
         @version = 9 # message version number

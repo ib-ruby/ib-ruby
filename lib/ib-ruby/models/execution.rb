@@ -47,8 +47,9 @@ module IB
       end
 
       def to_s
-        "<Execution #{@time}: #{@side} #{@shares} shares @ #{@price} on #{@exchange}, " +
-            "IDs: #{@order_id} order, #{@exec_id} exec, #{@perm_id} perm>"
+        "<Execution #{@time}: #{@side} #{@shares} @ #{@price} on #{@exchange}, " +
+            "cumulative: #{@cumulative_quantity} @ #{@average_price}, " +
+            "ids: #{@order_id} order, #{@perm_id} perm, #{@exec_id} exec>"
       end
     end # Execution
   end # module Models

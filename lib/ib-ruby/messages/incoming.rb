@@ -133,29 +133,6 @@ module IB
       # the order id in its @next_order_id attribute.
       NextValidID = def_message 9, [:id, :int]
 
-      MarketDepth =
-          def_message 12, [:id, :int],
-                      [:position, :int], # The row Id of this market depth entry.
-                      [:operation, :int], # How it should be applied to the market depth:
-                      #   0 = insert this new order into the row identified by :position
-                      #   1 = update the existing order in the row identified by :position
-                      #   2 = delete the existing order at the row identified by :position
-                      [:side, :int], # side of the book: 0 = ask, 1 = bid
-                      [:price, :decimal],
-                      [:size, :int]
-
-      MarketDepthL2 =
-          def_message 13, [:id, :int],
-                      [:position, :int], # The row Id of this market depth entry.
-                      [:market_maker, :string], # The exchange hosting this order.
-                      [:operation, :int], # How it should be applied to the market depth:
-                      #   0 = insert this new order into the row identified by :position
-                      #   1 = update the existing order in the row identified by :position
-                      #   2 = delete the existing order at the row identified by :position
-                      [:side, :int], # side of the book: 0 = ask, 1 = bid
-                      [:price, :decimal],
-                      [:size, :int]
-
       NewsBulletins =
           def_message 14, [:id, :int], # unique incrementing bulletin ID.
                       [:type, :int], # Type of bulletin. Valid values include:
@@ -324,6 +301,45 @@ module IB
         end
       end # TickOption
       TickOptionComputation = TickOption
+
+      MarketDepth =
+          def_message 12, [:id, :int],
+                      [:position, :int], # The row Id of this market depth entry.
+                      [:operation, :int], # How it should be applied to the market depth:
+                      #   0 = insert this new order into the row identified by :position
+                      #   1 = update the existing order in the row identified by :position
+                      #   2 = delete the existing order at the row identified by :position
+                      [:side, :int], # side of the book: 0 = ask, 1 = bid
+                      [:price, :decimal],
+                      [:size, :int]
+      class MarketDepth
+
+        def side
+          @data[:side] == 0 ? :ask : :bid
+        end
+
+        def operation
+          @data[:operation] == 0 ? :insert : @data[:operation] == 1 ? :update : :delete
+        end
+
+        def to_human
+          "<#{self.class.to_s.split('::').last}: #{operation} #{side} @ "+
+              "#{@data[:position]} = #{@data[:price]} x #{@data[:size]}>"
+        end
+      end
+
+      MarketDepthL2 =
+          def_message 13, MarketDepth,
+                      [:id, :int],
+                      [:position, :int], # The row Id of this market depth entry.
+                      [:market_maker, :string], # The exchange hosting this order.
+                      [:operation, :int], # How it should be applied to the market depth:
+                      #   0 = insert this new order into the row identified by :position
+                      #   1 = update the existing order in the row identified by :position
+                      #   2 = delete the existing order at the row identified by :position
+                      [:side, :int], # side of the book: 0 = ask, 1 = bid
+                      [:price, :decimal],
+                      [:size, :int]
 
       # Called Error in Java code, but in fact this type of messages also
       # deliver system alerts and additional (non-error) info from TWS.

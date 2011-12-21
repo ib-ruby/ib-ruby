@@ -1,5 +1,5 @@
 require 'ib-ruby/socket'
-require 'logger'
+require 'ib-ruby/logger'
 
 # Add method to_ib to render datetime in IB format (zero padded "yyyymmdd HH:mm:ss")
 class Time
@@ -61,7 +61,7 @@ module IB
       # TWS always sends NextValidID message at connect - save this id
       self.subscribe(:NextValidID) do |msg|
         @next_order_id = msg.data[:id]
-        puts "Got next valid order id: #{@next_order_id}."
+        log.info "Got next valid order id: #{@next_order_id}."
       end
 
       @server[:socket] = IBSocket.open(@options[:host], @options[:port])
@@ -81,9 +81,9 @@ module IB
       @server[:socket].send(@server[:client_id])
 
       @connected = true
-      puts "Connected to server, version: #{@server[:version]}, connection time: " +
-               "#{@server[:local_connect_time]} local, " +
-               "#{@server[:remote_connect_time]} remote."
+      log.info "Connected to server, version: #{@server[:version]}, connection time: " +
+          "#{@server[:local_connect_time]} local, " +
+          "#{@server[:remote_connect_time]} remote."
     end
 
     alias open connect # Legacy alias
@@ -171,7 +171,7 @@ module IB
 
       # Debug:
       unless [1, 2, 4, 6, 7, 8, 9, 12, 21, 53].include? msg_id
-        puts "Got message #{msg_id} (#{Messages::Incoming::Table[msg_id]})"
+        log.debug "Got message #{msg_id} (#{Messages::Incoming::Table[msg_id]})"
       end
 
       # Create new instance of the appropriate message type, and have it read the message.
@@ -179,7 +179,7 @@ module IB
       msg = Messages::Incoming::Table[msg_id].new(@server[:socket])
 
       subscribers[msg.class].each { |_, subscriber| subscriber.call(msg) }
-      puts "No subscribers for message #{msg.class}!" if subscribers[msg.class].empty?
+      log.warn "No subscribers for message #{msg.class}!" if subscribers[msg.class].empty?
     end
 
     # Place Order (convenience wrapper for message :PlaceOrder)
