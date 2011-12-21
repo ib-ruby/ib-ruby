@@ -6,6 +6,15 @@ module IB
   module Models
     class Order < Model
 
+      # General Notes:
+      # 1. Placing Orders by con_id - When you place an order by con_id, you must
+      # provide the con_id AND the exchange. If you provide extra fields when placing
+      # an order by conid, the order may not work.
+
+      # 2. Order IDs - Each order you place must have a unique Order ID. We recommend
+      # that you increment your own Order IDs to avoid conflicts between orders placed
+      # from your API application.
+
       # Constants used in Order objects. Drawn from Order.java
       Origin_Customer = 0
       Origin_Firm = 1
@@ -345,7 +354,7 @@ module IB
 
       def to_human
         "<Order: #{@status} #{@order_type} #{@action} #{@total_quantity} @ #{@limit_price}" +
-        " #{@tif} id/perm: #{@id}/#{@perm_id}>"
+            " #{@tif} id/perm: #{@id}/#{@perm_id}>"
       end
     end # class Order
   end # module Models

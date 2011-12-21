@@ -5,6 +5,10 @@ module IB
     # is not really a contract, but a combination (combo) of securities. AKA basket
     # or bag of securities.
     class ComboLeg < Model
+      # General Notes:
+      # 1. The exchange for the leg definition must match that of the combination order.
+      # The exception is for a STK leg definition, which must specify the SMART exchange.
+
       # // open/close leg value is same as combo
       # Specifies whether the order is an open or close order. Valid values are:
       SAME = 0 #  Same as the parent security. The only option for retail customers.
