@@ -27,6 +27,11 @@ module IB
                        :reader => true
     }
 
+    # Singleton to make active IB Connection universally accessible
+    class << self
+      attr_accessor :current
+    end
+
     attr_reader :server #         Info about IB server and server connection state
     attr_accessor :next_order_id #  Next valid order id
 
@@ -39,6 +44,7 @@ module IB
 
       connect if @options[:connect]
       start_reader if @options[:reader]
+      Connection.current = self
     end
 
     # Message subscribers. Key is the message class to listen for.
