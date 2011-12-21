@@ -85,3 +85,7 @@
 == 0.5.10 / 2011-12-19
 
 * Bag Contract subclass added
+
+== 0.5.11 / 2011-12-20
+
+* Release Connection.current API

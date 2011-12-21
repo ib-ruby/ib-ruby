@@ -27,7 +27,7 @@ module IB
                        :reader => true
     }
 
-    # Singleton to make active IB Connection universally accessible
+    # Singleton to make active Connection universally accessible as IB::Connection.current
     class << self
       attr_accessor :current
     end
