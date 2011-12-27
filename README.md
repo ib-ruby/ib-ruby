@@ -40,7 +40,10 @@ localhost if you're running ib-ruby on the same machine as TWS.
 ## SYNOPSIS:
 
 First, start up Interactive Broker's Trader Work Station or Gateway.
-Make sure it is configured to allow API connections on localhost.
+Make sure it is configured to allow API connections on localhost, and note
+the port for some strange reason IB gave TWS and the Gateway different ports,
+this library assumes the gateway one of 4001, this can also be set on the
+API - Setting page of TWS.
 
     >> require 'ib-ruby'
     >> ib = IB::Connection.new
