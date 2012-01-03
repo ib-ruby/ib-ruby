@@ -182,13 +182,15 @@ module IB
       log.warn "No subscribers for message #{msg.class}!" if subscribers[msg.class].empty?
     end
 
-    # Place Order (convenience wrapper for message :PlaceOrder)
+    # Place Order (convenience wrapper for message :PlaceOrder).
+    # Returns TWS id of a placed order.
     def place_order order, contract
+      @next_order_id += 1
       send_message :PlaceOrder,
                    :order => order,
                    :contract => contract,
                    :id => @next_order_id
-      @next_order_id += 1
+      @next_order_id
     end
 
     protected

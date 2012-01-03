@@ -93,3 +93,7 @@
 == 0.5.12 / 2011-12-21
 
 * Logging support hacked back in
+
+== 0.5.13 / 2012-01-03
+
+* Critical bug in Connection#place_order fixed
