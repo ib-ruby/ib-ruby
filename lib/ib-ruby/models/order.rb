@@ -249,6 +249,21 @@ module IB
 
                     :warning_text # String: Displays a warning message if warranted.
 
+      # IB uses weird String with Java Double.MAX_VALUE to indicate no value here
+      def init_margin= val
+        @init_margin = val == "1.7976931348623157E308" ? nil : val
+      end
+
+      # IB uses weird String with Java Double.MAX_VALUE to indicate no value here
+      def maint_margin= val
+        @maint_margin = val == "1.7976931348623157E308" ? nil : val
+      end
+
+      # IB uses weird String with Java Double.MAX_VALUE to indicate no value here
+      def equity_with_loan= val
+        @equity_with_loan = val == "1.7976931348623157E308" ? nil : val
+      end
+
       def initialize opts = {}
         # Assign defaults first!
         @outside_rth = false
@@ -377,8 +392,8 @@ module IB
       end
 
       def to_human
-        "<Order: #{@status} #{@order_type} #{@action} #{@total_quantity} @ #{@limit_price}" +
-            " #{@tif} id/perm: #{@id}/#{@perm_id}>"
+        "<Order: #{order_type} #{tif} #{action} #{total_quantity} #{status} @ #{limit_price}" +
+            " id: #{id}/#{perm_id} from: #{client}/#{account}>"
       end
     end # class Order
   end # module Models
