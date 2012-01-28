@@ -97,3 +97,7 @@
 == 0.5.13 / 2012-01-03
 
 * Critical bug in Connection#place_order fixed
+
+== 0.5.14 / 2012-01-28
+
+* Bump after Rebundling
