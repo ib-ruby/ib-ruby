@@ -1,14 +1,19 @@
 require "logger"
 
-# Hack in log method into Object
-def log
-  @@log ||= Logger.new(STDOUT).tap do |log|
-    log.formatter = proc do |level, time, prog, msg|
-      "#{time.strftime('%m-%d %H:%M:%S.%3N')}-#{level[0]}: #{msg}\n"
+# Add universally accessible log method/accessor into Object
+def log *args
+  @@logger ||= Logger.new(STDOUT).tap do |logger|
+    logger.formatter = proc do |level, time, prog, msg|
+      "#{time.strftime('%H:%M:%S.%3N')} #{msg}\n"
     end
-    log.level = Logger::WARN
+    logger.level = Logger::INFO
+  end
+
+  @@logger.tap do |logger|
+    logger.fatal *args unless args.empty?
   end
 end
+
 
 
 

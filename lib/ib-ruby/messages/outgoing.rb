@@ -209,7 +209,7 @@ module IB
 
       # @data={:id => int: ticker_id - Must be a unique value. When the market data
       #                                returns, it will be identified by this tag,
-      #      :contract => Datatypes::Contract, requested contract.
+      #      :contract => Models::Contract, requested contract.
       #      :tick_list => String: comma delimited list of requested tick groups:
       #        Group ID - Description - Requested Tick Types
       #        100 - Option Volume (currently for stocks) - 29, 30
@@ -277,7 +277,18 @@ module IB
       #                             '30 min'
       #                             '1 hour'
       #                             '1 day'
-      #          :what_to_show => Symbol: one of :trades, :midpoint, :bid, or :ask -
+      #          :what_to_show => Symbol:
+      # Determines the nature of data being extracted. Valid values:
+      #one of :trades, :midpoint, :bid, or :ask -
+      #    • TRADES
+      #• MIDPOINT
+      #• BID
+      #• ASK
+      #• BID_ASK
+      #• HISTORICAL_VOLATILITY
+      #• OPTION_IMPLIED_VOLATILITY
+      #• OPTION_VOLUME
+      #• OPTION_OPEN_INTEREST
       #                           converts to "TRADES," "MIDPOINT," "BID," or "ASK."
       #          :use_rth => int: 0 - all data available during the time span requested
       #                     is returned, even data bars covering time intervals where the

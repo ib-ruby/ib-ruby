@@ -129,7 +129,7 @@ module IB
       subscriber_id
     end
 
-    # Remove all subscribers with specific subscriber id
+    # Remove all subscribers with specific subscriber id (TODO: multiple ids)
     def unsubscribe(subscriber_id)
 
       subscribers.each do |message_class, message_subscribers|

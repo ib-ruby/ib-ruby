@@ -50,22 +50,67 @@ module IB
                     :client_id, # int: The id of the client that placed this order.
                     :perm_id, #   int: TWS id used to identify orders, remains
                     #                  the same over TWS sessions.
-                    :action, # String: Identifies the side. Valid values: BUY/SELL/SSHORT
+                    :action, #    String: Identifies the side: BUY/SELL/SSHORT
                     :total_quantity, #  int: The order quantity.
+
                     :order_type, #   String: Identifies the order type. Valid values are:
-                    #                MKT / MKTCLS / LMT / LMTCLS / PEGMKT / SCALE
-                    #                STP / STPLMT / TRAIL / REL / VWAP / TRAILLIMIT
+                    #     Limit Risk:
+                    #          MTL          Market-to-Limit
+                    #          MKT PRT      Market with Protection
+                    #          QUOTE        Request for Quote
+                    #          STP          Stop
+                    #          STP LMT      Stop Limit
+                    #          TRAIL        Trailing Stop
+                    #          TRAIL LIMIT  Trailing Stop Limit
+                    #          TRAIL LIT    Trailing Limit if Touched
+                    #          TRAIL MIT    Trailing Market If Touched
+                    #     Speed of Execution:
+                    #          MKT          Market
+                    #          MIT          Market-if-Touched
+                    #          MOC          Market-on-Close    MKTCLSL ?
+                    #          MOO          Market-on-Open
+                    #          PEG MKT      Pegged-to-Market
+                    #          REL          Relative
+                    #     Price Improvement:
+                    #          BOX TOP      Box Top
+                    #          LOC          Limit-on-Close       LMTCLS ?
+                    #          LOO          Limit-on-Open
+                    #          LIT          Limit if Touched
+                    #          PEG MID      Pegged-to-Midpoint
+                    #          VWAP         VWAP-Guaranteed
+                    #     Advanced Trading:
+                    #          OCA          One-Cancels-All
+                    #          VOL          Volatility
+                    #          SCALE        Scale
+                    #     Other (no abbreviation):
+                    #          Bracket
+                    #          At Auction
+                    #          Discretionary
+                    #          Sweep-to-Fill
+                    #          Price Improvement Auction
+                    #          Block
+                    #          Hidden
+                    #          Iceberg/Reserve
+                    #          All-or-None
+                    #          Fill-or-Kill
+
                     :limit_price, # double: This is the LIMIT price, used for limit,
                     #               stop-limit and relative orders. In all other cases
                     #               specify zero. For relative orders with no limit price,
                     #               also specify zero.
+
                     :aux_price, #   double: This is the STOP price for stop-limit orders,
                     #               and the offset amount for relative orders. In all other
                     #               cases, specify zero.
                     #:shares_allocation, # deprecated sharesAllocation field
 
                     # Extended order fields
-                    :tif, #         String: Time in Force - DAY / GTC / IOC / GTD
+                    :tif, #         String: Time to Market:
+                    #          DAY
+                    #          GAT          Good-after-Time/Date
+                    #          GTD          Good-till-Date/Time
+                    #          GTC          Good-till-Canceled
+                    #          IOC          Immediate-or-Cancel
                     :oca_group, #   String: one cancels all group name
                     :oca_type, # int: Tells how to handle remaining orders in an OCA group
                     #            when one order or part of an order executes. Valid values:
@@ -392,8 +437,8 @@ module IB
       end
 
       def to_human
-        "<Order: #{order_type} #{tif} #{action} #{total_quantity} #{status} @ #{limit_price}" +
-            " id: #{id}/#{perm_id} from: #{client}/#{account}>"
+        "<Order: #{order_type} #{tif} #{action} #{total_quantity} #{status} #{limit_price}" +
+            " id: #{id}/#{perm_id} from: #{client_id}/#{account}>"
       end
     end # class Order
   end # module Models

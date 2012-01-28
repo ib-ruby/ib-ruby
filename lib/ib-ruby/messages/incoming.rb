@@ -551,8 +551,8 @@ module IB
                    [:market_price, :decimal],
                    [:market_value, :decimal],
                    [:average_cost, :decimal],
-                   [:unrealized_pnl, :decimal],
-                   [:realized_pnl, :decimal],
+                   [:unrealized_pnl, :decimal], # TODO: Check for Double.MAX_VALUE
+                   [:realized_pnl, :decimal],   # TODO: Check for Double.MAX_VALUE
                    [:account_name, :string]
         end
 

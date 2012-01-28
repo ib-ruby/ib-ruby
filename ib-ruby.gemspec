@@ -20,7 +20,8 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
 
   # Dependencies
-  gem.add_dependency("bundler", [">= 1.0.13"])
-  gem.add_development_dependency("rspec", [">= 2.5.0"])
+  gem.add_dependency 'bundler', '>= 1.0.20'
 
+  gem.add_development_dependency 'rspec', '>= 2.5.0'
+  gem.add_development_dependency 'my_scripts'
 end

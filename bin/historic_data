@@ -10,9 +10,6 @@ require 'rubygems'
 require 'bundler/setup'
 require 'ib-ruby'
 
-### Configurable Options
-QUIET = false # if Quiet == false, status data will be printed to STDERR
-
 # Definition of what we want data for.  We have to keep track of what ticker id
 # corresponds to what symbol ourselves, because the ticks don't include any other
 # identifying information. The choice of ticker ids is, as far as I can tell, arbitrary.
@@ -34,14 +31,13 @@ ib.subscribe(:Alert) { |msg| puts msg.to_human }
 # Note that we have to look the ticker id of each incoming message
 # up in local memory to figure out what it's for.
 ib.subscribe(IB::Messages::Incoming::HistoricalData) do |msg|
-  STDERR.puts @market[msg.data[:id]].description + ": " +
-                  msg.data[:count].to_s + " items:" unless QUIET
+  puts @market[msg.data[:id]].description + ": " +
+                  msg.data[:count].to_s + " items:"
 
   msg.data[:results].each do |datum|
-    @last_msg_time = Time.now.to_i
-
-    STDERR.puts "  " + datum.to_s unless QUIET
+    puts "  " + datum.to_s
   end
+  @last_msg_time = Time.now.to_i
 end
 
 # Now we actually request historical data for the symbols we're interested in. TWS will
