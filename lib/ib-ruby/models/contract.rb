@@ -6,7 +6,27 @@ module IB
   module Models
     class Contract < Model
 
-      BAG_SEC_TYPE = "BAG"
+      # Specialized Contract subclasses representing different security types
+      TYPES = {}
+      #BAG_SEC_TYPE = "BAG"
+
+      # This returns a Contract initialized from the serialize_ib_ruby format string.
+      def self.build opts = {}
+        type = opts[:sec_type]
+        if TYPES[type]
+          TYPES[type].new opts
+        else
+          Contract.new opts
+        end
+      end
+
+      # This returns a Contract initialized from the serialize_ib_ruby format string.
+      def self.from_ib_ruby string
+        c = Contract.new
+        c.symbol, c.sec_type, c.expiry, c.strike, c.right, c.multiplier,
+            c.exchange, c.primary_exchange, c.currency, c.local_symbol = string.split(":")
+        c
+      end
 
       # Fields are Strings unless noted otherwise
       attr_accessor :con_id, # int: The unique contract identifier.
@@ -44,8 +64,8 @@ module IB
                     :sec_id, # Unique identifier of the given secIdType.
 
                     # COMBOS
-                    :combo_legs_description, # received in open order for all combos
-                    :combo_legs # Dynamic memory structure used to store the leg
+                    :legs_description, # received in open order for all combos
+                    :legs # Dynamic memory structure used to store the leg
       #              definitions for this contract.
 
       # ContractDetails fields are bundled into Contract proper, as it should be
@@ -103,9 +123,12 @@ module IB
                     :under_delta, # double: The underlying stock or future delta.
                     :under_price #  double: The price of the underlying.
 
-      # NB :description field is entirely local to ib-ruby, and not part of TWS.
-      # You can use it to store whatever arbitrary data you want.
-      attr_accessor :description
+      attr_accessor :description # NB: local to ib-ruby, not part of TWS.
+
+      alias combo_legs legs
+      alias combo_legs= legs=
+      alias combo_legs_description legs_description
+      alias combo_legs_description= legs_description=
 
       def initialize opts = {}
         # Assign defaults to properties first!
@@ -113,7 +136,7 @@ module IB
         @strike = 0
         @sec_type = ''
         @include_expired = false
-        @combo_legs = Array.new
+        @legs = Array.new
 
         # These properties are from ContractDetails
         @summary = self
@@ -141,7 +164,7 @@ module IB
       def right=(x)
         x.upcase! if x.is_a?(String)
         x = nil if !x.nil? && x.empty?
-        x = nil if x == "0"
+        x = nil if x == "0" || x == "?"
         raise(ArgumentError.new("Invalid right \"#{x}\" (must be one of PUT, CALL, P, C)")) unless x.nil? || ["PUT", "CALL", "P", "C", "0"].include?(x)
         @right = x
       end
@@ -161,14 +184,14 @@ module IB
       end
 
       def reset
-        @combo_legs = Array.new
+        @legs = Array.new
         @strike = 0
       end
 
       # This returns an Array of data from the given contract.
       # Different messages serialize contracts differently. Go figure.
       # Note that it does NOT include the combo legs.
-      def serialize(*fields)
+      def serialize *fields
         [(fields.include?(:con_id) ? [con_id] : []),
          symbol,
          sec_type,
@@ -182,12 +205,12 @@ module IB
         ].flatten
       end
 
-      def serialize_long(*fields)
-        serialize(:option, :primary_exchange, *fields)
+      def serialize_long *fields
+        serialize :option, :primary_exchange, *fields
       end
 
-      def serialize_short(*fields)
-        serialize(:option, *fields)
+      def serialize_short *fields
+        serialize :option, *fields
       end
 
       # This produces a string uniquely identifying this contract, in the format used
@@ -202,20 +225,12 @@ module IB
       # expiring in September, 2008, the string is:
       #
       #    GBP:FUT:200809:::62500:GLOBEX::USD:
-      def serialize_ib_ruby(version)
+      def serialize_ib_ruby version
         serialize.join(":")
       end
 
-      # This returns a Contract initialized from the serialize_ib_ruby format string.
-      def self.from_ib_ruby(string)
-        c = Contract.new
-        c.symbol, c.sec_type, c.expiry, c.strike, c.right, c.multiplier,
-            c.exchange, c.primary_exchange, c.currency, c.local_symbol = string.split(":")
-        c
-      end
-
       # Serialize under_comp parameters
-      def serialize_under_comp(*args)
+      def serialize_under_comp *args
         # EClientSocket.java, line 471:
         if under_comp
           [true,
@@ -228,79 +243,37 @@ module IB
       end
 
       # Some messages send open_close too, some don't. WTF.
-      def serialize_combo_legs(type = :short)
-        # No idea what "BAG" means. Copied from the Java code.
+      # "BAG" is not really a contract, but a combination (combo) of securities.
+      # AKA basket or bag of securities. Individual securities in combo are represented
+      # by ComboLeg objects.
+      def serialize_legs *fields
         return [] unless sec_type.upcase == "BAG"
-        return [0] if combo_legs.empty? || combo_legs.nil?
-        [combo_legs.size,
-         combo_legs.map { |leg| leg.serialize(type) }]
+        return [0] if legs.empty? || legs.nil?
+        [legs.size, legs.map { |leg| leg.serialize *fields }]
+      end
+
+      def to_s
+        "<Contract: " + instance_variables.map do |key|
+          unless key == :@summary
+            value = send(key[1..-1])
+            " #{key}=#{value}" unless value.nil? || value == '' || value == 0
+          end
+        end.compact.join(',') + " >"
       end
 
       def to_human
-        "<Contract: " + [symbol, expiry, sec_type, strike, right, exchange, currency].join("-") + ">"
+        "<Contract: " + [symbol, sec_type, expiry, strike, right, exchange, currency].join("-") + ">"
       end
 
       def to_short
         "#{symbol}#{expiry}#{strike}#{right}#{exchange}#{currency}"
       end
 
-      def to_s
-        to_human
-      end
-
-      # ComboLeg is an internal class of Contract, as it should be
-      class ComboLeg < Model
-        # // open/close leg value is same as combo
-        # Specifies whether the order is an open or close order. Valid values are:
-        SAME = 0 #  Same as the parent security. The only option for retail customers.
-        OPEN = 1 #  Open. This value is only valid for institutional customers.
-        CLOSE = 2 # Close. This value is only valid for institutional customers.
-        UNKNOWN = 3
-
-
-        attr_accessor :con_id, # int: The unique contract identifier specifying the security.
-                      :ratio, # int: Select the relative number of contracts for the leg you
-                      #              are constructing. To help determine the ratio for a
-                      #              specific combination order, refer to the Interactive
-                      #              Analytics section of the User's Guide.
-
-                      :action, # String: BUY/SELL/SSHORT/SSHORTX
-                      #          The side (buy or sell) for the leg you are constructing.
-                      :exchange, # String: exchange to which the complete combination
-                      #            order will be routed.
-                      :open_close, # int: Specifies whether the order is an open or close order.
-                      #              Valid values: ComboLeg::SAME/OPEN/CLOSE/UNKNOWN
-
-                      # For institutional customers only! For stock legs when doing short sale
-                      :short_sale_slot, # int: 0 - retail, 1 = clearing broker, 2 = third party
-                      :designated_location, # String: Only for shortSaleSlot == 2.
-                      #                    Otherwise leave blank or orders will be rejected.
-                      :exempt_code # int: ?
-
-        def initialize opts = {}
-          @con_id = 0
-          @ratio = 0
-          @open_close = 0
-          @short_sale_slot = 0
-          @designated_location = ''
-          @exempt_code = -1
-
-          super opts
-        end
-
-        # Some messages include open_close, some don't. wtf.
-        def serialize(type = :short)
-          [con_id,
-           ratio,
-           action,
-           exchange] +
-              type == :short ? [] : [open_close,
-                                     short_sale_slot,
-                                     designated_location,
-                                     exempt_code]
-        end
-      end # ComboLeg
-
     end # class Contract
   end # module Models
 end # module IB
+
+# TODO Where should we require this?
+require 'ib-ruby/models/contract/option'
+require 'ib-ruby/models/contract/bag'
+

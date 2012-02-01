@@ -6,6 +6,7 @@ end
 
 require 'ib-ruby/models/order'
 require 'ib-ruby/models/contract'
+require 'ib-ruby/models/combo_leg'
 require 'ib-ruby/models/execution'
 require 'ib-ruby/models/bar'
 

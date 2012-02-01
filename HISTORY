@@ -57,3 +57,51 @@
 == 0.5.2 / 2011-10-30
 
 * Add nonblocking Connection#process_messages API
+
+== 0.5.4 / 2011-12-16
+
+* Placing Version source file into its proper place
+
+== 0.5.5 / 2011-12-16
+
+* ComboLeg serialization signature changed
+
+== 0.5.6 / 2011-12-16
+
+* Models::ComboLeg given a source file of its own
+
+== 0.5.7 / 2011-12-16
+
+* Option subclass of Contract added
+
+== 0.5.8 / 2011-12-16
+
+* Critical bugs in Order-related messages fixed
+
+== 0.5.9 / 2011-12-16
+
+* Sample scripts to place and cancel orders added
+
+== 0.5.10 / 2011-12-19
+
+* Bag Contract subclass added
+
+== 0.5.11 / 2011-12-20
+
+* Release Connection.current API
+
+== 0.5.12 / 2011-12-21
+
+* Logging support hacked back in
+
+== 0.5.13 / 2012-01-03
+
+* Critical bug in Connection#place_order fixed
+
+== 0.5.14 / 2012-01-28
+
+* Bump after Rebundling
+
+== 0.5.15 / 2012-02-01
+
+* Docs improvement

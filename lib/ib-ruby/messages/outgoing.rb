@@ -73,35 +73,46 @@ module IB
 
       ### Defining (short) Outgoing Message classes for IB:
 
-      # Empty messages (no data)
+      ## Empty messages (no data)
+
+      # Request the open orders that were placed from THIS client. Each open order
+      # will be fed back through the OpenOrder and OrderStatus messages.
+      # NB: Client with a client_id of 0 will also receive the TWS-owned open orders.
+      # These orders will be associated with the client and a new orderId will be
+      # generated. This association will persist over multiple API and TWS sessions.
       RequestOpenOrders = def_message 5
-      CancelNewsBulletins = def_message 13
+
+      # Request the open orders placed from all clients and also from TWS. Each open
+      # order will be fed back through the OpenOrder and OrderStatus messages.
       RequestAllOpenOrders = def_message 16
-      RequestManagedAccounts = def_message 17
+
       # Requests an XML document that describes the valid parameters that a scanner
       # subscription can have (for outgoing RequestScannerSubscription message).
       RequestScannerParameters = def_message 24
+
+      CancelNewsBulletins = def_message 13
+      RequestManagedAccounts = def_message 17
       RequestCurrentTime = def_message 49
       RequestGlobalCancel = def_message 58
 
-      # Data format is: @data = { :id => ticker_id}
+      ## Data format is: @data = { :id => ticker_id}
       CancelMarketData = def_message 2
       CancelMarketDepth = def_message 11
       CancelScannerSubscription = def_message 23
       CancelHistoricalData = def_message 25
       CancelRealTimeBars = def_message 51
 
-      # Data format is: @data = { :id => request_id }
+      ## Data format is: @data = { :id => request_id }
       CancelFundamentalData = def_message 53
       CancelImpliedVolatility = def_message 56
       CancelCalculateImpliedVolatility = CancelImpliedVolatility
       CancelOptionPrice = def_message 57
       CancelCalculateOptionPrice = CancelOptionPrice
 
-      # Data format is: @data ={ :id => order-id-to-cancel }
+      ## Data format is: @data ={ :id => order-id-to-cancel }
       CancelOrder = def_message 4
 
-      # These messages contain just one or two keys, shown in the end of definition
+      ## These messages contain just one or two keys, shown in the end of definition
       # @data = { :number_of_ids => int }
       RequestIds = def_message 8, 1, :number_of_ids
       # data = { :all_messages => boolean }
@@ -198,25 +209,25 @@ module IB
 
       # @data={:id => int: ticker_id - Must be a unique value. When the market data
       #                                returns, it will be identified by this tag,
-      #        :contract => Datatypes::Contract, requested contract.
-      #        :tick_list => String: comma delimited list of requested tick groups:
-      #           Group ID - Description - Requested Tick Types
-      #           100 - Option Volume (currently for stocks) - 29, 30
-      #           101 - Option Open Interest (currently for stocks) - 27, 28
-      #           104 - Historical Volatility (currently for stocks) - 23
-      #           106 - Option Implied Volatility (currently for stocks) - 24
-      #           162 - Index Future Premium - 31
-      #           165 - Miscellaneous Stats - 15, 16, 17, 18, 19, 20, 21
-      #           221 - Mark Price (used in TWS P&L computations) - 37
-      #           225 - Auction values (volume, price and imbalance) - 34, 35, 36
-      #           233 - RTVolume - 48
-      #           236 - Shortable - 46
-      #           256 - Inventory - ?
-      #           258 - Fundamental Ratios - 47
-      #           411 - Realtime Historical Volatility - 58
-      #        :snapshot => bool: Check to return a single snapshot of market data and
-      #                     have the market data subscription canceled. Do not enter any
-      #                     :tick_list values if you use snapshot. }
+      #      :contract => Models::Contract, requested contract.
+      #      :tick_list => String: comma delimited list of requested tick groups:
+      #        Group ID - Description - Requested Tick Types
+      #        100 - Option Volume (currently for stocks) - 29, 30
+      #        101 - Option Open Interest (currently for stocks) - 27, 28
+      #        104 - Historical Volatility (currently for stocks) - 23
+      #        106 - Option Implied Volatility (currently for stocks) - 24
+      #        162 - Index Future Premium - 31
+      #        165 - Miscellaneous Stats - 15, 16, 17, 18, 19, 20, 21
+      #        221 - Mark Price (used in TWS P&L computations) - 37
+      #        225 - Auction values (volume, price and imbalance) - 34, 35, 36
+      #        233 - RTVolume - 48
+      #        236 - Shortable - 46
+      #        256 - Inventory - ?
+      #        258 - Fundamental Ratios - 47
+      #        411 - Realtime Historical Volatility - 58
+      #      :snapshot => bool: Check to return a single snapshot of market data and
+      #                   have the market data subscription canceled. Do not enter any
+      #                   :tick_list values if you use snapshot. }
       class RequestMarketData < AbstractMessage
         @message_id = 1
         @version = 9 # message version number
@@ -232,7 +243,7 @@ module IB
                       end
           [super,
            @data[:contract].serialize_long(:con_id),
-           @data[:contract].serialize_combo_legs,
+           @data[:contract].serialize_legs,
            @data[:contract].serialize_under_comp,
            tick_list,
            @data[:snapshot] || false]
@@ -266,7 +277,18 @@ module IB
       #                             '30 min'
       #                             '1 hour'
       #                             '1 day'
-      #          :what_to_show => Symbol: one of :trades, :midpoint, :bid, or :ask -
+      #          :what_to_show => Symbol:
+      # Determines the nature of data being extracted. Valid values:
+      #one of :trades, :midpoint, :bid, or :ask -
+      #    • TRADES
+      #• MIDPOINT
+      #• BID
+      #• ASK
+      #• BID_ASK
+      #• HISTORICAL_VOLATILITY
+      #• OPTION_IMPLIED_VOLATILITY
+      #• OPTION_VOLUME
+      #• OPTION_OPEN_INTEREST
       #                           converts to "TRADES," "MIDPOINT," "BID," or "ASK."
       #          :use_rth => int: 0 - all data available during the time span requested
       #                     is returned, even data bars covering time intervals where the
@@ -329,7 +351,7 @@ module IB
            @data[:use_rth],
            @data[:what_to_show].to_s.upcase,
            @data[:format_date],
-           contract.serialize_combo_legs]
+           contract.serialize_legs]
         end
       end # RequestHistoricalData
 

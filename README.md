@@ -4,12 +4,12 @@ Ruby Implementation of the Interactive Brokers Trader Workstation (TWS) API v.96
 
 Copyright (C) 2006-2011 Paul Legato, Wes Devauld, and Ar Vicco.
 
-https://github.com/pjlegato/ib-ruby
+https://github.com/ib-ruby/ib-ruby
 
 __WARNING:__ This software is provided __AS-IS__ with __NO WARRANTY__, express or
 implied. Your use of this software is at your own risk. It may contain
 any number of bugs, known or unknown, which might cause you to lose
-money if you use it. You've been warned. 
+money if you use it. You've been warned.
 
 __It is specifically NOT RECOMMENDED that this code be used for live trading.__
 
@@ -20,7 +20,7 @@ This software is available under the LGPL. See the file LICENSE for full licensi
 ## REQUIREMENTS:
 
 Either the Interactive Brokers
-[TWS](http://www.interactivebrokers.com/en/p.php?f=tws)or
+[TWS](http://www.interactivebrokers.com/en/p.php?f=tws) or
 [IB Gateway](http://www.interactivebrokers.com/en/control/systemstandalone-ibGateway.php?os=unix&ib_entity=llc)
 software must be installed and configured to allow API connections
 from the computer you plan to run ib-ruby on, which is typically
@@ -34,7 +34,7 @@ localhost if you're running ib-ruby on the same machine as TWS.
 
 ### From Source
 
-    $ git clone https://github.com/pjlegato/ib-ruby
+    $ git clone https://github.com/ib-ruby/ib-ruby
     $ cd ib-ruby; rake gem:install
 
 ## SYNOPSIS:

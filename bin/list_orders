@@ -1,0 +1,30 @@
+#!/usr/bin/env ruby
+#
+# This script connects to IB API, subscribes to account info and prints out
+# messages received from IB (update every 3 minute or so)
+
+require 'pathname'
+LIB_DIR = (Pathname.new(__FILE__).dirname + '../lib/').realpath.to_s
+$LOAD_PATH.unshift LIB_DIR unless $LOAD_PATH.include?(LIB_DIR)
+
+require 'rubygems'
+require 'bundler/setup'
+require 'ib-ruby'
+
+# First, connect to IB TWS.
+ib = IB::Connection.new :client_id => 0
+
+# Subscribe to TWS alerts/errors and order-related messages
+@counter = 0
+
+ib.subscribe(:Alert, :OrderStatus) { |msg| puts msg.to_human }
+
+ib.subscribe(:OpenOrder) do |msg|
+  @counter += 1
+  puts "#{@counter}: #{msg.to_human}"
+end
+
+ib.send_message :RequestAllOpenOrders
+
+puts "\n******** Press <Enter> to cancel... *********\n\n"
+STDIN.gets
