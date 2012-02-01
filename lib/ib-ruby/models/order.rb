@@ -136,9 +136,18 @@ module IB
                     #          two consecutive bid or ask prices.
                     #      2 - "last" method, stops are triggered based on the last price.
                     #      3 - double last method.
-                    #      4 - bid/ask method.
-                    #      7 - last or bid/ask method.
-                    #      8 - mid-point method.
+                    #      4 - bid/ask method. For a buy order, a single occurrence of the
+                    #          bid price must be at or above the trigger price. For a sell
+                    #          order, a single occurrence of the ask price must be at or
+                    #          below the trigger price.
+                    #      7 - last or bid/ask method. For a buy order, a single bid price
+                    #          or the last price must be at or above the trigger price.
+                    #          For a sell order, a single ask price or the last price
+                    #          must be at or below the trigger price.
+                    #      8 - mid-point method, where the midpoint must be at or above
+                    #          (for a buy) or at or below (for a sell) the trigger price,
+                    #          and the spread between the bid and ask must be less than
+                    #          0.1% of the midpoint
 
                     :outside_rth, # bool: allows orders to also trigger or fill outside
                     #               of regular trading hours. (WAS: ignore_rth)
@@ -275,6 +284,7 @@ module IB
                     # • Cancelled - indicates that the balance of your order has been
                     #   confirmed canceled by the IB system. This could occur unexpectedly
                     #   when IB or the destination has rejected your order.
+                    # • ApiCancelled - canceled via API
                     # • Filled - indicates that the order has been completely filled.
                     # • Inactive - indicates that the order has been accepted by the system
                     #   (simulated orders) or an exchange (native orders) but that currently
@@ -374,7 +384,7 @@ module IB
          trigger_method,
          outside_rth, # was: ignore_rth
          hidden,
-         contract.serialize_combo_legs(:extended),
+         contract.serialize_legs(:extended),
          '', # deprecated shares_allocation field
          discretionary_amount,
          good_after_time,

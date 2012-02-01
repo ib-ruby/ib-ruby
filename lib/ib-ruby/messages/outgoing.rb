@@ -243,7 +243,7 @@ module IB
                       end
           [super,
            @data[:contract].serialize_long(:con_id),
-           @data[:contract].serialize_combo_legs,
+           @data[:contract].serialize_legs,
            @data[:contract].serialize_under_comp,
            tick_list,
            @data[:snapshot] || false]
@@ -351,7 +351,7 @@ module IB
            @data[:use_rth],
            @data[:what_to_show].to_s.upcase,
            @data[:format_date],
-           contract.serialize_combo_legs]
+           contract.serialize_legs]
         end
       end # RequestHistoricalData
 

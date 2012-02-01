@@ -24,8 +24,8 @@ module IB
 
         def to_human
           "<Bag: " + [symbol, exchange, currency].join(" ") + " legs: " +
-              (@combo_legs_description ||
-                  @combo_legs.map do |leg|
+              (@legs_description ||
+                  @legs.map do |leg|
                     "#{leg.action} #{leg.ratio} * #{leg.con_id}"
                   end.join('|')) + ">"
         end

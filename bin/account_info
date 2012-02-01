@@ -26,7 +26,7 @@ ib.send_message :RequestAccountData, :subscribe => true
 
 puts "\nSubscribing to IB account data"
 puts "\n******** Press <Enter> to cancel... *********\n\n"
-gets
+STDIN.gets
 puts "Cancelling account data subscription.."
 
 ib.send_message :RequestAccountData, :subscribe => false

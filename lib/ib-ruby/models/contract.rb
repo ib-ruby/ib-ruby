@@ -64,8 +64,8 @@ module IB
                     :sec_id, # Unique identifier of the given secIdType.
 
                     # COMBOS
-                    :combo_legs_description, # received in open order for all combos
-                    :combo_legs # Dynamic memory structure used to store the leg
+                    :legs_description, # received in open order for all combos
+                    :legs # Dynamic memory structure used to store the leg
       #              definitions for this contract.
 
       # ContractDetails fields are bundled into Contract proper, as it should be
@@ -123,9 +123,12 @@ module IB
                     :under_delta, # double: The underlying stock or future delta.
                     :under_price #  double: The price of the underlying.
 
-      # NB :description field is entirely local to ib-ruby, and not part of TWS.
-      # You can use it to store whatever arbitrary data you want.
-      attr_accessor :description
+      attr_accessor :description # NB: local to ib-ruby, not part of TWS.
+
+      alias combo_legs legs
+      alias combo_legs= legs=
+      alias combo_legs_description legs_description
+      alias combo_legs_description= legs_description=
 
       def initialize opts = {}
         # Assign defaults to properties first!
@@ -133,7 +136,7 @@ module IB
         @strike = 0
         @sec_type = ''
         @include_expired = false
-        @combo_legs = Array.new
+        @legs = Array.new
 
         # These properties are from ContractDetails
         @summary = self
@@ -181,7 +184,7 @@ module IB
       end
 
       def reset
-        @combo_legs = Array.new
+        @legs = Array.new
         @strike = 0
       end
 
@@ -243,11 +246,10 @@ module IB
       # "BAG" is not really a contract, but a combination (combo) of securities.
       # AKA basket or bag of securities. Individual securities in combo are represented
       # by ComboLeg objects.
-      def serialize_combo_legs *fields
+      def serialize_legs *fields
         return [] unless sec_type.upcase == "BAG"
-        return [0] if combo_legs.empty? || combo_legs.nil?
-        [combo_legs.size,
-         combo_legs.map { |leg| leg.serialize *fields }]
+        return [0] if legs.empty? || legs.nil?
+        [legs.size, legs.map { |leg| leg.serialize *fields }]
       end
 
       def to_s

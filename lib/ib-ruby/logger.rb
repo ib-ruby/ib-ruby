@@ -4,7 +4,7 @@ require "logger"
 def log *args
   @@logger ||= Logger.new(STDOUT).tap do |logger|
     logger.formatter = proc do |level, time, prog, msg|
-      "#{time.strftime('%H:%M:%S.%3N')} #{msg}\n"
+      "#{time.strftime('%H:%M:%S.%N')} #{msg}\n"
     end
     logger.level = Logger::INFO
   end

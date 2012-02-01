@@ -481,7 +481,7 @@ module IB
           @order.trail_stop_price = @socket.read_decimal
           @order.basis_points = @socket.read_decimal
           @order.basis_points_type = @socket.read_int
-          @contract.combo_legs_description = @socket.read_string
+          @contract.legs_description = @socket.read_string
           @order.scale_init_level_size = @socket.read_int_max
           @order.scale_subs_level_size = @socket.read_int_max
           @order.scale_price_increment = @socket.read_decimal_max
