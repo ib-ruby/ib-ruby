@@ -1,0 +1,9 @@
+1. IB Connection uses delays to prevent hitting 50 msgs/sec limit:
+http://finance.groups.yahoo.com/group/TWSAPI/message/25413
+
+2. Decouple Broker-specific Adapter from universal high-level messaging layer
+(potentially adding other broker adapters)
+
+3. Tweak IB::Message API for speed with class methods
+
+4. Create integration tests (Brokerton?)

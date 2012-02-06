@@ -64,5 +64,15 @@ module IB
                                         :sec_type => SECURITY_TYPES[:forex],
                                         :description => "USDJPY")
     }
+
+    #.symbol = "EUR"
+    #.currency = "USD"
+    #.exchange = "IDEALPRO"
+    #.secType = "CASH"
+    # This is all that is required for an FX contract object.
+    # IDEALPRO is for orders over 25,000 and routes to the interbank quote stream.
+    # IDEAL is for smaller orders, and has wider spreads/slower execution... generally
+    # used for smaller currency conversions.
+
   end # Contracts
 end

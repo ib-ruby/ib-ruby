@@ -14,14 +14,14 @@ Gem::Specification.new do |gem|
   # Files setup
   versioned = `git ls-files -z`.split("\0")
   gem.files = Dir['{bin,lib,man,spec,features,tasks}/**/*', 'Rakefile', 'README*', 'LICENSE*',
-                  'VERSION*', 'CHANGELOG*', 'HISTORY*', 'ROADMAP*', '.gitignore'] & versioned
+                  'VERSION*', 'HISTORY*', 'TODO*', '.gitignore'] & versioned
   gem.executables = (Dir['bin/**/*'] & versioned).map { |file| File.basename(file) }
   gem.test_files = Dir['spec/**/*'] & versioned
-  gem.require_paths = ["lib"]
+  gem.require_paths = ['lib']
 
   # Dependencies
   gem.add_dependency 'bundler', '>= 1.0.20'
 
-  gem.add_development_dependency 'rspec', '>= 2.5.0'
+  gem.add_development_dependency 'rspec', '>= 2.7.0'
   gem.add_development_dependency 'my_scripts'
 end
