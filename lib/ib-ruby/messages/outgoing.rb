@@ -333,12 +333,15 @@ module IB
         @version = 4
 
         def encode
-          if @data.has_key?(:what_to_show) && @data[:what_to_show].is_a?(String)
-            @data[:what_to_show] = @data[:what_to_show].downcase.to_sym
+          data_type = DATA_TYPES[@data[:what_to_show]] || @data[:what_to_show]
+          unless  DATA_TYPES.values.include?(data_type)
+            raise ArgumentError(":what_to_show must be one of #{DATA_TYPES}.")
           end
 
-          raise ArgumentError(":what_to_show must be one of #{DATA_TYPES}.") unless DATA_TYPES.include?(@data[:what_to_show])
-          raise ArgumentError(":bar_size must be one of #{BAR_SIZES}.") unless BAR_SIZES.include?(@data[:bar_size])
+          bar_size = BAR_SIZES[@data[:bar_size]] || @data[:bar_size]
+          unless  BAR_SIZES.values.include?(bar_size)
+            raise ArgumentError(":bar_size must be one of #{BAR_SIZES}.")
+          end
 
           contract = @data[:contract].is_a?(Models::Contract) ?
               @data[:contract] : Models::Contract.from_ib_ruby(@data[:contract])
@@ -346,10 +349,10 @@ module IB
           [super,
            contract.serialize_long(:include_expired),
            @data[:end_date_time],
-           @data[:bar_size],
+           bar_size,
            @data[:duration],
            @data[:use_rth],
-           @data[:what_to_show].to_s.upcase,
+           data_type.to_s.upcase,
            @data[:format_date],
            contract.serialize_legs]
         end

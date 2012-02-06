@@ -3,32 +3,33 @@ module IB
 
   EOL = "\0"
 
-  FA_TYPES = {1 => "GROUPS", # FaMsgTypeName
-              2 => "PROFILES",
-              3 =>"ALIASES"}
-
   # Enumeration of bar size types for convenience.
   # Bar sizes less than 30 seconds do not work for some securities.
-  BAR_SIZES = ['1 sec', '5 secs', '15 secs', '30 secs',
-               '1 min', '2 mins', '3 mins', '5 mins',
-               '15 mins', '30 mins', '1 hour', '1 day']
+  BAR_SIZES = {:sec1 => '1 sec',
+               :sec5 => '5 secs',
+               :sec15 => '15 secs',
+               :sec30 => '30 secs',
+               :min1 => '1 min',
+               :min2 => '2 mins',
+               :min3 => '3 mins',
+               :min5 => '5 mins',
+               :min15 => '15 mins',
+               :min30 => '30 mins',
+               :hour1 => '1 hour',
+               :day1 => '1 day'}
 
-  # Enumeration of data types
-  DATA_TYPES = [:trades,
-                :midpoint,
-                :bid,
-                :ask
-  #Determines the nature of data being extracted. Valid values:
-  # • TRADES
-  #• MIDPOINT
-  #• BID
-  #• ASK
-  #• BID_ASK
-  #• HISTORICAL_VOLATILITY
-  #• OPTION_IMPLIED_VOLATILITY
-  #• OPTION_VOLUME
-  #• OPTION_OPEN_INTEREST
-  ]
+  # Enumeration of data types.
+  # Determines the nature of data being extracted. Valid values:
+  DATA_TYPES = {:trades => 'TRADES',
+                :midpoint => 'MIDPOINT',
+                :bid => 'BID',
+                :ask => 'ASK',
+                :bid_ask => 'BID_ASK',
+                :historical_volatility => 'HISTORICAL_VOLATILITY',
+                :option_implied_volatility => 'OPTION_IMPLIED_VOLATILITY',
+                :option_volume => 'OPTION_VOLUME',
+                :option_open_interest => 'OPTION_OPEN_INTEREST',
+  }
 
   # Valid security types (sec_type attribute of IB::Contract)
   SECURITY_TYPES = {:stock => "STK",
@@ -38,6 +39,8 @@ module IB
                     :futures_option => "FOP",
                     :forex => "CASH",
                     :bag => "BAG"}
+
+  ### These values are typically received from TWS in incoming messages
 
   # Tick types as received in TickPrice and TickSize messages (enumeration)
   TICK_TYPES = {
@@ -112,20 +115,21 @@ module IB
       #   Note 3: Applies to bond contracts only.
   }
 
-  #
-  # Market depth messages contain these "operation" codes to tell you
-  # what to do with the data.
-  #
+  # Financial Advisor types (FaMsgTypeName)
+  FA_TYPES = {1 => 'GROUPS',
+              2 => 'PROFILES',
+              3 =>'ALIASES'}
+
+  # Market depth messages contain these "operation" codes to tell you what to do with the data.
   # See also http://www.interactivebrokers.com/php/apiUsersGuide/apiguide/java/updatemktdepth.htm
-  #
   MARKET_DEPTH_OPERATIONS = {
-    0 => :insert, # New order, insert into the row identified by :position
-    1 => :update, # Update the existing order at the row identified by :position
-    2 => :delete  # Delete the existing order at the row identified by :position
+      0 => :insert, # New order, insert into the row identified by :position
+      1 => :update, # Update the existing order at the row identified by :position
+      2 => :delete # Delete the existing order at the row identified by :position
   }
 
   MARKET_DEPTH_SIDES = {
-    0 => :ask,
-    1 => :bid
+      0 => :ask,
+      1 => :bid
   }
 end # module IB
