@@ -1,17 +1,16 @@
 #!/usr/bin/env ruby
 #
-# This script allows you to cancel ALL Orders opened via IB API at once.
-# Useful if your robot goes crazy and opens gazillions of wrong limit orders.
+# This script allows you to cancel either a set of open Orders by their ids,
+# or ALL Orders opened via IB API at once. The latter is useful when your
+# robot goes crazy and opens gazillions of wrong limit orders.
 
+require 'rubygems'
 require 'pathname'
 LIB_DIR = (Pathname.new(__FILE__).dirname + '../lib/').realpath.to_s
 $LOAD_PATH.unshift LIB_DIR unless $LOAD_PATH.include?(LIB_DIR)
 
-require 'rubygems'
 require 'bundler/setup'
 require 'ib-ruby'
-
-p ARGV
 
 # First, connect to IB TWS.
 ib = IB::Connection.new
@@ -19,11 +18,12 @@ ib = IB::Connection.new
 # Subscribe to TWS alerts/errors and order-related messages
 ib.subscribe(:Alert, :OpenOrder, :OrderStatus) { |msg| puts msg.to_human }
 
-ib.send_message :RequestGlobalCancel if ARGV.empty?
-
-ARGV.each { |order_id| ib.send_message :CancelOrder, :id => order_id.to_i }
+if ARGV.empty?
+  ib.send_message :RequestGlobalCancel
+else
+  ARGV.each { |order_id| ib.send_message :CancelOrder, :id => order_id.to_i }
+end
 
 ib.send_message :RequestAllOpenOrders
 
-puts "\n******** Press <Enter> to cancel... *********\n\n"
-STDIN.gets
+sleep 2
