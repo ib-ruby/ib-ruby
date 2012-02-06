@@ -1,1 +1,1 @@
-rvm use jruby
+rvm use jruby-head@ib-ruby

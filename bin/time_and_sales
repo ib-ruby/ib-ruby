@@ -52,7 +52,7 @@ end
 
 puts "\nSubscribed to TWS market data"
 puts "\n******** Press <Enter> to cancel... *********\n\n"
-gets
+STDIN.gets
 puts "Unsubscribing from TWS market data.."
 
 @market.each_pair { |id, contract| ib.send_message :CancelMarketData, :id => id }

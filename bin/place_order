@@ -1,0 +1,33 @@
+#!/usr/bin/env ruby
+#
+# This script connects to IB API, subscribes to account info and prints out
+# messages received from IB (update every 3 minute or so)
+
+require 'pathname'
+LIB_DIR = (Pathname.new(__FILE__).dirname + '../lib/').realpath.to_s
+$LOAD_PATH.unshift LIB_DIR unless $LOAD_PATH.include?(LIB_DIR)
+
+require 'rubygems'
+require 'bundler/setup'
+require 'ib-ruby'
+
+# First, connect to IB TWS.
+ib = IB::Connection.new
+
+# Subscribe to TWS alerts/errors and order-related messages
+ib.subscribe(:Alert, :OpenOrder, :OrderStatus) { |msg| puts msg.to_human }
+
+wfc = IB::Symbols::Stocks[:wfc]
+buy_order = IB::Models::Order.new :total_quantity => 100,
+                                  :limit_price => 1 + rand().round(2),
+                                  :action => 'BUY',
+                                  :order_type => 'LMT'
+
+sleep 0.5 # waiting for :NextValidID
+
+ib.place_order buy_order, wfc
+
+ib.send_message :RequestAllOpenOrders
+
+puts "\n******** Press <Enter> to cancel... *********\n\n"
+STDIN.gets

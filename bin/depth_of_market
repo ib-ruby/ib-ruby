@@ -15,7 +15,7 @@ require 'ib-ruby'
 # corresponds to what symbol ourselves, because the ticks don't include any other
 # identifying information. The choice of ticker ids is, as far as I can tell, arbitrary.
 @market = {123 => IB::Symbols::Stocks[:wfc],
-           456 => IB::Symbols::Futures[:ym],
+           456 => IB::Symbols::Futures[:es],
            789 => IB::Symbols::Forex[:gbpusd]
 }
 
@@ -40,7 +40,7 @@ end
 
 puts "\nSubscribed to market data"
 puts "\n******** Press <Enter> to cancel... *********\n\n"
-gets
+STDIN.gets
 puts "Cancelling market data subscription.."
 
 @market.each_pair { |id, contract| ib.send_message :CancelMarketDepth, :id => id }

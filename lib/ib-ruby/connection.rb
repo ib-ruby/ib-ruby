@@ -1,5 +1,5 @@
 require 'ib-ruby/socket'
-require 'logger'
+require 'ib-ruby/logger'
 
 # Add method to_ib to render datetime in IB format (zero padded "yyyymmdd HH:mm:ss")
 class Time
@@ -22,12 +22,18 @@ module IB
     DEFAULT_OPTIONS = {:host =>"127.0.0.1",
                        :port => '4001', # IB Gateway connection (default)
                        #:port => '7496', # TWS connection, with annoying pop-ups
+                       :client_id => nil, # Will be randomly assigned
                        :connect => true,
                        :reader => true
     }
 
-    attr_reader :server, #         Info about IB server and server connection state
-                :next_order_id #  Next valid order id
+    # Singleton to make active Connection universally accessible as IB::Connection.current
+    class << self
+      attr_accessor :current
+    end
+
+    attr_reader :server #         Info about IB server and server connection state
+    attr_accessor :next_order_id #  Next valid order id
 
     def initialize(opts = {})
       @options = DEFAULT_OPTIONS.merge(opts)
@@ -38,6 +44,7 @@ module IB
 
       connect if @options[:connect]
       start_reader if @options[:reader]
+      Connection.current = self
     end
 
     # Message subscribers. Key is the message class to listen for.
@@ -54,7 +61,7 @@ module IB
       # TWS always sends NextValidID message at connect - save this id
       self.subscribe(:NextValidID) do |msg|
         @next_order_id = msg.data[:id]
-        puts "Got next valid order id: #{@next_order_id}."
+        log.info "Got next valid order id: #{@next_order_id}."
       end
 
       @server[:socket] = IBSocket.open(@options[:host], @options[:port])
@@ -67,14 +74,16 @@ module IB
       @server[:local_connect_time] = Time.now()
       @server[:remote_connect_time] = @server[:socket].read_string
 
-      # Sending arbitrary client ID to identify subsequent communications.
-      @server[:client_id] = random_id
+      # Sending (arbitrary) client ID to identify subsequent communications.
+      # The client with a client_id of 0 can manage the TWS-owned open orders.
+      # Other clients can only manage their own open orders.
+      @server[:client_id] = @options[:client_id] || random_id
       @server[:socket].send(@server[:client_id])
 
       @connected = true
-      puts "Connected to server, version: #{@server[:version]}, connection time: " +
-               "#{@server[:local_connect_time]} local, " +
-               "#{@server[:remote_connect_time]} remote."
+      log.info "Connected to server, version: #{@server[:version]}, connection time: " +
+          "#{@server[:local_connect_time]} local, " +
+          "#{@server[:remote_connect_time]} remote."
     end
 
     alias open connect # Legacy alias
@@ -120,7 +129,7 @@ module IB
       subscriber_id
     end
 
-    # Remove all subscribers with specific subscriber id
+    # Remove all subscribers with specific subscriber id (TODO: multiple ids)
     def unsubscribe(subscriber_id)
 
       subscribers.each do |message_class, message_subscribers|
@@ -161,16 +170,27 @@ module IB
       msg_id = @server[:socket].read_int
 
       # Debug:
-      #unless [1, 2, 4, 6, 7, 8, 9, 12, 21, 53].include? msg_id
-      #  puts "Got message #{msg_id} (#{Messages::Incoming::Table[msg_id]})"
-      #end
+      unless [1, 2, 4, 6, 7, 8, 9, 12, 21, 53].include? msg_id
+        log.debug "Got message #{msg_id} (#{Messages::Incoming::Table[msg_id]})"
+      end
 
       # Create new instance of the appropriate message type, and have it read the message.
       # NB: Failure here usually means unsupported message type received
       msg = Messages::Incoming::Table[msg_id].new(@server[:socket])
 
       subscribers[msg.class].each { |_, subscriber| subscriber.call(msg) }
-      puts "No subscribers for message #{msg.class}!" if subscribers[msg.class].empty?
+      log.warn "No subscribers for message #{msg.class}!" if subscribers[msg.class].empty?
+    end
+
+    # Place Order (convenience wrapper for message :PlaceOrder).
+    # Returns TWS id of a placed order.
+    def place_order order, contract
+      @next_order_id += 1
+      send_message :PlaceOrder,
+                   :order => order,
+                   :contract => contract,
+                   :id => @next_order_id
+      @next_order_id
     end
 
     protected
@@ -191,6 +211,6 @@ module IB
     end
 
   end # class Connection
-  IB = Connection # Legacy alias
+  #IB = Connection # Legacy alias
 
 end # module IB

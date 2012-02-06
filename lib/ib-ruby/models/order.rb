@@ -6,6 +6,15 @@ module IB
   module Models
     class Order < Model
 
+      # General Notes:
+      # 1. Placing Orders by con_id - When you place an order by con_id, you must
+      # provide the con_id AND the exchange. If you provide extra fields when placing
+      # an order by conid, the order may not work.
+
+      # 2. Order IDs - Each order you place must have a unique Order ID. We recommend
+      # that you increment your own Order IDs to avoid conflicts between orders placed
+      # from your API application.
+
       # Constants used in Order objects. Drawn from Order.java
       Origin_Customer = 0
       Origin_Firm = 1
@@ -41,22 +50,67 @@ module IB
                     :client_id, # int: The id of the client that placed this order.
                     :perm_id, #   int: TWS id used to identify orders, remains
                     #                  the same over TWS sessions.
-                    :action, # String: Identifies the side. Valid values: BUY/SELL/SSHORT
+                    :action, #    String: Identifies the side: BUY/SELL/SSHORT
                     :total_quantity, #  int: The order quantity.
+
                     :order_type, #   String: Identifies the order type. Valid values are:
-                    #                MKT / MKTCLS / LMT / LMTCLS / PEGMKT / SCALE
-                    #                STP / STPLMT / TRAIL / REL / VWAP / TRAILLIMIT
+                    #     Limit Risk:
+                    #          MTL          Market-to-Limit
+                    #          MKT PRT      Market with Protection
+                    #          QUOTE        Request for Quote
+                    #          STP          Stop
+                    #          STP LMT      Stop Limit
+                    #          TRAIL        Trailing Stop
+                    #          TRAIL LIMIT  Trailing Stop Limit
+                    #          TRAIL LIT    Trailing Limit if Touched
+                    #          TRAIL MIT    Trailing Market If Touched
+                    #     Speed of Execution:
+                    #          MKT          Market
+                    #          MIT          Market-if-Touched
+                    #          MOC          Market-on-Close    MKTCLSL ?
+                    #          MOO          Market-on-Open
+                    #          PEG MKT      Pegged-to-Market
+                    #          REL          Relative
+                    #     Price Improvement:
+                    #          BOX TOP      Box Top
+                    #          LOC          Limit-on-Close       LMTCLS ?
+                    #          LOO          Limit-on-Open
+                    #          LIT          Limit if Touched
+                    #          PEG MID      Pegged-to-Midpoint
+                    #          VWAP         VWAP-Guaranteed
+                    #     Advanced Trading:
+                    #          OCA          One-Cancels-All
+                    #          VOL          Volatility
+                    #          SCALE        Scale
+                    #     Other (no abbreviation):
+                    #          Bracket
+                    #          At Auction
+                    #          Discretionary
+                    #          Sweep-to-Fill
+                    #          Price Improvement Auction
+                    #          Block
+                    #          Hidden
+                    #          Iceberg/Reserve
+                    #          All-or-None
+                    #          Fill-or-Kill
+
                     :limit_price, # double: This is the LIMIT price, used for limit,
                     #               stop-limit and relative orders. In all other cases
                     #               specify zero. For relative orders with no limit price,
                     #               also specify zero.
+
                     :aux_price, #   double: This is the STOP price for stop-limit orders,
                     #               and the offset amount for relative orders. In all other
                     #               cases, specify zero.
                     #:shares_allocation, # deprecated sharesAllocation field
 
                     # Extended order fields
-                    :tif, #         String: Time in Force - DAY / GTC / IOC / GTD
+                    :tif, #         String: Time to Market:
+                    #          DAY
+                    #          GAT          Good-after-Time/Date
+                    #          GTD          Good-till-Date/Time
+                    #          GTC          Good-till-Canceled
+                    #          IOC          Immediate-or-Cancel
                     :oca_group, #   String: one cancels all group name
                     :oca_type, # int: Tells how to handle remaining orders in an OCA group
                     #            when one order or part of an order executes. Valid values:
@@ -82,9 +136,18 @@ module IB
                     #          two consecutive bid or ask prices.
                     #      2 - "last" method, stops are triggered based on the last price.
                     #      3 - double last method.
-                    #      4 - bid/ask method.
-                    #      7 - last or bid/ask method.
-                    #      8 - mid-point method.
+                    #      4 - bid/ask method. For a buy order, a single occurrence of the
+                    #          bid price must be at or above the trigger price. For a sell
+                    #          order, a single occurrence of the ask price must be at or
+                    #          below the trigger price.
+                    #      7 - last or bid/ask method. For a buy order, a single bid price
+                    #          or the last price must be at or above the trigger price.
+                    #          For a sell order, a single ask price or the last price
+                    #          must be at or below the trigger price.
+                    #      8 - mid-point method, where the midpoint must be at or above
+                    #          (for a buy) or at or below (for a sell) the trigger price,
+                    #          and the spread between the bid and ask must be less than
+                    #          0.1% of the midpoint
 
                     :outside_rth, # bool: allows orders to also trigger or fill outside
                     #               of regular trading hours. (WAS: ignore_rth)
@@ -200,7 +263,32 @@ module IB
 
       # Some Order properties (received back from IB) are separated into
       # OrderState object. Here, they are lumped into Order proper: see OrderState.java
-      attr_accessor :status, # String: Displays the order status.
+      attr_accessor :status, # String: Displays the order status.Possible values include:
+                    # • PendingSubmit - indicates that you have transmitted the order, but
+                    #   have not yet received confirmation that it has been accepted by the
+                    #   order destination. NOTE: This order status is NOT sent back by TWS
+                    #   and should be explicitly set by YOU when an order is submitted.
+                    # • PendingCancel - indicates that you have sent a request to cancel
+                    #   the order but have not yet received cancel confirmation from the
+                    #   order destination. At this point, your order cancel is not confirmed.
+                    #   You may still receive an execution while your cancellation request
+                    #   is pending. NOTE: This order status is not sent back by TWS and
+                    #   should be explicitly set by YOU when an order is canceled.
+                    # • PreSubmitted - indicates that a simulated order type has been
+                    #   accepted by the IB system and that this order has yet to be elected.
+                    #   The order is held in the IB system until the election criteria are
+                    #   met. At that time the order is transmitted to the order destination
+                    #   as specified.
+                    # • Submitted - indicates that your order has been accepted at the order
+                    #   destination and is working.
+                    # • Cancelled - indicates that the balance of your order has been
+                    #   confirmed canceled by the IB system. This could occur unexpectedly
+                    #   when IB or the destination has rejected your order.
+                    # • ApiCancelled - canceled via API
+                    # • Filled - indicates that the order has been completely filled.
+                    # • Inactive - indicates that the order has been accepted by the system
+                    #   (simulated orders) or an exchange (native orders) but that currently
+                    #   the order is inactive due to system, exchange or other issues.
                     :init_margin, # String: Shows the impact the order would have on your
                     #                       initial margin.
                     :maint_margin, # String: Shows the impact the order would have on your
@@ -215,6 +303,21 @@ module IB
                     :max_commission,
 
                     :warning_text # String: Displays a warning message if warranted.
+
+      # IB uses weird String with Java Double.MAX_VALUE to indicate no value here
+      def init_margin= val
+        @init_margin = val == "1.7976931348623157E308" ? nil : val
+      end
+
+      # IB uses weird String with Java Double.MAX_VALUE to indicate no value here
+      def maint_margin= val
+        @maint_margin = val == "1.7976931348623157E308" ? nil : val
+      end
+
+      # IB uses weird String with Java Double.MAX_VALUE to indicate no value here
+      def equity_with_loan= val
+        @equity_with_loan = val == "1.7976931348623157E308" ? nil : val
+      end
 
       def initialize opts = {}
         # Assign defaults first!
@@ -261,7 +364,7 @@ module IB
       # This returns an Array of data from the given order,
       # mixed with data from associated contract. Ugly mix, indeed.
       def serialize_with contract
-        [contract.serialize_long(:sec_id),
+        [contract.serialize_long(:con_id, :sec_id),
          action, # main order fields
          total_quantity,
          order_type,
@@ -281,7 +384,7 @@ module IB
          trigger_method,
          outside_rth, # was: ignore_rth
          hidden,
-         contract.serialize_combo_legs(:long),
+         contract.serialize_legs(:extended),
          '', # deprecated shares_allocation field
          discretionary_amount,
          good_after_time,
@@ -336,6 +439,17 @@ module IB
         end
       end
 
+      def to_s #human
+        "<Order:" + instance_variables.map do |key|
+          value = instance_variable_get(key)
+          " #{key}=#{value}" unless value.nil? || value == '' || value == 0
+        end.compact.join(',') + " >"
+      end
+
+      def to_human
+        "<Order: #{order_type} #{tif} #{action} #{total_quantity} #{status} #{limit_price}" +
+            " id: #{id}/#{perm_id} from: #{client_id}/#{account}>"
+      end
     end # class Order
   end # module Models
 end # module IB

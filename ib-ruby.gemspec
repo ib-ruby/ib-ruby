@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |gem|
   gem.name = "ib-ruby"
-  gem.version = File.open('VERSION').read.strip # = ::Mix::VERSION # - conflicts with Bundler
+  gem.version = File.open('VERSION').read.strip
   gem.summary = "Ruby Implementation of the Interactive Brokers TWS API"
   gem.description = "Ruby Implementation of the Interactive Brokers TWS API"
   gem.authors = ["Paul Legato", "arvicco"]
@@ -20,7 +20,8 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
 
   # Dependencies
-  gem.add_dependency("bundler", [">= 1.0.13"])
-  gem.add_development_dependency("rspec", [">= 2.5.0"])
+  gem.add_dependency 'bundler', '>= 1.0.20'
 
+  gem.add_development_dependency 'rspec', '>= 2.5.0'
+  gem.add_development_dependency 'my_scripts'
 end

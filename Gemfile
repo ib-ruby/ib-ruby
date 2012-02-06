@@ -7,7 +7,4 @@ gem 'rspec', '>=2.7.0', :require => ['rspec', 'rspec/autorun']
 gem 'getopt'
 gem 'duration'
 
-group :development do
-  gem "yard"      # YARD documentation generator
-  gem "bluecloth" # Provides markdown text markup format to YARD
-end
+gemspec

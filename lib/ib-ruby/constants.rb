@@ -14,7 +14,21 @@ module IB
                '15 mins', '30 mins', '1 hour', '1 day']
 
   # Enumeration of data types
-  DATA_TYPES = [:trades, :midpoint, :bid, :ask]
+  DATA_TYPES = [:trades,
+                :midpoint,
+                :bid,
+                :ask
+  #Determines the nature of data being extracted. Valid values:
+  # • TRADES
+  #• MIDPOINT
+  #• BID
+  #• ASK
+  #• BID_ASK
+  #• HISTORICAL_VOLATILITY
+  #• OPTION_IMPLIED_VOLATILITY
+  #• OPTION_VOLUME
+  #• OPTION_OPEN_INTEREST
+  ]
 
   # Valid security types (sec_type attribute of IB::Contract)
   SECURITY_TYPES = {:stock => "STK",
@@ -79,7 +93,7 @@ module IB
       48 => :rt_volume, #               tickGeneric()
       49 => :halted, #           see Note 2 below.
       50 => :bid_yield, #               tickPrice() See Note 3 below
-      51 => :asky_ield, #               tickPrice() See Note 3 below
+      51 => :ask_yield, #               tickPrice() See Note 3 below
       52 => :last_yield, #              tickPrice() See Note 3 below
       53 => :cust_option_computation, # tickOptionComputation()
       54 => :trade_count, #             tickGeneric()
