@@ -7,3 +7,8 @@ http://finance.groups.yahoo.com/group/TWSAPI/message/25413
 3. Tweak IB::Message API for speed with class methods
 
 4. Create integration tests (Brokerton?)
+
+5. IB#send_message method should accept block, thus compressing subscribe/send_message
+pair into a single call - to simplify DSL.
+
+6. Compatibility check for new TWS v.966
