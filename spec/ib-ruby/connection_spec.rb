@@ -1,10 +1,12 @@
-require File.join(File.dirname(__FILE__), %w[.. spec_helper])
+require 'spec_helper'
 
 describe IB::Connection do
 
   context 'when connected to IB Gateway', :connected => true do
     # THIS depends on TWS|Gateway connectivity
-    before(:all) { @ib = IB::Connection.new }
+    before(:all) { @ib = IB::Connection.new :host => 'free.brokertron.com',
+                                            :port=> 10501
+    }
     after(:all) { @ib.close if @ib }
 
     context 'instantiation with default options' do
@@ -12,10 +14,10 @@ describe IB::Connection do
 
       it { should_not be_nil }
       it { should be_connected }
-      its (:server) {should be_a Hash}
-      its (:server) {should have_key :reader}
-      its (:subscribers) {should have_at_least(1).item} # :NextValidID and empty Hashes
-      its (:next_order_id) {should be_a Fixnum} # Not before :NextValidID arrives
+      its(:server) {should be_a Hash}
+      its(:server) {should have_key :reader}
+      its(:subscribers) {should have_at_least(1).item} # :NextValidID and empty Hashes
+      its(:next_order_id) {should be_a Fixnum} # Not before :NextValidID arrives
     end
 
     describe '#send_message', 'sending messages' do
@@ -41,7 +43,7 @@ describe IB::Connection do
 
     context "subscriptions" do
 
-      it '#subscribe, adds (multiple) subscribers' do
+      it '#subscribe, adds(multiple) subscribers' do
         @subscriber_id = @ib.subscribe(IB::Messages::Incoming::Alert, :AccountValue) do
           puts "oooooooooo"
         end
@@ -74,10 +76,10 @@ describe IB::Connection do
 
       it { should_not be_nil }
       it { should_not be_connected }
-      its (:server) {should be_a Hash}
-      its (:server) {should_not have_key :reader}
-      its (:subscribers) {should be_empty}
-      its (:next_order_id) {should be_nil}
+      its(:server) {should be_a Hash}
+      its(:server) {should_not have_key :reader}
+      its(:subscribers) {should be_empty}
+      its(:next_order_id) {should be_nil}
     end
 
   end # not connected

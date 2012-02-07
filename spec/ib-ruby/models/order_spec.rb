@@ -1,4 +1,4 @@
-require File.join(File.dirname(__FILE__), %w[.. .. spec_helper])
+require 'spec_helper'
 
 describe IB::Models::Order do
 
@@ -19,16 +19,16 @@ describe IB::Models::Order do
       subject { IB::Models::Order.new }
 
       it { should_not be_nil }
-      its (:outside_rth) {should == false}
-      its (:open_close) {should == "O"}
-      its (:origin) {should == IB::Models::Order::Origin_Customer}
-      its (:transmit) {should == true}
-      its (:designated_location) {should == ''}
-      its (:exempt_code) {should == -1}
-      its (:delta_neutral_order_type) {should == ''}
-      its (:what_if) {should == false}
-      its (:not_held) {should == false}
-      its (:created_at) {should be_a Time}
+      its(:outside_rth) {should == false}
+      its(:open_close) {should == "O"}
+      its(:origin) {should == IB::Models::Order::Origin_Customer}
+      its(:transmit) {should == true}
+      its(:designated_location) {should == ''}
+      its(:exempt_code) {should == -1}
+      its(:delta_neutral_order_type) {should == ''}
+      its(:what_if) {should == false}
+      its(:not_held) {should == false}
+      its(:created_at) {should be_a Time}
     end
 
     context 'with properties' do
@@ -41,7 +41,7 @@ describe IB::Models::Order do
       end
 
       context 'essential properties are still set, even if not given explicitely' do
-        its (:created_at) {should be_a Time}
+        its(:created_at) {should be_a Time}
       end
     end
 

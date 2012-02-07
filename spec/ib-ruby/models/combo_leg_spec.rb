@@ -1,4 +1,4 @@
-require File.join(File.dirname(__FILE__), %w[.. .. spec_helper])
+require 'spec_helper'
 
 describe IB::Models::ComboLeg do
 
@@ -18,13 +18,13 @@ describe IB::Models::ComboLeg do
       subject { IB::Models::ComboLeg.new }
 
       it { should_not be_nil }
-      its (:con_id) {should == 0}
-      its (:ratio) {should == 0}
-      its (:open_close) {should == 0}
-      its (:short_sale_slot) {should == 0}
-      its (:exempt_code) {should == -1}
+      its(:con_id) {should == 0}
+      its(:ratio) {should == 0}
+      its(:open_close) {should == 0}
+      its(:short_sale_slot) {should == 0}
+      its(:exempt_code) {should == -1}
 
-      its (:created_at) {should be_a Time}
+      its(:created_at) {should be_a Time}
     end
 
     context 'with properties' do
@@ -37,7 +37,7 @@ describe IB::Models::ComboLeg do
       end
 
       context 'essential properties are still set, even if not given explicitely' do
-        its (:created_at) {should be_a Time}
+        its(:created_at) {should be_a Time}
       end
     end
 

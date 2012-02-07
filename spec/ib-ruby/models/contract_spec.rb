@@ -1,4 +1,4 @@
-require File.join(File.dirname(__FILE__), %w[.. .. spec_helper])
+require 'spec_helper'
 
 describe IB::Models::Contract do
 
@@ -19,11 +19,11 @@ describe IB::Models::Contract do
       subject { IB::Models::Contract.new }
 
       it { should_not be_nil }
-      its (:con_id) {should == 0}
-      its (:strike) {should == 0}
-      its (:sec_type) {should == ''}
-      its (:created_at) {should be_a Time}
-      its (:include_expired) {should == false}
+      its(:con_id) {should == 0}
+      its(:strike) {should == 0}
+      its(:sec_type) {should == ''}
+      its(:created_at) {should be_a Time}
+      its(:include_expired) {should == false}
     end
 
     context 'with properties' do
@@ -36,9 +36,9 @@ describe IB::Models::Contract do
       end
 
       context 'essential properties are still set, even if not given explicitely' do
-        its (:con_id) {should == 0}
-        its (:created_at) {should be_a Time}
-        its (:include_expired) {should == false}
+        its(:con_id) {should == 0}
+        its(:created_at) {should be_a Time}
+        its(:include_expired) {should == false}
       end
     end
 
@@ -56,22 +56,22 @@ describe IB::Models::Contract do
       context 'empty without properties' do
         subject { IB::Models::Contract.new }
 
-        its (:summary) {should == subject}
-        its (:under_con_id) {should == 0}
-        its (:min_tick) {should == 0}
-        its (:callable) {should == false}
-        its (:puttable) {should == false}
-        its (:coupon) {should == 0}
-        its (:convertible) {should == false}
-        its (:next_option_partial) {should == false}
-        its (:created_at) {should be_a Time}
+        its(:summary) {should == subject}
+        its(:under_con_id) {should == 0}
+        its(:min_tick) {should == 0}
+        its(:callable) {should == false}
+        its(:puttable) {should == false}
+        its(:coupon) {should == 0}
+        its(:convertible) {should == false}
+        its(:next_option_partial) {should == false}
+        its(:created_at) {should be_a Time}
       end
 
       context 'with properties' do
         subject { IB::Models::Contract.new detailed_properties }
 
-        its (:summary) {should == subject}
-        its (:created_at) {should be_a Time}
+        its(:summary) {should == subject}
+        its(:created_at) {should be_a Time}
 
         it 'sets properties right' do
           detailed_properties.each do |name, value|
