@@ -9,7 +9,15 @@ module IB
     end
 
     def read_string
-      self.gets(EOL).chop
+      string = self.gets(EOL)
+
+      until string
+        # Silently ignores nils
+        string = self.gets(EOL)
+        sleep 0.1
+      end
+
+      string.chop
     end
 
     def read_int

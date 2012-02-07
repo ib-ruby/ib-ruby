@@ -16,7 +16,7 @@ require 'ib-ruby'
 ib = IB::Connection.new
 
 # Subscribe to TWS alerts/errors and order-related messages
-ib.subscribe(:Alert, :OpenOrder, :OrderStatus) { |msg| puts msg.to_human }
+ib.subscribe(:Alert, :OpenOrder, :OrderStatus, :OpenOrderEnd) { |msg| puts msg.to_human }
 
 if ARGV.empty?
   ib.send_message :RequestGlobalCancel
@@ -26,4 +26,4 @@ end
 
 ib.send_message :RequestAllOpenOrders
 
-sleep 2
+sleep 3
