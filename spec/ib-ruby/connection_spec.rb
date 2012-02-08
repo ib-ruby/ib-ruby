@@ -4,9 +4,11 @@ describe IB::Connection do
 
   context 'when connected to IB Gateway', :connected => true do
     # THIS depends on TWS|Gateway connectivity
-    before(:all) { @ib = IB::Connection.new :host => 'free.brokertron.com',
-                                            :port=> 10501
-    }
+    before(:all) do
+      @ib = IB::Connection.new CONNECTION_OPTS
+      @ib.subscribe(:OpenOrderEnd) {}
+    end
+
     after(:all) { @ib.close if @ib }
 
     context 'instantiation with default options' do
@@ -45,7 +47,6 @@ describe IB::Connection do
 
       it '#subscribe, adds(multiple) subscribers' do
         @subscriber_id = @ib.subscribe(IB::Messages::Incoming::Alert, :AccountValue) do
-          puts "oooooooooo"
         end
 
         @subscriber_id.should be_a Fixnum
@@ -68,7 +69,7 @@ describe IB::Connection do
     end # subscriptions
   end # connected
 
-  context 'not connected to IB Gateway' do
+  context 'when not connected to IB Gateway' do
     before(:all) { @ib = IB::Connection.new :connect => false, :reader => false }
 
     context 'instantiation passing :connect => false' do

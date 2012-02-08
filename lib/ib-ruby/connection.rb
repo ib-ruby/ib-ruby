@@ -82,8 +82,8 @@ module IB
 
       @connected = true
       log.info "Connected to server, version: #{@server[:version]}, connection time: " +
-          "#{@server[:local_connect_time]} local, " +
-          "#{@server[:remote_connect_time]} remote."
+                   "#{@server[:local_connect_time]} local, " +
+                   "#{@server[:remote_connect_time]} remote."
     end
 
     alias open connect # Legacy alias
@@ -193,12 +193,6 @@ module IB
       @next_order_id
     end
 
-    protected
-
-    def random_id
-      rand 999999999
-    end
-
     # Start reader thread that continuously reads messages from server in background.
     # If you don't start reader, you should manually poll @server[:socket] for messages
     # or use #process_messages(msec) API.
@@ -208,6 +202,12 @@ module IB
       @server[:reader] = Thread.new do
         process_messages while @reader_running
       end
+    end
+
+    protected
+
+    def random_id
+      rand 999999999
     end
 
   end # class Connection

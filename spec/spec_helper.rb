@@ -1,5 +1,5 @@
-require File.expand_path(
-    File.join(File.dirname(__FILE__), %w[.. lib ib-ruby]))
+require 'rspec'
+require 'ib-ruby'
 
 RSpec.configure do |config|
   # config.exclusion_filter = { :slow => true }
@@ -9,3 +9,8 @@ RSpec.configure do |config|
   # config.mock_with :flexmock
   # config.mock_with :rr
 end
+
+CONNECTION_OPTS = {
+    #:host => 'free.brokertron.com',
+    #:port=> 10501
+}
