@@ -5,7 +5,7 @@ describe IB::Messages do
   context 'Normal message exchange at any connection', :connected => true do
 
     before(:all) do
-      connect_and_receive(:NextValidID, :OpenOrderEnd, :Alert)
+      connect_and_receive :NextValidID, :OpenOrderEnd, :Alert
       wait_for(2) { not @received[:OpenOrderEnd].empty? }
     end
 

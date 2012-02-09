@@ -14,86 +14,75 @@ describe IB::Messages do
   # 3. Once the condition is satisfied, you can test the content of @received Hash
   #    to see what messages were received, or log_entries Array to see what was logged
   #
-  # 4. When done, you disconnect @ib Connection in a top-level  after(:all) block.
+  # 4. When done, you call 'close_connection' in a top-level  after(:all) block.
 
-  context 'when connected to IB Gateway', :connected => true do
+  context "Request Account Data", :connected => true do
 
     before(:all) do
       connect_and_receive(:Alert, :AccountValue, :AccountDownloadEnd,
                           :PortfolioValue, :AccountUpdateTime)
+
+      @ib.send_message :RequestAccountData, :subscribe => true
+
+      wait_for(5) { not @received[:AccountDownloadEnd].empty? }
     end
 
-    after(:all) { @ib.close if @ib
-    puts log_entries
-    p @received.map { |type, msg| [type, msg.size] } }
+    after(:all) do
+      @ib.send_message :RequestAccountData, :subscribe => false
+      close_connection
+    end
 
-    context "Subscribe to :AccountValue and receive appropriate msg's" do
+    context "received :Alert message " do
+      subject { @received[:Alert].first }
 
-      before(:all) do
-        @ib.send_message :RequestAccountData, :subscribe => true
-        wait_for(5) { not @received[:AccountDownloadEnd].empty? }
-      end
+      it { should_not be_nil }
+      it { should be_warning }
+      it { should_not be_error }
+      its(:code) { should be_a Integer }
+      its(:message) { should =~ /Market data farm connection is OK/ }
+      its(:to_human) { should =~ /TWS Warning Message/ }
+    end
 
-      after(:all) { @ib.send_message :RequestAccountData, :subscribe => false }
+    context "received :AccountValue message" do
+      subject { @received[:AccountValue].first }
 
-      context "received :Alert message " do
-        subject { @received[:Alert].first }
+      #it 'prints out message' do
+      #  p subject
+      #  p subject.to_human
+      #end
 
-        it { should_not be_nil }
-        it { should be_warning }
-        it { should_not be_error }
-        its(:code) { should be_a Integer }
-        its(:message) { should =~ /Market data farm connection is OK/ }
-        its(:to_human) { should =~ /TWS Warning Message/ }
-      end
+      it { should_not be_nil }
+      its(:data) { should be_a Hash }
+      its(:account_name) { should =~ /\w\d/ }
+      its(:key) { should be_a String }
+      its(:value) { should be_a String }
+      its(:currency) { should be_a String }
+      its(:to_human) { should =~ /AccountValue/ }
+    end
 
-      context "received :AccountValue message" do
-        subject { @received[:AccountValue].first }
+    context "received :AccountDownloadEnd message" do
+      subject { @received[:AccountDownloadEnd].first }
 
-        it 'ouoe' do
-          p subject
-          p subject.to_human
-        end
+      it { should_not be_nil }
+      its(:data) { should be_a Hash }
+      its(:account_name) { should =~ /\w\d/ }
+      its(:to_human) { should =~ /AccountDownloadEnd/ }
+    end
 
+    context "received :PortfolioValue message" do
+      subject { @received[:PortfolioValue].first }
 
-        it { should_not be_nil }
-        its(:data) { should be_a Hash }
-        its(:account_name) { should =~ /\w\d/ }
-        its(:key) { should be_a String }
-        its(:value) { should be_a String }
-        its(:currency) { should be_a String }
-        its(:to_human) { should =~ /AccountValue/ }
-      end
-
-      context "received :AccountDownloadEnd message" do
-        subject { @received[:AccountDownloadEnd].first }
-
-        it 'ouoe' do
-          p subject
-          p subject.to_human
-        end
-
-        it { should_not be_nil }
-        its(:data) { should be_a Hash }
-        its(:account_name) { should =~ /\w\d/ }
-        its(:to_human) { should =~ /AccountDownloadEnd/ }
-      end
-
-      context "received :PortfolioValue message" do
-        subject { @received[:PortfolioValue].first }
-
-        it { should_not be_nil }
-        its(:contract) { should be_a IB::Models::Contract }
-        its(:data) { should be_a Hash }
-        its(:position) { should be_a Integer }
-        its(:market_price) { should be_a Float }
-        its(:market_value) { should be_a Float }
-        its(:average_cost) { should be_a Float }
-        its(:unrealized_pnl) { should be_a Float }
-        its(:realized_pnl) { should be_a Float }
-        its(:account_name) { should =~ /\w\d/ }
-        its(:to_human) { should =~ /PortfolioValue/ }
-      end
-    end # Subscribe to :AccountValue and receive appropriate msg's
-  end # connected
+      it { should_not be_nil }
+      its(:contract) { should be_a IB::Models::Contract }
+      its(:data) { should be_a Hash }
+      its(:position) { should be_a Integer }
+      its(:market_price) { should be_a Float }
+      its(:market_value) { should be_a Float }
+      its(:average_cost) { should be_a Float }
+      its(:unrealized_pnl) { should be_a Float }
+      its(:realized_pnl) { should be_a Float }
+      its(:account_name) { should =~ /\w\d/ }
+      its(:to_human) { should =~ /PortfolioValue/ }
+    end
+  end # Request Account Data
 end # describe IB::Messages::Incomming
