@@ -24,7 +24,8 @@ module IB
                        #:port => '7496', # TWS connection, with annoying pop-ups
                        :client_id => nil, # Will be randomly assigned
                        :connect => true,
-                       :reader => true
+                       :reader => true,
+                       :logger => nil
     }
 
     # Singleton to make active Connection universally accessible as IB::Connection.current
@@ -38,6 +39,7 @@ module IB
     def initialize(opts = {})
       @options = DEFAULT_OPTIONS.merge(opts)
 
+      self.default_logger = @options[:logger] if @options[:logger]
       @connected = false
       @next_order_id = nil
       @server = Hash.new

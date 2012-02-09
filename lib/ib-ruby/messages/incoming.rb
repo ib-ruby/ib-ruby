@@ -50,6 +50,11 @@ module IB
           self.inspect
         end
 
+        # Object#id is always defined, we cannot rely on method_missing
+        def id
+          @data.has_key?(:id) ? @data[:id] : super
+        end
+
         protected
 
         def method_missing method, *args
