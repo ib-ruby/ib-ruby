@@ -46,11 +46,7 @@ describe IB::Messages do
     context "received :AccountValue message" do
       subject { @received[:AccountValue].first }
 
-      #it 'prints out message' do
-      #  p subject
-      #  p subject.to_human
-      #end
-
+      #ps
       it { should_not be_nil }
       its(:data) { should be_a Hash }
       its(:account_name) { should =~ /\w\d/ }

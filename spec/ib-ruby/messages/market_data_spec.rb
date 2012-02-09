@@ -23,11 +23,6 @@ describe IB::Messages do
       context "received :Alert message " do
         subject { @received[:Alert].first }
 
-        it 'ouoe' do
-          p subject
-          p subject.to_human
-        end
-
         it { should_not be_nil }
         it { should be_warning }
         it { should_not be_error }
@@ -38,11 +33,6 @@ describe IB::Messages do
 
       context "received :TickPrice message" do
         subject { @received[:TickPrice].first }
-
-        it 'ouoe' do
-          p subject
-          p subject.to_human
-        end
 
         it { should_not be_nil }
         its(:tick_type) { should be_an Integer }

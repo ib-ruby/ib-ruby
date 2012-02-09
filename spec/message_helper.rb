@@ -7,6 +7,15 @@ def message_type msg
   msg.class.to_s.split(/::/).last.to_sym
 end
 
+def print_subject
+  it 'prints out message' do
+    p subject
+    p subject.to_human
+  end
+end
+
+alias ps print_subject
+
 ## Logger helpers
 
 def mock_logger
