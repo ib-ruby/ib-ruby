@@ -12,7 +12,7 @@ describe IB::Messages do
   #    by calling 'wait_for' in a context before(:all) block.
   #
   # 3. Once the condition is satisfied, you can test the content of @received Hash
-  #    to see what messages were received, or @log Array to see what was logged
+  #    to see what messages were received, or log_entries Array to see what was logged
   #
   # 4. When done, you disconnect @ib Connection in a top-level  after(:all) block.
 
@@ -24,6 +24,7 @@ describe IB::Messages do
     end
 
     after(:all) { @ib.close if @ib
+    puts log_entries
     p @received.map { |type, msg| [type, msg.size] } }
 
     context "Subscribe to :AccountValue and receive appropriate msg's" do
@@ -49,6 +50,12 @@ describe IB::Messages do
       context "received :AccountValue message" do
         subject { @received[:AccountValue].first }
 
+        it 'ouoe' do
+          p subject
+          p subject.to_human
+        end
+
+
         it { should_not be_nil }
         its(:data) { should be_a Hash }
         its(:account_name) { should =~ /\w\d/ }
@@ -60,6 +67,11 @@ describe IB::Messages do
 
       context "received :AccountDownloadEnd message" do
         subject { @received[:AccountDownloadEnd].first }
+
+        it 'ouoe' do
+          p subject
+          p subject.to_human
+        end
 
         it { should_not be_nil }
         its(:data) { should be_a Hash }

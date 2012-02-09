@@ -10,8 +10,11 @@ RSpec.configure do |config|
   # config.mock_with :rr
 end
 
-CONNECTION_OPTS = {
-    :client_id => 1111,
-    #:host => 'free.brokertron.com',
-    #:port=> 10501
-}
+BROKERTRON = false
+
+CONNECTION_OPTS = BROKERTRON ?
+    {:client_id => 1111,
+     :host => 'free.brokertron.com',
+     :port=> 10501
+    } :
+    {:client_id => 1111}
