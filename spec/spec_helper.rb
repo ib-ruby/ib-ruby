@@ -11,6 +11,7 @@ RSpec.configure do |config|
 end
 
 CONNECTION_OPTS = {
+    :client_id => 1111,
     #:host => 'free.brokertron.com',
     #:port=> 10501
 }

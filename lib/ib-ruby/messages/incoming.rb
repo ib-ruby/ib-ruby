@@ -52,6 +52,22 @@ module IB
 
         protected
 
+        def method_missing method, *args
+          getter = method.to_s.sub(/=$/, '').to_sym
+          if @data.has_key? method
+            @data[method]
+          elsif @data.has_key? getter
+            @data[getter] = *args
+          else
+            super method, *args
+          end
+        end
+
+        def respond_to? method
+          getter = method.to_s.sub(/=$/, '').to_sym
+          @data.has_key?(method) || @data.has_key?(getter) || super
+        end
+
         # Every message loads received message version first
         def load
           @data[:version] = @socket.read_int
@@ -157,7 +173,7 @@ module IB
       # This message is always sent by TWS automatically at connect.
       # The IB::Connection class subscribes to it automatically and stores
       # the order id in its @next_order_id attribute.
-      NextValidID = def_message 9, [:id, :int]
+      NextValidID = def_message(9, [:id, :int]) { "<NextValidID: #{@data[:id]}>" }
 
       NewsBulletins =
           def_message 14, [:id, :int], # unique incrementing bulletin ID.
@@ -193,11 +209,14 @@ module IB
       FundamentalData = def_message 50, [:id, :int], # request_id
                                     [:data, :string]
 
-      ContractDataEnd = def_message 52, [:id, :int] # request_id
+      ContractDataEnd = def_message(52, [:id, :int]) { "<ContractDataEnd: #{@data[:id]}>" } # request_id
 
-      OpenOrderEnd = def_message 53
+      OpenOrderEnd = def_message(53) { "<OpenOrderEnd>" }
 
-      AccountDownloadEnd = def_message 54, [:account_name, :string]
+      AccountDownloadEnd = def_message(54, [:account_name, :string]) do
+        "<AccountDownloadEnd: #{@data[:account_name]}}>"
+      end # request_id
+
 
       ExecutionDataEnd = def_message 55, [:id, :int] # request_id
 
@@ -372,14 +391,6 @@ module IB
       # It has additional accessors: #code and #message, derived from @data
       Alert = def_message 4, [:id, :int], [:code, :int], [:message, :string]
       class Alert
-        def code
-          @data && @data[:code]
-        end
-
-        def message
-          @data && @data[:message]
-        end
-
         # Is it an Error message?
         def error?
           code < 1000
@@ -397,7 +408,7 @@ module IB
 
         def to_human
           "TWS #{ error? ? 'Error' : system? ? 'System' : 'Warning'
-          } Message #{@data[:code]}: #{@data[:message]}"
+          } Message #{code}: #{message}"
         end
       end # class ErrorMessage
       Error = Alert
@@ -552,14 +563,14 @@ module IB
                    [:market_value, :decimal],
                    [:average_cost, :decimal],
                    [:unrealized_pnl, :decimal], # TODO: Check for Double.MAX_VALUE
-                   [:realized_pnl, :decimal],   # TODO: Check for Double.MAX_VALUE
+                   [:realized_pnl, :decimal], # TODO: Check for Double.MAX_VALUE
                    [:account_name, :string]
         end
 
         def to_human
-          "<PortfolioValue: #{@contract.to_human} (#{@data[:position]}): Market #{@data[:market_price]}" +
-              " price #{@data[:market_value]} value; PnL: #{@data[:unrealized_pnl]} unrealized," +
-              " #{@data[:realized_pnl]} realized; account #{@data[:account_name]}>"
+          "<PortfolioValue: #{@contract.to_human} (#{position}): Market #{market_price}" +
+              " price #{market_value} value; PnL: #{unrealized_pnl} unrealized," +
+              " #{realized_pnl} realized; account #{account_name}>"
         end
 
       end # PortfolioValue
