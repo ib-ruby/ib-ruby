@@ -156,11 +156,11 @@ module IB
                                 [:last_fill_price, :decimal],
                                 [:client_id, :int],
                                 [:why_held, :string] do
-        "<OrderStatus: #{@data[:status]} filled: #{@data[:filled]}/#{@data[:remaining]+@data[:filled]}" +
-            " @ last/avg: #{@data[:last_fill_price]}/#{@data[:average_fill_price]}" +
-            (@data[:parent_id] > 0 ? "parent_id: #{@data[:parent_id]}" : "") +
-            (@data[:why_held] != "" ? "why_held: #{@data[:why_held]}" : "") +
-            " id/perm: #{@data[:id]}/#{@data[:perm_id]}>"
+        "<OrderStatus: #{status} filled: #{filled}/#{remaining + filled}" +
+            " @ last/avg: #{last_fill_price}/#{average_fill_price}" +
+            (parent_id > 0 ? "parent_id: #{parent_id}" : "") +
+            (why_held != "" ? "why_held: #{why_held}" : "") +
+            " id/perm: #{id}/#{perm_id}>"
       end
 
 
@@ -168,17 +168,17 @@ module IB
                                  [:value, :string],
                                  [:currency, :string],
                                  [:account_name, :string]) do
-        "<AccountValue: #{@data[:account_name]}, #{@data[:key]}=#{@data[:value]} #{@data[:currency]}>"
+        "<AccountValue: #{account_name}, #{key}=#{value} #{currency}>"
       end
 
       AccountUpdateTime = def_message(8, [:time_stamp, :string]) do
-        "<AccountUpdateTime: #{@data[:time_stamp]}>"
+        "<AccountUpdateTime: #{time_stamp}>"
       end
 
       # This message is always sent by TWS automatically at connect.
       # The IB::Connection class subscribes to it automatically and stores
       # the order id in its @next_order_id attribute.
-      NextValidID = def_message(9, [:id, :int]) { "<NextValidID: #{@data[:id]}>" }
+      NextValidID = def_message(9, [:id, :int]) { "<NextValidID: #{id}>" }
 
       NewsBulletins =
           def_message 14, [:id, :int], # unique incrementing bulletin ID.
@@ -214,18 +214,18 @@ module IB
       FundamentalData = def_message 50, [:id, :int], # request_id
                                     [:data, :string]
 
-      ContractDataEnd = def_message(52, [:id, :int]) { "<ContractDataEnd: #{@data[:id]}>" } # request_id
+      ContractDataEnd = def_message(52, [:id, :int]) { "<ContractDataEnd: #{id}>" } # request_id
 
       OpenOrderEnd = def_message(53) { "<OpenOrderEnd>" }
 
       AccountDownloadEnd = def_message(54, [:account_name, :string]) do
-        "<AccountDownloadEnd: #{@data[:account_name]}}>"
+        "<AccountDownloadEnd: #{account_name}}>"
       end # request_id
 
 
-      ExecutionDataEnd = def_message 55, [:id, :int] # request_id
+      ExecutionDataEnd = def_message(55, [:id, :int]) { "<ExecutionDataEnd: #{id}>" } # request_id
 
-      TickSnapshotEnd = def_message 57, [:id, :int] # request_id
+      TickSnapshotEnd = def_message(57, [:id, :int]) { "<TickSnapshotEnd: #{id}>" } # request_id
 
       ### Actual message classes (long definitions):
 
@@ -344,10 +344,9 @@ module IB
         end
 
         def to_human
-          "<TickOption #{type} for #{@data[:id]}: underlying @ #{@data[:under_price]}, "+
-              "option @ #{@data[:option_price]}, IV #{@data[:implied_volatility]}%, " +
-              "delta #{@data[:delta]}, gamma #{@data[:gamma]}, vega #{@data[:vega]}, " +
-              "theta #{@data[:theta]}, pv_dividend #{@data[:pv_dividend]}>"
+          "<TickOption #{type} for #{:id}: underlying @ #{under_price}, "+
+              "option @ #{option_price}, IV #{implied_volatility}%, delta #{delta}, " +
+              "gamma #{gamma}, vega #{vega}, theta #{theta}, pv_dividend #{pv_dividend}>"
         end
       end # TickOption
       TickOptionComputation = TickOption
@@ -373,8 +372,8 @@ module IB
         end
 
         def to_human
-          "<#{self.class.to_s.split('::').last}: #{operation} #{side} @ "+
-              "#{@data[:position]} = #{@data[:price]} x #{@data[:size]}>"
+          "<#{self.class.to_s.split(/::/).last}: #{operation} #{side} @ "+
+              "#{position} = #{price} x #{size}>"
         end
       end
 
@@ -415,7 +414,7 @@ module IB
           "TWS #{ error? ? 'Error' : system? ? 'System' : 'Warning'
           } Message #{code}: #{message}"
         end
-      end # class ErrorMessage
+      end # class Alert
       Error = Alert
       ErrorMessage = Alert
 
@@ -702,8 +701,7 @@ module IB
         end
 
         def to_human
-          "<HistoricalData: req id #{@data[:id]}, #{@data[:item_count]
-          } items, from #{@data[:start_date_str]} to #{@data[:end_date_str]}>"
+          "<HistoricalData: req: #{id}, #{item_count} items, #{start_date} to #{end_date}>"
         end
       end # HistoricalData
 
@@ -818,7 +816,7 @@ module IB
         end
 
         def to_human
-          "<RealTimeBar: req id #{@data[:id]}, #{@bar}>"
+          "<RealTimeBar: req: #{id}, #{bar}>"
         end
       end # RealTimeBar
       RealTimeBars = RealTimeBar
