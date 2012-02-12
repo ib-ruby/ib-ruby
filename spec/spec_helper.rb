@@ -17,4 +17,7 @@ CONNECTION_OPTS = BROKERTRON ?
      :host => 'free.brokertron.com',
      :port=> 10501
     } :
-    {:client_id => 1111}
+    {:client_id => 1111,
+     :host => '127.0.0.1',
+     :port=> 4001
+    }

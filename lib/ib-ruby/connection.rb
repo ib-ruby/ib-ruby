@@ -19,7 +19,7 @@ module IB
 
     CLIENT_VERSION = 48 # Was 27 in original Ruby code
     SERVER_VERSION = 53 # Minimal server version. Latest, was 38 in current Java code.
-    DEFAULT_OPTIONS = {:host =>"127.0.0.1",
+    DEFAULT_OPTIONS = {:host =>'127.0.0.1',
                        :port => '4001', # IB Gateway connection (default)
                        #:port => '7496', # TWS connection, with annoying pop-ups
                        :client_id => nil, # Will be randomly assigned
@@ -45,7 +45,6 @@ module IB
       @server = Hash.new
 
       connect if @options[:connect]
-      start_reader if @options[:reader]
       Connection.current = self
     end
 
@@ -58,7 +57,7 @@ module IB
     end
 
     def connect
-      raise Exception.new("Already connected!") if @connected
+      raise "Already connected!" if connected?
 
       # TWS always sends NextValidID message at connect - save this id
       self.subscribe(:NextValidID) do |msg|
@@ -71,7 +70,7 @@ module IB
       # Secret handshake
       @server[:socket].send(CLIENT_VERSION)
       @server[:version] = @server[:socket].read_int
-      raise(Exception.new("TWS version >= #{SERVER_VERSION} required.")) if @server[:version] < SERVER_VERSION
+      raise "TWS version >= #{SERVER_VERSION} required." if @server[:version] < SERVER_VERSION
 
       @server[:local_connect_time] = Time.now()
       @server[:remote_connect_time] = @server[:socket].read_string
@@ -86,6 +85,8 @@ module IB
       log.info "Connected to server, version: #{@server[:version]}, connection time: " +
                    "#{@server[:local_connect_time]} local, " +
                    "#{@server[:remote_connect_time]} remote."
+
+      start_reader if @options[:reader] # Allows reconnect
     end
 
     alias open connect # Legacy alias
@@ -95,9 +96,11 @@ module IB
         @reader_running = false
         @server[:reader].join
       end
-      @server[:socket].close
-      @server = Hash.new
-      @connected = false
+      if connected?
+        @server[:socket].close
+        @server = Hash.new
+        @connected = false
+      end
     end
 
     alias close disconnect # Legacy alias
@@ -152,6 +155,7 @@ module IB
             else
               raise ArgumentError.new "Only able to send outgoing IB messages"
           end
+      raise "Not able to send messages, IB not connected!" unless connected?
       message.send_to(@server)
     end
 

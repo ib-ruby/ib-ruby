@@ -430,7 +430,7 @@ module IB
       end
 
       def serialize_algo
-        if algo_strategy.empty? || algo_strategy.nil?
+        if algo_strategy.nil? || algo_strategy.empty?
           ['']
         else
           [algo_strategy,

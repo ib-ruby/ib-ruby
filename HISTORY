@@ -109,3 +109,7 @@
 == 0.5.16 / 2012-02-08
 
 * Message specs refactored
+
+== 0.5.17 / 2012-02-12
+
+* Connection#send_message bugfix

@@ -55,8 +55,14 @@ module IB
           @data.has_key?(:id) ? @data[:id] : super
         end
 
+        def respond_to? method
+          getter = method.to_s.sub(/=$/, '').to_sym
+          @data.has_key?(method) || @data.has_key?(getter) || super
+        end
+
         protected
 
+        # TODO: method compilation instead of method_missing
         def method_missing method, *args
           getter = method.to_s.sub(/=$/, '').to_sym
           if @data.has_key? method
@@ -66,11 +72,6 @@ module IB
           else
             super method, *args
           end
-        end
-
-        def respond_to? method
-          getter = method.to_s.sub(/=$/, '').to_sym
-          @data.has_key?(method) || @data.has_key?(getter) || super
         end
 
         # Every message loads received message version first
@@ -421,6 +422,7 @@ module IB
       class OpenOrder < AbstractMessage
         @message_id = 5
 
+        # TODO: Add id accessor to unify with OrderStatus message
         attr_accessor :order, :contract
 
         def load
@@ -655,6 +657,10 @@ module IB
                                     :liquidation => @socket.read_int,
                                     :cumulative_quantity => @socket.read_int,
                                     :average_price => @socket.read_decimal
+        end
+
+        def to_human
+          "<HistoricalData: req: #{id}, #{item_count} items, #{start_date} to #{end_date}>"
         end
       end # ExecutionData
 
