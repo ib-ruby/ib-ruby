@@ -660,7 +660,7 @@ module IB
         end
 
         def to_human
-          "<HistoricalData: req: #{id}, #{item_count} items, #{start_date} to #{end_date}>"
+          "<ExecutionData: #{contract.to_human}, #{execution}>"
         end
       end # ExecutionData
 
