@@ -113,3 +113,7 @@
 == 0.5.17 / 2012-02-12
 
 * Connection#send_message bugfix
+
+== 0.5.18 / 2012-02-15
+
+* Bugfix release

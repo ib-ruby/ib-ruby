@@ -39,6 +39,12 @@ def should_log *patterns
   end
 end
 
+def should_not_log *patterns
+  patterns.each do |pattern|
+    log_entries.any? { |entry| entry =~ pattern }.should be_false
+  end
+end
+
 ## Connection helpers
 
 def connect_and_receive *message_types

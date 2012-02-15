@@ -130,6 +130,7 @@ module IB
             end
 
         subscribers[message_class][subscriber_id] = subscriber
+        # TODO: Fix: RuntimeError: can't add a new key into hash during iteration
       end
       subscriber_id
     end

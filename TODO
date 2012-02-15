@@ -12,3 +12,18 @@ http://finance.groups.yahoo.com/group/TWSAPI/message/25413
 pair into a single call - to simplify DSL.
 
 6. Compatibility check for new TWS v.966
+
+7. Fix iteration bug
+   (probably, caused by new IB message arriving while we're adding new subscriber):
+        RuntimeError: can't add a new key into hash during iteration
+                       []= at org/jruby/RubyHash.java:899
+                 subscribe at /Users/vb/.rvm/gems/jruby-head@option_mower/gems/ib-ruby-0.5.17/lib/ib-ruby/connection.rb:132
+                      each at org/jruby/RubyArray.java:1609
+                 subscribe at /Users/vb/.rvm/gems/jruby-head@option_mower/gems/ib-ruby-0.5.17/lib/ib-ruby/connection.rb:121
+          subscribe_orders at /Users/vb/Dev/ib/option_mower/lib/option_mower/connection.rb:153
+                     start at /Users/vb/Dev/ib/option_mower/lib/option_mower/connection.rb:42
+                     start at /Users/vb/Dev/ib/option_mower/lib/option_mower/connection.rb:17
+                     start at /Users/vb/Dev/ib/option_mower/lib/option_mower/robot.rb:103
+                       run at /Users/vb/Dev/ib/option_mower/lib/option_mower/robot.rb:121
+                    (root) at bin/option_mower:46
+
