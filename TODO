@@ -13,7 +13,7 @@ pair into a single call - to simplify DSL.
 
 6. Compatibility check for new TWS v.966
 
-7. Fix iteration bug
+7. Fix iteration bug:
    (probably, caused by new IB message arriving while we're adding new subscriber):
         RuntimeError: can't add a new key into hash during iteration
                        []= at org/jruby/RubyHash.java:899
