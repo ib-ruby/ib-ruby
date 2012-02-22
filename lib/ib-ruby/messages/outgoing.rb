@@ -277,19 +277,12 @@ module IB
       #                             '30 min'
       #                             '1 hour'
       #                             '1 day'
-      #          :what_to_show => Symbol:
-      # Determines the nature of data being extracted. Valid values:
-      #one of :trades, :midpoint, :bid, or :ask -
-      #    • TRADES
-      #• MIDPOINT
-      #• BID
-      #• ASK
-      #• BID_ASK
-      #• HISTORICAL_VOLATILITY
-      #• OPTION_IMPLIED_VOLATILITY
-      #• OPTION_VOLUME
-      #• OPTION_OPEN_INTEREST
-      #                           converts to "TRADES," "MIDPOINT," "BID," or "ASK."
+      #          :what_to_show => Symbol: Determines the nature of data being extracted.
+      #                           Valid values:
+      #                             :trades, :midpoint, :bid, :ask, :bid_ask,
+      #                             :historical_volatility, :option_implied_volatility,
+      #                             :option_volume, :option_open_interest
+      #                              - converts to "TRADES," "MIDPOINT," "BID," etc...
       #          :use_rth => int: 0 - all data available during the time span requested
       #                     is returned, even data bars covering time intervals where the
       #                     market in question was illiquid. 1 - only data within the
@@ -362,8 +355,12 @@ module IB
       #           :contract => Contract ,
       #           :bar_size => int/Symbol? Currently only 5 second bars (2?) are supported,
       #                        if any other value is used, an exception will be thrown.,
-      #          :what_to_show => Symbol: one of :trades, :midpoint, :bid, or :ask -
-      #                           converts to "TRADES," "MIDPOINT," "BID," or "ASK."
+      #          :what_to_show => Symbol: Determines the nature of data being extracted.
+      #                           Valid values:
+      #                             :trades, :midpoint, :bid, :ask, :bid_ask,
+      #                             :historical_volatility, :option_implied_volatility,
+      #                             :option_volume, :option_open_interest
+      #                              - converts to "TRADES," "MIDPOINT," "BID," etc...
       #          :use_rth => int: 0 - all data available during the time span requested
       #                     is returned, even data bars covering time intervals where the
       #                     market in question was illiquid. 1 - only data within the
@@ -374,20 +371,23 @@ module IB
         @message_id = 50
 
         def encode
-          if @data.has_key?(:what_to_show) && @data[:what_to_show].is_a?(String)
-            @data[:what_to_show] = @data[:what_to_show].downcase.to_sym
+          data_type = DATA_TYPES[@data[:what_to_show]] || @data[:what_to_show]
+          unless  DATA_TYPES.values.include?(data_type)
+            raise ArgumentError(":what_to_show must be one of #{DATA_TYPES}.")
           end
 
-          raise ArgumentError(":what_to_show must be one of #{DATA_TYPES}.") unless DATA_TYPES.include?(@data[:what_to_show])
-          raise ArgumentError(":bar_size must be one of #{BAR_SIZES}.") unless BAR_SIZES.include?(@data[:bar_size])
+          bar_size = BAR_SIZES[@data[:bar_size]] || @data[:bar_size]
+          unless  BAR_SIZES.values.include?(bar_size)
+            raise ArgumentError(":bar_size must be one of #{BAR_SIZES}.")
+          end
 
           contract = @data[:contract].is_a?(Models::Contract) ?
               @data[:contract] : Models::Contract.from_ib_ruby(@data[:contract])
 
           [super,
            contract.serialize_long,
-           @data[:bar_size],
-           @data[:what_to_show].to_s.upcase,
+           bar_size,
+           data_type.to_s.upcase,
            @data[:use_rth]]
         end
       end # RequestRealTimeBars
