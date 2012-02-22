@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    ib-ruby (0.5.17)
+    ib-ruby (0.5.18)
       bundler (>= 1.0.20)
 
 GEM

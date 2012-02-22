@@ -92,7 +92,7 @@ module IB
     alias open connect # Legacy alias
 
     def disconnect
-      if @server[:reader]
+      if reader_running?
         @reader_running = false
         @server[:reader].join
       end
@@ -107,6 +107,10 @@ module IB
 
     def connected?
       @connected
+    end
+
+    def reader_running?
+      @reader_running && @server[:reader] && @server[:reader].alive?
     end
 
     # Subscribe Proc or block to specific type(s) of incoming message events.
