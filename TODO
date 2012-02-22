@@ -1,17 +1,27 @@
-0. Create integration tests (Brokerton?)
 
-1. IB Connection uses delays to prevent hitting 50 msgs/sec limit:
-http://finance.groups.yahoo.com/group/TWSAPI/message/25413
+Plan:
 
-2. Decouple Broker-specific Adapter from universal high-level messaging layer
-(potentially adding other broker adapters)
+1. Create integration tests (Brokerton?)
 
-3. Tweak IB::Message API for speed (use class methods)
-
-4. IB Connection reconnects gracefully in case if TWS disconnects/reconnects
-
-5. IB#send_message method should accept block, thus compressing subscribe/send_message
+3. IB#send_message method should accept block, thus compressing subscribe/send_message
 pair into a single call - to simplify DSL.
 
+4. IB Connection uses delays to prevent hitting 50 msgs/sec limit:
+http://finance.groups.yahoo.com/group/TWSAPI/message/25413
+
+5. IB Connection reconnects gracefully in case if TWS disconnects/reconnects
+
 6. Compatibility check for new TWS v.966
+
+
+Done:
+
+2. IB#subscribe should accept regexes.
+
+Ideas for future:
+
+1. Decouple Broker-specific Adapter from universal high-level messaging layer
+(potentially adding other broker adapters)
+
+2. Tweak IB::Message API for speed (use class methods)
 

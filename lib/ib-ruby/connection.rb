@@ -123,18 +123,21 @@ module IB
       raise ArgumentError.new "Need subscriber proc or block" unless subscriber.is_a? Proc
 
       args.each do |what|
-        message_class =
+        message_classes =
             case
               when what.is_a?(Class) && what < Messages::Incoming::AbstractMessage
                 what
               when what.is_a?(Symbol)
                 Messages::Incoming.const_get(what)
+              when what.is_a?(Regexp)
+                Messages::Incoming::Table.values.find_all { |klass| klass.to_s =~ what }
               else
                 raise ArgumentError.new "#{what} must represent incoming IB message class"
             end
-
-        subscribers[message_class][subscriber_id] = subscriber
-        # TODO: Fix: RuntimeError: can't add a new key into hash during iteration
+        [message_classes].flatten.each do |message_class|
+          # TODO: Fix: RuntimeError: can't add a new key into hash during iteration
+          subscribers[message_class][subscriber_id] = subscriber
+        end
       end
       subscriber_id
     end
