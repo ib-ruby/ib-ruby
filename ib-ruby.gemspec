@@ -6,7 +6,7 @@ Gem::Specification.new do |gem|
   gem.summary = "Ruby Implementation of the Interactive Brokers TWS API"
   gem.description = "Ruby Implementation of the Interactive Brokers TWS API"
   gem.authors = ["Paul Legato", "arvicco"]
-  gem.email = ["pjlegato@gmail.com", "arvitallian@gmail.com"]
+  gem.email = ["pjlegato@gmail.com", "arvicco@gmail.com"]
   gem.homepage = "https://github.com/pjlegato/ib-ruby"
   gem.platform = Gem::Platform::RUBY
   gem.date = Time.now.strftime "%Y-%m-%d"
