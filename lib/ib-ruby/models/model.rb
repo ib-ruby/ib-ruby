@@ -14,6 +14,16 @@ module IB
 
         opts.keys.each { |key| self.send("#{key}=", opts[key]) }
       end
+
+      # ActiveModel-style attribute accessors
+      def [] key
+        self.send key
+      end
+
+      def []= key, val
+        self.send "#{key}=", val
+      end
+
     end # Model
   end # module Models
 end # module IB
