@@ -16,67 +16,21 @@ describe IB::Messages do
                                          :order_type => 'LMT'
     end
 
-    context "Placing off-market order" do
-
-      before(:all) do
-        connect_and_receive :NextValidID, :Alert, :OpenOrder, :OrderStatus
-        wait_for { received? :NextValidID }
-
-        @order_id_before = @ib.next_order_id
-
-        @wfc_order.limit_price = 9.13
-        @order_id_placed = @ib.place_order @wfc_order, @wfc
-
-        wait_for(2) { @received[:OpenOrder].size > 1 && @received[:OpenOrder].size > 1 }
-      end
-
-      after(:all) do
-        @ib.cancel_order @order_id_placed
-        close_connection
-      end
-
-      it 'changes client`s next_order_id' do
-        @ib.next_order_id.should == @order_id_placed
-        @ib.next_order_id.should == @order_id_before + 1
-      end
-
-      context 'received :OpenOrder messages' do
-        subject { @received[:OpenOrder] }
-
-        it { should have_exactly(2).messages }
-
-        it 'receives Order confirmation first' do
-          msg = subject.first
-          msg.should be_an IB::Messages::Incoming::OpenOrder
-          msg.contract.should == @wfc
-          msg.order.should == @wfc_order
-          msg.order.status.should == 'PreSubmitted'
-        end
-
-        it 'receives Order submission then' do
-          msg = subject.last
-          msg.should be_an IB::Messages::Incoming::OpenOrder
-          msg.order.should == @wfc_order
-          msg.contract.should == @wfc
-          msg.order.status.should == 'Submitted'
-        end
-      end
-
-    end # Placing off-market order
-
     context "Placing wrong order" do
 
       before(:all) do
         connect_and_receive :NextValidID, :Alert, :OpenOrder, :OrderStatus
         wait_for { received? :NextValidID }
+
+        @wfc_order.limit_price = 9.131313 # Set weird non-acceptable price
         @order_id_before = @ib.next_order_id
-        @wfc_order.limit_price = 9.131313
         @order_id_placed = @ib.place_order @wfc_order, @wfc
+
         wait_for 2
       end
 
       after(:all) do
-        @ib.cancel_order @order_id_placed
+        @ib.cancel_order @order_id_placed # Just in case...
         close_connection
       end
 
@@ -100,5 +54,138 @@ describe IB::Messages do
       end
 
     end # Placing wrong order
+
+    context "Off-market order" do
+      before(:all) do
+        connect_and_receive :NextValidID, :Alert, :OpenOrder, :OrderStatus
+        wait_for { received? :NextValidID }
+
+        @wfc_order.limit_price = 9.13 # Set acceptable price
+        @order_id_before = @ib.next_order_id
+        @order_id_placed = @ib.place_order @wfc_order, @wfc
+
+        wait_for(2) { @received[:OpenOrder].size > 1 && @received[:OpenOrder].size > 1 }
+      end
+
+      after(:all) do
+        #pp @received[:OpenOrder]
+        @ib.cancel_order @order_id_placed # Just in case...
+        close_connection
+      end
+
+      context "Placing" do
+
+        after(:all) { clean_connection } # Clear logs and message collector
+
+        it 'changes client`s next_order_id' do
+          @ib.next_order_id.should == @order_id_placed
+          @ib.next_order_id.should == @order_id_before + 1
+        end
+
+        context 'received :OpenOrder messages' do
+          subject { @received[:OpenOrder] }
+
+          it { should have_at_least(1).message }
+
+          it 'receives (optional) Order confirmation first' do
+            if subject.size > 1
+              msg = subject.first
+              msg.should be_an IB::Messages::Incoming::OpenOrder
+              msg.contract.should == @wfc
+              msg.order.should == @wfc_order
+              msg.order.order_id.should == @order_id_placed
+              msg.order.status.should == 'PreSubmitted'
+            else
+              puts 'Warning: Confirmation was skipped!'
+            end
+          end
+
+          it 'receives Order submission then' do
+            msg = subject.last
+            msg.should be_an IB::Messages::Incoming::OpenOrder
+            msg.contract.should == @wfc
+            msg.order.should == @wfc_order
+            msg.order.order_id.should == @order_id_placed
+            msg.order.status.should == 'Submitted'
+          end
+        end
+
+        context 'received :OrderStatus messages' do
+          subject { @received[:OrderStatus] }
+
+          it { should have_at_least(1).message }
+
+          it 'receives (optional) Order confirmation first' do
+            if subject.size > 1
+              msg = subject.first
+              msg.should be_an IB::Messages::Incoming::OrderStatus
+              msg.id.should == @order_id_placed
+              msg.perm_id.should be_an Integer
+              msg.client_id.should == 1111
+              msg.parent_id.should == 0
+              #msg.order_id.should == @order_id_placed
+              msg.status.should == 'PreSubmitted'
+              msg.filled.should == 0
+              msg.remaining.should == 100
+              msg.average_fill_price.should == 0
+              msg.last_fill_price.should == 0
+              msg.why_held.should == ''
+            else
+              puts 'Warning: Confirmation was skipped!'
+            end
+          end
+
+          it 'receives Order submission then' do
+            msg = subject.last
+            msg.should be_an IB::Messages::Incoming::OrderStatus
+            msg.id.should == @order_id_placed
+            #msg.order_id.should == @order_id_placed
+            msg.perm_id.should be_an Integer
+            msg.client_id.should == 1111
+            msg.parent_id.should == 0
+            msg.status.should == 'Submitted'
+            msg.filled.should == 0
+            msg.remaining.should == 100
+            msg.average_fill_price.should == 0
+            msg.last_fill_price.should == 0
+            msg.why_held.should == ''
+          end
+        end
+      end # Placing
+
+      context "Cancelling" do
+        before(:all) do
+          @ib.cancel_order @order_id_placed
+
+          wait_for(2) { received?(:OrderStatus) && received?(:Alert) }
+        end
+
+        it 'does not increase client`s next_order_id further' do
+          @ib.next_order_id.should == @order_id_placed
+        end
+
+        it { @received[:OrderStatus].should have_exactly(1).status_message }
+
+        it { @received[:Alert].should have_exactly(1).alert_message }
+
+        it 'receives Order cancellation status' do
+          msg = @received[:OrderStatus].first
+          msg.should be_an IB::Messages::Incoming::OrderStatus
+          msg.id.should == @order_id_placed
+          #msg.order_id.should == @order_id_placed
+          msg.perm_id.should be_an Integer
+          msg.client_id.should == 1111
+          msg.parent_id.should == 0
+          msg.status.should == 'Cancelled'
+          msg.filled.should == 0
+          msg.remaining.should == 100
+          msg.average_fill_price.should == 0
+          msg.last_fill_price.should == 0
+          msg.why_held.should == ''
+        end
+      end # Cancelling
+    end # Off-market order
+
+
   end # Orders
 end # describe IB::Messages::Incomming

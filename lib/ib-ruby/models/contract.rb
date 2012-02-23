@@ -1,7 +1,5 @@
 require 'ib-ruby/models/model'
 
-# TODO: Implement equals() according to the criteria in IB's Java client.
-
 module IB
   module Models
     class Contract < Model

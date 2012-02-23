@@ -26,5 +26,4 @@ end
 
 ib.send_message :RequestAllOpenOrders
 
-puts "\n******** Press <Enter> to cancel... *********\n\n"
-STDIN.gets
+sleep 2
