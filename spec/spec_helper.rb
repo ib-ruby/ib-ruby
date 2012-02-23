@@ -10,7 +10,19 @@ RSpec.configure do |config|
   # config.mock_with :rr
 end
 
-SILENT = true
+puts
+puts 'WARNING: MAKE SURE TO RUN ALL YOUR TESTS AGAINST IB PAPER ACCOUNT!'
+puts 'WARNING: FINANCIAL LOSSES MAY RESULT IF YOU RUN TESTS WITH REAL IB ACCOUNT!'
+puts 'WARNING: YOU HAVE BEEN WARNED!'
+puts
+puts 'Configure your connection to IB PAPER ACCOUNT in spec/spec_helper.rb'
+puts
+
+# Please uncomment next line if you are REALLY sure you have properly configured
+# Connection to IB PAPER ACCOUNT or mock (Brokertron) account
+exit
+
+SILENT = false #true
 
 BROKERTRON = false
 
@@ -24,5 +36,3 @@ CONNECTION_OPTS = BROKERTRON ?
      :port=> 4001
     }
 
-puts
-puts 'WARNING: MAKE SURE ALL YOUR TESTS ARE RUN AGAINST PAPER ACCOUNT!'
