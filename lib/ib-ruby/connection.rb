@@ -207,6 +207,13 @@ module IB
       @next_order_id
     end
 
+    # Cancel Orders by their id (convenience wrapper for message :CancelOrder).
+    def cancel_order *order_ids
+      order_ids.each do |order_id|
+        send_message :CancelOrder, :id => order_id.to_i
+      end
+    end
+
     # Start reader thread that continuously reads messages from server in background.
     # If you don't start reader, you should manually poll @server[:socket] for messages
     # or use #process_messages(msec) API.

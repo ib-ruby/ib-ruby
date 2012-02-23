@@ -21,7 +21,7 @@ ib.subscribe(:Alert, :OpenOrder, :OrderStatus, :OpenOrderEnd) { |msg| puts msg.t
 if ARGV.empty?
   ib.send_message :RequestGlobalCancel
 else
-  ARGV.each { |order_id| ib.send_message :CancelOrder, :id => order_id.to_i }
+  ib.cancel_order *ARGV
 end
 
 ib.send_message :RequestAllOpenOrders
