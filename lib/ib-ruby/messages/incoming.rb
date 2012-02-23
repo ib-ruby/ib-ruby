@@ -534,9 +534,9 @@ module IB
           @order.init_margin = @socket.read_string
           @order.maint_margin = @socket.read_string
           @order.equity_with_loan = @socket.read_string
-          @order.commission = @socket.read_decimal_max
-          @order.min_commission = @socket.read_decimal_max
-          @order.max_commission = @socket.read_decimal_max
+          @order.commission = @socket.read_decimal_max       # May be nil!
+          @order.min_commission = @socket.read_decimal_max   # May be nil!
+          @order.max_commission = @socket.read_decimal_max   # May be nil!
           @order.commission_currency = @socket.read_string
           @order.warning_text = @socket.read_string
         end
@@ -568,8 +568,8 @@ module IB
                    [:market_price, :decimal],
                    [:market_value, :decimal],
                    [:average_cost, :decimal],
-                   [:unrealized_pnl, :decimal], # TODO: Check for Double.MAX_VALUE
-                   [:realized_pnl, :decimal], # TODO: Check for Double.MAX_VALUE
+                   [:unrealized_pnl, :decimal_max], # May be nil!
+                   [:realized_pnl, :decimal_max], #   May be nil!
                    [:account_name, :string]
         end
 

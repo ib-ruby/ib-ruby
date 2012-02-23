@@ -45,7 +45,7 @@ module IB
       # Floating-point numbers shouldn't be used to store money...
       # ...but BigDecimals are too unwieldy to use in this case... maybe later
       #  str.nil? || str.empty? ? nil : str.to_d
-      str.nil? || str.empty? ? nil : str.to_f
+      str.to_f unless str.nil? || str.empty? || str.to_f > 1.797 * 10.0 ** 306
     end
   end # class IBSocket
 
