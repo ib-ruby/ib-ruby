@@ -242,6 +242,8 @@ module IB
         end
       end
 
+      ### Leg-related methods (better suited to BAG subclass?)
+
       # Some messages send open_close too, some don't. WTF.
       # "BAG" is not really a contract, but a combination (combo) of securities.
       # AKA basket or bag of securities. Individual securities in combo are represented
@@ -252,6 +254,56 @@ module IB
         [legs.size, legs.map { |leg| leg.serialize *fields }]
       end
 
+      # Check if two Contracts have same legs (maybe in different order)
+      def same_legs? other
+        legs == other.legs ||
+            legs_description.split(',').sort == other.legs_description.split(',').sort
+      end
+
+      # IB-equivalent leg description. TODO: Rewrite with self[:legs_description]
+      def legs_description
+        @legs_description || legs.map { |leg| "#{leg.con_id}|#{leg.weight}" }.join(',')
+      end
+
+      # Contract comparison
+      def == other
+        # Different sec_id_type
+        return false if sec_id_type && other.sec_id_type && sec_id_type != other.sec_id_type
+
+        # Different sec_id
+        return false if sec_id && other.sec_id && sec_id != other.sec_id
+
+        # Different under_comp
+        return false if under_comp && other.under_comp && under_comp != other.under_comp
+
+        # Different legs
+        return false unless same_legs? other
+
+        # Same con_id for all Bags, but unknown for new Contracts...
+        # 0 or nil con_id  matches any
+        return false if con_id != 0 && other.con_id != 0 &&
+            con_id && other.con_id && con_id != other.con_id
+
+        # SMART or nil exchange matches any
+        return false if exchange != 'SMART' && other.exchange != 'SMART' &&
+            exchange && other.exchange && exchange != other.exchange
+
+        # Comparison for Bonds and Options
+        if sec_type == SECURITY_TYPES[:bond] || sec_type == SECURITY_TYPES[:option]
+          return false unless right == other.right &&
+              strike == other.strike &&
+              expiry == other.expiry &&
+              multiplier == other.multiplier
+        end
+
+        # All else being equal...
+        sec_type == other.sec_type &&
+            symbol == other.symbol &&
+            currency == other.currency
+      end
+
+
+      # TODO: Remove @summary into reader method
       def to_s
         "<Contract: " + instance_variables.map do |key|
           unless key == :@summary

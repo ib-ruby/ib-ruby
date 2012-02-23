@@ -46,7 +46,7 @@ module IB
       Max_Value = 99999999
 
       # Main order fields
-      attr_accessor :id, #        int: m_orderId? The id for this order.
+      attr_accessor :id, #        int: m_orderId? Order id associated with client (volatile).
                     :client_id, # int: The id of the client that placed this order.
                     :perm_id, #   int: TWS id used to identify orders, remains
                     #                  the same over TWS sessions.
@@ -304,6 +304,9 @@ module IB
 
                     :warning_text # String: Displays a warning message if warranted.
 
+      alias order_id id # TODO: Change due to ActiveRecord specifics
+      alias order_id= id= # TODO: Change due to ActiveRecord specifics
+
       # IB uses weird String with Java Double.MAX_VALUE to indicate no value here
       def init_margin= val
         @init_margin = val == "1.7976931348623157E308" ? nil : val
@@ -321,6 +324,10 @@ module IB
 
       def initialize opts = {}
         # Assign defaults first!
+        @aux_price = 0.0
+        @parent_id=0
+        @tif='DAY'
+
         @outside_rth = false
         @open_close = "O"
         @origin = Origin_Customer
@@ -429,6 +436,31 @@ module IB
          what_if]
       end
 
+      # Order comparison
+      def == other
+        perm_id == other.perm_id ||
+            order_id == other.order_id && #   ((p __LINE__)||true) &&
+                client_id == other.client_id &&
+                parent_id == other.parent_id &&
+                tif == other.tif &&
+                action == other.action &&
+                order_type == other.order_type &&
+                total_quantity == other.total_quantity &&
+                limit_price == other.limit_price &&
+                aux_price == other.aux_price &&
+                outside_rth == other.outside_rth &&
+                origin == other.origin &&
+                transmit == other.transmit &&
+                designated_location == other.designated_location &&
+                exempt_code == other.exempt_code &&
+                what_if == other.what_if &&
+                not_held == other.not_held &&
+                algo_strategy == other.algo_strategy &&
+                algo_params == other.algo_params
+
+        # TODO: || compare all attributes!
+      end
+
       def serialize_algo
         if algo_strategy.nil? || algo_strategy.empty?
           ['']
@@ -448,7 +480,7 @@ module IB
 
       def to_human
         "<Order: #{order_type} #{tif} #{action} #{total_quantity} #{status} #{limit_price}" +
-            " id: #{id}/#{perm_id} from: #{client_id}/#{account}>"
+            " id: #{order_id}/#{perm_id} from: #{client_id}/#{account}>"
       end
     end # class Order
   end # module Models

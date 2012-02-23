@@ -38,6 +38,7 @@ module IB
                     :index => "IND",
                     :futures_option => "FOP",
                     :forex => "CASH",
+                    :bond => "BOND",
                     :bag => "BAG"}
 
   ### These values are typically received from TWS in incoming messages
