@@ -29,10 +29,6 @@ def mock_logger
   end
 end
 
-def clean_logger
-  @stdout.string = '' if  @stdout
-end
-
 def log_entries
   @stdout && @stdout.string.split(/\n/)
 end
@@ -68,10 +64,17 @@ def connect_and_receive *message_types
   @ib.start_reader
 end
 
+def clean_connection
+  puts @received.map { |type, msg| [" #{type}:", msg.map(&:to_human)] }
+  puts " Logs:"
+  puts log_entries
+  @stdout.string = '' if  @stdout
+  @received.clear if @received
+end
+
 def close_connection
   @ib.close if @ib
-  puts log_entries
-  p @received.map { |type, msg| [type, msg.size] }
+  clean_connection
 end
 
 #noinspection RubyArgCount
