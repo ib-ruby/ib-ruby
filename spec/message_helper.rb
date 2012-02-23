@@ -29,6 +29,10 @@ def mock_logger
   end
 end
 
+def clean_logger
+  @stdout.string = '' if  @stdout
+end
+
 def log_entries
   @stdout && @stdout.string.split(/\n/)
 end

@@ -35,7 +35,7 @@ describe IB::Messages do
     context "received :Alert message " do
       subject { @received[:Alert].first }
 
-      it { should_not be_nil }
+      it { should be_an IB::Messages::Incoming::Alert }
       it { should be_warning }
       it { should_not be_error }
       its(:code) { should be_a Integer }
@@ -47,7 +47,7 @@ describe IB::Messages do
       subject { @received[:AccountValue].first }
 
       #ps
-      it { should_not be_nil }
+      it { should be_an IB::Messages::Incoming::AccountValue }
       its(:data) { should be_a Hash }
       its(:account_name) { should =~ /\w\d/ }
       its(:key) { should be_a String }
@@ -59,7 +59,7 @@ describe IB::Messages do
     context "received :AccountDownloadEnd message" do
       subject { @received[:AccountDownloadEnd].first }
 
-      it { should_not be_nil }
+      it { should be_an IB::Messages::Incoming::AccountDownloadEnd }
       its(:data) { should be_a Hash }
       its(:account_name) { should =~ /\w\d/ }
       its(:to_human) { should =~ /AccountDownloadEnd/ }
@@ -68,7 +68,7 @@ describe IB::Messages do
     context "received :PortfolioValue message" do
       subject { @received[:PortfolioValue].first }
 
-      it { should_not be_nil }
+      it { should be_an IB::Messages::Incoming::PortfolioValue }
       its(:contract) { should be_a IB::Models::Contract }
       its(:data) { should be_a Hash }
       its(:position) { should be_a Integer }

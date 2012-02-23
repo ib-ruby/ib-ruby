@@ -23,7 +23,7 @@ describe IB::Messages do
       context "received :Alert message " do
         subject { @received[:Alert].first }
 
-        it { should_not be_nil }
+        it { should be_an IB::Messages::Incoming::Alert }
         it { should be_warning }
         it { should_not be_error }
         its(:code) { should be_an Integer }
@@ -34,7 +34,7 @@ describe IB::Messages do
       context "received :TickPrice message" do
         subject { @received[:TickPrice].first }
 
-        it { should_not be_nil }
+        it { should be_an IB::Messages::Incoming::TickPrice}
         its(:tick_type) { should be_an Integer }
         its(:type) { should be_a Symbol }
         its(:price) { should be_a Float }
@@ -47,7 +47,7 @@ describe IB::Messages do
       context "received :TickSize message" do
         subject { @received[:TickSize].first }
 
-        it { should_not be_nil }
+        it { should be_an IB::Messages::Incoming::TickSize }
         its(:type) { should_not be_nil }
         its(:data) { should be_a Hash }
         its(:tick_type) { should be_an Integer }

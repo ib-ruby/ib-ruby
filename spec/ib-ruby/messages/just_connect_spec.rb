@@ -13,10 +13,12 @@ describe IB::Messages do
 
     it 'receives :NextValidID message' do
       @received[:NextValidID].should_not be_empty
+      @received[:NextValidID].first.should be_an IB::Messages::Incoming::NextValidID
     end
 
     it 'receives :OpenOrderEnd message' do
       @received[:OpenOrderEnd].should_not be_empty
+      @received[:OpenOrderEnd].first.should be_an IB::Messages::Incoming::OpenOrderEnd
     end
 
     it 'logs connection notification' do
