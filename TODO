@@ -1,7 +1,10 @@
+1. Create integration tests for basic use cases
 
 Plan:
 
 1. Create integration tests (Brokerton?)
+
+2. Make ActiveModel-like attributes Hash for easy attributes updating
 
 3. IB#send_message method should accept block, thus compressing subscribe/send_message
 pair into a single call - to simplify DSL.
