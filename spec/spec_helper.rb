@@ -21,3 +21,6 @@ CONNECTION_OPTS = BROKERTRON ?
      :host => '127.0.0.1',
      :port=> 4001
     }
+
+puts
+puts 'WARNING: MAKE SURE ALL YOUR TESTS ARE RUN AGAINST PAPER ACCOUNT!'

@@ -24,7 +24,7 @@ describe IB::Messages do
 
       @ib.send_message :RequestAccountData, :subscribe => true
 
-      wait_for(5) { not @received[:AccountDownloadEnd].empty? }
+      wait_for(5) { received? :AccountDownloadEnd }
     end
 
     after(:all) do

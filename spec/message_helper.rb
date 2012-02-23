@@ -79,3 +79,7 @@ def wait_for time = 1, &condition
   timeout = Time.now + time
   sleep 0.1 until timeout < Time.now || condition && condition.call
 end
+
+def received? symbol
+  not @received[symbol].empty?
+end

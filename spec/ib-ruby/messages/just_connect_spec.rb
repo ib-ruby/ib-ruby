@@ -6,7 +6,7 @@ describe IB::Messages do
 
     before(:all) do
       connect_and_receive :NextValidID, :OpenOrderEnd, :Alert
-      wait_for(2) { not @received[:OpenOrderEnd].empty? }
+      wait_for(2) { received? :OpenOrderEnd }
     end
 
     after(:all) { close_connection }
