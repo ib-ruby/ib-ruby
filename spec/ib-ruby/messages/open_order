@@ -1,0 +1,273 @@
+[#<IB::Messages::Incoming::OpenOrder:0xfdc        #<IB::Messages::Incoming::OpenOrder:0x10b8        #<IB::Messages::Incoming::OpenOrder:0x1198
+  @contract=                                       @contract=                                        @contract=
+   #<IB::Models::Contract:0xfe0                     #<IB::Models::Contract:0x10bc                     #<IB::Models::Contract:0x119c
+    @con_id="12087792",                              @con_id="12087792",                               @con_id="12087792",
+    @exchange="IDEALPRO",                            @exchange="IDEALPRO",                             @exchange="IDEALPRO",
+    @local_symbol="EUR.USD",                         @local_symbol="EUR.USD",                          @local_symbol="EUR.USD",
+    @sec_type="CASH",                                @sec_type="CASH",                                 @sec_type="CASH",
+  @created_at=Thu Feb 23 12:17:48 +0400 2012,      @created_at=Thu Feb 23 12:17:48 +0400 2012,       @created_at=Thu Feb 23 12:17:48 +0400 2012,
+  @order=                                          @order=                                           @order=
+   #<IB::Models::Order:0x1018                       #<IB::Models::Order:0x10f4                        #<IB::Models::Order:0x11d4
+    @client_id=1111,                                 @client_id=1111,                                  @client_id=1111,
+    @commission=nil,                                 @commission=2.5,                                  @commission=2.5,
+    @commission_currency="USD",                      @commission_currency="USD",                       @commission_currency="USD",
+    @id=38,                                          @id=38,                                           @id=38,
+    @limit_price=1.4,                                @limit_price=1.4,                                 @limit_price=1.4,
+    @perm_id=300145671,                              @perm_id=300145671,                               @perm_id=300145671,
+    @status="Filled",                                @status="Filled",                                 @status="Filled",
+    @total_quantity=20000,                           @total_quantity=20000,                            @total_quantity=20000,
+  @socket=nil>,                                    @socket=nil>,                                     @socket=nil>]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[#<IB::Messages::Incoming::OrderStatus:0x127c
+  @created_at=Thu Feb 23 12:17:48 +0400 2012,
+  @data=
+   {:version=>6,
+    :id=>38,
+    :status=>"Filled",
+    :filled=>20000,
+    :remaining=>0,
+    :average_fill_price=>1.3292,
+    :perm_id=>300145671,
+    :parent_id=>0,
+    :last_fill_price=>1.3292,
+    :client_id=>1111,
+    :why_held=>""},
+  @socket=nil>,
+ #<IB::Messages::Incoming::OrderStatus:0x12bc
+  @created_at=Thu Feb 23 12:17:48 +0400 2012,
+  @data=
+   {:version=>6,
+    :id=>38,
+    :status=>"Filled",
+    :filled=>20000,
+    :remaining=>0,
+    :average_fill_price=>1.3292,
+    :perm_id=>300145671,
+    :parent_id=>0,
+    :last_fill_price=>1.3292,
+    :client_id=>1111,
+    :why_held=>""},
+  @socket=nil>,
+ #<IB::Messages::Incoming::OrderStatus:0x12d8
+  @created_at=Thu Feb 23 12:17:48 +0400 2012,
+  @data=
+   {:version=>6,
+    :id=>38,
+    :status=>"Filled",
+    :filled=>20000,
+    :remaining=>0,
+    :average_fill_price=>1.3292,
+    :perm_id=>300145671,
+    :parent_id=>0,
+    :last_fill_price=>1.3292,
+    :client_id=>1111,
+    :why_held=>""},
+  @socket=nil>]
+
