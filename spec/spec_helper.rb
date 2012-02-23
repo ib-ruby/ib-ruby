@@ -11,7 +11,7 @@ RSpec.configure do |config|
 end
 
 puts
-puts 'WARNING: MAKE SURE TO RUN ALL YOUR TESTS AGAINST IB PAPER ACCOUNT!'
+puts 'WARNING: MAKE SURE TO RUN ALL YOUR TESTS AGAINST IB PAPER ACCOUNT ONLY!'
 puts 'WARNING: FINANCIAL LOSSES MAY RESULT IF YOU RUN TESTS WITH REAL IB ACCOUNT!'
 puts 'WARNING: YOU HAVE BEEN WARNED!'
 puts
@@ -20,7 +20,7 @@ puts
 
 # Please uncomment next line if you are REALLY sure you have properly configured
 # Connection to IB PAPER ACCOUNT or mock (Brokertron) account
-exit
+#exit
 
 SILENT = false #true
 
@@ -32,7 +32,7 @@ CONNECTION_OPTS = BROKERTRON ?
      :port=> 10501
     } :
     {:client_id => 1111,
-     :host => '127.0.0.1',
+     :host => '10.211.55.2', # localhost?
      :port=> 4001
     }
 
