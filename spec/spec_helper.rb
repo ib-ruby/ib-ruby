@@ -10,6 +10,8 @@ RSpec.configure do |config|
   # config.mock_with :rr
 end
 
+SILENT = true
+
 BROKERTRON = false
 
 CONNECTION_OPTS = BROKERTRON ?

@@ -64,11 +64,14 @@ def connect_and_receive *message_types
   @ib.start_reader
 end
 
+# Clear logs and message collector. Output may be silenced
 def clean_connection
-  puts @received.map { |type, msg| [" #{type}:", msg.map(&:to_human)] }
-  puts " Logs:"
-  puts log_entries
-  @stdout.string = '' if  @stdout
+  unless SILENT
+    puts @received.map { |type, msg| [" #{type}:", msg.map(&:to_human)] }
+    puts " Logs:"
+    puts log_entries
+  end
+  @stdout.string = '' if @stdout
   @received.clear if @received
 end
 
