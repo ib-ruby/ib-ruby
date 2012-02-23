@@ -99,7 +99,7 @@ describe IB::Models::Contract do
       x.sec_type.should == IB::SECURITY_TYPES[:stock]
       x.expiry.should == '200609'
       x.strike.should == 1234
-      x.right.should == "put"
+      x.right.should == "PUT"
       x.multiplier.should == 123
       x.exchange.should == "SMART"
       x.currency.should == "USD"

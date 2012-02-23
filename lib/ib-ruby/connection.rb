@@ -200,14 +200,14 @@ module IB
     # Assigns client_id and order_id fields to placed order.
     # Returns order_id.
     def place_order order, contract
-      @next_order_id += 1
       send_message :PlaceOrder,
                    :order => order,
                    :contract => contract,
                    :id => @next_order_id
       order.client_id = @server[:client_id]
       order.order_id = @next_order_id
-      @next_order_id
+      @next_order_id += 1
+      order.order_id
     end
 
     # Cancel Orders by their id (convenience wrapper for message :CancelOrder).

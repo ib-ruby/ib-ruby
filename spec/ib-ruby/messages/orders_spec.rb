@@ -5,12 +5,12 @@ describe IB::Messages do
   context "Orders", :connected => true do
 
     before(:all) do
-      @wfc = IB::Symbols::Stocks[:wfc]
       @eur = IB::Symbols::Forex[:eurusd]
       @eur_order = IB::Models::Order.new :total_quantity => 20000,
                                          :limit_price => 1,
                                          :action => 'SELL',
                                          :order_type => 'LMT'
+      @wfc = IB::Symbols::Stocks[:wfc]
       @wfc_order = IB::Models::Order.new :total_quantity => 100,
                                          :action => 'BUY',
                                          :order_type => 'LMT'
@@ -40,7 +40,7 @@ describe IB::Messages do
       end
 
       it 'still changes client`s next_order_id' do
-        @ib.next_order_id.should == @order_id_placed
+        @order_id_placed = @order_id_before
         @ib.next_order_id.should == @order_id_before + 1
       end
 
@@ -78,7 +78,7 @@ describe IB::Messages do
         after(:all) { clean_connection } # Clear logs and message collector
 
         it 'changes client`s next_order_id' do
-          @ib.next_order_id.should == @order_id_placed
+          @order_id_placed = @order_id_before
           @ib.next_order_id.should == @order_id_before + 1
         end
 
@@ -153,15 +153,17 @@ describe IB::Messages do
         end
       end # Placing
 
-      context "Cancelling" do
+      context "Cancelling placed order" do
         before(:all) do
           @ib.cancel_order @order_id_placed
 
           wait_for(2) { received?(:OrderStatus) && received?(:Alert) }
         end
 
+        after(:all) { clean_connection } # Clear logs and message collector
+
         it 'does not increase client`s next_order_id further' do
-          @ib.next_order_id.should == @order_id_placed
+          @ib.next_order_id.should == @order_id_before + 1
         end
 
         it { @received[:OrderStatus].should have_exactly(1).status_message }
@@ -182,6 +184,32 @@ describe IB::Messages do
           msg.average_fill_price.should == 0
           msg.last_fill_price.should == 0
           msg.why_held.should == ''
+        end
+
+        it 'receives Order cancelled Alert' do
+          alert = @received[:Alert].first
+          alert.should be_an IB::Messages::Incoming::Alert
+          alert.message.should =~ /Order Canceled - reason:/
+        end
+      end # Cancelling
+
+      context "Cancelling wrong order" do
+        before(:all) do
+          @ib.cancel_order rand(99999999)
+
+          wait_for(2) { received?(:Alert) }
+        end
+
+        it { @received[:Alert].should have_exactly(1).alert_message }
+
+        it 'does not increase client`s next_order_id further' do
+          @ib.next_order_id.should == @order_id_before + 1
+        end
+
+        it 'receives unable to find Order Alert' do
+          alert = @received[:Alert].first
+          alert.should be_an IB::Messages::Incoming::Alert
+          alert.message.should =~ /Can't find order with id =/
         end
       end # Cancelling
     end # Off-market order
