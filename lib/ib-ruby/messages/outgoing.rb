@@ -11,12 +11,21 @@ module IB
 
       class AbstractMessage
         # Class methods
+        def self.version # Per class, every Outgoing message has the same version
+          @version
+        end
+
         def self.message_id
           @message_id
         end
 
-        def self.version
-          @version
+        # Returns message type Symbol (e.g. :OpenOrderEnd)
+        def self.message_type
+          to_s.split(/::/).last.to_sym
+        end
+
+        def message_type
+          self.class.message_type
         end
 
         attr_reader :created_at, :data

@@ -2,11 +2,6 @@ require 'spec_helper'
 require 'thread'
 require 'stringio'
 
-# Given an IB message, retuns its type Symbol (e.g. :OpenOrderEnd)
-def message_type msg
-  msg.class.to_s.split(/::/).last.to_sym
-end
-
 def print_subject
   it 'prints out message' do
     p subject
@@ -58,7 +53,7 @@ def connect_and_receive *message_types
   @received = Hash.new { |hash, key| hash[key] = Array.new }
 
   # Catch all messages of given types and put them inside @received Hash
-  @ib.subscribe(*message_types) { |msg| @received[message_type(msg)] << msg }
+  @ib.subscribe(*message_types) { |msg| @received[msg.message_type] << msg }
 
   @ib.connect
   @ib.start_reader
@@ -90,7 +85,7 @@ def received? symbol
   not @received[symbol].empty?
 end
 
-# Make sure tests are run against the pre-configured PAPER ACCOUNT
+# Make sure integration tests are only run against the pre-configured PAPER ACCOUNT
 def verify_account
   account = CONNECTION_OPTS[:account] || CONNECTION_OPTS[:account_name]
   raise "Please configure IB PAPER ACCOUNT in spec/spec_helper.rb" unless account

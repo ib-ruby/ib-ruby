@@ -24,16 +24,31 @@ module IB
       #
       # Override the load(socket) method in your subclass to do actual reading into @data.
       class AbstractMessage
-        attr_accessor :created_at, :data
 
         def self.inherited(by)
           super(by)
           Classes.push(by)
         end
 
+        # Class methods
         def self.message_id
           @message_id
         end
+
+        # Returns message type Symbol (e.g. :OpenOrderEnd)
+        def self.message_type
+          to_s.split(/::/).last.to_sym
+        end
+
+        def message_type
+          self.class.message_type
+        end
+
+        def version # Per message, received messages may have the different versions
+          @data[:version]
+        end
+
+        attr_accessor :created_at, :data
 
         def initialize socket
           raise Exception.new("Don't use AbstractMessage directly; use the subclass for your specific message type") if self.class.name == "AbstractMessage"
@@ -534,9 +549,9 @@ module IB
           @order.init_margin = @socket.read_string
           @order.maint_margin = @socket.read_string
           @order.equity_with_loan = @socket.read_string
-          @order.commission = @socket.read_decimal_max       # May be nil!
-          @order.min_commission = @socket.read_decimal_max   # May be nil!
-          @order.max_commission = @socket.read_decimal_max   # May be nil!
+          @order.commission = @socket.read_decimal_max # May be nil!
+          @order.min_commission = @socket.read_decimal_max # May be nil!
+          @order.max_commission = @socket.read_decimal_max # May be nil!
           @order.commission_currency = @socket.read_string
           @order.warning_text = @socket.read_string
         end
