@@ -1,3 +1,5 @@
+require 'ib-ruby/messages/abstract_message'
+
 # EClientSocket.java uses sendMax() rather than send() for a number of these.
 # It sends an EOL rather than a number if the value == Integer.MAX_VALUE (or Double.MAX_VALUE).
 # These fields are initialized to this MAX_VALUE.
@@ -8,56 +10,13 @@
 module IB
   module Messages
     module Outgoing
+      extend Messages # def_message macros
 
-      # This is a basic generic message sent to server.
-      #
-      # Class variables:
-      # @message_id - int: message id.
-      # @message_type - Symbol: message type (e.g. :OpenOrderEnd)
-      # @version - int: current version of message format.
-      #
-      # Instance attributes (at least):
-      # @data - Hash of actual data to be sent to server.
-      #
-      # Override the encode method in your subclass to do make Array of actual
-      # values to be sent to server via socket.
-      class AbstractMessage
-        # Class methods
-        def self.data_map # Data keys (with types?)
-          @data_map ||= []
-        end
+      class AbstractMessage < IB::Messages::AbstractMessage
 
-        def self.version # Per class, every Outgoing message has the same version
-          @version
-        end
-
-        def self.message_id
-          @message_id
-        end
-
-        # Returns message type Symbol (e.g. :OpenOrderEnd)
-        def self.message_type
-          to_s.split(/::/).last.to_sym
-        end
-
-        def message_id
-          self.class.message_id
-        end
-
-        def message_type
-          self.class.message_type
-        end
-
-        attr_reader :created_at, :data
-
-        # data is a Hash
         def initialize data={}
           @data = data
           @created_at = Time.now
-        end
-
-        def to_human
-          self.inspect
         end
 
         # This causes the message to send itself over the server socket in server[:socket].
@@ -90,21 +49,6 @@ module IB
           ].flatten
         end
       end # AbstractMessage
-
-      # Macro that defines short message classes using a one-liner
-      def self.def_message id_version, *data_map, &to_human
-        Class.new(AbstractMessage) do
-          @message_id, @version = id_version
-          @version ||= 1
-          @data_map = data_map
-
-          @data_map.each do |(name, type)|
-            define_method(name) { @data[name] }
-          end
-
-          define_method(:to_human, &to_human) if to_human
-        end
-      end
 
       ### Defining (short) Outgoing Message classes for IB:
 

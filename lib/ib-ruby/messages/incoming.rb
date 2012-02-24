@@ -1,3 +1,5 @@
+require 'ib-ruby/messages/abstract_message'
+
 # EClientSocket.java uses sendMax() rather than send() for a number of these.
 # It sends an EOL rather than a number if the value == Integer.MAX_VALUE (or Double.MAX_VALUE).
 # These fields are initialized to this MAX_VALUE.
@@ -11,57 +13,20 @@ module IB
 
     # Incoming IB messages
     module Incoming
+      extend Messages # def_message macros
+
       Classes = Array.new
 
-      # This is just a basic generic message from the server.
-      #
-      # Class variables:
-      # @message_id - int: message id.
-      # @message_type - Symbol: message type (e.g. :OpenOrderEnd)
-      #
-      # Instance attributes (at least):
-      # version - int: current version of message format.
-      # @data - Hash of actual data read from a stream.
-      #
-      # Override the load(socket) method in your subclass to do actual reading into @data.
-      class AbstractMessage
+      class AbstractMessage < IB::Messages::AbstractMessage
 
         def self.inherited(by)
           super(by)
           Classes.push(by)
         end
 
-        # Class methods
-        def self.data_map # Data keys (with types?)
-          @data_map ||= []
-        end
-
-        def self.version # Per class, minimum message version supported
-          @version || 1
-        end
-
-        def self.message_id
-          @message_id
-        end
-
-        # Returns message type Symbol (e.g. :OpenOrderEnd)
-        def self.message_type
-          to_s.split(/::/).last.to_sym
-        end
-
-        def message_id
-          self.class.message_id
-        end
-
-        def message_type
-          self.class.message_type
-        end
-
         def version # Per message, received messages may have the different versions
           @data[:version]
         end
-
-        attr_accessor :created_at, :data
 
         # Read incoming message from given socket or instantiate with given data
         def initialize socket_or_data
@@ -76,33 +41,29 @@ module IB
           end
         end
 
-        def to_human
-          self.inspect
-        end
-
-        # Object#id is always defined, we cannot rely on method_missing
-        def id
-          @data.has_key?(:id) ? @data[:id] : super
-        end
-
-        def respond_to? method
-          getter = method.to_s.sub(/=$/, '').to_sym
-          @data.has_key?(method) || @data.has_key?(getter) || super
-        end
-
-        protected
-
-        # TODO: method compilation instead of method_missing
-        def method_missing method, *args
-          getter = method.to_s.sub(/=$/, '').to_sym
-          if @data.has_key? method
-            @data[method]
-          elsif @data.has_key? getter
-            @data[getter] = *args
-          else
-            super method, *args
-          end
-        end
+        ## Object#id is always defined, we cannot rely on method_missing
+        #def id
+        #  @data.has_key?(:id) ? @data[:id] : super
+        #end
+        #
+        #def respond_to? method
+        #  getter = method.to_s.sub(/=$/, '').to_sym
+        #  @data.has_key?(method) || @data.has_key?(getter) || super
+        #end
+        #
+        #protected
+        #
+        ## TODO: method compilation instead of method_missing
+        #def method_missing method, *args
+        #  getter = method.to_s.sub(/=$/, '').to_sym
+        #  if @data.has_key? method
+        #    @data[method]
+        #  elsif @data.has_key? getter
+        #    @data[getter] = *args
+        #  else
+        #    super method, *args
+        #  end
+        #end
 
         # Every message loads received message version first
         def load
@@ -138,22 +99,6 @@ module IB
               @data.map do |key, value|
                 " #{key} #{value}" unless [:version, :id, :tick_type].include?(key)
               end.compact.join(',') + " >"
-        end
-      end
-
-      # Macro that defines short message classes using a one-liner
-      def self.def_message id_version, *data_map, &to_human
-        base = data_map.first.is_a?(Class) ? data_map.shift : AbstractMessage
-        Class.new(base) do
-          @message_id, @version = id_version
-          @version ||= 1
-          @data_map = data_map
-
-          @data_map.each do |(name, type)|
-            define_method(name) { @data[name] }
-          end
-
-          define_method(:to_human, &to_human) if to_human
         end
       end
 
