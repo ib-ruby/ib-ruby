@@ -10,14 +10,6 @@ RSpec.configure do |config|
   # config.mock_with :rr
 end
 
-puts
-puts 'WARNING: MAKE SURE TO RUN ALL YOUR TESTS AGAINST IB PAPER ACCOUNT ONLY!'
-puts 'WARNING: FINANCIAL LOSSES MAY RESULT IF YOU RUN TESTS WITH REAL IB ACCOUNT!'
-puts 'WARNING: YOU HAVE BEEN WARNED!'
-puts
-puts 'Configure your connection to IB PAPER ACCOUNT in spec/spec_helper.rb'
-puts
-
 SILENT = false #true
 
 BROKERTRON = false

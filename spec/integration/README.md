@@ -1,6 +1,6 @@
 # WRITING MESSAGE SPECS
 
-Pattern for writing message specs is like this:
+Pattern for writing integration specs is like this:
 
 1. You indicate your interest in some message types by calling 'connect_and_receive'
    in a top-level before(:all) block. All messages of given types will be caught

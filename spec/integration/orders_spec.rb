@@ -1,4 +1,4 @@
-require 'message_helper'
+require 'integration_helper'
 
 describe IB::Messages do
 
