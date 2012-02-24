@@ -23,11 +23,7 @@ module IB
         end
 
         def to_human
-          "<Bag: " + [symbol, exchange, currency].join(" ") + " legs: " +
-              (@legs_description ||
-                  @legs.map do |leg|
-                    "#{leg.action} #{leg.ratio} * #{leg.con_id}"
-                  end.join('|')) + ">"
+          "<Bag: #{[symbol, exchange, currency].join(' ')} legs: #{legs_description} >"
         end
 
       end # class Bag
