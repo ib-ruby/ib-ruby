@@ -28,7 +28,7 @@ describe IB::Messages do
         it { should_not be_error }
         its(:code) { should be_an Integer }
         its(:message) { should =~ /Market data farm connection is OK/ }
-        its(:to_human) { should =~ /TWS Warning Message/ }
+        its(:to_human) { should =~ /TWS Warning/ }
       end
 
       context "received :TickPrice message" do
@@ -40,7 +40,7 @@ describe IB::Messages do
         its(:price) { should be_a Float }
         its(:size) { should be_an Integer }
         its(:data) { should be_a Hash }
-        its(:id) { should == 456 } # ticker_id
+        its(:ticker_id) { should == 456 } # ticker_id
         its(:to_human) { should =~ /TickPrice/ }
       end
 
@@ -53,7 +53,7 @@ describe IB::Messages do
         its(:tick_type) { should be_an Integer }
         its(:type) { should be_a Symbol }
         its(:size) { should be_an Integer }
-        its(:id) { should == 456 }
+        its(:ticker_id) { should == 456 }
         its(:to_human) { should =~ /TickSize/ }
       end
     end # when subscribed to :Tick... messages

@@ -40,7 +40,16 @@ describe IB::Messages do
       it { should_not be_error }
       its(:code) { should be_a Integer }
       its(:message) { should =~ /Market data farm connection is OK/ }
-      its(:to_human) { should =~ /TWS Warning Message/ }
+      its(:to_human) { should =~ /TWS Warning / }
+    end
+
+    context "received :AccountUpdateTime message" do
+      subject { @received[:AccountUpdateTime].first }
+
+      it { should be_an IB::Messages::Incoming::AccountUpdateTime }
+      its(:data) { should be_a Hash }
+      its(:time_stamp) { should =~ /\d\d:\d\d/ }
+      its(:to_human) { should =~ /AccountUpdateTime/ }
     end
 
     context "received :AccountValue message" do
@@ -54,15 +63,6 @@ describe IB::Messages do
       its(:value) { should be_a String }
       its(:currency) { should be_a String }
       its(:to_human) { should =~ /AccountValue/ }
-    end
-
-    context "received :AccountDownloadEnd message" do
-      subject { @received[:AccountDownloadEnd].first }
-
-      it { should be_an IB::Messages::Incoming::AccountDownloadEnd }
-      its(:data) { should be_a Hash }
-      its(:account_name) { should =~ /\w\d/ }
-      its(:to_human) { should =~ /AccountDownloadEnd/ }
     end
 
     context "received :PortfolioValue message" do
@@ -79,6 +79,15 @@ describe IB::Messages do
       its(:realized_pnl) { should be_a Float }
       its(:account_name) { should =~ /\w\d/ }
       its(:to_human) { should =~ /PortfolioValue/ }
+    end
+
+    context "received :AccountDownloadEnd message" do
+      subject { @received[:AccountDownloadEnd].first }
+
+      it { should be_an IB::Messages::Incoming::AccountDownloadEnd }
+      its(:data) { should be_a Hash }
+      its(:account_name) { should =~ /\w\d/ }
+      its(:to_human) { should =~ /AccountDownloadEnd/ }
     end
   end # Request Account Data
 end # describe IB::Messages::Incomming

@@ -11,7 +11,7 @@ shared_examples_for 'Alert message' do
   its(:id) { should == -1 }
   its(:code) { should == 2104 }
   its(:message) { should =~ /Market data farm connection is OK/ }
-  its(:to_human) { should =~ /TWS Warning Message/ }
+  its(:to_human) { should =~ /TWS Warning/ }
 
   it 'has class accessors as well' do
     subject.class.message_id.should == 4
