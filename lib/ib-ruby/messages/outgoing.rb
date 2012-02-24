@@ -23,6 +23,10 @@ module IB
       # values to be sent to server via socket.
       class AbstractMessage
         # Class methods
+        def self.data_map # Data keys (with types?)
+          @data_map ||= []
+        end
+
         def self.version # Per class, every Outgoing message has the same version
           @version
         end
@@ -81,24 +85,24 @@ module IB
         def encode
           [self.class.message_id,
            self.class.version,
-           @data[:id] || []]
+           @data[:id] || [],
+           self.class.data_map.map { |key| @data[key] }
+          ].flatten
         end
       end # AbstractMessage
 
       # Macro that defines short message classes using a one-liner
-      def self.def_message message_id, version=1, *keys
+      def self.def_message id_version, *data_map, &to_human
         Class.new(AbstractMessage) do
-          @message_id = message_id
-          @version = version
+          @message_id, @version = id_version
+          @version ||= 1
+          @data_map = data_map
 
-          define_method :encode do
-            [super(), keys.map { |key| @data[key] }]
-          end unless keys.empty?
-
-          keys.each do |(name, type)|
+          @data_map.each do |(name, type)|
             define_method(name) { @data[name] }
           end
 
+          define_method(:to_human, &to_human) if to_human
         end
       end
 
@@ -135,31 +139,29 @@ module IB
 
       ## Data format is: @data = { :id => request_id }
       CancelFundamentalData = def_message 53
-      CancelImpliedVolatility = def_message 56
-      CancelCalculateImpliedVolatility = CancelImpliedVolatility
-      CancelOptionPrice = def_message 57
-      CancelCalculateOptionPrice = CancelOptionPrice
+
+      CancelCalculateImpliedVolatility = CancelImpliedVolatility = def_message(56)
+      CancelCalculateOptionPrice = CancelOptionPrice = def_message(57)
 
       ## Data format is: @data ={ :id => order-id-to-cancel }
       CancelOrder = def_message 4
 
       ## These messages contain just one or two keys, shown in the end of definition
       # @data = { :number_of_ids => int }
-      RequestIds = def_message 8, 1, :number_of_ids
+      RequestIds = def_message 8, :number_of_ids
       # data = { :all_messages => boolean }
-      RequestNewsBulletins = def_message 12, 1, :all_messages
+      RequestNewsBulletins = def_message 12, :all_messages
       # data = { :log_level => int }
-      SetServerLoglevel = def_message 14, 1, :log_level
+      SetServerLoglevel = def_message 14, :log_level
       # data = { :auto_bind => boolean }
-      RequestAutoOpenOrders = def_message 15, 1, :auto_bind
+      RequestAutoOpenOrders = def_message 15, :auto_bind
       # data = { :fa_data_type => int }
-      RequestFA = def_message 18, 1, :fa_data_type
+      RequestFA = def_message 18, :fa_data_type
       # data = { :fa_data_type => int, :xml => String }
-      ReplaceFA = def_message 19, 1, :fa_data_type, :xml
+      ReplaceFA = def_message 19, :fa_data_type, :xml
       # @data = { :subscribe => boolean,
       #           :account_code => Advisor accounts only. Empty ('') for a standard account. }
-      RequestAccountData = def_message 6, 2, :subscribe, :account_code
-      RequestAccountUpdates = RequestAccountData
+      RequestAccountUpdates = RequestAccountData = def_message([6, 2], :subscribe, :account_code)
 
 
       ### Defining (complex) Outgoing Message classes for IB:
@@ -234,7 +236,7 @@ module IB
            @data[:average_option_volume_above] || EOL, # ?
            @data[:scanner_setting_pairs],
            @data[:stock_type_filter]
-          ]
+          ].flatten
         end
       end # RequestScannerSubscription
 
@@ -277,7 +279,7 @@ module IB
            @data[:contract].serialize_legs,
            @data[:contract].serialize_under_comp,
            tick_list,
-           @data[:snapshot] || false]
+           @data[:snapshot] || false].flatten
         end
       end # RequestMarketData
 
@@ -378,7 +380,7 @@ module IB
            @data[:use_rth],
            data_type.to_s.upcase,
            @data[:format_date],
-           contract.serialize_legs]
+           contract.serialize_legs].flatten
         end
       end # RequestHistoricalData
 
@@ -400,6 +402,7 @@ module IB
       #                     outside of them.
       class RequestRealTimeBars < AbstractMessage
         @message_id = 50
+        @version = 1 # ?
 
         def encode
           data_type = DATA_TYPES[@data[:what_to_show]] || @data[:what_to_show]
@@ -419,7 +422,7 @@ module IB
            contract.serialize_long,
            bar_size,
            data_type.to_s.upcase,
-           @data[:use_rth]]
+           @data[:use_rth]].flatten
         end
       end # RequestRealTimeBars
 
@@ -443,7 +446,7 @@ module IB
         def encode
           [super,
            @data[:contract].serialize_short,
-           @data[:num_rows]]
+           @data[:num_rows]].flatten
         end
       end # RequestMarketDepth
 
@@ -464,6 +467,7 @@ module IB
       #       }
       class ExerciseOptions < AbstractMessage
         @message_id = 21
+        @version = 1
 
         def encode
           [super,
@@ -471,7 +475,7 @@ module IB
            @data[:exercise_action],
            @data[:exercise_quantity],
            @data[:account],
-           @data[:override]]
+           @data[:override]].flatten
         end
       end # ExerciseOptions
 
@@ -484,7 +488,7 @@ module IB
 
         def encode
           [super,
-           @data[:order].serialize_with(@data[:contract])]
+           @data[:order].serialize_with(@data[:contract])].flatten
         end
       end # PlaceOrder
 
@@ -502,7 +506,7 @@ module IB
       #        :side =>  Filter the results based on the order action: BUY/SELL/SSHORT
       class RequestExecutions < AbstractMessage
         @message_id = 7
-        @version = 3
+        @version = 1
 
         def encode
           [super,
@@ -512,7 +516,7 @@ module IB
            @data[:symbol],
            @data[:sec_type],
            @data[:exchange],
-           @data[:side]]
+           @data[:side]].flatten
         end
       end # RequestExecutions
 
@@ -525,12 +529,13 @@ module IB
       #                          'Estimates', 'Financial Statements', 'Summary'   }
       class RequestFundamentalData < AbstractMessage
         @message_id = 52
+        @version = 1
 
         def encode
           [super,
            @data[:request_id],
            @data[:contract].serialize(:primary_exchange), # Minimal serialization set
-           @data[:report_type]]
+           @data[:report_type]].flatten
         end
       end # RequestFundamentalData
 
@@ -538,13 +543,14 @@ module IB
       #          :option_price => double, :under_price => double }
       class RequestImpliedVolatility < AbstractMessage
         @message_id = 54
+        @version = 1
 
         def encode
           [super,
            @data[:request_id],
            @data[:contract].serialize_long(:con_id),
            @data[:option_price],
-           @data[:under_price]]
+           @data[:under_price]].flatten
         end
       end # RequestImpliedVolatility
       CalculateImpliedVolatility = RequestImpliedVolatility
@@ -554,13 +560,14 @@ module IB
       #          :volatility => double, :under_price => double }
       class RequestOptionPrice < AbstractMessage
         @message_id = 55
+        @version = 1
 
         def encode
           [super,
            @data[:request_id],
            @data[:contract].serialize_long(:con_id),
            @data[:volatility],
-           @data[:under_price]]
+           @data[:under_price]].flatten
         end
       end # RequestOptionPrice
       CalculateOptionPrice = RequestOptionPrice

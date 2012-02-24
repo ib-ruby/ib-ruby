@@ -29,4 +29,4 @@ describe IB::Messages::Outgoing do
     end
 
   end
-end # describe IB::Messages:Incoming
+end # describe IB::Messages:Outgoing
