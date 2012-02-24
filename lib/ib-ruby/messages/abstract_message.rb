@@ -51,7 +51,10 @@ module IB
       attr_accessor :created_at, :data
 
       def to_human
-        self.inspect
+        "<#{self.message_type}:" +
+            @data.map do |key, value|
+              " #{key} #{value}" unless [:version].include?(key)
+            end.compact.join(',') + " >"
       end
 
     end # class AbstractMessage
@@ -64,8 +67,10 @@ module IB
         @version ||= 1
         @data_map = data_map
 
-        @data_map.each do |(name, type)|
+        @data_map.each do |(m1, m2, m3)|
+          group, name = m3 ? [m1, m2] : [nil, m1]
           define_method(name) { @data[name] }
+          attr_reader group if group
         end
 
         define_method(:to_human, &to_human) if to_human

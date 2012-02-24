@@ -47,6 +47,20 @@ module IB
       #  str.nil? || str.empty? ? nil : str.to_d
       str.to_f unless str.nil? || str.empty? || str.to_f > 1.797 * 10.0 ** 306
     end
+
+
+    # If received decimal is below limit ("not yet computed"), return nil
+    def read_decimal_limit limit = -1
+      value = self.read_decimal
+      # limit is the "not yet computed" indicator
+      value <= limit ? nil : value
+    end
+
+    alias read_decimal_limit_1 read_decimal_limit
+
+    def read_decimal_limit_2
+      read_decimal_limit -2
+    end
   end # class IBSocket
 
 end # module IB
