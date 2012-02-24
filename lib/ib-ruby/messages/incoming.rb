@@ -32,6 +32,14 @@ module IB
         end
 
         # Class methods
+        def self.data_map # Data keys (with types?)
+          @data_map ||= []
+        end
+
+        def self.version # Per class, minimum message version supported
+          @version || 1
+        end
+
         def self.message_id
           @message_id
         end
@@ -99,6 +107,12 @@ module IB
         # Every message loads received message version first
         def load
           @data[:version] = @socket.read_int
+
+          if @data[:version] != self.class.version
+            raise "Unsupported version #{@data[:version]} of #{self.class} received"
+          end
+
+          load_map *self.class.data_map
         end
 
         # Load @data from the socket according to the given map.
@@ -108,7 +122,8 @@ module IB
         # [:version, :int ] is loaded first, by default
         #
         def load_map(*map)
-          map.each { |(name, type)| @data[name] = @socket.__send__("read_#{type}") }
+          map.each { |(name, type)|
+            @data[name] = @socket.__send__("read_#{type}") }
         end
       end # class AbstractMessage
 
@@ -127,17 +142,14 @@ module IB
       end
 
       # Macro that defines short message classes using a one-liner
-      def self.def_message message_id, *keys, &to_human
-        base = keys.first.is_a?(Class) ? keys.shift : AbstractMessage
+      def self.def_message id_version, *data_map, &to_human
+        base = data_map.first.is_a?(Class) ? data_map.shift : AbstractMessage
         Class.new(base) do
-          @message_id = message_id
+          @message_id, @version = id_version
+          @version ||= 1
+          @data_map = data_map
 
-          define_method(:load) do
-            super()
-            load_map *keys
-          end
-
-          keys.each do |(name, type)|
+          @data_map.each do |(name, type)|
             define_method(name) { @data[name] }
           end
 
@@ -173,7 +185,7 @@ module IB
       #   the order is inactive due to system, exchange or other issues.
       # :why_held - This field is used to identify an order held when TWS is trying to
       #      locate shares for a short sell. The value used to indicate this is 'locate'.
-      OrderStatus = def_message 3, [:id, :int],
+      OrderStatus = def_message [3, 6], [:id, :int],
                                 [:status, :string],
                                 [:filled, :int],
                                 [:remaining, :int],
@@ -191,7 +203,7 @@ module IB
       end
 
 
-      AccountValue = def_message(6, [:key, :string],
+      AccountValue = def_message([6, 2], [:key, :string],
                                  [:value, :string],
                                  [:currency, :string],
                                  [:account_name, :string]) do
@@ -297,14 +309,14 @@ module IB
       # IB then emits at most 2 events on eWrapper:
       #          tickPrice( tickerId, tickType, price, canAutoExecute)
       #          tickSize( tickerId, sizeTickType, size)
-      TickPrice = def_message 1, AbstractTick,
+      TickPrice = def_message [1, 6], AbstractTick,
                               [:id, :int], # ticker_id
                               [:tick_type, :int],
                               [:price, :decimal],
                               [:size, :int],
                               [:can_auto_execute, :int]
 
-      TickSize = def_message 2, AbstractTick,
+      TickSize = def_message [2, 6], AbstractTick,
                              [:id, :int], # ticker_id
                              [:tick_type, :int],
                              [:size, :int]
@@ -346,6 +358,7 @@ module IB
       #    :under_price - The price of the underlying.
       class TickOption < AbstractTick
         @message_id = 21
+        @version = 6
 
         # Read @data[key] if it was computed (received value above limit)
         # Leave @data[key] nil if received value below limit ("not yet computed")
@@ -420,7 +433,7 @@ module IB
       # Called Error in Java code, but in fact this type of messages also
       # deliver system alerts and additional (non-error) info from TWS.
       # It has additional accessors: #code and #message, derived from @data
-      Alert = def_message 4, [:id, :int], [:code, :int], [:message, :string]
+      Alert = def_message [4, 2], [:id, :int], [:code, :int], [:message, :string]
       class Alert
         # Is it an Error message?
         def error?
@@ -447,6 +460,7 @@ module IB
 
       class OpenOrder < AbstractMessage
         @message_id = 5
+        @version = 23
 
         # TODO: Add id accessor to unify with OrderStatus message
         attr_accessor :order, :contract
@@ -574,6 +588,7 @@ module IB
 
       class PortfolioValue < AbstractMessage
         @message_id = 7
+        @version = 7
 
         attr_accessor :contract
 
@@ -609,6 +624,7 @@ module IB
 
       class ContractData < AbstractMessage
         @message_id = 10
+        @version = 6
 
         attr_accessor :contract
 
@@ -651,6 +667,7 @@ module IB
 
       class ExecutionData < AbstractMessage
         @message_id = 11
+        @version = 7
 
         attr_accessor :contract, :execution
 
@@ -711,6 +728,7 @@ module IB
       #    :has_gaps - Whether or not there are gaps in the data.
       class HistoricalData < AbstractMessage
         @message_id = 17
+        @version = 3
 
         def load
           super
@@ -739,6 +757,7 @@ module IB
 
       class BondContractData < AbstractMessage
         @message_id = 18
+        @version = 4
 
         attr_accessor :contract
 
@@ -789,6 +808,7 @@ module IB
       #            :legs - Describes combo legs when scan is returning EFP.
       class ScannerData < AbstractMessage
         @message_id = 20
+        @version = 3
 
         def load
           super
