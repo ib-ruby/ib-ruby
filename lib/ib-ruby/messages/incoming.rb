@@ -17,9 +17,10 @@ module IB
       #
       # Class variables:
       # @message_id - int: message id.
-      # @version - int: current version of message format.
+      # @message_type - Symbol: message type (e.g. :OpenOrderEnd)
       #
       # Instance attributes (at least):
+      # version - int: current version of message format.
       # @data - Hash of actual data read from a stream.
       #
       # Override the load(socket) method in your subclass to do actual reading into @data.
@@ -40,6 +41,10 @@ module IB
           to_s.split(/::/).last.to_sym
         end
 
+        def message_id
+          self.class.message_id
+        end
+
         def message_type
           self.class.message_type
         end
@@ -50,15 +55,17 @@ module IB
 
         attr_accessor :created_at, :data
 
-        def initialize socket
-          raise Exception.new("Don't use AbstractMessage directly; use the subclass for your specific message type") if self.class.name == "AbstractMessage"
+        # Read incoming message from given socket or instantiate with given data
+        def initialize socket_or_data
           @created_at = Time.now
-          @data = Hash.new
-          @socket = socket
-
-          self.load()
-
-          @socket = nil
+          if socket_or_data.is_a?(Hash)
+            @data = socket_or_data
+          else
+            @data = {}
+            @socket = socket_or_data
+            self.load
+            @socket = nil
+          end
         end
 
         def to_human
@@ -128,6 +135,10 @@ module IB
           define_method(:load) do
             super()
             load_map *keys
+          end
+
+          keys.each do |(name, type)|
+            define_method(name) { @data[name] }
           end
 
           define_method(:to_human, &to_human) if to_human

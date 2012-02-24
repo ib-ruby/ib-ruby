@@ -1,33 +1,52 @@
 require 'message_helper'
 
-describe IB::Messages do
+shared_examples_for 'Alert message' do
+  it { should be_an IB::Messages::Incoming::Alert }
+  it { should be_warning }
+  it { should_not be_error }
+  its(:message_type) { should == :Alert }
+  its(:message_id) { should == 4 }
+  its(:version) { should == 2 }
+  its(:data) { should == {:version=>2, :id=>-1, :code=>2104, :message=>"Market data farm connection is OK:cashfarm"}}
+  its(:id) { should == -1 }
+  its(:code) { should == 2104 }
+  its(:message) { should =~ /Market data farm connection is OK/ }
+  its(:to_human) { should =~ /TWS Warning Message/ }
 
-  context 'Normal message exchange at any connection', :connected => true do
+  it 'has class accessors as well' do
+    subject.class.message_id.should == 4
+    subject.class.message_type.should == :Alert
+  end
+end
+
+describe IB::Messages::Incoming do
+
+  context 'Newly instantiated Message' do
+
+    subject do
+      IB::Messages::Incoming::Alert.new(
+          :version => 2,
+          :id => -1,
+          :code => 2104,
+          :message => 'Market data farm connection is OK:cashfarm')
+    end
+
+    it_behaves_like 'Alert message'
+
+  end
+
+  context 'Message received from IB', :connected => true do
 
     before(:all) do
-      connect_and_receive :NextValidID, :OpenOrderEnd, :Alert
-      wait_for(2) { received? :OpenOrderEnd }
+      connect_and_receive :Alert
+      wait_for(2) { received? :Alert }
     end
 
     after(:all) { close_connection }
 
-    it 'receives :NextValidID message' do
-      @received[:NextValidID].should_not be_empty
-      @received[:NextValidID].first.should be_an IB::Messages::Incoming::NextValidID
-    end
+    subject { @received[:Alert].first }
 
-    it 'receives :OpenOrderEnd message' do
-      @received[:OpenOrderEnd].should_not be_empty
-      @received[:OpenOrderEnd].first.should be_an IB::Messages::Incoming::OpenOrderEnd
-    end
+    it_behaves_like 'Alert message'
 
-    it 'logs connection notification' do
-      should_log /Connected to server, version: 53, connection time/
-    end
-
-    it 'logs next valid order id' do
-      should_log /Got next valid order id/
-    end
-
-  end # Normal message exchange at any connection
-end # describe IB::Messages
+  end #
+end # describe IB::Messages:Incoming

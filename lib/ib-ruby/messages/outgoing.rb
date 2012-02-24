@@ -9,6 +9,18 @@ module IB
   module Messages
     module Outgoing
 
+      # This is a basic generic message sent to server.
+      #
+      # Class variables:
+      # @message_id - int: message id.
+      # @message_type - Symbol: message type (e.g. :OpenOrderEnd)
+      # @version - int: current version of message format.
+      #
+      # Instance attributes (at least):
+      # @data - Hash of actual data to be sent to server.
+      #
+      # Override the encode method in your subclass to do make Array of actual
+      # values to be sent to server via socket.
       class AbstractMessage
         # Class methods
         def self.version # Per class, every Outgoing message has the same version
@@ -24,6 +36,10 @@ module IB
           to_s.split(/::/).last.to_sym
         end
 
+        def message_id
+          self.class.message_id
+        end
+
         def message_type
           self.class.message_type
         end
@@ -31,7 +47,7 @@ module IB
         attr_reader :created_at, :data
 
         # data is a Hash
-        def initialize(data = {})
+        def initialize data={}
           @data = data
           @created_at = Time.now
         end
@@ -55,6 +71,7 @@ module IB
             datum = "1" if datum == true
             datum = "0" if datum == false
 
+            #p datum.to_s + EOL
             server[:socket].syswrite(datum.to_s + EOL)
           end
         end
@@ -77,6 +94,11 @@ module IB
           define_method :encode do
             [super(), keys.map { |key| @data[key] }]
           end unless keys.empty?
+
+          keys.each do |(name, type)|
+            define_method(name) { @data[name] }
+          end
+
         end
       end
 

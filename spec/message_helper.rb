@@ -84,22 +84,3 @@ end
 def received? symbol
   not @received[symbol].empty?
 end
-
-# Make sure integration tests are only run against the pre-configured PAPER ACCOUNT
-def verify_account
-  account = CONNECTION_OPTS[:account] || CONNECTION_OPTS[:account_name]
-  raise "Please configure IB PAPER ACCOUNT in spec/spec_helper.rb" unless account
-
-  connect_and_receive :AccountValue
-  @ib.send_message :RequestAccountData, :subscribe => true
-
-  wait_for { received? :AccountValue }
-  raise "Unable to verify IB PAPER ACCOUNT" unless received? :AccountValue
-
-  received = @received[:AccountValue].first.data[:account_name]
-  raise "Connected to wrong account #{received}, expected #{account}" if account != received
-
-  close_connection
-end
-
-verify_account
