@@ -42,7 +42,7 @@ describe IB::Messages do
                                          :order_type => 'LMT'
     end
 
-    context "Placing wrong order" do
+    context "Placing wrong order", :slow => true do
 
       before(:all) do
         connect_and_receive :NextValidID, :Alert, :OpenOrder, :OrderStatus

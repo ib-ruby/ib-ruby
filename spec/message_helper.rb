@@ -45,9 +45,9 @@ end
 def connect_and_receive *message_types
 
   # Start disconnected (we need to set up catch-all subscriber first)
-  @ib = IB::Connection.new CONNECTION_OPTS.merge(:connect => false,
-                                                 :reader => false,
-                                                 :logger => mock_logger)
+  @ib = IB::Connection.new OPTS[:connection].merge(:connect => false,
+                                                   :reader => false,
+                                                   :logger => mock_logger)
 
   # Hash of received messages, keyed by message type
   @received = Hash.new { |hash, key| hash[key] = Array.new }
@@ -61,7 +61,7 @@ end
 
 # Clear logs and message collector. Output may be silenced
 def clean_connection
-  unless SILENT
+  unless OPTS[:silent]
     puts @received.map { |type, msg| [" #{type}:", msg.map(&:to_human)] }
     puts " Logs:"
     puts log_entries

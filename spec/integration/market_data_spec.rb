@@ -13,7 +13,7 @@ describe IB::Messages do
         ##TODO consider a follow the sun market lookup for windening the types tested
         @ib.send_message :RequestMarketData, :id => 456,
                          :contract => IB::Symbols::Forex[:eurusd]
-        wait_for(5) { @received[:TickPrice].size > 3 && @received[:TickSize].size > 1 }
+        wait_for(3) { received? :TickPrice }
       end
 
       after(:all) do
@@ -35,7 +35,7 @@ describe IB::Messages do
       context "received :TickPrice message" do
         subject { @received[:TickPrice].first }
 
-        it { should be_an IB::Messages::Incoming::TickPrice}
+        it { should be_an IB::Messages::Incoming::TickPrice }
         its(:tick_type) { should be_an Integer }
         its(:type) { should be_a Symbol }
         its(:price) { should be_a Float }
@@ -45,7 +45,11 @@ describe IB::Messages do
         its(:to_human) { should =~ /TickPrice/ }
       end
 
-      context "received :TickSize message" do
+      context "received :TickSize message", :if => :forex_trading_hours do
+        before(:all) do
+          wait_for(3) { received? :TickSize }
+        end
+
         subject { @received[:TickSize].first }
 
         it { should be_an IB::Messages::Incoming::TickSize }
@@ -59,7 +63,7 @@ describe IB::Messages do
       end
     end # when subscribed to :Tick... messages
 
-    context 'when NOT subscribed to :Tick... messages' do
+    context 'when NOT subscribed to :Tick... messages', :slow => true do
 
       before(:all) do
         connect_and_receive :NextValidID
@@ -83,8 +87,11 @@ describe IB::Messages do
       end
 
       it "logs warning about unhandled :Tick... messages" do
-        should_log /No subscribers for message IB::Messages::Incoming::TickPrice/,
-                   /No subscribers for message IB::Messages::Incoming::TickSize/
+        should_log /No subscribers for message IB::Messages::Incoming::TickPrice/
+      end
+
+      it "logs warning about unhandled :Tick... messages", :if => :forex_trading_hours do
+        should_log /No subscribers for message IB::Messages::Incoming::TickSize/
       end
 
     end # NOT subscribed to :Tick... messages

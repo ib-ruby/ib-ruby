@@ -5,7 +5,7 @@ describe IB::Connection do
   context 'when connected to IB Gateway', :connected => true do
     # THIS depends on TWS|Gateway connectivity
     before(:all) do
-      @ib = IB::Connection.new CONNECTION_OPTS
+      @ib = IB::Connection.new OPTS[:connection]
       @ib.subscribe(:OpenOrderEnd) {}
     end
 
