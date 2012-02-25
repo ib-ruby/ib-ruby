@@ -16,9 +16,11 @@ describe IB::Messages do
   #
   # 4. When done, you call 'close_connection' in a top-level  after(:all) block.
 
-  context "Request Account Data", :connected => true do
+  context "Request Account Data", :connected => true, :integration => true do
 
     before(:all) do
+      verify_account
+
       connect_and_receive(:Alert, :AccountValue, :AccountDownloadEnd,
                           :PortfolioValue, :AccountUpdateTime)
 

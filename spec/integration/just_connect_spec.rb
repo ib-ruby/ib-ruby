@@ -2,9 +2,10 @@ require 'integration_helper'
 
 describe IB::Messages do
 
-  context 'Normal message exchange at any connection', :connected => true do
+  context 'Message exchange on connect', :connected => true, :integration => true do
 
     before(:all) do
+      verify_account
       connect_and_receive :NextValidID, :OpenOrderEnd, :Alert
       wait_for(2) { received? :OpenOrderEnd }
     end

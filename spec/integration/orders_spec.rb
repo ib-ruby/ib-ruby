@@ -26,9 +26,11 @@ end
 
 describe IB::Messages do
 
-  context "Orders", :connected => true do
+  context "Orders", :connected => true, :integration => true do
 
     before(:all) do
+      verify_account
+
       @eur = IB::Symbols::Forex[:eurusd]
       @eur_order = IB::Models::Order.new :total_quantity => 20000,
                                          :limit_price => 1,

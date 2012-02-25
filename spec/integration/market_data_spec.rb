@@ -2,11 +2,12 @@ require 'integration_helper'
 
 describe IB::Messages do
 
-  context 'Request Market Data', :connected => true do
+  context 'Request Market Data', :connected => true, :integration => true do
 
     context 'when subscribed to :Tick... messages' do
 
       before(:all) do
+        verify_account
         connect_and_receive :Alert, :TickPrice, :TickSize
 
         ##TODO consider a follow the sun market lookup for windening the types tested
