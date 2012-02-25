@@ -396,35 +396,35 @@ module IB
       end # PortfolioValue
 
       ContractDetails = ContractData =
-          def_message ([10, 6],
-                       [:request_id, :int], # request id
-                       [:contract, :symbol, :string],
-                       [:contract, :sec_type, :string],
-                       [:contract, :expiry, :string],
-                       [:contract, :strike, :decimal],
-                       [:contract, :right, :string],
-                       [:contract, :exchange, :string],
-                       [:contract, :currency, :string],
-                       [:contract, :local_symbol, :string],
+          def_message([10, 6],
+                      [:request_id, :int], # request id
+                      [:contract, :symbol, :string],
+                      [:contract, :sec_type, :string],
+                      [:contract, :expiry, :string],
+                      [:contract, :strike, :decimal],
+                      [:contract, :right, :string],
+                      [:contract, :exchange, :string],
+                      [:contract, :currency, :string],
+                      [:contract, :local_symbol, :string],
 
-                       [:contract, :market_name, :string], # extended
-                       [:contract, :trading_class, :string],
-                       [:contract, :con_id, :int],
-                       [:contract, :min_tick, :decimal],
-                       [:contract, :multiplier, :string],
-                       [:contract, :order_types, :string],
-                       [:contract, :valid_exchanges, :string],
-                       [:contract, :price_magnifier, :int],
-                       [:contract, :under_con_id, :int],
-                       [:contract, :long_name, :string],
-                       [:contract, :primary_exchange, :string],
-                       [:contract, :contract_month, :string],
-                       [:contract, :industry, :string],
-                       [:contract, :category, :string],
-                       [:contract, :subcategory, :string],
-                       [:contract, :time_zone, :string],
-                       [:contract, :trading_hours, :string],
-                       [:contract, :liquid_hours, :string])
+                      [:contract, :market_name, :string], # extended
+                      [:contract, :trading_class, :string],
+                      [:contract, :con_id, :int],
+                      [:contract, :min_tick, :decimal],
+                      [:contract, :multiplier, :string],
+                      [:contract, :order_types, :string],
+                      [:contract, :valid_exchanges, :string],
+                      [:contract, :price_magnifier, :int],
+                      [:contract, :under_con_id, :int],
+                      [:contract, :long_name, :string],
+                      [:contract, :primary_exchange, :string],
+                      [:contract, :contract_month, :string],
+                      [:contract, :industry, :string],
+                      [:contract, :category, :string],
+                      [:contract, :subcategory, :string],
+                      [:contract, :time_zone, :string],
+                      [:contract, :trading_hours, :string],
+                      [:contract, :liquid_hours, :string])
 
       class ContractData
         def load
