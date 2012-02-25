@@ -41,30 +41,6 @@ module IB
           end
         end
 
-        ## Object#id is always defined, we cannot rely on method_missing
-        #def id
-        #  @data.has_key?(:id) ? @data[:id] : super
-        #end
-        #
-        #def respond_to? method
-        #  getter = method.to_s.sub(/=$/, '').to_sym
-        #  @data.has_key?(method) || @data.has_key?(getter) || super
-        #end
-        #
-        #protected
-        #
-        ## TODO: method compilation instead of method_missing
-        #def method_missing method, *args
-        #  getter = method.to_s.sub(/=$/, '').to_sym
-        #  if @data.has_key? method
-        #    @data[method]
-        #  elsif @data.has_key? getter
-        #    @data[getter] = *args
-        #  else
-        #    super method, *args
-        #  end
-        #end
-
         # Every message loads received message version first
         def load
           @data[:version] = @socket.read_int
@@ -80,7 +56,7 @@ module IB
         #
         # map is a series of Arrays in the format of
         #   [ [ :name, :type ],
-        #     [ :name, :type, :group ] ]
+        #     [  :group, :name, :type] ]
         # type identifiers must have a corresponding read_type method on socket (read_int, etc.).
         # group is used to lump together aggregates, such as Contract or Order fields
         def load_map(*map)
@@ -138,7 +114,7 @@ module IB
       #   the order is inactive due to system, exchange or other issues.
       # :why_held - This field is used to identify an order held when TWS is trying to
       #      locate shares for a short sell. The value used to indicate this is 'locate'.
-      OrderStatus = def_message [3, 6], [:id, :int],
+      OrderStatus = def_message [3, 6], [:order_id, :int],
                                 [:status, :string],
                                 [:filled, :int],
                                 [:remaining, :int],
