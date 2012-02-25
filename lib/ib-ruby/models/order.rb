@@ -46,7 +46,7 @@ module IB
       Max_Value = 99999999
 
       # Main order fields
-      attr_accessor :id, #        int: m_orderId? Order id associated with client (volatile).
+      attr_accessor :order_id, #        int: m_orderId? Order id associated with client (volatile).
                     :client_id, # int: The id of the client that placed this order.
                     :perm_id, #   int: TWS id used to identify orders, remains
                     #                  the same over TWS sessions.
@@ -304,8 +304,8 @@ module IB
 
                     :warning_text # String: Displays a warning message if warranted.
 
-      alias order_id id # TODO: Change due to ActiveRecord specifics
-      alias order_id= id= # TODO: Change due to ActiveRecord specifics
+      #alias order_id id # TODO: Change due to ActiveRecord specifics
+      #alias order_id= id= # TODO: Change due to ActiveRecord specifics
 
       # IB uses weird String with Java Double.MAX_VALUE to indicate no value here
       def init_margin= val

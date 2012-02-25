@@ -7,8 +7,8 @@ shared_examples_for 'Alert message' do
   its(:message_type) { should == :Alert }
   its(:message_id) { should == 4 }
   its(:version) { should == 2 }
-  its(:data) { should == {:version=>2, :id=>-1, :code=>2104, :message=>"Market data farm connection is OK:cashfarm"}}
-  its(:id) { should == -1 }
+  its(:data) { should == {:version=>2, :error_id=>-1, :code=>2104, :message=>"Market data farm connection is OK:cashfarm"}}
+  its(:error_id) { should == -1 }
   its(:code) { should == 2104 }
   its(:message) { should =~ /Market data farm connection is OK/ }
   its(:to_human) { should =~ /TWS Warning/ }
@@ -26,7 +26,7 @@ describe IB::Messages::Incoming do
     subject do
       IB::Messages::Incoming::Alert.new(
           :version => 2,
-          :id => -1,
+          :error_id => -1,
           :code => 2104,
           :message => 'Market data farm connection is OK:cashfarm')
     end

@@ -61,7 +61,7 @@ module IB
 
       # TWS always sends NextValidID message at connect - save this id
       self.subscribe(:NextValidID) do |msg|
-        @next_order_id = msg.data[:id]
+        @next_order_id = msg.order_id
         log.info "Got next valid order id: #{@next_order_id}."
       end
 

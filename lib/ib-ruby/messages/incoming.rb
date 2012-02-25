@@ -81,7 +81,7 @@ module IB
         def to_human
           "<#{self.message_type} #{type}:" +
               @data.map do |key, value|
-                " #{key} #{value}" unless [:version, :id, :tick_type].include?(key)
+                " #{key} #{value}" unless [:version, :ticker_id, :tick_type].include?(key)
               end.compact.join(',') + " >"
         end
       end
@@ -128,7 +128,7 @@ module IB
             " @ last/avg: #{last_fill_price}/#{average_fill_price}" +
             (parent_id > 0 ? "parent_id: #{parent_id}" : "") +
             (why_held != "" ? "why_held: #{why_held}" : "") +
-            " id/perm: #{id}/#{perm_id}>"
+            " id/perm: #{order_id}/#{perm_id}>"
       end
 
 
@@ -144,10 +144,10 @@ module IB
       # This message is always sent by TWS automatically at connect.
       # The IB::Connection class subscribes to it automatically and stores
       # the order id in its @next_order_id attribute.
-      NextValidID = def_message 9, [:id, :int]
+      NextValidID = def_message 9, [:order_id, :int]
 
       NewsBulletins =
-          def_message 14, [:id, :int], # unique incrementing bulletin ID.
+          def_message 14, [:request_id, :int], # unique incrementing bulletin ID.
                       [:type, :int], # Type of bulletin. Valid values include:
                       #     1 = Regular news bulletin
                       #     2 = Exchange no longer available for trading
@@ -176,16 +176,16 @@ module IB
 
       # Receive Reuters global fundamental market data. There must be a subscription to
       # Reuters Fundamental set up in Account Management before you can receive this data.
-      FundamentalData = def_message 50, [:id, :int], # request_id
+      FundamentalData = def_message 50, [:request_id, :int], # request_id
                                     [:data, :string]
 
-      ContractDataEnd = def_message 52, [:id, :int] # request_id
+      ContractDataEnd = def_message 52, [:request_id, :int] # request_id
 
       OpenOrderEnd = def_message 53
 
       AccountDownloadEnd = def_message 54, [:account_name, :string]
 
-      ExecutionDataEnd = def_message 55, [:id, :int] # request_id
+      ExecutionDataEnd = def_message 55, [:request_id, :int] # request_id
 
       TickSnapshotEnd = def_message 57, [:ticker_id, :int]
 
@@ -299,7 +299,7 @@ module IB
           end
 
       MarketDepth =
-          def_message 12, [:id, :int],
+          def_message 12, [:request_id, :int],
                       [:position, :int], # The row Id of this market depth entry.
                       [:operation, :int], # How it should be applied to the market depth:
                       #   0 = insert this new order into the row identified by :position
@@ -325,7 +325,7 @@ module IB
 
       MarketDepthL2 =
           def_message 13, MarketDepth,
-                      [:id, :int],
+                      [:request_id, :int],
                       [:position, :int], # The row Id of this market depth entry.
                       [:market_maker, :string], # The exchange hosting this order.
                       [:operation, :int], # How it should be applied to the market depth:
@@ -339,7 +339,7 @@ module IB
       # Called Error in Java code, but in fact this type of messages also
       # deliver system alerts and additional (non-error) info from TWS.
       ErrorMessage = Error = Alert = def_message([4, 2],
-                                                 [:id, :int],
+                                                 [:error_id, :int],
                                                  [:code, :int],
                                                  [:message, :string])
       class Alert
@@ -554,7 +554,7 @@ module IB
 
       # This method receives the requested market scanner data results.
       # ScannerData contains following @data:
-      # :id - The ID of the request to which this row is responding
+      # :request_id - The ID of the request to which this row is responding
       # :count - Number of data points returned (size of :results).
       # :results - an Array of Hashes, each hash contains a set of
       #            data about one scanned Contract:
@@ -645,7 +645,7 @@ module IB
 
 
       OpenOrder =
-          def_message [11, 7],
+          def_message [5, 23],
                       # The reqID that was specified previously in the call to reqExecution()
                       [:order, :order_id, :int],
 
@@ -725,12 +725,7 @@ module IB
                       [:order, :clearing_intent, :string],
                       [:order, :not_held, :boolean] # (@socket.read_int == 1)
 
-      class OpenOrder < AbstractMessage
-        @message_id = 5
-        @version = 23
-
-        # TODO: Add id accessor to unify with OrderStatus message
-        attr_accessor :order, :contract
+      class OpenOrder
 
         def load
           super
