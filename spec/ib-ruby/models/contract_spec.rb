@@ -82,28 +82,15 @@ describe IB::Models::Contract do
     end #instantiation
 
     it 'allows setting attributes' do
-      x = IB::Models::Contract.new
       expect {
-        x.symbol = "TEST"
-        x.sec_type = IB::SECURITY_TYPES[:stock]
+        x = IB::Models::Contract.new
+        properties.each do |name, value|
+          subject.send("#{name}=", value)
+          subject.send(name).should == value
+        end
         x.expiry = 200609
-        x.strike = 1234
-        x.right = "put"
-        x.multiplier = 123
-        x.exchange = "SMART"
-        x.currency = "USD"
-        x.local_symbol = "baz"
+        x.expiry.should == '200609'
       }.to_not raise_error
-
-      x.symbol.should == "TEST"
-      x.sec_type.should == IB::SECURITY_TYPES[:stock]
-      x.expiry.should == '200609'
-      x.strike.should == 1234
-      x.right.should == "PUT"
-      x.multiplier.should == 123
-      x.exchange.should == "SMART"
-      x.currency.should == "USD"
-      x.local_symbol = "baz"
     end
 
     it 'allows setting ContractDetails attributes' do

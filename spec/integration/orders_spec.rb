@@ -205,6 +205,5 @@ describe IB::Messages do
       end # Cancelling
     end # Off-market order
 
-
   end # Orders
 end # describe IB::Messages::Incomming

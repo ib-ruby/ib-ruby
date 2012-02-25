@@ -47,27 +47,10 @@ describe IB::Models::Order do
 
     it 'allows setting attributes' do
       x = IB::Models::Order.new
-      expect {
-        x.outside_rth = true
-        x.open_close = 'C'
-        x.origin = IB::Models::Order::Origin_Firm
-        x.transmit = false
-        x.designated_location = "WHATEVER"
-        x.exempt_code = 123
-        x.delta_neutral_order_type = "HACK"
-        x.what_if = true
-        x.not_held = true
-      }.to_not raise_error
-
-      x.outside_rth.should == true
-      x.open_close.should == 'C'
-      x.origin.should == IB::Models::Order::Origin_Firm
-      x.transmit.should == false
-      x.designated_location.should == "WHATEVER"
-      x.exempt_code.should == 123
-      x.delta_neutral_order_type.should == "HACK"
-      x.what_if.should == true
-      x.not_held.should == true
+      properties.each do |name, value|
+        subject.send("#{name}=", value)
+        subject.send(name).should == value
+      end
     end
   end #instantiation
 
