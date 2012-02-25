@@ -48,7 +48,6 @@ module IB
       str.to_f unless str.nil? || str.empty? || str.to_f > 1.797 * 10.0 ** 306
     end
 
-
     # If received decimal is below limit ("not yet computed"), return nil
     def read_decimal_limit limit = -1
       value = self.read_decimal

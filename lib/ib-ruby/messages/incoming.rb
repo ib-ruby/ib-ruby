@@ -534,6 +534,48 @@ module IB
         end
       end # BondContractData
 
+      # The server sends this message upon accepting a Delta-Neutral DN RFQ
+      # - see API Reference p. 26
+      DeltaNeutralValidation = def_message 56,
+                                           [:request_id, :int],
+                                           [:contract, :under_con_id, :int],
+                                           [:contract, :under_delta, :decimal],
+                                           [:contract, :under_price, :decimal]
+      class DeltaNeutralValidation
+        def load
+          super
+          @contract = Models::Contract.build @data[:contract].merge(:under_comp => true)
+        end
+      end # DeltaNeutralValidation
+
+      # RealTimeBar contains following @data:
+      #    :request_id - The ID of the *request* to which this is responding
+      #    :time - The date-time stamp of the start of the bar. The format is offset in
+      #            seconds from the beginning of 1970, same format as the UNIX epoch time
+      #    :bar - received RT Bar
+      RealTimeBar = def_message 50,
+                                [:request_id, :int],
+                                [:bar, :time, :int],
+                                [:bar, :open, :decimal],
+                                [:bar, :high, :decimal],
+                                [:bar, :low, :decimal],
+                                [:bar, :close, :decimal],
+                                [:bar, :volume, :int],
+                                [:bar, :wap, :decimal],
+                                [:bar, :trades, :int]
+      class RealTimeBar
+        def load
+          super
+          @bar = Models::Bar.new @data[:bar]
+        end
+
+        def to_human
+          "<RealTimeBar: #{request_id} #{time}, #{bar}>"
+        end
+      end # RealTimeBar
+
+      ### Messages with really complicated message loading logics (cycles, conditions)
+
       # This method receives the requested market scanner data results.
       # ScannerData contains following @data:
       # :id - The ID of the request to which this row is responding
@@ -601,7 +643,6 @@ module IB
                                    [:start_date, :string],
                                    [:end_date, :string],
                                    [:count, :int]
-
       class HistoricalData
         attr_accessor :results
 
@@ -626,47 +667,87 @@ module IB
         end
       end # HistoricalData
 
-      # RealTimeBar contains following @data:
-      #    :request_id - The ID of the *request* to which this is responding
-      #    :time - The date-time stamp of the start of the bar. The format is offset in
-      #            seconds from the beginning of 1970, same format as the UNIX epoch time
-      #    :bar - received RT Bar
-      RealTimeBar = def_message 50,
-                                [:request_id, :int],
-                                [:bar, :time, :int],
-                                [:bar, :open, :decimal],
-                                [:bar, :high, :decimal],
-                                [:bar, :low, :decimal],
-                                [:bar, :close, :decimal],
-                                [:bar, :volume, :int],
-                                [:bar, :wap, :decimal],
-                                [:bar, :trades, :int]
-      class RealTimeBar
-        def load
-          super
-          @bar = Models::Bar.new @data[:bar]
-        end
 
-        def to_human
-          "<RealTimeBar: #{request_id} #{time}, #{bar}>"
-        end
-      end # RealTimeBar
+      OpenOrder =
+          def_message [11, 7],
+                      # The reqID that was specified previously in the call to reqExecution()
+                      [:order, :order_id, :int],
 
-      # The server sends this message upon accepting a Delta-Neutral DN RFQ
-      # - see API Reference p. 26
-      DeltaNeutralValidation = def_message 56,
-                                           [:request_id, :int],
-                                           [:contract, :under_con_id, :int],
-                                           [:contract, :under_delta, :decimal],
-                                           [:contract, :under_price, :decimal]
-      class DeltaNeutralValidation
-        def load
-          super
-          @contract = Models::Contract.build @data[:contract].merge(:under_comp => true)
-        end
-      end # DeltaNeutralValidation
+                      [:contract, :con_id, :int],
+                      [:contract, :symbol, :string],
+                      [:contract, :sec_type, :string],
+                      [:contract, :expiry, :string],
+                      [:contract, :strike, :decimal],
+                      [:contract, :right, :string],
+                      [:contract, :exchange, :string],
+                      [:contract, :currency, :string],
+                      [:contract, :local_symbol, :string],
 
-      ### OpenOrder is the most complicated message type
+                      [:order, :action, :string],
+                      [:order, :total_quantity, :int],
+                      [:order, :order_type, :string],
+                      [:order, :limit_price, :decimal],
+                      [:order, :aux_price, :decimal],
+                      [:order, :tif, :string],
+                      [:order, :oca_group, :string],
+                      [:order, :account, :string],
+                      [:order, :open_close, :string],
+                      [:order, :origin, :int],
+                      [:order, :order_ref, :string],
+                      [:order, :client_id, :int],
+                      [:order, :perm_id, :int],
+                      [:order, :outside_rth, :boolean], # (@socket.read_int == 1)
+                      [:order, :hidden, :boolean], # (@socket.read_int == 1)
+                      [:order, :discretionary_amount, :decimal],
+                      [:order, :good_after_time, :string],
+                      [:skip, :string], # skip deprecated sharesAllocation field
+
+                      [:order, :fa_group, :string],
+                      [:order, :fa_method, :string],
+                      [:order, :fa_percentage, :string],
+                      [:order, :fa_profile, :string],
+                      [:order, :good_till_date, :string],
+                      [:order, :rule_80a, :string],
+                      [:order, :percent_offset, :decimal],
+                      [:order, :settling_firm, :string],
+                      [:order, :short_sale_slot, :int],
+                      [:order, :designated_location, :string],
+                      [:order, :exempt_code, :int], # skipped in ver 51?
+                      [:order, :auction_strategy, :int],
+                      [:order, :starting_price, :decimal],
+                      [:order, :stock_ref_price, :decimal],
+                      [:order, :delta, :decimal],
+                      [:order, :stock_range_lower, :decimal],
+                      [:order, :stock_range_upper, :decimal],
+                      [:order, :display_size, :int],
+                      #@order.rth_only = @socket.read_boolean
+                      [:order, :block_order, :boolean],
+                      [:order, :sweep_to_fill, :boolean],
+                      [:order, :all_or_none, :boolean],
+                      [:order, :min_quantity, :int],
+                      [:order, :oca_type, :int],
+                      [:order, :etrade_only, :boolean],
+                      [:order, :firm_quote_only, :boolean],
+                      [:order, :nbbo_price_cap, :decimal],
+                      [:order, :parent_id, :int],
+                      [:order, :trigger_method, :int],
+                      [:order, :volatility, :decimal],
+                      [:order, :volatility_type, :int],
+                      [:order, :delta_neutral_order_type, :string],
+                      [:order, :delta_neutral_aux_price, :decimal],
+
+                      [:order, :continuous_update, :int],
+                      [:order, :reference_price_type, :int],
+                      [:order, :trail_stop_price, :decimal],
+                      [:order, :basis_points, :decimal],
+                      [:order, :basis_points_type, :int],
+                      [:contract, :legs_description, :string],
+                      [:order, :scale_init_level_size, :int_max],
+                      [:order, :scale_subs_level_size, :int_max],
+                      [:order, :scale_price_increment, :decimal_max],
+                      [:order, :clearing_account, :string],
+                      [:order, :clearing_intent, :string],
+                      [:order, :not_held, :boolean] # (@socket.read_int == 1)
 
       class OpenOrder < AbstractMessage
         @message_id = 5
@@ -678,123 +759,49 @@ module IB
         def load
           super
 
-          @order = Models::Order.new :id => @socket.read_int
+          load_map [:contract, :under_comp, :boolean] # (@socket.read_int == 1)
 
-          @contract = Models::Contract.build :con_id => @socket.read_string,
-                                             :symbol => @socket.read_string,
-                                             :sec_type => @socket.read_string,
-                                             :expiry => @socket.read_string,
-                                             :strike => @socket.read_decimal,
-                                             :right => @socket.read_string,
-                                             :exchange => @socket.read_string,
-                                             :currency => @socket.read_string,
-                                             :local_symbol => @socket.read_string
-
-          @order.action = @socket.read_string
-          @order.total_quantity = @socket.read_int
-          @order.order_type = @socket.read_string
-          @order.limit_price = @socket.read_decimal
-          @order.aux_price = @socket.read_decimal
-          @order.tif = @socket.read_string
-          @order.oca_group = @socket.read_string
-          @order.account = @socket.read_string
-          @order.open_close = @socket.read_string
-          @order.origin = @socket.read_int
-          @order.order_ref = @socket.read_string
-          @order.client_id = @socket.read_int
-          @order.perm_id = @socket.read_int
-          @order.outside_rth = (@socket.read_int == 1)
-          @order.hidden = (@socket.read_int == 1)
-          @order.discretionary_amount = @socket.read_decimal
-          @order.good_after_time = @socket.read_string
-          @socket.read_string # skip deprecated sharesAllocation field
-
-          @order.fa_group = @socket.read_string
-          @order.fa_method = @socket.read_string
-          @order.fa_percentage = @socket.read_string
-          @order.fa_profile = @socket.read_string
-          @order.good_till_date = @socket.read_string
-          @order.rule_80a = @socket.read_string
-          @order.percent_offset = @socket.read_decimal
-          @order.settling_firm = @socket.read_string
-          @order.short_sale_slot = @socket.read_int
-          @order.designated_location = @socket.read_string
-          @order.exempt_code = @socket.read_int # skipped in ver 51?
-          @order.auction_strategy = @socket.read_int
-          @order.starting_price = @socket.read_decimal
-          @order.stock_ref_price = @socket.read_decimal
-          @order.delta = @socket.read_decimal
-          @order.stock_range_lower = @socket.read_decimal
-          @order.stock_range_upper = @socket.read_decimal
-          @order.display_size = @socket.read_int
-                              #@order.rth_only = @socket.read_boolean
-          @order.block_order = @socket.read_boolean
-          @order.sweep_to_fill = @socket.read_boolean
-          @order.all_or_none = @socket.read_boolean
-          @order.min_quantity = @socket.read_int
-          @order.oca_type = @socket.read_int
-          @order.etrade_only = @socket.read_boolean
-          @order.firm_quote_only = @socket.read_boolean
-          @order.nbbo_price_cap = @socket.read_decimal
-          @order.parent_id = @socket.read_int
-          @order.trigger_method = @socket.read_int
-          @order.volatility = @socket.read_decimal
-          @order.volatility_type = @socket.read_int
-          @order.delta_neutral_order_type = @socket.read_string
-          @order.delta_neutral_aux_price = @socket.read_decimal
-
-          @order.continuous_update = @socket.read_int
-          @order.reference_price_type = @socket.read_int
-          @order.trail_stop_price = @socket.read_decimal
-          @order.basis_points = @socket.read_decimal
-          @order.basis_points_type = @socket.read_int
-          @contract.legs_description = @socket.read_string
-          @order.scale_init_level_size = @socket.read_int_max
-          @order.scale_subs_level_size = @socket.read_int_max
-          @order.scale_price_increment = @socket.read_decimal_max
-          @order.clearing_account = @socket.read_string
-          @order.clearing_intent = @socket.read_string
-          @order.not_held = (@socket.read_int == 1)
-
-          under_comp_present = (@socket.read_int == 1)
-
-          if under_comp_present
-            @contract.under_comp = true
-            @contract.under_con_id = @socket.read_int
-            @contract.under_delta = @socket.read_decimal
-            @contract.under_price = @socket.read_decimal
+          if @data[:contract][:under_comp]
+            load_map [:contract, :under_con_id, :int],
+                     [:contract, :under_delta, :decimal],
+                     [:contract, :under_price, :decimal]
           end
 
-          @order.algo_strategy = @socket.read_string
+          load_map [:order, :algo_strategy, :string]
 
-          unless @order.algo_strategy.nil? || @order.algo_strategy.empty?
-            algo_params_count = @socket.read_int
-            if algo_params_count > 0
-              @order.algo_params = Hash.new
-              algo_params_count.times do
+          unless @data[:order][:algo_strategy].nil? || @data[:order][:algo_strategy].empty?
+            load_map [:algo_params_count, :int]
+            if @data[:algo_params_count] > 0
+              @data[:order][:algo_params] = Hash.new
+              @data[:algo_params_count].times do
                 tag = @socket.read_string
                 value = @socket.read_string
-                @order.algo_params[tag] = value
+                @data[:order][:algo_params][tag] = value
               end
             end
           end
 
-          @order.what_if = (@socket.read_int == 1)
-          @order.status = @socket.read_string
-          @order.init_margin = @socket.read_string
-          @order.maint_margin = @socket.read_string
-          @order.equity_with_loan = @socket.read_string
-          @order.commission = @socket.read_decimal_max # May be nil!
-          @order.min_commission = @socket.read_decimal_max # May be nil!
-          @order.max_commission = @socket.read_decimal_max # May be nil!
-          @order.commission_currency = @socket.read_string
-          @order.warning_text = @socket.read_string
+          load_map [:order, :what_if, :boolean], # (@socket.read_int == 1)
+                   [:order, :status, :string],
+                   [:order, :init_margin, :string],
+                   [:order, :maint_margin, :string],
+                   [:order, :equity_with_loan, :string],
+                   [:order, :commission, :decimal_max], # May be nil!
+                   [:order, :min_commission, :decimal_max], # May be nil!
+                   [:order, :max_commission, :decimal_max], # May be nil!
+                   [:order, :commission_currency, :string],
+                   [:order, :warning_text, :string]
+
+          @order = Models::Order.new @data[:order]
+          @contract = Models::Contract.build @data[:contract]
         end
 
         def to_human
           "<OpenOrder: #{@contract.to_human} #{@order.to_human}>"
         end
-      end # OpenOrder
+      end
+
+      # OpenOrder
 
       Table = Hash.new
       Classes.each { |msg_class| Table[msg_class.message_id] = msg_class }
