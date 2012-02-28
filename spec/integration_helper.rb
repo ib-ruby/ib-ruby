@@ -21,7 +21,7 @@ def verify_account
   wait_for { received? :AccountValue }
   raise "Unable to verify IB PAPER ACCOUNT" unless received? :AccountValue
 
-  received = @received[:AccountValue].first.data[:account_name]
+  received = @received[:AccountValue].first.account_name
   raise "Connected to wrong account #{received}, expected #{account}" if account != received
 
   close_connection

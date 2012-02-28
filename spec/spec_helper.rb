@@ -8,7 +8,7 @@ RSpec.configure do |config|
           when :forex_trading_hours
             # 17:15 - 17:00 (ET) Sunday-Friday Forex  22:15 - 22:00 (UTC)
             t = Time.now.utc
-            !(t.wday < 5 || t.wday == 5 && t.hour < 22) # excludes if condition false!
+            !(t.wday > 0 && t.wday < 5 || t.wday == 5 && t.hour < 22) # excludes if condition false!
         end
 
       end # :slow => true
@@ -20,7 +20,7 @@ RSpec.configure do |config|
   # config.mock_with :rr
 end
 
-# Top level metadata opts for suite-level hacking
+# Top level metadata for test suite level hacking
 OPTS = {
     :silent => true, #false, #true,
     :brokertron => false,

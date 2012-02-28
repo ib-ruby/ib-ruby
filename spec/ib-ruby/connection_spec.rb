@@ -1,15 +1,15 @@
-require 'spec_helper'
+require 'message_helper'
 
 describe IB::Connection do
 
   context 'when connected to IB Gateway', :connected => true do
     # THIS depends on TWS|Gateway connectivity
     before(:all) do
-      @ib = IB::Connection.new OPTS[:connection]
+      @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
       @ib.subscribe(:OpenOrderEnd) {}
     end
 
-    after(:all) { @ib.close if @ib }
+    after(:all) { close_connection }
 
     context 'instantiation with default options' do
       subject { @ib }
@@ -33,7 +33,7 @@ describe IB::Connection do
         }.to_not raise_error
 
         expect {
-          @ib.send_message IB::Messages::Outgoing::RequestOpenOrders.new(:subscribe => true)
+          @ib.send_message IB::Messages::Outgoing::RequestOpenOrders.new :subscribe => true
         }.to_not raise_error
       end
 

@@ -55,16 +55,15 @@ def connect_and_receive *message_types
   # Catch all messages of given types and put them inside @received Hash
   @ib.subscribe(*message_types) { |msg| @received[msg.message_type] << msg }
 
-  @ib.connect
+  @ib.connect   # We only connect after everything is subscribed
   @ib.start_reader
 end
 
-# Clear logs and message collector. Output may be silenced
+# Clear logs and message collector. Output may be silenced.
 def clean_connection
   unless OPTS[:silent]
-    puts @received.map { |type, msg| [" #{type}:", msg.map(&:to_human)] }
-    puts " Logs:"
-    puts log_entries
+    puts @received.map { |type, msg| [" #{type}:", msg.map(&:to_human)] } if @received
+    puts " Logs:", log_entries if @stdout
   end
   @stdout.string = '' if @stdout
   @received.clear if @received
