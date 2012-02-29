@@ -70,6 +70,7 @@ def clean_connection
 end
 
 def close_connection
+  @ib.cancel_order @order_id_placed if @ib && @order_id_placed
   @ib.close if @ib
   clean_connection
 end
