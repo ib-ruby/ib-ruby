@@ -7,7 +7,7 @@ describe IB::Models::Contract do
      :sec_type => IB::SECURITY_TYPES[:stock],
      :expiry => '200609',
      :strike => 1234,
-     :right => "put",
+     :right => "PUT",
      :multiplier => 123,
      :exchange => "SMART",
      :currency => "USD",
@@ -153,16 +153,26 @@ describe IB::Models::Contract do
     end
 
     it 'accepts all correct values for right (option type)' do
-      ["PUT", "put", "P", "p", "CALL", "call", "C", "c"].each do |right|
-        expect { IB::Models::Contract.new(:right => right) }.to_not raise_error
+      ["PUT", "put", "P", "p"].each do |right|
+        expect { @contract = IB::Models::Contract.new(:right => right) }.to_not raise_error
+        @contract.right.should == "PUT"
 
-        expect { IB::Models::Contract.new.right = right }.to_not raise_error
+        expect { @contract.right = right }.to_not raise_error
+        @contract.right.should == "PUT"
+      end
+
+      ["CALL", "call", "C", "c"].each do |right|
+        expect { @contract = IB::Models::Contract.new(:right => right) }.to_not raise_error
+        @contract.right.should == "CALL"
+
+        expect { @contract.right = right }.to_not raise_error
+        @contract.right.should == "CALL"
       end
     end
   end #instantiation
 
   context "serialization" do
-    subject { stock = IB::Models::Contract.new properties }
+    subject { IB::Models::Contract.new properties }
 
     it "serializes long" do
       subject.serialize_long.should ==
