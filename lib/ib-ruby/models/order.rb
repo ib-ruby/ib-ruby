@@ -438,7 +438,7 @@ module IB
 
       # Order comparison
       def == other
-        perm_id == other.perm_id ||
+        perm_id && perm_id == other.perm_id ||
             order_id == other.order_id && #   ((p __LINE__)||true) &&
                 client_id == other.client_id &&
                 parent_id == other.parent_id &&

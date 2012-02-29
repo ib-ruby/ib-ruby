@@ -57,12 +57,62 @@ describe IB::Models::Order do
   context 'equality' do
     subject { IB::Models::Order.new properties }
 
-    it 'be self-equal ' do
+    it 'is  self-equal ' do
       should == subject
     end
 
-    it 'be equal to Order with the same properties' do
+    it 'is equal to Order with the same properties' do
       should == IB::Models::Order.new(properties)
+    end
+
+    it 'is not equal for Orders with different limit price' do
+      order1 = IB::Models::Order.new :total_quantity => 100,
+                                     :limit_price => 1,
+                                     :action => 'BUY'
+
+      order2 = IB::Models::Order.new :total_quantity => 100,
+                                     :limit_price => 2,
+                                     :action => 'BUY'
+      order1.should_not == order2
+      order2.should_not == order1
+    end
+
+    it 'is not equal for Orders with different total_quantity' do
+      order1 = IB::Models::Order.new :total_quantity => 20000,
+                                     :limit_price => 1,
+                                     :action => 'BUY'
+
+      order2 = IB::Models::Order.new :total_quantity => 100,
+                                     :action => 'BUY',
+                                     :limit_price => 1
+      order1.should_not == order2
+      order2.should_not == order1
+    end
+
+    it 'is not equal for Orders with different action/side' do
+      order1 = IB::Models::Order.new :total_quantity => 100,
+                                     :limit_price => 1,
+                                     :action => 'SELL'
+
+      order2 = IB::Models::Order.new :total_quantity => 100,
+                                     :action => 'BUY',
+                                     :limit_price => 1
+      order1.should_not == order2
+      order2.should_not == order1
+    end
+
+    it 'is not equal for Orders with different order_type' do
+      order1 = IB::Models::Order.new :total_quantity => 100,
+                                     :limit_price => 1,
+                                     :action => 'BUY',
+                                     :order_type => 'LMT'
+
+      order2 = IB::Models::Order.new :total_quantity => 100,
+                                     :action => 'BUY',
+                                     :limit_price => 1,
+                                     :order_type => 'MKT'
+      order1.should_not == order2
+      order2.should_not == order1
     end
   end
 
