@@ -10,7 +10,7 @@ module IB
                     #                      TWS orders have a fixed client id of 0.
                     :exec_id, #       String: Unique order execution id.
                     :time, #          String: The order execution time.
-                    :account_number, #String: The customer account number.
+                    :account_name, #String: The customer account number.
                     :exchange, #      String: Exchange that executed the order.
                     :side, #          String: Was the transaction a buy or a sale: BOT|SLD
                     :shares, #        int: The number of shares filled.
@@ -23,13 +23,16 @@ module IB
                     #                           trades, combo trades and legs of the combo
                     :average_price #  double: Average price. Used in regular trades, combo
                                    #          trades and legs of the combo.
+      # Legacy
+      alias account_number account_name
+      alias account_number= account_name=
 
       def side= value
         @side = case value
                   when 'BOT'
-                    :bought
+                    :BUY
                   when 'SLD'
-                    :sold
+                    :SELL
                   else
                     value
                 end

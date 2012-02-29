@@ -437,7 +437,7 @@ module IB
           def_message [11, 7],
                       # The reqID that was specified previously in the call to reqExecution()
                       [:request_id, :int],
-                      [:order, :order_id, :int],
+                      [:execution, :order_id, :int],
                       [:contract, :con_id, :int],
                       [:contract, :symbol, :string],
                       [:contract, :sec_type, :string],
@@ -450,7 +450,7 @@ module IB
 
                       [:execution, :exec_id, :string], # Weird format
                       [:execution, :time, :string],
-                      [:execution, :account_number, :string],
+                      [:execution, :account_name, :string],
                       [:execution, :exchange, :string],
                       [:execution, :side, :string],
                       [:execution, :shares, :int],

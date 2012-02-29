@@ -263,6 +263,7 @@ module IB
 
       # Some Order properties (received back from IB) are separated into
       # OrderState object. Here, they are lumped into Order proper: see OrderState.java
+      # TODO: Extract OrderState object, for better record keeping
       attr_accessor :status, # String: Displays the order status.Possible values include:
                     # • PendingSubmit - indicates that you have transmitted the order, but
                     #   have not yet received confirmation that it has been accepted by the
@@ -480,7 +481,8 @@ module IB
 
       def to_human
         "<Order: #{order_type} #{tif} #{action} #{total_quantity} #{status} #{limit_price}" +
-            " id: #{order_id}/#{perm_id} from: #{client_id}/#{account}>"
+            " id: #{order_id}/#{perm_id} from: #{client_id}/#{account}" +
+            (commission ? " fee: #{commission}" : "") + ">"
       end
     end # class Order
   end # module Models
