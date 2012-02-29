@@ -5,6 +5,7 @@ describe "Trades", :connected => true, :integration => true do
   before(:all) { verify_account }
 
   context "Trading Forex", :if => :forex_trading_hours do
+
     before(:all) do
       connect_and_receive :NextValidID, :Alert, :ExecutionData,
                           :OpenOrder, :OrderStatus, :OpenOrderEnd
@@ -96,6 +97,6 @@ describe "Trades", :connected => true, :integration => true do
         order_status_should_be 'Filled', -1
       end
     end # Placing SELL
-  end # Marketable Forex order
+  end # Forex order
 
-end # Orders
+end # Trades
