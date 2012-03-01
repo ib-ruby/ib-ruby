@@ -12,20 +12,16 @@
 module IB
   module Symbols
 
-    # Get the next valid quarter month >= today, for finding the front month of quarterly futures.
+    # Find the next front month of quarterly futures.
     #
-    # N.B. This will not work as expected near/after expiration during that month, as
-    # volume rolls over to the next quarter even though the current month is still valid!
-    def self.next_quarter_month(time)
-      sprintf("%02d", [3, 6, 9, 12].find { |month| month >= time.month })
+    # N.B. This will not work as expected during the front month before expiration, as
+    # it will point to the next quarter even though the current month is still valid!
+    def self.next_quarter_month time=Time.now
+      [3, 6, 9, 12].find { |month| month > time.month } || 3 # for December, next March
     end
 
-    def self.next_quarter_year(time)
-      if self.next_quarter_month(time).to_i < time.month
-        time.year + 1
-      else
-        time.year
-      end
+    def self.next_quarter_year time=Time.now
+      next_quarter_month(time) < time.month ? time.year + 1 : time.year
     end
 
     # WARNING: This is currently broken. It returns the next
@@ -39,8 +35,8 @@ module IB
     # vast majority of their volume in the Nov 2011 contract, but this
     # method will return the Dec 2011 contract instead.
     #
-    def self.next_expiry(time)
-      "#{ self.next_quarter_year(time) }#{ self.next_quarter_month(time) }"
+    def self.next_expiry time=Time.now
+      "#{ next_quarter_year(time) }#{ sprintf("%02d", next_quarter_month(time)) }"
     end
 
     # Convenience method; generates a Models::Contract instance for a futures
@@ -58,7 +54,7 @@ module IB
     #
     def self.future(base_symbol, exchange, currency, description="", expiry=nil)
       Models::Contract.new(:symbol => base_symbol,
-                           :expiry => expiry.nil? ? self.next_expiry(Time.now) : expiry,
+                           :expiry => expiry || next_expiry,
                            :exchange => exchange,
                            :currency => currency,
                            :sec_type => SECURITY_TYPES[:future],
@@ -67,14 +63,14 @@ module IB
 
     Futures ={
         :ym => Models::Contract.new(:symbol => "YM",
-                                    :expiry => self.next_expiry(Time.now),
+                                    :expiry => next_expiry,
                                     :exchange => "ECBOT",
                                     :currency => "USD",
                                     :sec_type => SECURITY_TYPES[:future],
                                     :description => "Mini Dow Jones Industrial"),
 
         :es => Models::Contract.new(:symbol => "ES",
-                                    :expiry => self.next_expiry(Time.now),
+                                    :expiry => next_expiry,
                                     :exchange => "GLOBEX",
                                     :currency => "USD",
                                     :sec_type => SECURITY_TYPES[:future],
@@ -82,7 +78,7 @@ module IB
                                     :description => "E-Mini S&P 500"),
 
         :gbp => Models::Contract.new(:symbol => "GBP",
-                                     :expiry => self.next_expiry(Time.now),
+                                     :expiry => next_expiry,
                                      :exchange => "GLOBEX",
                                      :currency => "USD",
                                      :sec_type => SECURITY_TYPES[:future],
@@ -90,7 +86,7 @@ module IB
                                      :description => "British Pounds"),
 
         :eur => Models::Contract.new(:symbol => "EUR",
-                                     :expiry => self.next_expiry(Time.now),
+                                     :expiry => next_expiry,
                                      :exchange => "GLOBEX",
                                      :currency => "USD",
                                      :sec_type => SECURITY_TYPES[:future],
@@ -98,7 +94,7 @@ module IB
                                      :description => "Euro FX"),
 
         :jpy => Models::Contract.new(:symbol => "JPY",
-                                     :expiry => self.next_expiry(Time.now),
+                                     :expiry => next_expiry,
                                      :exchange => "GLOBEX",
                                      :currency => "USD",
                                      :sec_type => SECURITY_TYPES[:future],
@@ -106,7 +102,7 @@ module IB
                                      :description => "Japanese Yen"),
 
         :hsi => Models::Contract.new(:symbol => "HSI",
-                                     :expiry => self.next_expiry(Time.now),
+                                     :expiry => next_expiry,
                                      :exchange => "HKFE",
                                      :currency => "HKD",
                                      :sec_type => SECURITY_TYPES[:future],
