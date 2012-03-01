@@ -133,6 +133,7 @@ module IB
         @con_id = 0
         @strike = 0
         @sec_type = ''
+        @exchange = 'SMART'
         @include_expired = false
         @legs = Array.new
 
@@ -154,11 +155,11 @@ module IB
       end
 
       # some protective filters
-      def primary_exchange=(x)
+      def primary_exchange= x
         x.upcase! if x.is_a?(String)
 
         # per http://chuckcaplan.com/twsapi/index.php/Class%20Contract
-        raise(ArgumentError.new("Don't set primary_exchange to smart")) if x == "SMART"
+        raise(ArgumentError.new("Don't set primary_exchange to smart")) if x == 'SMART'
 
         @primary_exchange = x
       end
@@ -189,12 +190,15 @@ module IB
             end
       end
 
-      def sec_type=(x)
+      def sec_type= x
         x = nil if !x.nil? && x.empty?
         raise(ArgumentError.new("Invalid security type '#{x}' (must be one of #{SECURITY_TYPES.values}")) unless x.nil? || SECURITY_TYPES.values.include?(x)
         @sec_type = x
       end
 
+      def multiplier= x
+        @multiplier = x.to_i
+      end
       # This returns an Array of data from the given contract.
       # Different messages serialize contracts differently. Go figure.
       # Note that it does NOT include the combo legs.

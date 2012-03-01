@@ -112,6 +112,12 @@ describe IB::Models::Contract do
       x.next_option_partial.should == true
     end
 
+    it 'converts multiplier to int' do
+      expect { @contract = IB::Models::Contract.new(:multiplier => '123') }.to_not raise_error
+      expect { @contract.multiplier = '123' }.to_not raise_error
+      @contract.multiplier.should == 123
+    end
+
     it 'raises on wrong security type' do
       expect { IB::Models::Contract.new(:sec_type => "asdf") }.to raise_error ArgumentError
 
@@ -144,7 +150,6 @@ describe IB::Models::Contract do
         x.expiry = 200607
         x.expiry.should == "200607" # converted to a string
       }.to_not raise_error
-
     end
 
     it 'raises on incorrect right (option type)' do
