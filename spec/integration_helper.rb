@@ -90,7 +90,7 @@ def execution_should_be side, index=-1
   msg.contract.should == @contract
 
   exec = msg.execution
-  exec.perm_id.should == @received[:OpenOrder].last.perm_id
+  exec.perm_id.should == @received[:OpenOrder].last.order.perm_id
   exec.client_id.should == 1111
   exec.order_id.should == @order.order_id
   exec.exec_id.should be_a String

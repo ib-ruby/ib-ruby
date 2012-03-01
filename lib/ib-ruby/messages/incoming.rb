@@ -63,10 +63,12 @@ module IB
           map.each do |(m1, m2, m3)|
             group, name, type = m3 ? [m1, m2, m3] : [nil, m1, m2]
 
-            @data[name] = @socket.__send__("read_#{type}")
+            data = @socket.__send__("read_#{type}")
             if group
               @data[group] ||= {}
-              @data[group][name] = @data[name]
+              @data[group][name] = data
+            else
+              @data[name] = data
             end
           end
         end

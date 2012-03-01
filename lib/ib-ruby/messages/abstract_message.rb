@@ -53,7 +53,9 @@ module IB
       def to_human
         "<#{self.message_type}:" +
             @data.map do |key, value|
-              " #{key} #{value}" unless [:version].include?(key)
+              unless [:version].include?(key)
+                " #{key} #{ value.is_a?(Hash) ? value.inspect : value}"
+              end
             end.compact.join(',') + " >"
       end
 
@@ -69,8 +71,11 @@ module IB
 
         @data_map.each do |(m1, m2, m3)|
           group, name = m3 ? [m1, m2] : [nil, m1]
-          define_method(name) { @data[name] }
-          attr_reader group if group
+          if group
+            attr_reader group
+          else
+            define_method(name) { @data[name] }
+          end
         end
 
         define_method(:to_human, &to_human) if to_human
