@@ -1,6 +1,6 @@
 require 'integration_helper'
 
-describe "Trades", :connected => true, :integration => true do
+describe "Trades", :connected => true, :integration => true, :slow => true do
 
   before(:all) { verify_account }
 
@@ -22,9 +22,7 @@ describe "Trades", :connected => true, :integration => true do
                     :limit_price => 2,
                     :action => 'BUY'
 
-        wait_for(3) { received?(:ExecutionData) &&
-            @received[:OpenOrder].size > 2 &&
-            @received[:OrderStatus].size > 2 }
+        wait_for(5) { received?(:ExecutionData) }
       end
 
       after(:all) do
@@ -64,9 +62,7 @@ describe "Trades", :connected => true, :integration => true do
                     :limit_price => 1,
                     :action => 'SELL'
 
-        wait_for(3) { received?(:ExecutionData) &&
-            @received[:OpenOrder].size > 2 &&
-            @received[:OrderStatus].size > 2 }
+        wait_for(5) { received?(:ExecutionData) }
       end
 
       after(:all) do

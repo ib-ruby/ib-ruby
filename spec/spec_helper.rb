@@ -22,18 +22,19 @@ end
 
 # Top level metadata for test suite level hacking
 OPTS = {
-    :silent => false, #true,
-    :brokertron => false,
+    :silent => false, #true, # Verbosity of test outputs
+    :brokertron => false, # Use mock (Brokertron) instead of paper account
 }
 
-# Connection to IB PAPER ACCOUNT or mock (Brokertron) account
 if OPTS[:brokertron]
+  # Connection to mock (Brokertron) account
   OPTS[:connection] =
       {:client_id => 1111,
        :host => 'free.brokertron.com',
        :port=> 10501
       }
 else
+  # Connection to IB PAPER ACCOUNT
   OPTS[:connection] =
       {:account_name => 'DU118180', # Your IB PAPER ACCOUNT, tests will only run against it
        :client_id => 1111, #          Just an arbitrary id

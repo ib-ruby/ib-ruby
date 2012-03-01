@@ -84,8 +84,8 @@ describe "Orders", :connected => true, :integration => true do
       it { @received[:Alert].should have_exactly(0).alert_messages }
 
       it 'receives OpenOrder and OrderStatus for placed order' do
-        open_order_should_be 'Submitted'
-        order_status_should_be 'Submitted'
+        open_order_should_be /Submitted/
+        order_status_should_be /Submitted/
       end
     end # Retrieving
 
@@ -93,7 +93,7 @@ describe "Orders", :connected => true, :integration => true do
       before(:all) do
         @ib.cancel_order @order_id_placed
 
-        wait_for { received?(:OpenOrder) && received?(:Alert) }
+        wait_for { received?(:OrderStatus) && received?(:Alert) }
       end
 
       after(:all) { clean_connection } # Clear logs and message collector
@@ -110,7 +110,7 @@ describe "Orders", :connected => true, :integration => true do
       it { @received[:Alert].should have_exactly(1).alert_message }
 
       it 'receives cancellation Order Status' do
-        order_status_should_be 'Cancelled'
+        order_status_should_be /Cancel/ # Cancelled / PendingCancel
       end
 
       it 'receives Order cancelled Alert' do
