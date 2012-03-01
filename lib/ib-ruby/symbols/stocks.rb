@@ -17,7 +17,7 @@ module IB
                                       :exchange => "NYSE",
                                       :currency => "USD",
                                       :sec_type => SECURITY_TYPES[:stock],
-                                      :description => "Inexistent stock"),
+                                      :description => "Non-existent stock"),
         }
   end
 end
