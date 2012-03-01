@@ -77,19 +77,19 @@ describe 'Request Market Data', :connected => true, :integration => true do
     end
 
     it "logs warning about unhandled :OpenOrderEnd message" do
-      should_log /No subscribers for message IB::Messages::Incoming::OpenOrderEnd/
+      should_log /No subscribers for message .*:OpenOrderEnd/
     end
 
     it "logs warning about unhandled :Alert message" do
-      should_log /No subscribers for message IB::Messages::Incoming::Alert/
+      should_log /No subscribers for message .*:Alert/
     end
 
     it "logs warning about unhandled :Tick... messages" do
-      should_log /No subscribers for message IB::Messages::Incoming::TickPrice/
+      should_log /No subscribers for message .*:TickPrice/
     end
 
     it "logs warning about unhandled :Tick... messages", :if => :forex_trading_hours do
-      should_log /No subscribers for message IB::Messages::Incoming::TickSize/
+      should_log /No subscribers for message .*:TickSize/
     end
 
   end # NOT subscribed to :Tick... messages
