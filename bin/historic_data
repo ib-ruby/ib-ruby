@@ -31,12 +31,9 @@ ib.subscribe(:Alert) { |msg| puts msg.to_human }
 # Note that we have to look the ticker id of each incoming message
 # up in local memory to figure out what it's for.
 ib.subscribe(IB::Messages::Incoming::HistoricalData) do |msg|
-  puts @market[msg.data[:id]].description + ": " +
-                  msg.data[:count].to_s + " items:"
+  puts @market[msg.request_id].description + ": #{msg.count} items:"
 
-  msg.data[:results].each do |datum|
-    puts "  " + datum.to_s
-  end
+  msg.results.each { |entry| puts "  #{entry}" }
   @last_msg_time = Time.now.to_i
 end
 

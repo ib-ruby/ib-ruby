@@ -625,7 +625,7 @@ module IB
           super
 
           @results = Array.new(@data[:count]) do |index|
-            Models::Bar.new :date => @socket.read_string,
+            Models::Bar.new :time => @socket.read_string,
                             :open => @socket.read_decimal,
                             :high => @socket.read_decimal,
                             :low => @socket.read_decimal,

@@ -325,6 +325,59 @@ module IB
         end
       end # PlaceOrder
 
+      module DataParser
+        # Preprocessor for some data fields
+        def parse data
+          data_type = DATA_TYPES[data[:what_to_show]] || data[:what_to_show]
+          unless  DATA_TYPES.values.include?(data_type)
+            raise ArgumentError.new(":what_to_show must be one of #{DATA_TYPES.inspect}.")
+          end
+
+          bar_size = BAR_SIZES[data[:bar_size]] || data[:bar_size]
+          unless  BAR_SIZES.values.include?(bar_size)
+            raise ArgumentError.new(":bar_size must be one of #{BAR_SIZES.inspect}.")
+          end
+
+          contract = data[:contract].is_a?(Models::Contract) ?
+              data[:contract] : Models::Contract.from_ib_ruby(data[:contract])
+
+          [data_type, bar_size, contract]
+        end
+      end
+
+      #  data = { :id => ticker_id (int),
+      #           :contract => Contract ,
+      #           :bar_size => int/Symbol? Currently only 5 second bars (2?) are supported,
+      #                        if any other value is used, an exception will be thrown.,
+      #          :what_to_show => Symbol: Determines the nature of data being extracted.
+      #                           Valid values:
+      #                             :trades, :midpoint, :bid, :ask, :bid_ask,
+      #                             :historical_volatility, :option_implied_volatility,
+      #                             :option_volume, :option_open_interest
+      #                              - converts to "TRADES," "MIDPOINT," "BID," etc...
+      #          :use_rth => int: 0 - all data available during the time span requested
+      #                     is returned, even data bars covering time intervals where the
+      #                     market in question was illiquid. 1 - only data within the
+      #                     "Regular Trading Hours" of the product in question is returned,
+      #                     even if the time span requested falls partially or completely
+      #                     outside of them.
+      class RequestRealTimeBars < AbstractMessage
+        @message_id = 50
+        @version = 1 # ?
+
+        include DataParser
+
+        def encode
+          data_type, bar_size, contract = parse @data
+
+          [super,
+           contract.serialize_long,
+           bar_size,
+           data_type.to_s.upcase,
+           @data[:use_rth]].flatten
+        end
+      end # RequestRealTimeBars
+
       # data = { :id => int: Ticker id, needs to be different than the reqMktData ticker
       #                 id. If you use the same ticker ID you used for the symbol when
       #                 you did ReqMktData, nothing comes back for the historical data call
@@ -400,19 +453,10 @@ module IB
         @message_id = 20
         @version = 4
 
+        include DataParser
+
         def encode
-          data_type = DATA_TYPES[@data[:what_to_show]] || @data[:what_to_show]
-          unless  DATA_TYPES.values.include?(data_type)
-            raise ArgumentError(":what_to_show must be one of #{DATA_TYPES}.")
-          end
-
-          bar_size = BAR_SIZES[@data[:bar_size]] || @data[:bar_size]
-          unless  BAR_SIZES.values.include?(bar_size)
-            raise ArgumentError(":bar_size must be one of #{BAR_SIZES}.")
-          end
-
-          contract = @data[:contract].is_a?(Models::Contract) ?
-              @data[:contract] : Models::Contract.from_ib_ruby(@data[:contract])
+          data_type, bar_size, contract = parse @data
 
           [super,
            contract.serialize_long(:include_expired),
@@ -426,47 +470,6 @@ module IB
         end
       end # RequestHistoricalData
 
-      #  data = { :id => ticker_id (int),
-      #           :contract => Contract ,
-      #           :bar_size => int/Symbol? Currently only 5 second bars (2?) are supported,
-      #                        if any other value is used, an exception will be thrown.,
-      #          :what_to_show => Symbol: Determines the nature of data being extracted.
-      #                           Valid values:
-      #                             :trades, :midpoint, :bid, :ask, :bid_ask,
-      #                             :historical_volatility, :option_implied_volatility,
-      #                             :option_volume, :option_open_interest
-      #                              - converts to "TRADES," "MIDPOINT," "BID," etc...
-      #          :use_rth => int: 0 - all data available during the time span requested
-      #                     is returned, even data bars covering time intervals where the
-      #                     market in question was illiquid. 1 - only data within the
-      #                     "Regular Trading Hours" of the product in question is returned,
-      #                     even if the time span requested falls partially or completely
-      #                     outside of them.
-      class RequestRealTimeBars < AbstractMessage
-        @message_id = 50
-        @version = 1 # ?
-
-        def encode
-          data_type = DATA_TYPES[@data[:what_to_show]] || @data[:what_to_show]
-          unless  DATA_TYPES.values.include?(data_type)
-            raise ArgumentError(":what_to_show must be one of #{DATA_TYPES}.")
-          end
-
-          bar_size = BAR_SIZES[@data[:bar_size]] || @data[:bar_size]
-          unless  BAR_SIZES.values.include?(bar_size)
-            raise ArgumentError(":bar_size must be one of #{BAR_SIZES}.")
-          end
-
-          contract = @data[:contract].is_a?(Models::Contract) ?
-              @data[:contract] : Models::Contract.from_ib_ruby(@data[:contract])
-
-          [super,
-           contract.serialize_long,
-           bar_size,
-           data_type.to_s.upcase,
-           @data[:use_rth]].flatten
-        end
-      end # RequestRealTimeBars
 
     end # module Outgoing
   end # module Messages
