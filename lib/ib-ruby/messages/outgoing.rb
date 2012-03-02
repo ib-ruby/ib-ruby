@@ -41,11 +41,26 @@ module IB
 
         # At minimum, Outgoing message contains message_id and version.
         # Most messages also contain (ticker, request or order) :id.
+        # Then, content of @data Hash is encoded per instructions in data_map.
         def encode
           [self.class.message_id,
            self.class.version,
-           @data[:id] || [],
-           self.class.data_map.map { |key| @data[key] }
+           @data[:id] || @data[:ticker_id] || @data[:request_id]|| @data[:order_id] || [],
+           self.class.data_map.map do |(field, default_method, args)|
+             case
+               when default_method.nil?
+                 @data[field]
+
+               when default_method.is_a?(Symbol) # method name with args
+                 @data[field].send default_method, *args
+
+               when default_method.respond_to?(:call) # callable with args
+                 default_method.call @data[field], *args
+
+               else # default
+                 @data[field].nil? ? default_method : @data[field] # may be false still
+             end
+           end
           ].flatten
         end
       end # AbstractMessage
@@ -83,16 +98,20 @@ module IB
 
       ## Data format is: @data = { :id => request_id }
       CancelFundamentalData = def_message 53
-
       CancelCalculateImpliedVolatility = CancelImpliedVolatility = def_message(56)
       CancelCalculateOptionPrice = CancelOptionPrice = def_message(57)
 
-      ## Data format is: @data ={ :id => order-id-to-cancel }
+      ## Data format is: @data ={ :id => order_id to cancel }
       CancelOrder = def_message 4
 
-      ## These messages contain just one or two keys, shown in the end of definition
-      # @data = { :number_of_ids => int }
-      RequestIds = def_message 8, :number_of_ids
+      ## These messages contain just one or two extra fields:
+
+      # Request the next valid ID that can be used when placing an order. Responds with
+      # NextValidId message, and the id returned is that next valid Id for orders.
+      # That ID will reflect any autobinding that has occurred (which generates new
+      # IDs and increments the next valid ID therein).
+      # @data = { :number of ids requested => int } NB: :number option is ignored by TWS!
+      RequestIds = def_message 8, [:number, 1]
       # data = { :all_messages => boolean }
       RequestNewsBulletins = def_message 12, :all_messages
       # data = { :log_level => int }
@@ -103,12 +122,126 @@ module IB
       RequestFA = def_message 18, :fa_data_type
       # data = { :fa_data_type => int, :xml => String }
       ReplaceFA = def_message 19, :fa_data_type, :xml
+
       # @data = { :subscribe => boolean,
       #           :account_code => Advisor accounts only. Empty ('') for a standard account. }
-      RequestAccountUpdates = RequestAccountData = def_message([6, 2], :subscribe, :account_code)
+      RequestAccountUpdates = RequestAccountData = def_message([6, 2],
+                                                               [:subscribe, true],
+                                                               :account_code)
 
+      # data => { :id => request_id (int), :contract => Contract }
+      RequestContractData = RequestContractDetails =
+          def_message([9, 6],
+                      [:contract, :serialize_short, [:con_id, :include_expired, :sec_id]])
+
+      # data = { :id => ticker_id (int), :contract => Contract, :num_rows => int }
+      RequestMarketDepth = def_message([10, 3],
+                                       [:contract, :serialize_short, [],
+                                        :num_rows])
 
       ### Defining (complex) Outgoing Message classes for IB:
+
+      # When this message is sent, TWS responds with ExecutionData messages, each
+      # containing the execution report that meets the specified criteria.
+      # @data={:id =>         int: :request_id,
+      #        :client_id => int: Filter the results based on the clientId.
+      #        :acct_code => Filter the results based on based on account code.
+      #                      Note: this is only relevant for Financial Advisor accts.
+      #        :sec_type =>  Filter the results based on the order security type.
+      #        :time =>      Filter the results based on execution reports received
+      #                      after the specified time - format "yyyymmdd-hh:mm:ss"
+      #        :symbol   =>  Filter the results based on the order symbol.
+      #        :exchange =>  Filter the results based on the order exchange
+      #        :side =>  Filter the results based on the order action: BUY/SELL/SSHORT
+      RequestExecutions = def_message(7,
+                                      :client_id,
+                                      :acct_code,
+                                      :time, # Format "yyyymmdd-hh:mm:ss"
+                                      :symbol,
+                                      :sec_type,
+                                      :exchange,
+                                      :side)
+
+      # data = { :id => ticker_id (int),
+      #          :contract => Contract,
+      #          :exercise_action => int, 1 = exercise, 2 = lapse
+      #          :exercise_quantity => int, The number of contracts to be exercised
+      #          :account => string,
+      #          :override => int: Specifies whether your setting will override the
+      #                       system's natural action. For example, if your action
+      #                       is "exercise" and the option is not in-the-money, by
+      #                       natural action the option would not exercise. If you
+      #                       have override set to "yes" the natural action would be
+      #                       overridden and the out-of-the money option would be
+      #                       exercised. Values are:
+      #                              • 0 = do not override
+      #                              • 1 = override
+      ExerciseOptions = def_message(21,
+                                    [:contract, :serialize_short],
+                                    :exercise_action,
+                                    :exercise_quantity,
+                                    :account,
+                                    :override)
+
+      # @data={:id => int: ticker_id - Must be a unique value. When the market data
+      #                                returns, it will be identified by this tag,
+      #      :contract => Models::Contract, requested contract.
+      #      :tick_list => String: comma delimited list of requested tick groups:
+      #        Group ID - Description - Requested Tick Types
+      #        100 - Option Volume (currently for stocks) - 29, 30
+      #        101 - Option Open Interest (currently for stocks) - 27, 28
+      #        104 - Historical Volatility (currently for stocks) - 23
+      #        106 - Option Implied Volatility (currently for stocks) - 24
+      #        162 - Index Future Premium - 31
+      #        165 - Miscellaneous Stats - 15, 16, 17, 18, 19, 20, 21
+      #        221 - Mark Price (used in TWS P&L computations) - 37
+      #        225 - Auction values (volume, price and imbalance) - 34, 35, 36
+      #        233 - RTVolume - 48
+      #        236 - Shortable - 46
+      #        256 - Inventory - ?
+      #        258 - Fundamental Ratios - 47
+      #        411 - Realtime Historical Volatility - 58
+      #      :snapshot => bool: Check to return a single snapshot of market data and
+      #                   have the market data subscription canceled. Do not enter any
+      #                   :tick_list values if you use snapshot. }
+      RequestMarketData =
+          def_message([1, 9],
+                      [:contract, :serialize_long, [:con_id]],
+                      [:contract, :serialize_legs, []],
+                      [:contract, :serialize_under_comp, []],
+                      [:tick_list, lambda do |tick_list|
+                        tick_list.is_a?(Array) ? tick_list.join(',') : (tick_list || '')
+                      end, []],
+                      [:snapshot, false])
+
+      # Send this message to receive Reuters global fundamental data. There must be
+      # a subscription to Reuters Fundamental set up in Account Management before
+      # you can receive this data.
+      # data = { :id => int: :request_id,
+      #          :contract => Contract,
+      #          :report_type => String: one of the following:
+      #                          'Estimates', 'Financial Statements', 'Summary'   }
+      RequestFundamentalData =
+          def_message(52,
+                      [:contract, :serialize, [:primary_exchange]],
+                      :report_type)
+
+      # data = { :request_id => int, :contract => Contract,
+      #          :option_price => double, :under_price => double }
+      RequestCalculateImpliedVolatility = CalculateImpliedVolatility =
+          RequestImpliedVolatility =
+              def_message(54,
+                          [:contract, :serialize_long, [:con_id]],
+                          :option_price,
+                          :under_price)
+
+      # data = { :request_id => int, :contract => Contract,
+      #          :volatility => double, :under_price => double }
+      RequestCalculateOptionPrice = CalculateOptionPrice = RequestOptionPrice =
+          def_message(55,
+                      [:contract, :serialize_long, [:con_id]],
+                      :volatility,
+                      :under_price)
 
       # Start receiving market scanner results through the ScannerData messages.
       # @data = { :id => ticker_id (int),
@@ -153,79 +286,44 @@ module IB
       # To learn all valid parameter values that a scanner subscription can have,
       # first subscribe to ScannerParameters and send RequestScannerParameters message.
       # Available scanner parameters values will be listed in received XML document.
-      class RequestScannerSubscription < AbstractMessage
-        @message_id = 22
-        @version = 3
+      RequestScannerSubscription =
+          def_message([22, 3],
+                      [:number_of_rows, -1], # was: EOL,
+                      :instrument,
+                      :location_code,
+                      :scan_code,
+                      [:above_price, EOL],
+                      [:below_price, EOL],
+                      [:above_volume, EOL],
+                      [:market_cap_above, EOL],
+                      [:market_cap_below, EOL],
+                      :moody_rating_above,
+                      :moody_rating_below,
+                      :sp_rating_above,
+                      :sp_rating_below,
+                      :maturity_date_above,
+                      :maturity_date_below,
+                      [:coupon_rate_above, EOL],
+                      [:coupon_rate_below, EOL],
+                      :exclude_convertible,
+                      [:average_option_volume_above, EOL], # ?
+                      :scanner_setting_pairs,
+                      :stock_type_filter)
+
+      ### Even more complex Outgoing Message classes, overriding #encode method:
+
+      # Data format is { :id => order_id (int),
+      #                  :contract => Contract,
+      #                  :order => Order }
+      class PlaceOrder < AbstractMessage
+        @message_id = 3
+        @version = 31
 
         def encode
           [super,
-           @data[:number_of_rows] || -1, # was: EOL,
-           @data[:instrument],
-           @data[:location_code],
-           @data[:scan_code],
-           @data[:above_price] || EOL,
-           @data[:below_price] || EOL,
-           @data[:above_volume] || EOL,
-           @data[:market_cap_above] || EOL,
-           @data[:market_cap_below] || EOL,
-           @data[:moody_rating_above],
-           @data[:moody_rating_below],
-           @data[:sp_rating_above],
-           @data[:sp_rating_below],
-           @data[:maturity_date_above],
-           @data[:maturity_date_below],
-           @data[:coupon_rate_above] || EOL,
-           @data[:coupon_rate_below] || EOL,
-           @data[:exclude_convertible],
-           @data[:average_option_volume_above] || EOL, # ?
-           @data[:scanner_setting_pairs],
-           @data[:stock_type_filter]
-          ].flatten
+           @data[:order].serialize_with(@data[:contract])].flatten
         end
-      end # RequestScannerSubscription
-
-      # @data={:id => int: ticker_id - Must be a unique value. When the market data
-      #                                returns, it will be identified by this tag,
-      #      :contract => Models::Contract, requested contract.
-      #      :tick_list => String: comma delimited list of requested tick groups:
-      #        Group ID - Description - Requested Tick Types
-      #        100 - Option Volume (currently for stocks) - 29, 30
-      #        101 - Option Open Interest (currently for stocks) - 27, 28
-      #        104 - Historical Volatility (currently for stocks) - 23
-      #        106 - Option Implied Volatility (currently for stocks) - 24
-      #        162 - Index Future Premium - 31
-      #        165 - Miscellaneous Stats - 15, 16, 17, 18, 19, 20, 21
-      #        221 - Mark Price (used in TWS P&L computations) - 37
-      #        225 - Auction values (volume, price and imbalance) - 34, 35, 36
-      #        233 - RTVolume - 48
-      #        236 - Shortable - 46
-      #        256 - Inventory - ?
-      #        258 - Fundamental Ratios - 47
-      #        411 - Realtime Historical Volatility - 58
-      #      :snapshot => bool: Check to return a single snapshot of market data and
-      #                   have the market data subscription canceled. Do not enter any
-      #                   :tick_list values if you use snapshot. }
-      class RequestMarketData < AbstractMessage
-        @message_id = 1
-        @version = 9 # message version number
-
-        def encode
-          tick_list = case @data[:tick_list]
-                        when nil
-                          ''
-                        when Array
-                          @data[:tick_list].join ','
-                        when String
-                          @data[:tick_list]
-                      end
-          [super,
-           @data[:contract].serialize_long(:con_id),
-           @data[:contract].serialize_legs,
-           @data[:contract].serialize_under_comp,
-           tick_list,
-           @data[:snapshot] || false].flatten
-        end
-      end # RequestMarketData
+      end # PlaceOrder
 
       # data = { :id => int: Ticker id, needs to be different than the reqMktData ticker
       #                 id. If you use the same ticker ID you used for the symbol when
@@ -369,153 +467,6 @@ module IB
            @data[:use_rth]].flatten
         end
       end # RequestRealTimeBars
-
-      # data => { :id => request_id (int), :contract => Contract }
-      class RequestContractData < AbstractMessage
-        @message_id = 9
-        @version = 6
-
-        def encode
-          [super,
-           @data[:contract].serialize_short(:con_id, :include_expired, :sec_id)]
-        end
-      end # RequestContractData
-      RequestContractDetails = RequestContractData # alias
-
-      # data = { :id => ticker_id (int), :contract => Contract, :num_rows => int }
-      class RequestMarketDepth < AbstractMessage
-        @message_id = 10
-        @version = 3
-
-        def encode
-          [super,
-           @data[:contract].serialize_short,
-           @data[:num_rows]].flatten
-        end
-      end # RequestMarketDepth
-
-      # data = { :id => ticker_id (int),
-      #          :contract => Contract,
-      #          :exercise_action => int, 1 = exercise, 2 = lapse
-      #          :exercise_quantity => int, The number of contracts to be exercised
-      #          :account => string,
-      #          :override => int: Specifies whether your setting will override the
-      #                       system's natural action. For example, if your action
-      #                       is "exercise" and the option is not in-the-money, by
-      #                       natural action the option would not exercise. If you
-      #                       have override set to "yes" the natural action would be
-      #                       overridden and the out-of-the money option would be
-      #                       exercised. Values are:
-      #                              • 0 = do not override
-      #                              • 1 = override
-      #       }
-      class ExerciseOptions < AbstractMessage
-        @message_id = 21
-        @version = 1
-
-        def encode
-          [super,
-           @data[:contract].serialize_short,
-           @data[:exercise_action],
-           @data[:exercise_quantity],
-           @data[:account],
-           @data[:override]].flatten
-        end
-      end # ExerciseOptions
-
-      # Data format is { :id => order_id (int),
-      #                  :contract => Contract,
-      #                  :order => Order }
-      class PlaceOrder < AbstractMessage
-        @message_id = 3
-        @version = 31
-
-        def encode
-          [super,
-           @data[:order].serialize_with(@data[:contract])].flatten
-        end
-      end # PlaceOrder
-
-      # When this message is sent, TWS responds with ExecutionData messages, each
-      # containing the execution report that meets the specified criteria.
-      # @data={:id =>         int: :request_id,
-      #        :client_id => int: Filter the results based on the clientId.
-      #        :acct_code => Filter the results based on based on account code.
-      #                      Note: this is only relevant for Financial Advisor accts.
-      #        :sec_type =>  Filter the results based on the order security type.
-      #        :time =>      Filter the results based on execution reports received
-      #                      after the specified time - format "yyyymmdd-hh:mm:ss"
-      #        :symbol   =>  Filter the results based on the order symbol.
-      #        :exchange =>  Filter the results based on the order exchange
-      #        :side =>  Filter the results based on the order action: BUY/SELL/SSHORT
-      class RequestExecutions < AbstractMessage
-        @message_id = 7
-        @version = 1
-
-        def encode
-          [super,
-           @data[:client_id],
-           @data[:acct_code],
-           @data[:time], # Valid format for time is "yyyymmdd-hh:mm:ss"
-           @data[:symbol],
-           @data[:sec_type],
-           @data[:exchange],
-           @data[:side]].flatten
-        end
-      end # RequestExecutions
-
-      # Send this message to receive Reuters global fundamental data. There must be
-      # a subscription to Reuters Fundamental set up in Account Management before
-      # you can receive this data.
-      # data = { :id => int: :request_id,
-      #          :contract => Contract,
-      #          :report_type => String: one of the following:
-      #                          'Estimates', 'Financial Statements', 'Summary'   }
-      class RequestFundamentalData < AbstractMessage
-        @message_id = 52
-        @version = 1
-
-        def encode
-          [super,
-           @data[:request_id],
-           @data[:contract].serialize(:primary_exchange), # Minimal serialization set
-           @data[:report_type]].flatten
-        end
-      end # RequestFundamentalData
-
-      # data = { :request_id => int, :contract => Contract,
-      #          :option_price => double, :under_price => double }
-      class RequestImpliedVolatility < AbstractMessage
-        @message_id = 54
-        @version = 1
-
-        def encode
-          [super,
-           @data[:request_id],
-           @data[:contract].serialize_long(:con_id),
-           @data[:option_price],
-           @data[:under_price]].flatten
-        end
-      end # RequestImpliedVolatility
-      CalculateImpliedVolatility = RequestImpliedVolatility
-      RequestCalculateImpliedVolatility = RequestImpliedVolatility
-
-      # data = { :request_id => int, :contract => Contract,
-      #          :volatility => double, :under_price => double }
-      class RequestOptionPrice < AbstractMessage
-        @message_id = 55
-        @version = 1
-
-        def encode
-          [super,
-           @data[:request_id],
-           @data[:contract].serialize_long(:con_id),
-           @data[:volatility],
-           @data[:under_price]].flatten
-        end
-      end # RequestOptionPrice
-      CalculateOptionPrice = RequestOptionPrice
-      RequestCalculateOptionPrice = RequestOptionPrice
 
     end # module Outgoing
   end # module Messages
