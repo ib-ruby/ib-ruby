@@ -136,8 +136,8 @@ module IB
 
       # data = { :id => ticker_id (int), :contract => Contract, :num_rows => int }
       RequestMarketDepth = def_message([10, 3],
-                                       [:contract, :serialize_short, [],
-                                        :num_rows])
+                                       [:contract, :serialize_short, []],
+                                       :num_rows)
 
       ### Defining (complex) Outgoing Message classes for IB:
 

@@ -326,15 +326,12 @@ module IB
       end
 
       MarketDepthL2 =
-          def_message 13, MarketDepth,
+          def_message 13, MarketDepth, # Fields descriptions - see above
                       [:request_id, :int],
-                      [:position, :int], # The row Id of this market depth entry.
+                      [:position, :int],
                       [:market_maker, :string], # The exchange hosting this order.
-                      [:operation, :int], # How it should be applied to the market depth:
-                      #   0 = insert this new order into the row identified by :position
-                      #   1 = update the existing order in the row identified by :position
-                      #   2 = delete the existing order at the row identified by :position
-                      [:side, :int], # side of the book: 0 = ask, 1 = bid
+                      [:operation, :int],
+                      [:side, :int],
                       [:price, :decimal],
                       [:size, :int]
 

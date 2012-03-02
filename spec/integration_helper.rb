@@ -83,7 +83,6 @@ def open_order_should_be status, index=0
   check_status msg.order, status
 end
 
-
 def execution_should_be side, index=-1
   msg = @received[:ExecutionData][index]
   msg.request_id.should == -1 # Not specialy requested, fresh execution

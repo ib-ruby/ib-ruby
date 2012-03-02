@@ -32,7 +32,6 @@ describe IB::Messages::Incoming do
     end
 
     it_behaves_like 'Alert message'
-
   end
 
   context 'Message received from IB', :connected => true do
@@ -47,6 +46,5 @@ describe IB::Messages::Incoming do
     subject { @received[:Alert].first }
 
     it_behaves_like 'Alert message'
-
   end #
 end # describe IB::Messages:Incoming
