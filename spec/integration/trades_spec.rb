@@ -1,5 +1,12 @@
 require 'integration_helper'
 
+def wait_for_execution_and_commission
+  wait_for(5) do
+    received?(:ExecutionData) && received?(:OpenOrder) &&
+        @received[:OpenOrder].last.order.commission
+  end
+end
+
 describe "Trades", :connected => true, :integration => true, :slow => true do
 
   before(:all) { verify_account }
@@ -22,7 +29,7 @@ describe "Trades", :connected => true, :integration => true, :slow => true do
                     :limit_price => 2,
                     :action => 'BUY'
 
-        wait_for(5) { received?(:ExecutionData) }
+        wait_for_execution_and_commission
       end
 
       after(:all) do
@@ -62,7 +69,7 @@ describe "Trades", :connected => true, :integration => true, :slow => true do
                     :limit_price => 1,
                     :action => 'SELL'
 
-        wait_for(5) { received?(:ExecutionData) }
+        wait_for_execution_and_commission
       end
 
       after(:all) do
