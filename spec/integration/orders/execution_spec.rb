@@ -1,5 +1,7 @@
 require 'integration_helper'
 
+# TODO: RequestExecutions (with filters?)
+
 def wait_for_execution_and_commission
   wait_for(5) do
     received?(:ExecutionData) && received?(:OpenOrder) &&

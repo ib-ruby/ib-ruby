@@ -62,7 +62,7 @@ describe 'Ids valid for Order placement', :connected => true, :integration => tr
     end
   end # at connect
 
-  context 'Requesting valid order ids' do
+  context 'Requesting valid order id' do
     before(:all) do
       @ib.send_message :RequestIds
       wait_for 1 # sec
@@ -78,7 +78,7 @@ describe 'Ids valid for Order placement', :connected => true, :integration => tr
     end
 
     it_behaves_like 'Received single id after request'
-  end # Requesting valid order ids
+  end # number of ids is silently ignored
 
 end # Ids valid for Order placement
 

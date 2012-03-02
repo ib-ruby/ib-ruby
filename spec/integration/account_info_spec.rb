@@ -1,32 +1,10 @@
 require 'integration_helper'
 
-describe "Request Account Data", :connected => true, :integration => true do
-
-  before(:all) do
-    verify_account
-
-    connect_and_receive(:Alert, :AccountValue, :AccountDownloadEnd,
-                        :PortfolioValue, :AccountUpdateTime)
-
-    @ib.send_message :RequestAccountData, :subscribe => true
-
-    wait_for(5) { received? :AccountDownloadEnd }
-  end
+shared_examples_for 'Valid account data request' do
 
   after(:all) do
     @ib.send_message :RequestAccountData, :subscribe => false
-    close_connection
-  end
-
-  context "received :Alert message " do
-    subject { @received[:Alert].first }
-
-    it { should be_an IB::Messages::Incoming::Alert }
-    it { should be_warning }
-    it { should_not be_error }
-    its(:code) { should be_a Integer }
-    its(:message) { should =~ /Market data farm connection is OK/ }
-    its(:to_human) { should =~ /TWS Warning / }
+    clean_connection
   end
 
   context "received :AccountUpdateTime message" do
@@ -74,5 +52,34 @@ describe "Request Account Data", :connected => true, :integration => true do
     its(:data) { should be_a Hash }
     its(:account_name) { should =~ /\w\d/ }
     its(:to_human) { should =~ /AccountDownloadEnd/ }
+  end
+end
+
+describe "Request Account Data", :connected => true, :integration => true do
+
+  before(:all) do
+    verify_account
+    connect_and_receive(:Alert, :AccountValue, :AccountDownloadEnd,
+                        :PortfolioValue, :AccountUpdateTime)
+  end
+
+  after(:all) { close_connection }
+
+  context "with subscribe option set" do
+    before(:all) do
+      @ib.send_message :RequestAccountData, :subscribe => true
+      wait_for(5) { received? :AccountDownloadEnd }
+    end
+
+    it_behaves_like 'Valid account data request'
+  end
+
+  context "without subscribe option" do
+    before(:all) do
+      @ib.send_message :RequestAccountData
+      wait_for(5) { received? :AccountDownloadEnd }
+    end
+
+    it_behaves_like 'Valid account data request'
   end
 end # Request Account Data
