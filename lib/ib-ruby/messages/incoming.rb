@@ -251,7 +251,7 @@ module IB
                                 [:tick_type, :int],
                                 [:value, :decimal]
 
-      TickString = def_message 46, AbstractTick,
+      TickString = def_message [46, 6], AbstractTick,
                                [:ticker_id, :int],
                                [:tick_type, :int],
                                [:value, :string]
@@ -281,7 +281,7 @@ module IB
       #    :vega - The option vega value.
       #    :theta - The option theta value.
       #    :under_price - The price of the underlying.
-      TickOption = TickOptionComputation =
+      TickOptionComputation = TickOption =
           def_message([21, 6], AbstractTick,
                       [:ticker_id, :int],
                       [:tick_type, :int],

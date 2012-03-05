@@ -130,7 +130,7 @@ module IB
                                                                :account_code)
 
       # data => { :id => request_id (int), :contract => Contract }
-      RequestContractData = RequestContractDetails =
+      RequestContractDetails = RequestContractData =
           def_message([9, 6],
                       [:contract, :serialize_short, [:con_id, :include_expired, :sec_id]])
 

@@ -23,3 +23,6 @@ Pattern for writing integration specs is like this:
 
 8. When done, you call 'close_connection' in a top-level  after(:all) block.
 
+TODO:
+1. RealTimeBars
+2. Request executions
