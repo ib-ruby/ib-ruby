@@ -199,6 +199,7 @@ module IB
       def multiplier= x
         @multiplier = x.to_i
       end
+
       # This returns an Array of data from the given contract.
       # Different messages serialize contracts differently. Go figure.
       # Note that it does NOT include the combo legs.
@@ -278,6 +279,8 @@ module IB
 
       # Contract comparison
       def == other
+        return false unless other.is_a?(self.class)
+
         # Different sec_id_type
         return false if sec_id_type && other.sec_id_type && sec_id_type != other.sec_id_type
 

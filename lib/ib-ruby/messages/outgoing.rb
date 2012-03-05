@@ -153,7 +153,7 @@ module IB
       #        :symbol   =>  Filter the results based on the order symbol.
       #        :exchange =>  Filter the results based on the order exchange
       #        :side =>  Filter the results based on the order action: BUY/SELL/SSHORT
-      RequestExecutions = def_message(7,
+      RequestExecutions = def_message([7, 3],
                                       :client_id,
                                       :acct_code,
                                       :time, # Format "yyyymmdd-hh:mm:ss"
