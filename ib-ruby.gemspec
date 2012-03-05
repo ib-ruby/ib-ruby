@@ -22,6 +22,6 @@ Gem::Specification.new do |gem|
   # Dependencies
   gem.add_dependency 'bundler', '>= 1.0.20'
 
-  gem.add_development_dependency 'rspec', '>= 2.7.0'
+  gem.add_development_dependency 'rspec', '>= 2.8.0'
   gem.add_development_dependency 'my_scripts'
 end

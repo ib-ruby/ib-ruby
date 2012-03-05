@@ -12,14 +12,14 @@ GEM
     getopt (1.4.1)
     my_scripts (0.1.15)
       bundler (>= 1.0.0)
-    rspec (2.7.0)
-      rspec-core (~> 2.7.0)
-      rspec-expectations (~> 2.7.0)
-      rspec-mocks (~> 2.7.0)
-    rspec-core (2.7.1)
-    rspec-expectations (2.7.0)
+    rspec (2.8.0)
+      rspec-core (~> 2.8.0)
+      rspec-expectations (~> 2.8.0)
+      rspec-mocks (~> 2.8.0)
+    rspec-core (2.8.0)
+    rspec-expectations (2.8.0)
       diff-lcs (~> 1.1.2)
-    rspec-mocks (2.7.0)
+    rspec-mocks (2.8.0)
 
 PLATFORMS
   java
@@ -31,4 +31,4 @@ DEPENDENCIES
   getopt
   ib-ruby!
   my_scripts
-  rspec (>= 2.7.0)
+  rspec (>= 2.8.0)
