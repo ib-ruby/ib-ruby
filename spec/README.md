@@ -23,6 +23,12 @@ Pattern for writing integration specs is like this:
 
 8. When done, you call 'close_connection' in a top-level  after(:all) block.
 
-TODO:
+TODO: Add more scenarios:
 1. RealTimeBars
-2. Request executions
+2. BondContractData
+3. RequestScannerParameters + RequestScannerSubscription
+4. RequestFundamentalData
+5. ExerciseOptions
+6. RequestMarketData + special tick list
+7. RequestNewsBulletins
+8. RequestImpliedVolatility / RequestOptionPrice
