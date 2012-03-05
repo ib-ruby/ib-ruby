@@ -4,11 +4,14 @@ require 'ib-ruby'
 RSpec.configure do |config|
   config.exclusion_filter = {
       :if => proc do |condition|
-        case condition
+        t = Time.now.utc
+        case condition # NB: excludes if condition is false!
+          when :us_trading_hours
+            # 09:30 - 16:00 (ET) Mon-Fri 14:30 - 21:00 (UTC)
+            !(t.wday >= 1 && t.wday <= 5 && t.hour >= 15 && t.hour <= 21)
           when :forex_trading_hours
             # 17:15 - 17:00 (ET) Sunday-Friday Forex  22:15 - 22:00 (UTC)
-            t = Time.now.utc
-            !(t.wday > 0 && t.wday < 5 || t.wday == 5 && t.hour < 22) # excludes if condition false!
+            !(t.wday > 0 && t.wday < 5 || t.wday == 5 && t.hour < 22)
         end
 
       end # :slow => true
