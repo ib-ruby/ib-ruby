@@ -10,7 +10,8 @@ describe "Orders", :connected => true, :integration => true do
       connect_and_receive :NextValidID, :Alert, :OpenOrder, :OrderStatus
       wait_for { received? :NextValidID }
 
-      place_order :wfc, :limit_price => 9.131313 # Weird non-acceptable price
+      place_order IB::Symbols::Stocks[:wfc],
+                  :limit_price => 9.131313 # Weird non-acceptable price
       wait_for 1
     end
 
@@ -42,7 +43,8 @@ describe "Orders", :connected => true, :integration => true do
       connect_and_receive :NextValidID, :Alert, :OpenOrder, :OrderStatus, :OpenOrderEnd
       wait_for { received? :NextValidID }
 
-      place_order :wfc, :limit_price => 9.13 # Set acceptable price
+      place_order IB::Symbols::Stocks[:wfc],
+                  :limit_price => 9.13 # Set acceptable price
       wait_for { @received[:OpenOrder].size > 2 && @received[:OpenOrder].size > 1 }
     end
 

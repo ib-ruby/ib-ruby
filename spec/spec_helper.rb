@@ -32,7 +32,7 @@ OPTS = {
 if OPTS[:brokertron]
   # Connection to mock (Brokertron) account
   OPTS[:connection] =
-      {:client_id => 1111,
+      {:client_id => 1111, # Just an arbitrary id
        :host => 'free.brokertron.com',
        :port=> 10501
       }
@@ -40,7 +40,7 @@ else
   # Connection to IB PAPER ACCOUNT
   OPTS[:connection] =
       {:account_name => 'DU118180', # Your IB PAPER ACCOUNT, tests will only run against it
-       :client_id => 1111, #          Just an arbitrary id
+       :client_id => 1111, # Just an arbitrary id
        :host => '10.211.55.2', #  Where your TWS/gateway is located, likely 'localhost'
        :port=> 4001 #             4001 for Gateway, 7496 for TWS GUI
       }

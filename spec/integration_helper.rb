@@ -30,8 +30,8 @@ end
 
 ### Helpers for placing and verifying orders
 
-def place_order ticker, opts
-  @contract = ticker == :wfc ? IB::Symbols::Stocks[ticker] : IB::Symbols::Forex[ticker]
+def place_order contract, opts
+  @contract = contract
   @order = IB::Models::Order.new({:total_quantity => 100,
                                   :limit_price => 9.13,
                                   :action => 'BUY',
@@ -55,7 +55,7 @@ def order_status_should_be status, index=0
   msg.should be_an IB::Messages::Incoming::OrderStatus
   msg.order_id.should == @order_id_placed
   msg.perm_id.should be_an Integer
-  msg.client_id.should == 1111
+  msg.client_id.should == OPTS[:connection][:client_id]
   msg.parent_id.should == 0
   msg.why_held.should == ''
   check_status msg, status
@@ -83,15 +83,17 @@ def open_order_should_be status, index=0
   check_status msg.order, status
 end
 
-def execution_should_be side, index=-1
-  msg = @received[:ExecutionData][index]
-  msg.request_id.should == -1 # Not specialy requested, fresh execution
+def execution_should_be side, opts={}
+  msg = @received[:ExecutionData][opts[:index] || -1]
+  msg.request_id.should == (opts[:request_id] || -1)
   msg.contract.should == @contract
 
   exec = msg.execution
-  exec.perm_id.should == @received[:OpenOrder].last.order.perm_id
-  exec.client_id.should == 1111
-  exec.order_id.should == @order.order_id
+  exec.perm_id.should be_an Integer
+  exec.perm_id.should == @received[:OpenOrder].last.order.perm_id if @received[:OpenOrder].last
+  exec.client_id.should == OPTS[:connection][:client_id]
+  exec.order_id.should be_an Integer
+  exec.order_id.should == @order.order_id if @order
   exec.exec_id.should be_a String
   exec.time.should =~ /\d\d:\d\d:\d\d/
   exec.account_name.should == OPTS[:connection][:account_name]
