@@ -121,3 +121,7 @@
 == 0.5.19 / 2012-02-23
 
 * Contract
+
+== 0.5.21 / 2012-03-06
+
+* Fully tested with integration spec suite
