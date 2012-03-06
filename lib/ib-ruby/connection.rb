@@ -28,7 +28,7 @@ module IB
     attr_reader :server #         Info about IB server and server connection state
     attr_accessor :next_order_id #  Next valid order id
 
-    def initialize(opts = {})
+    def initialize opts = {}
       @options = DEFAULT_OPTIONS.merge(opts)
 
       self.default_logger = @options[:logger] if @options[:logger]
@@ -108,9 +108,9 @@ module IB
     # Subscribe Proc or block to specific type(s) of incoming message events.
     # Listener will be called later with received message instance as its argument.
     # Returns subscriber id to allow unsubscribing
-    def subscribe(*args, &block)
+    def subscribe *args, &block
       subscriber = args.last.respond_to?(:call) ? args.pop : block
-      subscriber_id = random_id
+      id = random_id
 
       raise ArgumentError.new "Need subscriber proc or block" unless subscriber.is_a? Proc
 
@@ -118,32 +118,35 @@ module IB
         message_classes =
             case
               when what.is_a?(Class) && what < Messages::Incoming::AbstractMessage
-                what
+                [what]
               when what.is_a?(Symbol)
-                Messages::Incoming.const_get(what)
+                [Messages::Incoming.const_get(what)]
               when what.is_a?(Regexp)
                 Messages::Incoming::Table.values.find_all { |klass| klass.to_s =~ what }
               else
                 raise ArgumentError.new "#{what} must represent incoming IB message class"
             end
-        [message_classes].flatten.each do |message_class|
+        message_classes.flatten.each do |message_class|
           # TODO: Fix: RuntimeError: can't add a new key into hash during iteration
-          subscribers[message_class][subscriber_id] = subscriber
+          subscribers[message_class][id] = subscriber
         end
       end
-      subscriber_id
+      id
     end
 
     # Remove all subscribers with specific subscriber id (TODO: multiple ids)
-    def unsubscribe(subscriber_id)
-
-      subscribers.each do |message_class, message_subscribers|
-        message_subscribers.delete subscriber_id
+    def unsubscribe *ids
+      removed = []
+      ids.each do |id|
+        removed_at_id = subscribers.map { |_, subscribers| subscribers.delete id }.compact
+        raise "No subscribers with id #{id}" if removed_at_id.empty?
+        removed << removed_at_id
       end
+      removed.flatten
     end
 
     # Send an outgoing message.
-    def send_message(what, *args)
+    def send_message what, *args
       message =
           case
             when what.is_a?(Messages::Outgoing::AbstractMessage)
