@@ -28,12 +28,12 @@ ib.subscribe(:Alert) { |msg| puts msg.to_human }
 # argument. In this case, we just print out the tick. NB: The description field is not
 # from IB TWS. It is defined locally in forex.rb, and is just arbitrary text.
 ib.subscribe(:TickPrice, :TickSize) do |msg|
-  puts @market[msg.data[:id]].description + ": " + msg.to_human
+  puts @market[msg.ticker_id].description + ": " + msg.to_human
 end
 
 # Now we actually request market data for the symbols we're interested in.
 @market.each_pair do |id, contract|
-  ib.send_message :RequestMarketData, :id => id, :contract => contract
+  ib.send_message :RequestMarketData, :ticker_id => id, :contract => contract
 end
 
 puts "\nSubscribed to market data"

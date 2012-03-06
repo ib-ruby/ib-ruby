@@ -46,7 +46,7 @@ module IB
       Max_Value = 99999999
 
       # Main order fields
-      attr_accessor :id, #        int: m_orderId? Order id associated with client (volatile).
+      attr_accessor :order_id, #        int: m_orderId? Order id associated with client (volatile).
                     :client_id, # int: The id of the client that placed this order.
                     :perm_id, #   int: TWS id used to identify orders, remains
                     #                  the same over TWS sessions.
@@ -263,6 +263,7 @@ module IB
 
       # Some Order properties (received back from IB) are separated into
       # OrderState object. Here, they are lumped into Order proper: see OrderState.java
+      # TODO: Extract OrderState object, for better record keeping
       attr_accessor :status, # String: Displays the order status.Possible values include:
                     # • PendingSubmit - indicates that you have transmitted the order, but
                     #   have not yet received confirmation that it has been accepted by the
@@ -304,8 +305,8 @@ module IB
 
                     :warning_text # String: Displays a warning message if warranted.
 
-      alias order_id id # TODO: Change due to ActiveRecord specifics
-      alias order_id= id= # TODO: Change due to ActiveRecord specifics
+      #alias order_id id # TODO: Change due to ActiveRecord specifics
+      #alias order_id= id= # TODO: Change due to ActiveRecord specifics
 
       # IB uses weird String with Java Double.MAX_VALUE to indicate no value here
       def init_margin= val
@@ -438,7 +439,7 @@ module IB
 
       # Order comparison
       def == other
-        perm_id == other.perm_id ||
+        perm_id && perm_id == other.perm_id ||
             order_id == other.order_id && #   ((p __LINE__)||true) &&
                 client_id == other.client_id &&
                 parent_id == other.parent_id &&
@@ -480,7 +481,8 @@ module IB
 
       def to_human
         "<Order: #{order_type} #{tif} #{action} #{total_quantity} #{status} #{limit_price}" +
-            " id: #{order_id}/#{perm_id} from: #{client_id}/#{account}>"
+            " id: #{order_id}/#{perm_id} from: #{client_id}/#{account}" +
+            (commission ? " fee: #{commission}" : "") + ">"
       end
     end # class Order
   end # module Models

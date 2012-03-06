@@ -27,7 +27,7 @@ ib.subscribe(:Alert) { |msg| puts msg.to_human }
 
 # Subscribe to MarketDepth events.
 ib.subscribe(:MarketDepth) do |msg|
-  puts @market[msg.data[:id]].description + ": " + msg.to_human
+  puts @market[msg.request_id].description + ": " + msg.to_human
 end
 
 # Now we actually request L2 market data for the symbols we're interested in.

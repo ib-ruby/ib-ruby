@@ -2,8 +2,6 @@
 
 Plan:
 
-1. Create integration tests (Brokerton?)
-
 2. Make ActiveModel-like attributes Hash for easy attributes updating
 
 3. IB#send_message method should accept block, thus compressing subscribe/send_message
@@ -15,7 +13,6 @@ http://finance.groups.yahoo.com/group/TWSAPI/message/25413
 5. IB Connection reconnects gracefully in case if TWS disconnects/reconnects
 
 6. Compatibility check for new TWS v.966
-
 
 Done:
 

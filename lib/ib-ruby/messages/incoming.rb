@@ -1,3 +1,5 @@
+require 'ib-ruby/messages/abstract_message'
+
 # EClientSocket.java uses sendMax() rather than send() for a number of these.
 # It sends an EOL rather than a number if the value == Integer.MAX_VALUE (or Double.MAX_VALUE).
 # These fields are initialized to this MAX_VALUE.
@@ -11,82 +13,64 @@ module IB
 
     # Incoming IB messages
     module Incoming
+      extend Messages # def_message macros
+
       Classes = Array.new
 
-      # This is just a basic generic message from the server.
-      #
-      # Class variables:
-      # @message_id - int: message id.
-      # @version - int: current version of message format.
-      #
-      # Instance attributes (at least):
-      # @data - Hash of actual data read from a stream.
-      #
-      # Override the load(socket) method in your subclass to do actual reading into @data.
-      class AbstractMessage
-        attr_accessor :created_at, :data
+      class AbstractMessage < IB::Messages::AbstractMessage
 
         def self.inherited(by)
           super(by)
           Classes.push(by)
         end
 
-        def self.message_id
-          @message_id
+        def version # Per message, received messages may have the different versions
+          @data[:version]
         end
 
-        def initialize socket
-          raise Exception.new("Don't use AbstractMessage directly; use the subclass for your specific message type") if self.class.name == "AbstractMessage"
+        # Read incoming message from given socket or instantiate with given data
+        def initialize socket_or_data
           @created_at = Time.now
-          @data = Hash.new
-          @socket = socket
-
-          self.load()
-
-          @socket = nil
-        end
-
-        def to_human
-          self.inspect
-        end
-
-        # Object#id is always defined, we cannot rely on method_missing
-        def id
-          @data.has_key?(:id) ? @data[:id] : super
-        end
-
-        def respond_to? method
-          getter = method.to_s.sub(/=$/, '').to_sym
-          @data.has_key?(method) || @data.has_key?(getter) || super
-        end
-
-        protected
-
-        # TODO: method compilation instead of method_missing
-        def method_missing method, *args
-          getter = method.to_s.sub(/=$/, '').to_sym
-          if @data.has_key? method
-            @data[method]
-          elsif @data.has_key? getter
-            @data[getter] = *args
+          if socket_or_data.is_a?(Hash)
+            @data = socket_or_data
           else
-            super method, *args
+            @data = {}
+            @socket = socket_or_data
+            self.load
+            @socket = nil
           end
         end
 
         # Every message loads received message version first
         def load
           @data[:version] = @socket.read_int
+
+          if @data[:version] != self.class.version
+            raise "Unsupported version #{@data[:version]} of #{self.class} received"
+          end
+
+          load_map *self.class.data_map
         end
 
         # Load @data from the socket according to the given map.
         #
-        # map is a series of Arrays in the format [ [ :name, :type ] ],
+        # map is a series of Arrays in the format of
+        #   [ [ :name, :type ],
+        #     [  :group, :name, :type] ]
         # type identifiers must have a corresponding read_type method on socket (read_int, etc.).
-        # [:version, :int ] is loaded first, by default
-        #
+        # group is used to lump together aggregates, such as Contract or Order fields
         def load_map(*map)
-          map.each { |(name, type)| @data[name] = @socket.__send__("read_#{type}") }
+          map.each do |(m1, m2, m3)|
+            group, name, type = m3 ? [m1, m2, m3] : [nil, m1, m2]
+
+            data = @socket.__send__("read_#{type}")
+            if group
+              @data[group] ||= {}
+              @data[group][name] = data
+            else
+              @data[name] = data
+            end
+          end
         end
       end # class AbstractMessage
 
@@ -97,25 +81,10 @@ module IB
         end
 
         def to_human
-          "<#{self.class.to_s.split('::').last} #{type}:" +
+          "<#{self.message_type} #{type}:" +
               @data.map do |key, value|
-                " #{key} #{value}" unless [:version, :id, :tick_type].include?(key)
+                " #{key} #{value}" unless [:version, :ticker_id, :tick_type].include?(key)
               end.compact.join(',') + " >"
-        end
-      end
-
-      # Macro that defines short message classes using a one-liner
-      def self.def_message message_id, *keys, &to_human
-        base = keys.first.is_a?(Class) ? keys.shift : AbstractMessage
-        Class.new(base) do
-          @message_id = message_id
-
-          define_method(:load) do
-            super()
-            load_map *keys
-          end
-
-          define_method(:to_human, &to_human) if to_human
         end
       end
 
@@ -147,7 +116,7 @@ module IB
       #   the order is inactive due to system, exchange or other issues.
       # :why_held - This field is used to identify an order held when TWS is trying to
       #      locate shares for a short sell. The value used to indicate this is 'locate'.
-      OrderStatus = def_message 3, [:id, :int],
+      OrderStatus = def_message [3, 6], [:order_id, :int],
                                 [:status, :string],
                                 [:filled, :int],
                                 [:remaining, :int],
@@ -161,28 +130,26 @@ module IB
             " @ last/avg: #{last_fill_price}/#{average_fill_price}" +
             (parent_id > 0 ? "parent_id: #{parent_id}" : "") +
             (why_held != "" ? "why_held: #{why_held}" : "") +
-            " id/perm: #{id}/#{perm_id}>"
+            " id/perm: #{order_id}/#{perm_id}>"
       end
 
 
-      AccountValue = def_message(6, [:key, :string],
+      AccountValue = def_message([6, 2], [:key, :string],
                                  [:value, :string],
                                  [:currency, :string],
                                  [:account_name, :string]) do
         "<AccountValue: #{account_name}, #{key}=#{value} #{currency}>"
       end
 
-      AccountUpdateTime = def_message(8, [:time_stamp, :string]) do
-        "<AccountUpdateTime: #{time_stamp}>"
-      end
+      AccountUpdateTime = def_message 8, [:time_stamp, :string]
 
       # This message is always sent by TWS automatically at connect.
       # The IB::Connection class subscribes to it automatically and stores
       # the order id in its @next_order_id attribute.
-      NextValidID = def_message(9, [:id, :int]) { "<NextValidID: #{id}>" }
+      NextValidID = def_message 9, [:order_id, :int]
 
       NewsBulletins =
-          def_message 14, [:id, :int], # unique incrementing bulletin ID.
+          def_message 14, [:request_id, :int], # unique incrementing bulletin ID.
                       [:type, :int], # Type of bulletin. Valid values include:
                       #     1 = Regular news bulletin
                       #     2 = Exchange no longer available for trading
@@ -200,8 +167,7 @@ module IB
                       #                      1 = GROUPS
                       #                      2 = PROFILE
                       #                      3 = ACCOUNT ALIASES
-                      [:xml, :string] # XML string containing the previously requested
-      #                                 FA configuration information.
+                      [:xml, :string] # XML string with requested FA configuration information.
 
       # Receives an XML document that describes the valid parameters that a scanner
       # subscription can have (for outgoing RequestScannerSubscription message).
@@ -212,21 +178,18 @@ module IB
 
       # Receive Reuters global fundamental market data. There must be a subscription to
       # Reuters Fundamental set up in Account Management before you can receive this data.
-      FundamentalData = def_message 50, [:id, :int], # request_id
+      FundamentalData = def_message 50, [:request_id, :int], # request_id
                                     [:data, :string]
 
-      ContractDataEnd = def_message(52, [:id, :int]) { "<ContractDataEnd: #{id}>" } # request_id
+      ContractDataEnd = def_message 52, [:request_id, :int] # request_id
 
-      OpenOrderEnd = def_message(53) { "<OpenOrderEnd>" }
+      OpenOrderEnd = def_message 53
 
-      AccountDownloadEnd = def_message(54, [:account_name, :string]) do
-        "<AccountDownloadEnd: #{account_name}}>"
-      end # request_id
+      AccountDownloadEnd = def_message 54, [:account_name, :string]
 
+      ExecutionDataEnd = def_message 55, [:request_id, :int] # request_id
 
-      ExecutionDataEnd = def_message(55, [:id, :int]) { "<ExecutionDataEnd: #{id}>" } # request_id
-
-      TickSnapshotEnd = def_message(57, [:id, :int]) { "<TickSnapshotEnd: #{id}>" } # request_id
+      TickSnapshotEnd = def_message 57, [:ticker_id, :int]
 
       ### Actual message classes (long definitions):
 
@@ -271,30 +234,30 @@ module IB
       # IB then emits at most 2 events on eWrapper:
       #          tickPrice( tickerId, tickType, price, canAutoExecute)
       #          tickSize( tickerId, sizeTickType, size)
-      TickPrice = def_message 1, AbstractTick,
-                              [:id, :int], # ticker_id
+      TickPrice = def_message [1, 6], AbstractTick,
+                              [:ticker_id, :int],
                               [:tick_type, :int],
                               [:price, :decimal],
                               [:size, :int],
                               [:can_auto_execute, :int]
 
-      TickSize = def_message 2, AbstractTick,
-                             [:id, :int], # ticker_id
+      TickSize = def_message [2, 6], AbstractTick,
+                             [:ticker_id, :int],
                              [:tick_type, :int],
                              [:size, :int]
 
       TickGeneric = def_message 45, AbstractTick,
-                                [:id, :int], # ticker_id
+                                [:ticker_id, :int],
                                 [:tick_type, :int],
                                 [:value, :decimal]
 
-      TickString = def_message 46, AbstractTick,
-                               [:id, :int], # ticker_id
+      TickString = def_message [46, 6], AbstractTick,
+                               [:ticker_id, :int],
                                [:tick_type, :int],
                                [:value, :string]
 
       TickEFP = def_message 47, AbstractTick,
-                            [:id, :int], # ticker_id
+                            [:ticker_id, :int],
                             [:tick_type, :int],
                             [:basis_points, :decimal],
                             [:formatted_basis_points, :string],
@@ -307,7 +270,7 @@ module IB
       # TWS’s option model volatilities, prices, and deltas, along with the present
       # value of dividends expected on that options underlier are received.
       # TickOption message contains following @data:
-      #    :id - Ticker Id that was specified previously in the call to reqMktData()
+      #    :ticker_id - Id that was specified previously in the call to reqMktData()
       #    :tick_type - Specifies the type of option computation (see TICK_TYPES).
       #    :implied_volatility - The implied volatility calculated by the TWS option
       #                          modeler, using the specified :tick_type value.
@@ -318,42 +281,27 @@ module IB
       #    :vega - The option vega value.
       #    :theta - The option theta value.
       #    :under_price - The price of the underlying.
-      class TickOption < AbstractTick
-        @message_id = 21
+      TickOptionComputation = TickOption =
+          def_message([21, 6], AbstractTick,
+                      [:ticker_id, :int],
+                      [:tick_type, :int],
+                      #                       What is the "not yet computed" indicator:
+                      [:implied_volatility, :decimal_limit_1], # -1 and below
+                      [:delta, :decimal_limit_2], #              -2 and below
+                      [:option_price, :decimal_limit_1], #       -1   -"-
+                      [:pv_dividend, :decimal_limit_1], #        -1   -"-
+                      [:gamma, :decimal_limit_2], #              -2   -"-
+                      [:vega, :decimal_limit_2], #               -2   -"-
+                      [:theta, :decimal_limit_2], #              -2   -"-
+                      [:under_price, :decimal_limit_1]) do
 
-        # Read @data[key] if it was computed (received value above limit)
-        # Leave @data[key] nil if received value below limit ("not yet computed")
-        def read_computed key, limit
-          value = @socket.read_decimal
-          # limit is the "not yet computed" indicator
-          @data[key] = value <= limit ? nil : value
-        end
-
-        def load
-          super
-
-          @data[:id] = @socket.read_int # ticker_id
-          @data[:tick_type] = @socket.read_int
-          read_computed :implied_volatility, -1 #-1 is the "not yet computed" indicator
-          read_computed :delta, -2 #             -2 is the "not yet computed" indicator
-          read_computed :option_price, -1 #      -1 is the "not yet computed" indicator
-          read_computed :pv_dividend, -1 #       -1 is the "not yet computed" indicator
-          read_computed :gamma, -2 #             -2 is the "not yet computed" indicator
-          read_computed :vega, -2 #              -2 is the "not yet computed" indicator
-          read_computed :theta, -2 #             -2 is the "not yet computed" indicator
-          read_computed :under_price, -1 #       -1 is the "not yet computed" indicator
-        end
-
-        def to_human
-          "<TickOption #{type} for #{:id}: underlying @ #{under_price}, "+
-              "option @ #{option_price}, IV #{implied_volatility}%, delta #{delta}, " +
-              "gamma #{gamma}, vega #{vega}, theta #{theta}, pv_dividend #{pv_dividend}>"
-        end
-      end # TickOption
-      TickOptionComputation = TickOption
+            "<TickOption #{type} for #{:ticker_id}: underlying @ #{under_price}, "+
+                "option @ #{option_price}, IV #{implied_volatility}%, delta #{delta}, " +
+                "gamma #{gamma}, vega #{vega}, theta #{theta}, pv_dividend #{pv_dividend}>"
+          end
 
       MarketDepth =
-          def_message 12, [:id, :int],
+          def_message 12, [:request_id, :int],
                       [:position, :int], # The row Id of this market depth entry.
                       [:operation, :int], # How it should be applied to the market depth:
                       #   0 = insert this new order into the row identified by :position
@@ -363,7 +311,6 @@ module IB
                       [:price, :decimal],
                       [:size, :int]
       class MarketDepth
-
         def side
           @data[:side] == 0 ? :ask : :bid
         end
@@ -373,28 +320,27 @@ module IB
         end
 
         def to_human
-          "<#{self.class.to_s.split(/::/).last}: #{operation} #{side} @ "+
+          "<#{self.message_type}: #{operation} #{side} @ "+
               "#{position} = #{price} x #{size}>"
         end
       end
 
       MarketDepthL2 =
-          def_message 13, MarketDepth,
-                      [:id, :int],
-                      [:position, :int], # The row Id of this market depth entry.
+          def_message 13, MarketDepth, # Fields descriptions - see above
+                      [:request_id, :int],
+                      [:position, :int],
                       [:market_maker, :string], # The exchange hosting this order.
-                      [:operation, :int], # How it should be applied to the market depth:
-                      #   0 = insert this new order into the row identified by :position
-                      #   1 = update the existing order in the row identified by :position
-                      #   2 = delete the existing order at the row identified by :position
-                      [:side, :int], # side of the book: 0 = ask, 1 = bid
+                      [:operation, :int],
+                      [:side, :int],
                       [:price, :decimal],
                       [:size, :int]
 
       # Called Error in Java code, but in fact this type of messages also
       # deliver system alerts and additional (non-error) info from TWS.
-      # It has additional accessors: #code and #message, derived from @data
-      Alert = def_message 4, [:id, :int], [:code, :int], [:message, :string]
+      ErrorMessage = Error = Alert = def_message([4, 2],
+                                                 [:error_id, :int],
+                                                 [:code, :int],
+                                                 [:message, :string])
       class Alert
         # Is it an Error message?
         def error?
@@ -412,347 +358,202 @@ module IB
         end
 
         def to_human
-          "TWS #{ error? ? 'Error' : system? ? 'System' : 'Warning'
-          } Message #{code}: #{message}"
+          "TWS #{ error? ? 'Error' : system? ? 'System' : 'Warning'} #{code}: #{message}"
         end
       end # class Alert
-      Error = Alert
-      ErrorMessage = Alert
 
-      class OpenOrder < AbstractMessage
-        @message_id = 5
-
-        # TODO: Add id accessor to unify with OrderStatus message
-        attr_accessor :order, :contract
-
-        def load
-          super
-
-          @order = Models::Order.new :id => @socket.read_int
-
-          @contract = Models::Contract.build :con_id => @socket.read_string,
-                                             :symbol => @socket.read_string,
-                                             :sec_type => @socket.read_string,
-                                             :expiry => @socket.read_string,
-                                             :strike => @socket.read_decimal,
-                                             :right => @socket.read_string,
-                                             :exchange => @socket.read_string,
-                                             :currency => @socket.read_string,
-                                             :local_symbol => @socket.read_string
-
-          @order.action = @socket.read_string
-          @order.total_quantity = @socket.read_int
-          @order.order_type = @socket.read_string
-          @order.limit_price = @socket.read_decimal
-          @order.aux_price = @socket.read_decimal
-          @order.tif = @socket.read_string
-          @order.oca_group = @socket.read_string
-          @order.account = @socket.read_string
-          @order.open_close = @socket.read_string
-          @order.origin = @socket.read_int
-          @order.order_ref = @socket.read_string
-          @order.client_id = @socket.read_int
-          @order.perm_id = @socket.read_int
-          @order.outside_rth = (@socket.read_int == 1)
-          @order.hidden = (@socket.read_int == 1)
-          @order.discretionary_amount = @socket.read_decimal
-          @order.good_after_time = @socket.read_string
-          @socket.read_string # skip deprecated sharesAllocation field
-
-          @order.fa_group = @socket.read_string
-          @order.fa_method = @socket.read_string
-          @order.fa_percentage = @socket.read_string
-          @order.fa_profile = @socket.read_string
-          @order.good_till_date = @socket.read_string
-          @order.rule_80a = @socket.read_string
-          @order.percent_offset = @socket.read_decimal
-          @order.settling_firm = @socket.read_string
-          @order.short_sale_slot = @socket.read_int
-          @order.designated_location = @socket.read_string
-          @order.exempt_code = @socket.read_int # skipped in ver 51?
-          @order.auction_strategy = @socket.read_int
-          @order.starting_price = @socket.read_decimal
-          @order.stock_ref_price = @socket.read_decimal
-          @order.delta = @socket.read_decimal
-          @order.stock_range_lower = @socket.read_decimal
-          @order.stock_range_upper = @socket.read_decimal
-          @order.display_size = @socket.read_int
-                              #@order.rth_only = @socket.read_boolean
-          @order.block_order = @socket.read_boolean
-          @order.sweep_to_fill = @socket.read_boolean
-          @order.all_or_none = @socket.read_boolean
-          @order.min_quantity = @socket.read_int
-          @order.oca_type = @socket.read_int
-          @order.etrade_only = @socket.read_boolean
-          @order.firm_quote_only = @socket.read_boolean
-          @order.nbbo_price_cap = @socket.read_decimal
-          @order.parent_id = @socket.read_int
-          @order.trigger_method = @socket.read_int
-          @order.volatility = @socket.read_decimal
-          @order.volatility_type = @socket.read_int
-          @order.delta_neutral_order_type = @socket.read_string
-          @order.delta_neutral_aux_price = @socket.read_decimal
-
-          @order.continuous_update = @socket.read_int
-          @order.reference_price_type = @socket.read_int
-          @order.trail_stop_price = @socket.read_decimal
-          @order.basis_points = @socket.read_decimal
-          @order.basis_points_type = @socket.read_int
-          @contract.legs_description = @socket.read_string
-          @order.scale_init_level_size = @socket.read_int_max
-          @order.scale_subs_level_size = @socket.read_int_max
-          @order.scale_price_increment = @socket.read_decimal_max
-          @order.clearing_account = @socket.read_string
-          @order.clearing_intent = @socket.read_string
-          @order.not_held = (@socket.read_int == 1)
-
-          under_comp_present = (@socket.read_int == 1)
-
-          if under_comp_present
-            @contract.under_comp = true
-            @contract.under_con_id = @socket.read_int
-            @contract.under_delta = @socket.read_decimal
-            @contract.under_price = @socket.read_decimal
-          end
-
-          @order.algo_strategy = @socket.read_string
-
-          unless @order.algo_strategy.nil? || @order.algo_strategy.empty?
-            algo_params_count = @socket.read_int
-            if algo_params_count > 0
-              @order.algo_params = Hash.new
-              algo_params_count.times do
-                tag = @socket.read_string
-                value = @socket.read_string
-                @order.algo_params[tag] = value
-              end
-            end
-          end
-
-          @order.what_if = (@socket.read_int == 1)
-          @order.status = @socket.read_string
-          @order.init_margin = @socket.read_string
-          @order.maint_margin = @socket.read_string
-          @order.equity_with_loan = @socket.read_string
-          @order.commission = @socket.read_decimal_max       # May be nil!
-          @order.min_commission = @socket.read_decimal_max   # May be nil!
-          @order.max_commission = @socket.read_decimal_max   # May be nil!
-          @order.commission_currency = @socket.read_string
-          @order.warning_text = @socket.read_string
-        end
-
-        def to_human
-          "<OpenOrder: #{@contract.to_human} #{@order.to_human}>"
-        end
-      end # OpenOrder
-
-      class PortfolioValue < AbstractMessage
-        @message_id = 7
-
-        attr_accessor :contract
+      PortfolioValue = def_message [7, 7],
+                                   [:contract, :con_id, :int],
+                                   [:contract, :symbol, :string],
+                                   [:contract, :sec_type, :string],
+                                   [:contract, :expiry, :string],
+                                   [:contract, :strike, :decimal],
+                                   [:contract, :right, :string],
+                                   [:contract, :multiplier, :string],
+                                   [:contract, :primary_exchange, :string],
+                                   [:contract, :currency, :string],
+                                   [:contract, :local_symbol, :string],
+                                   [:position, :int],
+                                   [:market_price, :decimal],
+                                   [:market_value, :decimal],
+                                   [:average_cost, :decimal],
+                                   [:unrealized_pnl, :decimal_max], # May be nil!
+                                   [:realized_pnl, :decimal_max], #   May be nil!
+                                   [:account_name, :string]
+      class PortfolioValue
 
         def load
           super
-
-          @contract = Models::Contract.build :con_id => @socket.read_int,
-                                             :symbol => @socket.read_string,
-                                             :sec_type => @socket.read_string,
-                                             :expiry => @socket.read_string,
-                                             :strike => @socket.read_decimal,
-                                             :right => @socket.read_string,
-                                             :multiplier => @socket.read_string,
-                                             :primary_exchange => @socket.read_string,
-                                             :currency => @socket.read_string,
-                                             :local_symbol => @socket.read_string
-          load_map [:position, :int],
-                   [:market_price, :decimal],
-                   [:market_value, :decimal],
-                   [:average_cost, :decimal],
-                   [:unrealized_pnl, :decimal_max], # May be nil!
-                   [:realized_pnl, :decimal_max], #   May be nil!
-                   [:account_name, :string]
+          @contract = Models::Contract.build @data[:contract]
         end
 
         def to_human
-          "<PortfolioValue: #{@contract.to_human} (#{position}): Market #{market_price}" +
+          "<PortfolioValue: #{contract.to_human} (#{position}): Market #{market_price}" +
               " price #{market_value} value; PnL: #{unrealized_pnl} unrealized," +
               " #{realized_pnl} realized; account #{account_name}>"
         end
-
       end # PortfolioValue
 
-      class ContractData < AbstractMessage
-        @message_id = 10
+      ContractDetails = ContractData =
+          def_message([10, 6],
+                      [:request_id, :int], # request id
+                      [:contract, :symbol, :string],
+                      [:contract, :sec_type, :string],
+                      [:contract, :expiry, :string],
+                      [:contract, :strike, :decimal],
+                      [:contract, :right, :string],
+                      [:contract, :exchange, :string],
+                      [:contract, :currency, :string],
+                      [:contract, :local_symbol, :string],
 
-        attr_accessor :contract
+                      [:contract, :market_name, :string], # extended
+                      [:contract, :trading_class, :string],
+                      [:contract, :con_id, :int],
+                      [:contract, :min_tick, :decimal],
+                      [:contract, :multiplier, :string],
+                      [:contract, :order_types, :string],
+                      [:contract, :valid_exchanges, :string],
+                      [:contract, :price_magnifier, :int],
+                      [:contract, :under_con_id, :int],
+                      [:contract, :long_name, :string],
+                      [:contract, :primary_exchange, :string],
+                      [:contract, :contract_month, :string],
+                      [:contract, :industry, :string],
+                      [:contract, :category, :string],
+                      [:contract, :subcategory, :string],
+                      [:contract, :time_zone, :string],
+                      [:contract, :trading_hours, :string],
+                      [:contract, :liquid_hours, :string])
 
+      class ContractData
         def load
           super
-          load_map [:id, :int] # request id
-
-          @contract =
-              Models::Contract.build :symbol => @socket.read_string,
-                                     :sec_type => @socket.read_string,
-                                     :expiry => @socket.read_string,
-                                     :strike => @socket.read_decimal,
-                                     :right => @socket.read_string,
-                                     :exchange => @socket.read_string,
-                                     :currency => @socket.read_string,
-                                     :local_symbol => @socket.read_string,
-
-                                     :market_name => @socket.read_string,
-                                     :trading_class => @socket.read_string,
-                                     :con_id => @socket.read_int,
-                                     :min_tick => @socket.read_decimal,
-                                     :multiplier => @socket.read_string,
-                                     :order_types => @socket.read_string,
-                                     :valid_exchanges => @socket.read_string,
-                                     :price_magnifier => @socket.read_int,
-
-                                     :under_con_id => @socket.read_int,
-                                     :long_name => @socket.read_string,
-                                     :primary_exchange => @socket.read_string,
-                                     :contract_month => @socket.read_string,
-                                     :industry => @socket.read_string,
-                                     :category => @socket.read_string,
-                                     :subcategory => @socket.read_string,
-                                     :time_zone => @socket.read_string,
-                                     :trading_hours => @socket.read_string,
-                                     :liquid_hours => @socket.read_string
+          @contract = Models::Contract.build @data[:contract]
         end
       end # ContractData
-      ContractDetails = ContractData
 
-      class ExecutionData < AbstractMessage
-        @message_id = 11
+      ExecutionData =
+          def_message [11, 7],
+                      # The reqID that was specified previously in the call to reqExecution()
+                      [:request_id, :int],
+                      [:execution, :order_id, :int],
+                      [:contract, :con_id, :int],
+                      [:contract, :symbol, :string],
+                      [:contract, :sec_type, :string],
+                      [:contract, :expiry, :string],
+                      [:contract, :strike, :decimal],
+                      [:contract, :right, :string],
+                      [:contract, :exchange, :string],
+                      [:contract, :currency, :string],
+                      [:contract, :local_symbol, :string],
 
-        attr_accessor :contract, :execution
+                      [:execution, :exec_id, :string], # Weird format
+                      [:execution, :time, :string],
+                      [:execution, :account_name, :string],
+                      [:execution, :exchange, :string],
+                      [:execution, :side, :string],
+                      [:execution, :shares, :int],
+                      [:execution, :price, :decimal],
+                      [:execution, :perm_id, :int],
+                      [:execution, :client_id, :int],
+                      [:execution, :liquidation, :int],
+                      [:execution, :cumulative_quantity, :int],
+                      [:execution, :average_price, :decimal]
 
+      class ExecutionData
         def load
           super
-          load_map [:id, :int], # request_id
-                   [:order_id, :int]
-
-          @contract =
-              Models::Contract.build :con_id => @socket.read_int,
-                                     :symbol => @socket.read_string,
-                                     :sec_type => @socket.read_string,
-                                     :expiry => @socket.read_string,
-                                     :strike => @socket.read_decimal,
-                                     :right => @socket.read_string,
-                                     :exchange => @socket.read_string,
-                                     :currency => @socket.read_string,
-                                     :local_symbol => @socket.read_string
-          @execution =
-              Models::Execution.new :order_id => @data[:order_id],
-                                    :exec_id => @socket.read_string,
-                                    :time => @socket.read_string,
-                                    :account_number => @socket.read_string,
-                                    :exchange => @socket.read_string,
-                                    :side => @socket.read_string,
-                                    :shares => @socket.read_int,
-                                    :price => @socket.read_decimal,
-                                    :perm_id => @socket.read_int,
-                                    :client_id => @socket.read_int,
-                                    :liquidation => @socket.read_int,
-                                    :cumulative_quantity => @socket.read_int,
-                                    :average_price => @socket.read_decimal
+          @contract = Models::Contract.build @data[:contract]
+          @execution = Models::Execution.new @data[:execution]
         end
 
         def to_human
-          "<ExecutionData: #{contract.to_human}, #{execution}>"
+          "<ExecutionData #{request_id}: #{contract.to_human}, #{execution}>"
         end
       end # ExecutionData
 
-      # HistoricalData contains following @data:
-      # General:
-      #    :id - The ID of the request to which this is responding
-      #    :count - Number of Historical data points returned (size of :results).
-      #    :results - an Array of Historical Data Bars
-      #    :start_date - beginning of returned Historical data period
-      #    :end_date   - end of returned Historical data period
-      # Each returned Bar in @data[:results] Array contains this data:
-      #    :date - The date-time stamp of the start of the bar. The format is
-      #       determined by the RequestHistoricalData formatDate parameter.
-      #    :open -  The bar opening price.
-      #    :high -  The high price during the time covered by the bar.
-      #    :low -   The low price during the time covered by the bar.
-      #    :close - The bar closing price.
-      #    :volume - The volume during the time covered by the bar.
-      #    :trades - When TRADES historical data is returned, represents number of trades
-      #             that occurred during the time period the bar covers
-      #    :wap - The weighted average price during the time covered by the bar.
-      #    :has_gaps - Whether or not there are gaps in the data.
-      class HistoricalData < AbstractMessage
-        @message_id = 17
+      BondContractData =
+          def_message [18, 4],
+                      [:request_id, :int], # request id
+                      [:contract, :symbol, :string],
+                      [:contract, :sec_type, :string],
+                      [:contract, :cusip, :string],
+                      [:contract, :coupon, :decimal],
+                      [:contract, :maturity, :string],
+                      [:contract, :issue_date, :string],
+                      [:contract, :ratings, :string],
+                      [:contract, :bond_type, :string],
+                      [:contract, :coupon_type, :string],
+                      [:contract, :convertible, :boolean],
+                      [:contract, :callable, :boolean],
+                      [:contract, :puttable, :boolean],
+                      [:contract, :desc_append, :string],
+                      [:contract, :exchange, :string],
+                      [:contract, :currency, :string],
+                      [:contract, :market_name, :string], # extended
+                      [:contract, :trading_class, :string],
+                      [:contract, :con_id, :int],
+                      [:contract, :min_tick, :decimal],
+                      [:contract, :order_types, :string],
+                      [:contract, :valid_exchanges, :string],
+                      [:contract, :valid_next_option_date, :string],
+                      [:contract, :valid_next_option_type, :string],
+                      [:contract, :valid_next_option_partial, :string],
+                      [:contract, :notes, :string],
+                      [:contract, :long_name, :string]
 
+      class BondContractData
         def load
           super
-          load_map [:id, :int],
-                   [:start_date, :string],
-                   [:end_date, :string],
-                   [:count, :int]
-
-          @data[:results] = Array.new(@data[:count]) do |index|
-            Models::Bar.new :date => @socket.read_string,
-                            :open => @socket.read_decimal,
-                            :high => @socket.read_decimal,
-                            :low => @socket.read_decimal,
-                            :close => @socket.read_decimal,
-                            :volume => @socket.read_int,
-                            :wap => @socket.read_decimal,
-                            :has_gaps => @socket.read_string,
-                            :trades => @socket.read_int
-          end
-        end
-
-        def to_human
-          "<HistoricalData: req: #{id}, #{item_count} items, #{start_date} to #{end_date}>"
-        end
-      end # HistoricalData
-
-      class BondContractData < AbstractMessage
-        @message_id = 18
-
-        attr_accessor :contract
-
-        def load
-          super
-          load_map [:id, :int] # request id
-
-          @contract =
-              Models::Contract.build :symbol => @socket.read_string,
-                                     :sec_type => @socket.read_string,
-                                     :cusip => @socket.read_string,
-                                     :coupon => @socket.read_decimal,
-                                     :maturity => @socket.read_string,
-                                     :issue_date => @socket.read_string,
-                                     :ratings => @socket.read_string,
-                                     :bond_type => @socket.read_string,
-                                     :coupon_type => @socket.read_string,
-                                     :convertible => @socket.read_boolean,
-                                     :callable => @socket.read_boolean,
-                                     :puttable => @socket.read_boolean,
-                                     :desc_append => @socket.read_string,
-                                     :exchange => @socket.read_string,
-                                     :currency => @socket.read_string,
-                                     :market_name => @socket.read_string,
-                                     :trading_class => @socket.read_string,
-                                     :con_id => @socket.read_int,
-                                     :min_tick => @socket.read_decimal,
-                                     :order_types => @socket.read_string,
-                                     :valid_exchanges => @socket.read_string,
-                                     :valid_next_option_date => @socket.read_string,
-                                     :valid_next_option_type => @socket.read_string,
-                                     :valid_next_option_partial => @socket.read_string,
-                                     :notes => @socket.read_string,
-                                     :long_name => @socket.read_string
+          @contract = Models::Contract.build @data[:contract]
         end
       end # BondContractData
 
+      # The server sends this message upon accepting a Delta-Neutral DN RFQ
+      # - see API Reference p. 26
+      DeltaNeutralValidation = def_message 56,
+                                           [:request_id, :int],
+                                           [:contract, :under_con_id, :int],
+                                           [:contract, :under_delta, :decimal],
+                                           [:contract, :under_price, :decimal]
+      class DeltaNeutralValidation
+        def load
+          super
+          @contract = Models::Contract.build @data[:contract].merge(:under_comp => true)
+        end
+      end # DeltaNeutralValidation
+
+      # RealTimeBar contains following @data:
+      #    :request_id - The ID of the *request* to which this is responding
+      #    :time - The date-time stamp of the start of the bar. The format is offset in
+      #            seconds from the beginning of 1970, same format as the UNIX epoch time
+      #    :bar - received RT Bar
+      RealTimeBar = def_message 50,
+                                [:request_id, :int],
+                                [:bar, :time, :int],
+                                [:bar, :open, :decimal],
+                                [:bar, :high, :decimal],
+                                [:bar, :low, :decimal],
+                                [:bar, :close, :decimal],
+                                [:bar, :volume, :int],
+                                [:bar, :wap, :decimal],
+                                [:bar, :trades, :int]
+      class RealTimeBar
+        def load
+          super
+          @bar = Models::Bar.new @data[:bar]
+        end
+
+        def to_human
+          "<RealTimeBar: #{request_id} #{time}, #{bar}>"
+        end
+      end # RealTimeBar
+
+      ### Messages with really complicated message loading logics (cycles, conditions)
+
       # This method receives the requested market scanner data results.
       # ScannerData contains following @data:
-      # :id - The ID of the request to which this row is responding
+      # :request_id - The ID of the request to which this row is responding
       # :count - Number of data points returned (size of :results).
       # :results - an Array of Hashes, each hash contains a set of
       #            data about one scanned Contract:
@@ -761,15 +562,16 @@ module IB
       #            :benchmark - Varies based on query.
       #            :projection - Varies based on query.
       #            :legs - Describes combo legs when scan is returning EFP.
-      class ScannerData < AbstractMessage
-        @message_id = 20
+      ScannerData = def_message [20, 3],
+                                [:request_id, :int], # request id
+                                [:count, :int]
+      class ScannerData
+        attr_accessor :results
 
         def load
           super
-          load_map [:id, :int],
-                   [:count, :int]
 
-          @data[:results] = Array.new(@data[:count]) do |index|
+          @results = Array.new(@data[:count]) do |index|
             {:rank => @socket.read_int,
              :contract => Contract.build(:con_id => @socket.read_int,
                                          :symbol => @socket.read_str,
@@ -787,63 +589,189 @@ module IB
              :projection => @socket.read_str,
              :legs => @socket.read_str,
             }
-            #eWrapper().scannerData(tickerId, rank, contract, distance,
-            #    benchmark, projection, legsStr);
-
           end
-
-          #eWrapper().scannerDataEnd(tickerId);
         end
       end # ScannerData
 
       # HistoricalData contains following @data:
-      #    :id - The ID of the *request* to which this is responding
-      #    :time - The date-time stamp of the start of the bar. The format is offset in
-      #            seconds from the beginning of 1970, same format as the UNIX epoch time
-      #    :bar - received RT Bar
-      class RealTimeBar < AbstractMessage
-        @message_id = 50
+      # General:
+      #    :request_id - The ID of the request to which this is responding
+      #    :count - Number of Historical data points returned (size of :results).
+      #    :results - an Array of Historical Data Bars
+      #    :start_date - beginning of returned Historical data period
+      #    :end_date   - end of returned Historical data period
+      # Each returned Bar in @data[:results] Array contains this data:
+      #    :date - The date-time stamp of the start of the bar. The format is
+      #       determined by the RequestHistoricalData formatDate parameter.
+      #    :open -  The bar opening price.
+      #    :high -  The high price during the time covered by the bar.
+      #    :low -   The low price during the time covered by the bar.
+      #    :close - The bar closing price.
+      #    :volume - The volume during the time covered by the bar.
+      #    :trades - When TRADES historical data is returned, represents number of trades
+      #             that occurred during the time period the bar covers
+      #    :wap - The weighted average price during the time covered by the bar.
+      #    :has_gaps - Whether or not there are gaps in the data.
 
-        attr_accessor :bar
+      HistoricalData = def_message [17, 3],
+                                   [:request_id, :int],
+                                   [:start_date, :string],
+                                   [:end_date, :string],
+                                   [:count, :int]
+      class HistoricalData
+        attr_accessor :results
 
         def load
           super
-          load_map [:id, :int],
-                   [:time, :int] # long!
 
-          @bar = Models::Bar.new :date => Time.at(@data[:time]),
-                                 :open => @socket.read_decimal,
-                                 :high => @socket.read_decimal,
-                                 :low => @socket.read_decimal,
-                                 :close => @socket.read_decimal,
-                                 :volume => @socket.read_int,
-                                 :wap => @socket.read_decimal,
-                                 :trades => @socket.read_int
+          @results = Array.new(@data[:count]) do |index|
+            Models::Bar.new :time => @socket.read_string,
+                            :open => @socket.read_decimal,
+                            :high => @socket.read_decimal,
+                            :low => @socket.read_decimal,
+                            :close => @socket.read_decimal,
+                            :volume => @socket.read_int,
+                            :wap => @socket.read_decimal,
+                            :has_gaps => @socket.read_string,
+                            :trades => @socket.read_int
+          end
         end
 
         def to_human
-          "<RealTimeBar: req: #{id}, #{bar}>"
+          "<HistoricalData: #{request_id}, #{count} items, #{start_date} to #{end_date}>"
         end
-      end # RealTimeBar
-      RealTimeBars = RealTimeBar
+      end # HistoricalData
 
-      # The server sends this message upon accepting a Delta-Neutral DN RFQ
-      # - see API Reference p. 26
-      class DeltaNeutralValidation < AbstractMessage
-        @message_id = 56
 
-        attr_accessor :contract
+      OpenOrder =
+          def_message [5, 23],
+                      # The reqID that was specified previously in the call to reqExecution()
+                      [:order, :order_id, :int],
+
+                      [:contract, :con_id, :int],
+                      [:contract, :symbol, :string],
+                      [:contract, :sec_type, :string],
+                      [:contract, :expiry, :string],
+                      [:contract, :strike, :decimal],
+                      [:contract, :right, :string],
+                      [:contract, :exchange, :string],
+                      [:contract, :currency, :string],
+                      [:contract, :local_symbol, :string],
+
+                      [:order, :action, :string],
+                      [:order, :total_quantity, :int],
+                      [:order, :order_type, :string],
+                      [:order, :limit_price, :decimal],
+                      [:order, :aux_price, :decimal],
+                      [:order, :tif, :string],
+                      [:order, :oca_group, :string],
+                      [:order, :account, :string],
+                      [:order, :open_close, :string],
+                      [:order, :origin, :int],
+                      [:order, :order_ref, :string],
+                      [:order, :client_id, :int],
+                      [:order, :perm_id, :int],
+                      [:order, :outside_rth, :boolean], # (@socket.read_int == 1)
+                      [:order, :hidden, :boolean], # (@socket.read_int == 1)
+                      [:order, :discretionary_amount, :decimal],
+                      [:order, :good_after_time, :string],
+                      [:skip, :string], # skip deprecated sharesAllocation field
+
+                      [:order, :fa_group, :string],
+                      [:order, :fa_method, :string],
+                      [:order, :fa_percentage, :string],
+                      [:order, :fa_profile, :string],
+                      [:order, :good_till_date, :string],
+                      [:order, :rule_80a, :string],
+                      [:order, :percent_offset, :decimal],
+                      [:order, :settling_firm, :string],
+                      [:order, :short_sale_slot, :int],
+                      [:order, :designated_location, :string],
+                      [:order, :exempt_code, :int], # skipped in ver 51?
+                      [:order, :auction_strategy, :int],
+                      [:order, :starting_price, :decimal],
+                      [:order, :stock_ref_price, :decimal],
+                      [:order, :delta, :decimal],
+                      [:order, :stock_range_lower, :decimal],
+                      [:order, :stock_range_upper, :decimal],
+                      [:order, :display_size, :int],
+                      #@order.rth_only = @socket.read_boolean
+                      [:order, :block_order, :boolean],
+                      [:order, :sweep_to_fill, :boolean],
+                      [:order, :all_or_none, :boolean],
+                      [:order, :min_quantity, :int],
+                      [:order, :oca_type, :int],
+                      [:order, :etrade_only, :boolean],
+                      [:order, :firm_quote_only, :boolean],
+                      [:order, :nbbo_price_cap, :decimal],
+                      [:order, :parent_id, :int],
+                      [:order, :trigger_method, :int],
+                      [:order, :volatility, :decimal],
+                      [:order, :volatility_type, :int],
+                      [:order, :delta_neutral_order_type, :string],
+                      [:order, :delta_neutral_aux_price, :decimal],
+
+                      [:order, :continuous_update, :int],
+                      [:order, :reference_price_type, :int],
+                      [:order, :trail_stop_price, :decimal],
+                      [:order, :basis_points, :decimal],
+                      [:order, :basis_points_type, :int],
+                      [:contract, :legs_description, :string],
+                      [:order, :scale_init_level_size, :int_max],
+                      [:order, :scale_subs_level_size, :int_max],
+                      [:order, :scale_price_increment, :decimal_max],
+                      [:order, :clearing_account, :string],
+                      [:order, :clearing_intent, :string],
+                      [:order, :not_held, :boolean] # (@socket.read_int == 1)
+
+      class OpenOrder
 
         def load
           super
-          load_map [:id, :int] # request id
 
-          @contract = Models::Contract.build :under_comp => true,
-                                             :under_con_id => @socket.read_int,
-                                             :under_delta => @socket.read_decimal,
-                                             :under_price => @socket.read_decimal
+          load_map [:contract, :under_comp, :boolean] # (@socket.read_int == 1)
+
+          if @data[:contract][:under_comp]
+            load_map [:contract, :under_con_id, :int],
+                     [:contract, :under_delta, :decimal],
+                     [:contract, :under_price, :decimal]
+          end
+
+          load_map [:order, :algo_strategy, :string]
+
+          unless @data[:order][:algo_strategy].nil? || @data[:order][:algo_strategy].empty?
+            load_map [:algo_params_count, :int]
+            if @data[:algo_params_count] > 0
+              @data[:order][:algo_params] = Hash.new
+              @data[:algo_params_count].times do
+                tag = @socket.read_string
+                value = @socket.read_string
+                @data[:order][:algo_params][tag] = value
+              end
+            end
+          end
+
+          load_map [:order, :what_if, :boolean], # (@socket.read_int == 1)
+                   [:order, :status, :string],
+                   [:order, :init_margin, :string],
+                   [:order, :maint_margin, :string],
+                   [:order, :equity_with_loan, :string],
+                   [:order, :commission, :decimal_max], # May be nil!
+                   [:order, :min_commission, :decimal_max], # May be nil!
+                   [:order, :max_commission, :decimal_max], # May be nil!
+                   [:order, :commission_currency, :string],
+                   [:order, :warning_text, :string]
+
+          @order = Models::Order.new @data[:order]
+          @contract = Models::Contract.build @data[:contract]
         end
-      end # DeltaNeutralValidation
+
+        def to_human
+          "<OpenOrder: #{@contract.to_human} #{@order.to_human}>"
+        end
+      end
+
+      # OpenOrder
 
       Table = Hash.new
       Classes.each { |msg_class| Table[msg_class.message_id] = msg_class }

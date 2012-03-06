@@ -1,8 +1,11 @@
-# Note that the :description field is particular to ib-ruby, and is NOT part of the standard TWS API.
-# It is never transmitted to IB. It's purely used clientside, and you can store any arbitrary string that
-# you may find useful there.
+# Note that the :description field is particular to ib-ruby, and is NOT part of the
+# standard TWS API. It is never transmitted to IB. It's purely used clientside, and
+# you can store any arbitrary string that you may find useful there.
 module IB
   module Symbols
+    # IDEALPRO is for orders over 25,000 and routes to the interbank quote stream.
+    # IDEAL is for smaller orders, and has wider spreads/slower execution... generally
+    # used for smaller currency conversions.
     Forex = {
         :audusd => Models::Contract.new(:symbol => "AUD",
                                         :exchange => "IDEALPRO",
@@ -64,15 +67,5 @@ module IB
                                         :sec_type => SECURITY_TYPES[:forex],
                                         :description => "USDJPY")
     }
-
-    #.symbol = "EUR"
-    #.currency = "USD"
-    #.exchange = "IDEALPRO"
-    #.secType = "CASH"
-    # This is all that is required for an FX contract object.
-    # IDEALPRO is for orders over 25,000 and routes to the interbank quote stream.
-    # IDEAL is for smaller orders, and has wider spreads/slower execution... generally
-    # used for smaller currency conversions.
-
-  end # Contracts
+  end
 end

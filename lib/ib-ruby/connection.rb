@@ -1,14 +1,6 @@
 require 'ib-ruby/socket'
 require 'ib-ruby/logger'
 
-# Add method to_ib to render datetime in IB format (zero padded "yyyymmdd HH:mm:ss")
-class Time
-  def to_ib
-    "#{self.year}#{sprintf("%02d", self.month)}#{sprintf("%02d", self.day)} " +
-        "#{sprintf("%02d", self.hour)}:#{sprintf("%02d", self.min)}:#{sprintf("%02d", self.sec)}"
-  end
-end # Time
-
 module IB
   # Encapsulates API connection to TWS or Gateway
   class Connection
@@ -61,7 +53,7 @@ module IB
 
       # TWS always sends NextValidID message at connect - save this id
       self.subscribe(:NextValidID) do |msg|
-        @next_order_id = msg.data[:id]
+        @next_order_id = msg.order_id
         log.info "Got next valid order id: #{@next_order_id}."
       end
 
