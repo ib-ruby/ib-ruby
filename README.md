@@ -11,11 +11,8 @@ implied. Your use of this software is at your own risk. It may contain
 any number of bugs, known or unknown, which might cause you to lose
 money if you use it. You've been warned.
 
-__It is specifically NOT RECOMMENDED that this code be used for live trading.__
-
 This code is not sanctioned or supported by Interactive Brokers
 This software is available under the LGPL. See the file LICENSE for full licensing details.
-
 
 ## REQUIREMENTS:
 
@@ -42,30 +39,52 @@ localhost if you're running ib-ruby on the same machine as TWS.
 First, start up Interactive Broker's Trader Work Station or Gateway.
 Make sure it is configured to allow API connections on localhost.
 Note that TWS and Gateway listen to different ports, this library assumes
-connection to Gateway (localhost:4001) by default, this can changed via :host and :port
-options given to IB::Connection.new.
+connection to Gateway (localhost:4001) by default, this can changed via :host
+and :port options given to IB::Connection.new.
 
-    >> require 'ib-ruby'
-    >> ib = IB::Connection.new
-    >> ib.subscribe(:Alert, :AccountValue) { |msg| puts msg.to_human }
-    >> ib.send_message :RequestAccountData, :subscribe => true
+    require 'ib-ruby'
 
-Your code and TWS interact via an exchange of messages. You
-subscribe to message types you're interested in using
-`IB::Connection#subscribe` and request data from TWS using
-`IB::Connection#send_message`.
+    ib = IB::Connection.new
+    ib.subscribe(:Alert, :AccountValue) { |msg| puts msg.to_human }
+    ib.send_message :RequestAccountData
+    ib.wait_for :AccountDownloadEnd
 
-The code blocks (or procs) given to `#subscribe` will be executed when
-a message of the requested type is received, with the received message as
-its argument.
+    ib.subscribe(:OpenOrder) { |msg| puts "Placed: #{msg.order}!" }
+    ib.subscribe(:ExecutionData) { |msg| puts "Filled: #{msg.execution}!" }
+    contract = IB::Models::Contract.new :symbol => 'WFC',
+                                        :exchange => 'NYSE'
+                                        :currency => 'USD',
+                                        :sec_type => IB::SECURITY_TYPES[:stock]
+    buy_order = IB::Models::Order.new :total_quantity => 100,
+                                      :limit_price => 21.00,
+                                      :action => 'BUY',
+                                      :order_type => 'LMT'
+    ib.place_order buy_order, contract
+    ib.wait_for { ib.received? :OpenOrder || ib.received? :ExecutionData }
 
-See `lib/ib-ruby/messages` for a full list of supported incoming/outgoing messages and
-their attributes. The original TWS docs and code samples can be found
-in the `misc/` folder.
+Your code interacts with TWS via exchange of messages. Messages that you send to
+TWS are called 'Outgoing', messages your code receives from TWS - 'Incoming'.
 
-The sample scripts in the `bin/` directory provide examples of how
-common tasks can be achieved using ib-ruby.
+First, you need to subscribe to incoming message types you're interested in
+using `Connection#subscribe`. The code block (or proc) given to `#subscribe`
+will be executed when an incoming message of the requested type is received
+from TWS, with the received message as its argument.
 
+Then, you request specific data from TWS using `Connection#send_message` or place
+your order using `Connection#place_order`. TWS will respond with messages that you
+should have subscribed for, and these messages are be processed in a code block
+given to `#subscribe`.
+
+In order to give TWS time to respond, you either run a message processing loop or
+just wait until ib receives the messages you requested.
+
+See `lib/ib-ruby/messages` for a full list of supported incoming/outgoing messages
+and their attributes. The original TWS docs and code samples can be found
+in `misc` directory.
+
+The sample scripts in `bin` directory provide examples of how common tasks
+can be achieved using ib-ruby. You may also want to look into `spec/integration`
+directory for more scenarios and examples of handling IB messages.
 
 ## LICENSE:
 
