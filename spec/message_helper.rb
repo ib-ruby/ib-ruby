@@ -2,11 +2,6 @@ require 'spec_helper'
 require 'thread'
 require 'stringio'
 
-# Given an IB message, retuns its type Symbol (e.g. :OpenOrderEnd)
-def message_type msg
-  msg.class.to_s.split(/::/).last.to_sym
-end
-
 def print_subject
   it 'prints out message' do
     p subject
@@ -50,42 +45,42 @@ end
 def connect_and_receive *message_types
 
   # Start disconnected (we need to set up catch-all subscriber first)
-  @ib = IB::Connection.new CONNECTION_OPTS.merge(:connect => false,
-                                                 :reader => false,
-                                                 :logger => mock_logger)
+  @ib = IB::Connection.new OPTS[:connection].merge(:connect => false,
+                                                   :reader => false,
+                                                   :logger => mock_logger)
 
   # Hash of received messages, keyed by message type
   @received = Hash.new { |hash, key| hash[key] = Array.new }
 
   # Catch all messages of given types and put them inside @received Hash
-  @ib.subscribe(*message_types) { |msg| @received[message_type(msg)] << msg }
+  @ib.subscribe(*message_types) { |msg| @received[msg.message_type] << msg }
 
-  @ib.connect
+  @ib.connect   # We only connect after everything is subscribed
   @ib.start_reader
 end
 
-# Clear logs and message collector. Output may be silenced
+# Clear logs and message collector. Output may be silenced.
 def clean_connection
-  unless SILENT
-    puts @received.map { |type, msg| [" #{type}:", msg.map(&:to_human)] }
-    puts " Logs:"
-    puts log_entries
+  unless OPTS[:silent]
+    puts @received.map { |type, msg| [" #{type}:", msg.map(&:to_human)] } if @received
+    puts " Logs:", log_entries if @stdout
   end
   @stdout.string = '' if @stdout
   @received.clear if @received
 end
 
 def close_connection
+  @ib.cancel_order @order_id_placed if @ib && @order_id_placed
   @ib.close if @ib
   clean_connection
 end
 
 #noinspection RubyArgCount
-def wait_for time = 1, &condition
+def wait_for time = 2, &condition
   timeout = Time.now + time
   sleep 0.1 until timeout < Time.now || condition && condition.call
 end
 
-def received? symbol
-  not @received[symbol].empty?
+def received? symbol, times=1
+  @received[symbol].size >= times
 end

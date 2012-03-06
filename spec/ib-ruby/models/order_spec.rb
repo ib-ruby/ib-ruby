@@ -47,39 +47,72 @@ describe IB::Models::Order do
 
     it 'allows setting attributes' do
       x = IB::Models::Order.new
-      expect {
-        x.outside_rth = true
-        x.open_close = 'C'
-        x.origin = IB::Models::Order::Origin_Firm
-        x.transmit = false
-        x.designated_location = "WHATEVER"
-        x.exempt_code = 123
-        x.delta_neutral_order_type = "HACK"
-        x.what_if = true
-        x.not_held = true
-      }.to_not raise_error
-
-      x.outside_rth.should == true
-      x.open_close.should == 'C'
-      x.origin.should == IB::Models::Order::Origin_Firm
-      x.transmit.should == false
-      x.designated_location.should == "WHATEVER"
-      x.exempt_code.should == 123
-      x.delta_neutral_order_type.should == "HACK"
-      x.what_if.should == true
-      x.not_held.should == true
+      properties.each do |name, value|
+        subject.send("#{name}=", value)
+        subject.send(name).should == value
+      end
     end
   end #instantiation
 
   context 'equality' do
     subject { IB::Models::Order.new properties }
 
-    it 'be self-equal ' do
+    it 'is  self-equal ' do
       should == subject
     end
 
-    it 'be equal to Order with the same properties' do
+    it 'is equal to Order with the same properties' do
       should == IB::Models::Order.new(properties)
+    end
+
+    it 'is not equal for Orders with different limit price' do
+      order1 = IB::Models::Order.new :total_quantity => 100,
+                                     :limit_price => 1,
+                                     :action => 'BUY'
+
+      order2 = IB::Models::Order.new :total_quantity => 100,
+                                     :limit_price => 2,
+                                     :action => 'BUY'
+      order1.should_not == order2
+      order2.should_not == order1
+    end
+
+    it 'is not equal for Orders with different total_quantity' do
+      order1 = IB::Models::Order.new :total_quantity => 20000,
+                                     :limit_price => 1,
+                                     :action => 'BUY'
+
+      order2 = IB::Models::Order.new :total_quantity => 100,
+                                     :action => 'BUY',
+                                     :limit_price => 1
+      order1.should_not == order2
+      order2.should_not == order1
+    end
+
+    it 'is not equal for Orders with different action/side' do
+      order1 = IB::Models::Order.new :total_quantity => 100,
+                                     :limit_price => 1,
+                                     :action => 'SELL'
+
+      order2 = IB::Models::Order.new :total_quantity => 100,
+                                     :action => 'BUY',
+                                     :limit_price => 1
+      order1.should_not == order2
+      order2.should_not == order1
+    end
+
+    it 'is not equal for Orders with different order_type' do
+      order1 = IB::Models::Order.new :total_quantity => 100,
+                                     :limit_price => 1,
+                                     :action => 'BUY',
+                                     :order_type => 'LMT'
+
+      order2 = IB::Models::Order.new :total_quantity => 100,
+                                     :action => 'BUY',
+                                     :limit_price => 1,
+                                     :order_type => 'MKT'
+      order1.should_not == order2
+      order2.should_not == order1
     end
   end
 

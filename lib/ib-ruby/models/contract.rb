@@ -133,11 +133,11 @@ module IB
         @con_id = 0
         @strike = 0
         @sec_type = ''
+        @exchange = 'SMART'
         @include_expired = false
         @legs = Array.new
 
         # These properties are from ContractDetails
-        @summary = self
         @under_con_id = 0
         @min_tick = 0
         @callable = false
@@ -149,41 +149,55 @@ module IB
         super opts
       end
 
+      # This property is from ContractDetails
+      def summary
+        self
+      end
+
       # some protective filters
-      def primary_exchange=(x)
+      def primary_exchange= x
         x.upcase! if x.is_a?(String)
 
         # per http://chuckcaplan.com/twsapi/index.php/Class%20Contract
-        raise(ArgumentError.new("Don't set primary_exchange to smart")) if x == "SMART"
+        raise(ArgumentError.new("Don't set primary_exchange to smart")) if x == 'SMART'
 
         @primary_exchange = x
       end
 
-      def right=(x)
-        x.upcase! if x.is_a?(String)
-        x = nil if !x.nil? && x.empty?
-        x = nil if x == "0" || x == "?"
-        raise(ArgumentError.new("Invalid right \"#{x}\" (must be one of PUT, CALL, P, C)")) unless x.nil? || ["PUT", "CALL", "P", "C", "0"].include?(x)
-        @right = x
+      def right= x
+        @right =
+            case x.to_s.upcase
+              when '', '0', '?'
+                nil
+              when 'PUT', 'P'
+                'PUT'
+              when 'CALL', 'C'
+                'CALL'
+              else
+                raise ArgumentError.new("Invalid right '#{x}' (must be one of PUT, CALL, P, C)")
+            end
       end
 
-      def expiry=(x)
-        x = x.to_s
-        if (x.nil? || !(x =~ /\d{6,8}/)) and !x.empty? then
-          raise ArgumentError.new("Invalid expiry \"#{x}\" (must be in format YYYYMM or YYYYMMDD)")
-        end
-        @expiry = x
+      def expiry= x
+        @expiry =
+            case x.to_s
+              when /\d{6,8}/
+                x.to_s
+              when ''
+                nil
+              else
+                raise ArgumentError.new("Invalid expiry '#{x}' (must be in format YYYYMM or YYYYMMDD)")
+            end
       end
 
-      def sec_type=(x)
+      def sec_type= x
         x = nil if !x.nil? && x.empty?
-        raise(ArgumentError.new("Invalid security type \"#{x}\" (see SECURITY_TYPES constant in Contract class for valid types)")) unless x.nil? || SECURITY_TYPES.values.include?(x)
+        raise(ArgumentError.new("Invalid security type '#{x}' (must be one of #{SECURITY_TYPES.values}")) unless x.nil? || SECURITY_TYPES.values.include?(x)
         @sec_type = x
       end
 
-      def reset
-        @legs = Array.new
-        @strike = 0
+      def multiplier= x
+        @multiplier = x.to_i
       end
 
       # This returns an Array of data from the given contract.
@@ -265,6 +279,8 @@ module IB
 
       # Contract comparison
       def == other
+        return false unless other.is_a?(self.class)
+
         # Different sec_id_type
         return false if sec_id_type && other.sec_id_type && sec_id_type != other.sec_id_type
 
@@ -273,6 +289,12 @@ module IB
 
         # Different under_comp
         return false if under_comp && other.under_comp && under_comp != other.under_comp
+
+        # Different symbols
+        return false if symbol && other.symbol && symbol != other.symbol
+
+        # Different currency
+        return false if currency && other.currency && currency != other.currency
 
         # Different legs
         return false unless same_legs? other
@@ -288,26 +310,21 @@ module IB
 
         # Comparison for Bonds and Options
         if sec_type == SECURITY_TYPES[:bond] || sec_type == SECURITY_TYPES[:option]
-          return false unless right == other.right &&
-              strike == other.strike &&
-              expiry == other.expiry &&
-              multiplier == other.multiplier
+          return false if right != other.right || strike != other.strike
+          return false if multiplier && other.multiplier && multiplier != other.multiplier
+          return false if expiry[0..5] != other.expiry[0..5]
+          return false unless expiry[6..7] == other.expiry[6..7] ||
+              expiry[6..7].empty? || other.expiry[6..7].empty?
         end
 
         # All else being equal...
-        sec_type == other.sec_type &&
-            symbol == other.symbol &&
-            currency == other.currency
+        sec_type == other.sec_type
       end
 
-
-      # TODO: Remove @summary into reader method
       def to_s
         "<Contract: " + instance_variables.map do |key|
-          unless key == :@summary
-            value = send(key[1..-1])
-            " #{key}=#{value}" unless value.nil? || value == '' || value == 0
-          end
+          value = send(key[1..-1])
+          " #{key}=#{value}" unless value.nil? || value == '' || value == 0
         end.compact.join(',') + " >"
       end
 

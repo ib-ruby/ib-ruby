@@ -5,7 +5,7 @@ module IB
     # This is a single data point delivered by HistoricData messages.
     # Instantiate with a Hash of attributes, to be auto-set via initialize in Model.
     class Bar < Model
-      attr_accessor :date, # The date-time stamp of the start of the bar. The format is
+      attr_accessor :time, # The date-time stamp of the start of the bar. The format is
                     #        determined by the reqHistoricalData() formatDate parameter.
                     :open, #   The bar opening price.
                     :high, #   The high price during the time covered by the bar.
@@ -18,8 +18,8 @@ module IB
                             # of trades that occurred during the time period the bar covers
 
       def to_s
-        "<Bar #{@date}: wap: #{@wap}, OHLC: #{@open}, #{@high}, #{@low}, #{@close}, " +
-            (@trades ? "trades: #{@trades}," : "") + " vol: #{@volume}, gaps? #{@has_gaps}>"
+        "<Bar #{time}: wap: #{wap}, OHLC: #{open}, #{high}, #{low}, #{close}, " +
+            (trades ? "trades: #{trades}," : "") + " vol: #{volume}, gaps? #{has_gaps}>"
       end
     end # class Bar
   end # module Models

@@ -13,9 +13,9 @@ require 'ib-ruby'
 # Definition of what we want market data for.  We have to keep track of what ticker id
 # corresponds to what symbol ourselves, because the ticks don't include any other
 # identifying information. The choice of ticker ids is, as far as I can tell, arbitrary.
-@market = {123 => IB::Symbols::Stocks[:wfc],
-           125 => IB::Symbols::Options[:wfc20],
-           129 => IB::Symbols::Stocks[:wrong]}
+@market = {122 => IB::Symbols::Stocks[:wfc],
+           133 => IB::Symbols::Options[:wfc20],
+           144 => IB::Symbols::Stocks[:wrong]}
 
 # Connect to IB TWS.
 ib = IB::Connection.new
