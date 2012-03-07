@@ -175,6 +175,24 @@ module IB
       end
     end
 
+    # Wait for specific message type or condition. Timeout after given time or 2 seconds.
+    def wait_for *args #, &condition
+      message_type, time = case args.size
+                       when 0
+                         [nil, 2]
+                       when 1
+                         args.first.is_a?(Symbol) ? [args.first, 2] : [nil, args.first]
+                       when 2
+                         args
+                     end
+
+      timeout = Time.now + time
+      sleep 0.1 until timeout < Time.now ||
+          message_type && received?(message_type) ||
+          block_given? && yield
+          #condition && condition.call
+    end
+
     ### Working with Incoming messages from IB
 
     # Start reader thread that continuously reads messages from server in background.
