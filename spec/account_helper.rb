@@ -31,7 +31,7 @@ end
 shared_examples_for 'Valid account data request' do
 
   context "received :AccountUpdateTime message" do
-    subject { @received[:AccountUpdateTime].first }
+    subject { @ib.received[:AccountUpdateTime].first }
 
     it { should be_an IB::Messages::Incoming::AccountUpdateTime }
     its(:data) { should be_a Hash }
@@ -40,7 +40,7 @@ shared_examples_for 'Valid account data request' do
   end
 
   context "received :AccountValue message" do
-    subject { @received[:AccountValue].first }
+    subject { @ib.received[:AccountValue].first }
 
     #ps
     it { should be_an IB::Messages::Incoming::AccountValue }
@@ -53,7 +53,7 @@ shared_examples_for 'Valid account data request' do
   end
 
   context "received :PortfolioValue message" do
-    subject { @received[:PortfolioValue].first }
+    subject { @ib.received[:PortfolioValue].first }
 
     it { should be_an IB::Messages::Incoming::PortfolioValue }
     its(:contract) { should be_a IB::Models::Contract }
@@ -69,7 +69,7 @@ shared_examples_for 'Valid account data request' do
   end
 
   context "received :AccountDownloadEnd message" do
-    subject { @received[:AccountDownloadEnd].first }
+    subject { @ib.received[:AccountDownloadEnd].first }
 
     it { should be_an IB::Messages::Incoming::AccountDownloadEnd }
     its(:data) { should be_a Hash }

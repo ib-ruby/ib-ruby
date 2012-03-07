@@ -3,6 +3,8 @@ require 'account_helper'
 
 shared_examples_for 'Connected Connection' do
 
+  subject { @ib }
+
   it_behaves_like 'Connected Connection without receiver'
 
   it 'keeps received messages in Hash by default' do
@@ -13,7 +15,6 @@ shared_examples_for 'Connected Connection' do
 end
 
 shared_examples_for 'Connected Connection without receiver' do
-  subject { @ib }
 
   it { should_not be_nil }
   it { should be_connected }
@@ -24,7 +25,7 @@ shared_examples_for 'Connected Connection without receiver' do
 end
 
 # Need top level method to access instance var (@received) in nested context
-def connection_with opts={}
+def create_connection opts={}
   # Start disconnected (we need to set up catch-all subscriber first)
   @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger).merge(opts)
 
@@ -38,8 +39,8 @@ describe IB::Connection do
 
   context 'instantiated with default options', :connected => true do
     before(:all) do
-      connection_with()
-      wait_for(5) { @ib.received? :OpenOrderdEnd }
+      create_connection
+      @ib.wait_for :NextValidID
     end
 
     after(:all) { close_connection }
@@ -102,8 +103,7 @@ describe IB::Connection do
 
           before(:all) do
             @ib.send_message :RequestAccountData
-
-            wait_for(5) { received? :AccountDownloadEnd }
+            @ib.wait_for :AccountDownloadEnd
           end
 
           after(:all) { @ib.send_message :RequestAccountData, :subscribe => false }
@@ -117,7 +117,7 @@ describe IB::Connection do
 
           it_behaves_like 'Valid account data request'
         end
-      end
+      end # subscribe
 
       describe '#unsubscribe' do
         before(:all) { @result = @ib.unsubscribe @id[:first], @id[:second] }
@@ -154,16 +154,15 @@ describe IB::Connection do
 
         before(:all) do
           @ib.send_message :RequestAccountData
-
-          wait_for(5) { received? :AccountDownloadEnd }
+          @ib.wait_for { !@received[:AccountDownloadEnd].empty? }
         end
 
         after(:all) { @ib.send_message :RequestAccountData, :subscribe => false }
 
         it 'receives subscribed message types still subscribed' do
           @received[:AccountValue].should_not be_empty
-          @received[:AccountDownloadEnd].should_not be_empty
           @received[:AccountUpdateTime].should_not be_empty
+          @received[:AccountDownloadEnd].should_not be_empty
         end
 
         it 'does not receive unsubscribed message types' do
@@ -183,8 +182,8 @@ describe IB::Connection do
   end # connected
 
   context 'instantiated passing :connect => false' do
-    before(:all) { connection_with :connect => false,
-                                   :reader => false }
+    before(:all) { create_connection :connect => false,
+                                     :reader => false }
     subject { @ib }
 
     it { should_not be_nil }
@@ -199,7 +198,7 @@ describe IB::Connection do
       before(:all) do
         @ib.connect
         @ib.start_reader
-        wait_for(5) { @ib.received? :OpenOrderEnd }
+        @ib.wait_for :NextValidID
       end
       after(:all) { close_connection }
 
@@ -209,9 +208,9 @@ describe IB::Connection do
   end # not connected
 
   context 'instantiated passing :received => false' do
-    before(:all) { connection_with :connect => false,
-                                   :reader => false,
-                                   :received => false }
+    before(:all) { create_connection :connect => false,
+                                     :reader => false,
+                                     :received => false }
     subject { @ib }
 
     it { should_not be_nil }
@@ -226,7 +225,7 @@ describe IB::Connection do
       before(:all) do
         @ib.connect
         @ib.start_reader
-        wait_for 1
+        wait_for 1 # ib.received not supposed to work!
       end
       after(:all) { close_connection }
 
