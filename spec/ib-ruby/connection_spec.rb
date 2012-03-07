@@ -1,12 +1,32 @@
 require 'message_helper'
 require 'account_helper'
 
-# Need top level method to access instance var (@received) in nested context
-def connect_to_ib
-  # Start disconnected (we need to set up catch-all subscriber first)
-  @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
+shared_examples_for 'Connected Connection' do
 
-  @ib.subscribe(:OpenOrderEnd) {}
+  it_behaves_like 'Connected Connection without receiver'
+
+  it 'keeps received messages in Hash by default' do
+    subject.received.should be_a Hash
+    subject.received[:NextValidID].should_not be_empty
+    subject.received[:NextValidID].should have_exactly(1).message
+  end
+end
+
+shared_examples_for 'Connected Connection without receiver' do
+  subject { @ib }
+
+  it { should_not be_nil }
+  it { should be_connected }
+  its(:server) { should be_a Hash }
+  its(:server) { should have_key :reader }
+  its(:subscribers) { should have_at_least(1).item } # :NextValidID and empty Hashes
+  its(:next_order_id) { should be_a Fixnum } # Not before :NextValidID arrives
+end
+
+# Need top level method to access instance var (@received) in nested context
+def connection_with opts={}
+  # Start disconnected (we need to set up catch-all subscriber first)
+  @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger).merge(opts)
 
   # Hash of received messages, keyed by message type
   @received = Hash.new { |hash, key| hash[key] = Array.new }
@@ -14,25 +34,17 @@ def connect_to_ib
   @subscriber = proc { |msg| @received[msg.message_type] << msg }
 end
 
-
 describe IB::Connection do
 
-  context 'when connected to IB Gateway', :connected => true do
-    # THIS depends on TWS|Gateway connectivity
-    before(:all) { connect_to_ib }
+  context 'instantiated with default options', :connected => true do
+    before(:all) do
+      connection_with()
+      wait_for(5) { @ib.received? :OpenOrderdEnd }
+    end
 
     after(:all) { close_connection }
 
-    context 'instantiation with default options' do
-      subject { @ib }
-
-      it { should_not be_nil }
-      it { should be_connected }
-      its(:server) { should be_a Hash }
-      its(:server) { should have_key :reader }
-      its(:subscribers) { should have_at_least(1).item } # :NextValidID and empty Hashes
-      its(:next_order_id) { should be_a Fixnum } # Not before :NextValidID arrives
-    end
+    it_behaves_like 'Connected Connection'
 
     describe '#send_message', 'sending messages' do
       it 'allows 3 signatures representing IB::Messages::Outgoing' do
@@ -138,7 +150,7 @@ describe IB::Connection do
         end
       end
 
-      context 'when subscribed' do
+      context 'when unsubscribed' do
 
         before(:all) do
           @ib.send_message :RequestAccountData
@@ -158,23 +170,69 @@ describe IB::Connection do
           @received[:PortfolioValue].should be_empty
         end
 
+        it { should_log /No subscribers for message .*:PortfolioValue/ }
+        it { should_not_log /No subscribers for message .*:AccountValue/ }
       end # when subscribed
     end # subscriptions
+
+    describe '#connect' do
+      it 'raises on another connection attempt' do
+        expect { @ib.connect }.to raise_error /Already connected/
+      end
+    end
   end # connected
 
-  context 'when not connected to IB Gateway' do
-    before(:all) { @ib = IB::Connection.new :connect => false, :reader => false }
+  context 'instantiated passing :connect => false' do
+    before(:all) { connection_with :connect => false,
+                                   :reader => false }
+    subject { @ib }
 
-    context 'instantiation passing :connect => false' do
-      subject { @ib }
+    it { should_not be_nil }
+    it { should_not be_connected }
+    its(:server) { should be_a Hash }
+    its(:server) { should_not have_key :reader }
+    its(:received) { should be_empty }
+    its(:subscribers) { should be_empty }
+    its(:next_order_id) { should be_nil }
 
-      it { should_not be_nil }
-      it { should_not be_connected }
-      its(:server) { should be_a Hash }
-      its(:server) { should_not have_key :reader }
-      its(:subscribers) { should be_empty }
-      its(:next_order_id) { should be_nil }
+    describe 'connecting idle conection' do
+      before(:all) do
+        @ib.connect
+        @ib.start_reader
+        wait_for(5) { @ib.received? :OpenOrderEnd }
+      end
+      after(:all) { close_connection }
+
+      it_behaves_like 'Connected Connection'
     end
 
   end # not connected
+
+  context 'instantiated passing :received => false' do
+    before(:all) { connection_with :connect => false,
+                                   :reader => false,
+                                   :received => false }
+    subject { @ib }
+
+    it { should_not be_nil }
+    it { should_not be_connected }
+    its(:server) { should be_a Hash }
+    its(:server) { should_not have_key :reader }
+    its(:received) { should be_empty }
+    its(:subscribers) { should be_empty }
+    its(:next_order_id) { should be_nil }
+
+    describe 'connecting idle conection' do
+      before(:all) do
+        @ib.connect
+        @ib.start_reader
+        wait_for 1
+      end
+      after(:all) { close_connection }
+
+      it_behaves_like 'Connected Connection without receiver'
+    end
+
+  end # not connected
+
 end # describe IB::Connection
