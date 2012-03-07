@@ -46,8 +46,8 @@ module IB
     def connect
       raise "Already connected!" if connected?
 
-      # TWS always sends NextValidID message at connect - save this id
-      self.subscribe(:NextValidID) do |msg|
+      # TWS always sends NextValidId message at connect - save this id
+      self.subscribe(:NextValidId) do |msg|
         @next_order_id = msg.order_id
         log.info "Got next valid order id: #{@next_order_id}."
       end

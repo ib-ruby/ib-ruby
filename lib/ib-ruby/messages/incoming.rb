@@ -146,7 +146,7 @@ module IB
       # This message is always sent by TWS automatically at connect.
       # The IB::Connection class subscribes to it automatically and stores
       # the order id in its @next_order_id attribute.
-      NextValidID = def_message 9, [:order_id, :int]
+      NextValidID = NextValidId = def_message( 9, [:order_id, :int])
 
       NewsBulletins =
           def_message 14, [:request_id, :int], # unique incrementing bulletin ID.

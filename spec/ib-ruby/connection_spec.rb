@@ -9,8 +9,8 @@ shared_examples_for 'Connected Connection' do
 
   it 'keeps received messages in Hash by default' do
     subject.received.should be_a Hash
-    subject.received[:NextValidID].should_not be_empty
-    subject.received[:NextValidID].should have_exactly(1).message
+    subject.received[:NextValidId].should_not be_empty
+    subject.received[:NextValidId].should have_exactly(1).message
   end
 end
 
@@ -20,8 +20,8 @@ shared_examples_for 'Connected Connection without receiver' do
   it { should be_connected }
   its(:server) { should be_a Hash }
   its(:server) { should have_key :reader }
-  its(:subscribers) { should have_at_least(1).item } # :NextValidID and empty Hashes
-  its(:next_order_id) { should be_a Fixnum } # Not before :NextValidID arrives
+  its(:subscribers) { should have_at_least(1).item } # :NextValidId and empty Hashes
+  its(:next_order_id) { should be_a Fixnum } # Not before :NextValidId arrives
 end
 
 # Need top level method to access instance var (@received) in nested context
@@ -40,7 +40,7 @@ describe IB::Connection do
   context 'instantiated with default options', :connected => true do
     before(:all) do
       create_connection
-      @ib.wait_for :NextValidID
+      @ib.wait_for :NextValidId
     end
 
     after(:all) { close_connection }
@@ -198,7 +198,7 @@ describe IB::Connection do
       before(:all) do
         @ib.connect
         @ib.start_reader
-        @ib.wait_for :NextValidID
+        @ib.wait_for :NextValidId
       end
       after(:all) { close_connection }
 

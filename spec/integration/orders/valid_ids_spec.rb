@@ -1,14 +1,14 @@
 require 'integration_helper'
 
 shared_examples_for 'Received single id' do
-  subject { @received[:NextValidID].first }
+  subject { @received[:NextValidId].first }
 
   after(:all) { clean_connection }
 
-  it { @received[:NextValidID].should have_exactly(1).message }
+  it { @received[:NextValidId].should have_exactly(1).message }
 
   it 'receives next valid for Order placement' do
-    subject.should be_an IB::Messages::Incoming::NextValidID
+    subject.should be_an IB::Messages::Incoming::NextValidId
     subject.order_id.should be_an Integer
     @id[:at_connect] ||= subject.order_id # just assign once
   end
@@ -19,7 +19,7 @@ shared_examples_for 'Received single id' do
 end
 
 shared_examples_for 'Received single id after request' do
-  subject { @received[:NextValidID].first }
+  subject { @received[:NextValidId].first }
 
   it_behaves_like 'Received single id'
 
@@ -40,7 +40,7 @@ describe 'Ids valid for Order placement', :connected => true, :integration => tr
 
   before(:all) do
     verify_account
-    connect_and_receive :NextValidID, :OpenOrderEnd, :Alert
+    connect_and_receive :NextValidId, :OpenOrderEnd, :Alert
     wait_for(2) { received? :OpenOrderEnd }
     @id = {} # Moving id between contexts. Feels dirty.
   end

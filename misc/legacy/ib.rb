@@ -107,9 +107,9 @@ module IB
 
       opts = @options.merge(options_in)
 
-      # Subscribe to the NextValidID message from TWS that is always
+      # Subscribe to the NextValidId message from TWS that is always
       # sent at connect, and save the id.
-      self.subscribe(IncomingMessages::NextValidID) do |msg|
+      self.subscribe(IncomingMessages::NextValidId) do |msg|
         @next_order_id = msg.data[:id]
         p "Got next valid order id #{@next_order_id}."
       end

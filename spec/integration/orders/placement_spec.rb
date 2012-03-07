@@ -7,8 +7,8 @@ describe "Orders", :connected => true, :integration => true do
   context "Placing wrong order", :slow => true do
 
     before(:all) do
-      connect_and_receive :NextValidID, :Alert, :OpenOrder, :OrderStatus
-      wait_for { received? :NextValidID }
+      connect_and_receive :NextValidId, :Alert, :OpenOrder, :OrderStatus
+      wait_for { received? :NextValidId }
 
       place_order IB::Symbols::Stocks[:wfc],
                   :limit_price => 9.131313 # Weird non-acceptable price
@@ -40,8 +40,8 @@ describe "Orders", :connected => true, :integration => true do
 
   context "Off-market stock order" do
     before(:all) do
-      connect_and_receive :NextValidID, :Alert, :OpenOrder, :OrderStatus, :OpenOrderEnd
-      wait_for { received? :NextValidID }
+      connect_and_receive :NextValidId, :Alert, :OpenOrder, :OrderStatus, :OpenOrderEnd
+      wait_for { received? :NextValidId }
 
       place_order IB::Symbols::Stocks[:wfc],
                   :limit_price => 9.13 # Set acceptable price

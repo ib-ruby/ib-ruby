@@ -17,9 +17,9 @@ describe "Trades", :connected => true, :integration => true, :slow => true do
 
     before(:all) do
       @contract = IB::Symbols::Forex[:eurusd]
-      connect_and_receive :NextValidID, :Alert, :ExecutionData, :ExecutionDataEnd,
+      connect_and_receive :NextValidId, :Alert, :ExecutionData, :ExecutionDataEnd,
                           :OpenOrder, :OrderStatus, :OpenOrderEnd
-      wait_for { received? :NextValidID }
+      wait_for { received? :NextValidId }
     end
 
     after(:all) { close_connection }

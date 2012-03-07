@@ -64,7 +64,7 @@ describe 'Request Market Data', :connected => true, :integration => true do
   context 'when NOT subscribed to :Tick... messages', :slow => true do
 
     before(:all) do
-      connect_and_receive :NextValidID
+      connect_and_receive :NextValidId
 
       @ib.send_message :RequestMarketData, :id => 456,
                        :contract => IB::Symbols::Forex[:eurusd]

@@ -4,8 +4,8 @@ describe "Request Contract Info", :connected => true, :integration => true do
 
   before(:all) do
     verify_account
-    connect_and_receive :NextValidID, :Alert, :ContractData, :ContractDataEnd
-    wait_for { received? :NextValidID }
+    connect_and_receive :NextValidId, :Alert, :ContractData, :ContractDataEnd
+    wait_for { received? :NextValidId }
   end
 
   after(:all) { close_connection }
