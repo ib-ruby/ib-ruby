@@ -2,9 +2,16 @@ require 'integration_helper'
 
 describe 'Request Historic Data', :connected => true, :integration => true do
 
+  CORRECT_OPTS = {:id => 456,
+                  :contract => IB::Symbols::Stocks[:wfc],
+                  :end_date_time => Time.now.to_ib,
+                  :duration => '1 D',
+                  :bar_size => '15 mins',
+                  :what_to_show => :trades,
+                  :format_date => 1}
   before(:all) do
     verify_account
-    connect_and_receive :Alert, :HistoricalData
+    @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
   end
 
   after(:all) do
@@ -15,25 +22,13 @@ describe 'Request Historic Data', :connected => true, :integration => true do
   context 'Wrong Requests' do
     it 'raises if incorrect bar size' do
       expect do
-        @ib.send_message :RequestHistoricalData, :id => 456,
-                         :contract => IB::Symbols::Stocks[:wfc],
-                         :end_date_time => Time.now.to_ib,
-                         :duration => '1 D',
-                         :bar_size => '11 min',
-                         :what_to_show => :trades,
-                         :format_date => 1
+        @ib.send_message :RequestHistoricalData, CORRECT_OPTS.merge(:bar_size => '11 min')
       end.to raise_error /bar_size must be one of/
     end
 
     it 'raises if incorrect what_to_show' do
       expect do
-        @ib.send_message :RequestHistoricalData, :id => 456,
-                         :contract => IB::Symbols::Stocks[:wfc],
-                         :end_date_time => Time.now.to_ib,
-                         :duration => '1 D',
-                         :bar_size => '15 mins',
-                         :what_to_show => :nonsense,
-                         :format_date => 1
+        @ib.send_message :RequestHistoricalData, CORRECT_OPTS.merge(:what_to_show => :nonsense)
       end.to raise_error /:what_to_show must be one of/
     end
   end
@@ -41,20 +36,13 @@ describe 'Request Historic Data', :connected => true, :integration => true do
   context 'Correct Request' do
     before(:all) do
       # No historical data for GBP/CASH@IDEALPRO
-      @ib.send_message :RequestHistoricalData, :id => 456,
-                       :contract => IB::Symbols::Stocks[:wfc],
-                       :end_date_time => Time.now.to_ib,
-                       :duration => '1 D',
-                       :bar_size => '15 mins',
-                       :what_to_show => :trades,
-                       :format_date => 1
-
-      wait_for(3) { received? :HistoricalData }
+      @ib.send_message :RequestHistoricalData, CORRECT_OPTS
+      @ib.wait_for 3, :HistoricalData
     end
 
-    subject { @received[:HistoricalData].last }
+    subject { @ib.received[:HistoricalData].last }
 
-    it { @received[:HistoricalData].should have_at_least(1).historic_data }
+    it { @ib.received[:HistoricalData].should have_at_least(1).historic_data }
 
     it { should be_an IB::Messages::Incoming::HistoricalData }
     its(:request_id) { should == 456 }

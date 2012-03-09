@@ -13,13 +13,13 @@ def verify_account
   account = OPTS[:connection][:account] || OPTS[:connection][:account_name]
   raise "Please configure IB PAPER ACCOUNT in spec/spec_helper.rb" unless account
 
-  connect_and_receive :AccountValue
+  @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
   @ib.send_message :RequestAccountData, :subscribe => true
 
-  wait_for { received? :AccountValue }
-  raise "Unable to verify IB PAPER ACCOUNT" unless received? :AccountValue
+  @ib.wait_for 3, :AccountValue
+  raise "Unable to verify IB PAPER ACCOUNT" unless @ib.received?(:AccountValue)
 
-  received = @received[:AccountValue].first.account_name
+  received = @ib.received[:AccountValue].first.account_name
   raise "Connected to wrong account #{received}, expected #{account}" if account != received
 
   close_connection

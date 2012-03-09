@@ -175,22 +175,26 @@ module IB
       end
     end
 
-    # Wait for specific message type or condition. Timeout after given time or 2 seconds.
-    def wait_for *args #, &condition
-      message_type, time = case args.size
-                       when 0
-                         [nil, 2]
-                       when 1
-                         args.first.is_a?(Symbol) ? [args.first, 2] : [nil, args.first]
-                       when 2
-                         args
-                     end
-
+    # Wait for specific condition(s) - given as callable/block, or
+    # message type(s) - given as Symbol or [Symbol, times] pair.
+    # Timeout after given time or 2 seconds.
+    def wait_for *args, &block
+      time = args.find { |arg| arg.is_a? Numeric } || 2
       timeout = Time.now + time
+      args.push(block) if block
+
       sleep 0.1 until timeout < Time.now ||
-          message_type && received?(message_type) ||
-          block_given? && yield
-          #condition && condition.call
+          args.inject(true) do |result, arg|
+            result && if arg.is_a?(Symbol)
+                        received?(arg)
+                      elsif arg.is_a?(Array)
+                        received?(*arg)
+                      elsif arg.respond_to?(:call)
+                        arg.call
+                      else
+                        true
+                      end
+          end
     end
 
     ### Working with Incoming messages from IB

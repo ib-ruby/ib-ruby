@@ -6,12 +6,14 @@ describe 'Request Market Data', :connected => true, :integration => true do
 
     before(:all) do
       verify_account
-      connect_and_receive :Alert, :TickPrice, :TickSize
+      @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
 
       ##TODO consider a follow the sun market lookup for windening the types tested
+      @ib.subscribe(:Alert, :TickPrice, :TickSize) {}
       @ib.send_message :RequestMarketData, :id => 456,
                        :contract => IB::Symbols::Forex[:eurusd]
-      wait_for(3) { received? :TickPrice }
+
+      @ib.wait_for 3, :TickPrice, :TickSize
     end
 
     after(:all) do
@@ -19,65 +21,35 @@ describe 'Request Market Data', :connected => true, :integration => true do
       close_connection
     end
 
-    context "received :Alert message " do
-      subject { @received[:Alert].first }
+    it_behaves_like 'Received Market Data'
 
-      it { should be_an IB::Messages::Incoming::Alert }
-      it { should be_warning }
-      it { should_not be_error }
-      its(:code) { should be_an Integer }
-      its(:message) { should =~ /Market data farm connection is OK/ }
-      its(:to_human) { should =~ /TWS Warning/ }
+    it "logs warning about unhandled :Alert message" do
+      should_not_log /No subscribers for message .*:Alert/
     end
 
-    context "received :TickPrice message" do
-      subject { @received[:TickPrice].first }
-
-      it { should be_an IB::Messages::Incoming::TickPrice }
-      its(:tick_type) { should be_an Integer }
-      its(:type) { should be_a Symbol }
-      its(:price) { should be_a Float }
-      its(:size) { should be_an Integer }
-      its(:data) { should be_a Hash }
-      its(:ticker_id) { should == 456 } # ticker_id
-      its(:to_human) { should =~ /TickPrice/ }
+    it "logs warning about unhandled :Tick... messages" do
+      should_not_log /No subscribers for message .*:TickPrice/
     end
 
-    context "received :TickSize message", :if => :forex_trading_hours do
-      before(:all) do
-        wait_for(3) { received? :TickSize }
-      end
-
-      subject { @received[:TickSize].first }
-
-      it { should be_an IB::Messages::Incoming::TickSize }
-      its(:type) { should_not be_nil }
-      its(:data) { should be_a Hash }
-      its(:tick_type) { should be_an Integer }
-      its(:type) { should be_a Symbol }
-      its(:size) { should be_an Integer }
-      its(:ticker_id) { should == 456 }
-      its(:to_human) { should =~ /TickSize/ }
+    it "logs warning about unhandled :Tick... messages", :if => :forex_trading_hours do
+      should_not_log /No subscribers for message .*:TickSize/
     end
+
   end # when subscribed to :Tick... messages
 
   context 'when NOT subscribed to :Tick... messages', :slow => true do
 
     before(:all) do
-      connect_and_receive :NextValidId
+      @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
 
       @ib.send_message :RequestMarketData, :id => 456,
                        :contract => IB::Symbols::Forex[:eurusd]
-      wait_for(2)
+      @ib.wait_for 3, :TickPrice, :TickSize
     end
 
     after(:all) do
       @ib.send_message :CancelMarketData, :id => 456
       close_connection
-    end
-
-    it "logs warning about unhandled :OpenOrderEnd message" do
-      should_log /No subscribers for message .*:OpenOrderEnd/
     end
 
     it "logs warning about unhandled :Alert message" do

@@ -1,6 +1,49 @@
 require 'message_helper'
 require 'account_helper'
 
+shared_examples_for 'Received Market Data' do
+  context "received :Alert message " do
+    subject { @ib.received[:Alert].first }
+
+    it { should be_an IB::Messages::Incoming::Alert }
+    it { should be_warning }
+    it { should_not be_error }
+    its(:code) { should be_an Integer }
+    its(:message) { should =~ /Market data farm connection is OK/ }
+    its(:to_human) { should =~ /TWS Warning/ }
+  end
+
+  context "received :TickPrice message" do
+    subject { @ib.received[:TickPrice].first }
+
+    it { should be_an IB::Messages::Incoming::TickPrice }
+    its(:tick_type) { should be_an Integer }
+    its(:type) { should be_a Symbol }
+    its(:price) { should be_a Float }
+    its(:size) { should be_an Integer }
+    its(:data) { should be_a Hash }
+    its(:ticker_id) { should == 456 } # ticker_id
+    its(:to_human) { should =~ /TickPrice/ }
+  end
+
+  context "received :TickSize message", :if => :us_trading_hours do
+    before(:all) do
+      @ib.wait_for 3, :TickSize
+    end
+
+    subject { @ib.received[:TickSize].first }
+
+    it { should be_an IB::Messages::Incoming::TickSize }
+    its(:type) { should_not be_nil }
+    its(:data) { should be_a Hash }
+    its(:tick_type) { should be_an Integer }
+    its(:type) { should be_a Symbol }
+    its(:size) { should be_an Integer }
+    its(:ticker_id) { should == 456 }
+    its(:to_human) { should =~ /TickSize/ }
+  end
+end
+
 ### Helpers for placing and verifying orders
 
 def place_order contract, opts
@@ -24,7 +67,7 @@ def check_status item, status
 end
 
 def order_status_should_be status, index=0
-  msg = @received[:OrderStatus][index]
+  msg = @ib.received[:OrderStatus][index]
   msg.should be_an IB::Messages::Incoming::OrderStatus
   msg.order_id.should == @order_id_placed
   msg.perm_id.should be_an Integer
@@ -48,7 +91,7 @@ def order_status_should_be status, index=0
 end
 
 def open_order_should_be status, index=0
-  msg = @received[:OpenOrder][index]
+  msg = @ib.received[:OpenOrder][index]
   msg.should be_an IB::Messages::Incoming::OpenOrder
   msg.order.should == @order
   msg.contract.should == @contract
@@ -57,13 +100,13 @@ def open_order_should_be status, index=0
 end
 
 def execution_should_be side, opts={}
-  msg = @received[:ExecutionData][opts[:index] || -1]
+  msg = @ib.received[:ExecutionData][opts[:index] || -1]
   msg.request_id.should == (opts[:request_id] || -1)
   msg.contract.should == @contract
 
   exec = msg.execution
   exec.perm_id.should be_an Integer
-  exec.perm_id.should == @received[:OpenOrder].last.order.perm_id if @received[:OpenOrder].last
+  exec.perm_id.should == @ib.received[:OpenOrder].last.order.perm_id if @ib.received?(:OpenOrder)
   exec.client_id.should == OPTS[:connection][:client_id]
   exec.order_id.should be_an Integer
   exec.order_id.should == @order.order_id if @order
@@ -79,5 +122,3 @@ def execution_should_be side, opts={}
   exec.price.should == exec.average_price
   exec.liquidation.should == 0
 end
-
-

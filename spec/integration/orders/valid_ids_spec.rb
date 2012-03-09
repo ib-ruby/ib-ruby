@@ -1,11 +1,11 @@
 require 'integration_helper'
 
 shared_examples_for 'Received single id' do
-  subject { @received[:NextValidId].first }
+  subject { @ib.received[:NextValidId].first }
 
   after(:all) { clean_connection }
 
-  it { @received[:NextValidId].should have_exactly(1).message }
+  it { @ib.received[:NextValidId].should have_exactly(1).message }
 
   it 'receives next valid for Order placement' do
     subject.should be_an IB::Messages::Incoming::NextValidId
@@ -19,7 +19,7 @@ shared_examples_for 'Received single id' do
 end
 
 shared_examples_for 'Received single id after request' do
-  subject { @received[:NextValidId].first }
+  subject { @ib.received[:NextValidId].first }
 
   it_behaves_like 'Received single id'
 
@@ -28,7 +28,7 @@ shared_examples_for 'Received single id after request' do
   end
 
   it 'does not receive :OpenOrderEnd message' do
-    @received[:OpenOrderEnd].should be_empty
+    @ib.received[:OpenOrderEnd].should be_empty
   end
 
   it 'does not reconnect to server' do
@@ -40,8 +40,8 @@ describe 'Ids valid for Order placement', :connected => true, :integration => tr
 
   before(:all) do
     verify_account
-    connect_and_receive :NextValidId, :OpenOrderEnd, :Alert
-    wait_for(2) { received? :OpenOrderEnd }
+    @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
+    @ib.wait_for 3, :OpenOrderEnd, :NextValidId
     @id = {} # Moving id between contexts. Feels dirty.
   end
 
@@ -51,10 +51,10 @@ describe 'Ids valid for Order placement', :connected => true, :integration => tr
 
     it_behaves_like 'Received single id'
 
-    it { @received[:OpenOrderEnd].should have_exactly(1).message }
+    it { @ib.received[:OpenOrderEnd].should have_exactly(1).message }
 
     it 'receives also :OpenOrderEnd message' do
-      @received[:OpenOrderEnd].first.should be_an IB::Messages::Incoming::OpenOrderEnd
+      @ib.received[:OpenOrderEnd].first.should be_an IB::Messages::Incoming::OpenOrderEnd
     end
 
     it 'logs connection notification' do
@@ -65,7 +65,7 @@ describe 'Ids valid for Order placement', :connected => true, :integration => tr
   context 'Requesting valid order id' do
     before(:all) do
       @ib.send_message :RequestIds
-      wait_for 1 # sec
+      @ib.wait_for :NextValidId
     end
 
     it_behaves_like 'Received single id after request'
@@ -74,7 +74,7 @@ describe 'Ids valid for Order placement', :connected => true, :integration => tr
   context 'Requested number of valid ids is just silently ignored by TWS' do
     before(:all) do
       @ib.send_message :RequestIds, :number => 5
-      wait_for 1 # sec
+      @ib.wait_for :NextValidId
     end
 
     it_behaves_like 'Received single id after request'

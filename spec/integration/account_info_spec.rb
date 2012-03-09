@@ -4,8 +4,7 @@ describe "Request Account Data", :connected => true, :integration => true do
 
   before(:all) do
     verify_account
-    connect_and_receive(:Alert, :AccountValue, :AccountDownloadEnd,
-                        :PortfolioValue, :AccountUpdateTime)
+    @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
   end
 
   after(:all) { close_connection }
@@ -13,12 +12,12 @@ describe "Request Account Data", :connected => true, :integration => true do
   context "with subscribe option set" do
     before(:all) do
       @ib.send_message :RequestAccountData, :subscribe => true
-      wait_for(5) { received? :AccountDownloadEnd }
+      @ib.wait_for 5, :AccountDownloadEnd
     end
     after(:all) do
-        @ib.send_message :RequestAccountData, :subscribe => false
-        clean_connection
-      end
+      @ib.send_message :RequestAccountData, :subscribe => false
+      clean_connection
+    end
 
     it_behaves_like 'Valid account data request'
   end
@@ -26,7 +25,7 @@ describe "Request Account Data", :connected => true, :integration => true do
   context "without subscribe option" do
     before(:all) do
       @ib.send_message :RequestAccountData
-      wait_for(5) { received? :AccountDownloadEnd }
+      @ib.wait_for 5, :AccountDownloadEnd
     end
 
     after(:all) do

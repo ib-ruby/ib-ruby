@@ -225,7 +225,7 @@ describe IB::Connection do
       before(:all) do
         @ib.connect
         @ib.start_reader
-        wait_for 1 # ib.received not supposed to work!
+        @ib.wait_for 1 # ib.received not supposed to work!
       end
       after(:all) { close_connection }
 

@@ -5,12 +5,12 @@ describe 'Request Depth of Market Data', :connected => true,
 
   before(:all) do
     verify_account
-    connect_and_receive :Alert, :MarketDepth
+    @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
 
     @ib.send_message :RequestMarketDepth, :id => 456, :num_rows => 3,
                      :contract => IB::Symbols::Forex[:eurusd]
 
-    wait_for(3) { received? :MarketDepth, 8 }
+    @ib.wait_for 3, [:MarketDepth, 8]
   end
 
   after(:all) do
@@ -18,9 +18,9 @@ describe 'Request Depth of Market Data', :connected => true,
     close_connection
   end
 
-  subject { @received[:MarketDepth].last }
+  subject { @ib.received[:MarketDepth].last }
 
-  it { @received[:MarketDepth].should have_at_least(8).depth_data }
+  it { @ib.received[:MarketDepth].should have_at_least(8).depth_data }
 
   it { should be_an IB::Messages::Incoming::MarketDepth }
   its(:request_id) { should == 456 }
