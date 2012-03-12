@@ -49,7 +49,7 @@ describe "Trades", :connected => true, :integration => true, :slow => true do
       end
 
       it 'receives Execution Data' do
-        execution_should_be 'BUY'
+        execution_should_be :buy
       end
 
       it 'receives OrderStatus with fill details' do
@@ -91,7 +91,7 @@ describe "Trades", :connected => true, :integration => true, :slow => true do
       end
 
       it 'receives Execution Data' do
-        execution_should_be 'SELL'
+        execution_should_be :sell
       end
 
       it 'receives OrderStatus with fill details' do
@@ -122,7 +122,7 @@ describe "Trades", :connected => true, :integration => true, :slow => true do
       end
 
       it 'receives Execution Data' do
-        execution_should_be 'SELL', :request_id => 456
+        execution_should_be :sell, :request_id => 456
       end
     end # Request executions
   end # Forex order

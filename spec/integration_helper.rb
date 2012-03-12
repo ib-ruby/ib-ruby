@@ -114,7 +114,7 @@ def execution_should_be side, opts={}
   exec.time.should =~ /\d\d:\d\d:\d\d/
   exec.account_name.should == OPTS[:connection][:account_name]
   exec.exchange.should == 'IDEALPRO'
-  exec.side.to_s.should == side
+  exec.side.should == side
   exec.shares.should == 20000
   exec.cumulative_quantity.should == 20000
   exec.price.should be > 1
