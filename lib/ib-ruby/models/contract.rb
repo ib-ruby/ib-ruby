@@ -53,7 +53,6 @@ module IB
            :sec_id, # Unique identifier of the given secIdType.
 
            # COMBOS
-           [:legs, :combo_legs], # leg definitions for this contract.
            :legs_description, # received in OpenOrder for all combos
 
            :multiplier => :i,
@@ -156,35 +155,6 @@ module IB
            :under_price #  double: The price of the underlying.
 
       attr_accessor :description # NB: local to ib-ruby, not part of TWS.
-      #:legs, - TODO: should not be a property!
-
-      ### Leg-related methods (better suited to BAG subclass?)
-      # TODO: Rewrite with legs and legs_description being strictly in sync...
-
-      # TODO: Find a way to serialize legs without references...
-      # IB-equivalent leg description.
-      def legs_description
-        self[:legs_description] || legs.map { |leg| "#{leg.con_id}|#{leg.weight}" }.join(',')
-      end
-
-      alias combo_legs_description legs_description
-      alias combo_legs_description= legs_description=
-
-      # Some messages send open_close too, some don't. WTF.
-      # "BAG" is not really a contract, but a combination (combo) of securities.
-      # AKA basket or bag of securities. Individual securities in combo are represented
-      # by ComboLeg objects.
-      def serialize_legs *fields
-        return [] unless sec_type.upcase == "BAG"
-        return [0] if legs.empty? || legs.nil?
-        [legs.size, legs.map { |leg| leg.serialize *fields }]
-      end
-
-      # Check if two Contracts have same legs (maybe in different order)
-      def same_legs? other
-        legs == other.legs ||
-            legs_description.split(',').sort == other.legs_description.split(',').sort
-      end
 
       def initialize opts = {}
         # Assign defaults to properties first!
@@ -192,7 +162,6 @@ module IB
         self[:strike] = 0
         self[:exchange] = 'SMART'
         self[:include_expired] = false
-        self[:legs] = Array.new
         #self[:sec_type] = '' # Turns into nil anyways
 
         # These properties are from ContractDetails
@@ -211,6 +180,8 @@ module IB
       def summary
         self
       end
+
+      # Some messages send open_close too, some don't. WTF.
 
       # This returns an Array of data from the given contract.
       # Different messages serialize contracts differently. Go figure.
@@ -237,6 +208,24 @@ module IB
         serialize :option, *fields
       end
 
+      # Serialize under_comp parameters
+      def serialize_under_comp *args
+        # EClientSocket.java, line 471:
+        if under_comp
+          [true,
+           under_con_id,
+           under_delta,
+           under_price]
+        else
+          [false]
+        end
+      end
+
+      # Redefined in BAG subclass
+      def serialize_legs *fields
+        []
+      end
+
       # This produces a string uniquely identifying this contract, in the format used
       # for command line arguments in the IB-Ruby examples. The format is:
       #
@@ -251,19 +240,6 @@ module IB
       #    GBP:FUT:200809:::62500:GLOBEX::USD:
       def serialize_ib_ruby version
         serialize.join(":")
-      end
-
-      # Serialize under_comp parameters
-      def serialize_under_comp *args
-        # EClientSocket.java, line 471:
-        if under_comp
-          [true,
-           under_con_id,
-           under_delta,
-           under_price]
-        else
-          [false]
-        end
       end
 
       # Contract comparison
@@ -284,9 +260,6 @@ module IB
 
         # Different currency
         return false if currency && other.currency && currency != other.currency
-
-        # Different legs - TODO move to BAG subclass
-        return false unless same_legs? other
 
         # Same con_id for all Bags, but unknown for new Contracts...
         # 0 or nil con_id  matches any
