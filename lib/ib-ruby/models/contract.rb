@@ -27,106 +27,164 @@ module IB
       end
 
       # Fields are Strings unless noted otherwise
-      attr_accessor :con_id, # int: The unique contract identifier.
-                    :symbol, # This is the symbol of the underlying asset.
-                    :sec_type, # Security type. Valid values are: SECURITY_TYPES
-                    :expiry, # The expiration date. Use the format YYYYMM.
-                    :strike, # double: The strike price.
-                    :right, # Specifies a Put or Call. Valid values are: P, PUT, C, CALL
-                    :multiplier, # Specifies a future or option contract multiplier
-                    #  String?    (only necessary when multiple possibilities exist)
+      prop :con_id, # int: The unique contract identifier.
+           :symbol, # This is the symbol of the underlying asset.
+           :sec_type, # Security type. Valid values are: SECURITY_TYPES
+           :strike, # double: The strike price.
+           :exchange, # The order destination, such as Smart.
+           :currency, # Only needed if there is an ambiguity, e.g. when SMART exchange
+           #            and IBM is being requested (IBM can trade in GBP or USD).
 
-                    :exchange, # The order destination, such as Smart.
-                    :currency, # Ambiguities MAY require that currency field be specified,
-                    #            for example, when SMART is the exchange and IBM is being
-                    #            requested (IBM can trade in GBP or USD).
+           :local_symbol, # Local exchange symbol of the underlying asset
+           :include_expired, # When true, contract details requests and historical
+           #         data queries can be performed pertaining to expired contracts.
+           #         Note: Historical data queries on expired contracts are
+           #         limited to the last year of the contracts life, and are
+           #         only supported for expired futures contracts.
+           #         This field can NOT be set to true for orders.
 
-                    :local_symbol, # Local exchange symbol of the underlying asset
-                    :primary_exchange, # pick a non-aggregate (ie not the SMART) exchange
-                    #                    that the contract trades on.  DO NOT SET TO SMART.
+           :sec_id_type, # Security identifier, when querying contract details or
+           #               when placing orders. Supported identifiers are:
+           #               -  ISIN (Example: Apple: US0378331005)
+           #               -  CUSIP (Example: Apple: 037833100)
+           #               -  SEDOL (6-AN + check digit. Example: BAE: 0263494)
+           #               -  RIC (exchange-independent RIC Root and exchange-
+           #                  identifying suffix. Ex: AAPL.O for Apple on NASDAQ.)
+           :sec_id, # Unique identifier of the given secIdType.
 
-                    :include_expired, # When true, contract details requests and historical
-                    #         data queries can be performed pertaining to expired contracts.
-                    #         Note: Historical data queries on expired contracts are
-                    #         limited to the last year of the contracts life, and are
-                    #         only supported for expired futures contracts.
-                    #         This field can NOT be set to true for orders.
+           # COMBOS
+           [:legs, :combo_legs], # leg definitions for this contract.
+           :legs_description, # received in OpenOrder for all combos
 
-                    :sec_id_type, # Security identifier, when querying contract details or
-                    #               when placing orders. Supported identifiers are:
-                    #               -  ISIN (Example: Apple: US0378331005)
-                    #               -  CUSIP (Example: Apple: 037833100)
-                    #               -  SEDOL (6-AN + check digit. Example: BAE: 0263494)
-                    #               -  RIC (exchange-independent RIC Root and exchange-
-                    #                  identifying suffix. Ex: AAPL.O for Apple on NASDAQ.)
-                    :sec_id, # Unique identifier of the given secIdType.
+           :multiplier => :i,
+           # Future/option contract multiplier (only needed when multiple possibilities exist)
 
-                    # COMBOS
-                    :legs_description, # received in open order for all combos
-                    :legs # Dynamic memory structure used to store the leg
-      #              definitions for this contract.
+           :primary_exchange =>
+               # non-aggregate (ie not the SMART) exchange that the contract trades on.
+               proc { |val|
+                 val.upcase! if val.is_a?(String)
+                 raise(ArgumentError.new("Don't set primary_exchange to smart")) if val == 'SMART'
+                 self[:primary_exchange] = val
+               },
+
+           :right => # Specifies a Put or Call. Valid input values are: P, PUT, C, CALL
+               proc { |val|
+                 self[:right] =
+                     case val.to_s.upcase
+                       when '', '0', '?'
+                         nil
+                       when 'PUT', 'P'
+                         'PUT'
+                       when 'CALL', 'C'
+                         'CALL'
+                       else
+                         raise ArgumentError.new("Invalid right '#{val}' (must be one of PUT, CALL, P, C)")
+                     end
+               },
+
+           :expiry => # The expiration date. Use the format YYYYMM.
+               proc { |val|
+                 self[:expiry] =
+                     case val.to_s
+                       when /\d{6,8}/
+                         val.to_s
+                       when nil, ''
+                         nil
+                       else
+                         raise ArgumentError.new("Invalid expiry '#{val}' (must be in format YYYYMM or YYYYMMDD)")
+                     end
+               },
+
+           :sec_type => # Security type. Valid values are: SECURITY_TYPES
+               proc { |val|
+                 val = nil if !val.nil? && val.empty?
+                 unless val.nil? || SECURITY_TYPES.values.include?(val)
+                   raise(ArgumentError.new("Invalid security type '#{val}' (must be one of #{SECURITY_TYPES.values}"))
+                 end
+                 self[:sec_type] = val
+               }
 
       # ContractDetails fields are bundled into Contract proper, as it should be
       # All fields Strings, unless specified otherwise:
-      attr_accessor :summary, # NB: ContractDetails reference - to self!
-                    :market_name, # The market name for this contract.
-                    :trading_class, # The trading class name for this contract.
-                    :min_tick, # double: The minimum price tick.
-                    :price_magnifier, # int: Allows execution and strike prices to be
-                    #     reported consistently with market data, historical data and the
-                    #     order price: Z on LIFFE is reported in index points, not GBP.
+      prop :market_name, # The market name for this contract.
+           :trading_class, # The trading class name for this contract.
+           :min_tick, # double: The minimum price tick.
+           :price_magnifier, # int: Allows execution and strike prices to be
+           #     reported consistently with market data, historical data and the
+           #     order price: Z on LIFFE is reported in index points, not GBP.
 
-                    :order_types, #     The list of valid order types for this contract.
-                    :valid_exchanges, # The list of exchanges this contract is traded on.
-                    :under_con_id, # int: The underlying contract ID.
-                    :long_name, #         Descriptive name of the asset.
-                    :contract_month, # Typically the contract month of the underlying for
-                    #                  a futures contract.
+           :order_types, #     The list of valid order types for this contract.
+           :valid_exchanges, # The list of exchanges this contract is traded on.
+           :under_con_id, # int: The underlying contract ID.
+           :long_name, #         Descriptive name of the asset.
+           :contract_month, # The contract month of the underlying for a futures contract.
 
-                    # The industry classification of the underlying/product:
-                    :industry, #    Wide industry. For example, Financial.
-                    :category, #    Industry category. For example, InvestmentSvc.
-                    :subcategory, # Subcategory. For example, Brokerage.
-                    :time_zone, # The ID of the time zone for the trading hours of the
-                    #             product. For example, EST.
-                    :trading_hours, # The trading hours of the product. For example:
-                    #                 20090507:0700-1830,1830-2330;20090508:CLOSED.
-                    :liquid_hours, #  The liquid trading hours of the product. For example,
-                    #                 20090507:0930-1600;20090508:CLOSED.
+           # The industry classification of the underlying/product:
+           :industry, #    Wide industry. For example, Financial.
+           :category, #    Industry category. For example, InvestmentSvc.
+           :subcategory, # Subcategory. For example, Brokerage.
+           :time_zone, # Time zone for the trading hours of the product. For example, EST.
+           :trading_hours, # The trading hours of the product. For example:
+           #                 20090507:0700-1830,1830-2330;20090508:CLOSED.
+           :liquid_hours, #  The liquid trading hours of the product. For example,
+           #                 20090507:0930-1600;20090508:CLOSED.
 
-                    # Bond values:
-                    :cusip, # The nine-character bond CUSIP or the 12-character SEDOL.
-                    :ratings, # Credit rating of the issuer. Higher credit rating generally
-                    #           indicates a less risky investment. Bond ratings are from
-                    #           Moody's and S&P respectively.
-                    :desc_append, # Additional descriptive information about the bond.
-                    :bond_type, #   The type of bond, such as "CORP."
-                    :coupon_type, # The type of bond coupon.
-                    :callable, # bool: Can be called by the issuer under certain conditions.
-                    :puttable, # bool: Can be sold back to the issuer under certain conditions
-                    :coupon, # double: The interest rate used to calculate the amount you
-                    #          will receive in interest payments over the year. default 0
-                    :convertible, # bool: Can be converted to stock under certain conditions.
-                    :maturity, # The date on which the issuer must repay bond face value
-                    :issue_date, # The date the bond was issued.
-                    :next_option_date, # only if bond has embedded options.
-                    :next_option_type, # only if bond has embedded options.
-                    :next_option_partial, # bool: # only if bond has embedded options.
-                    :notes # Additional notes, if populated for the bond in IB's database
+           # Bond values:
+           :cusip, # The nine-character bond CUSIP or the 12-character SEDOL.
+           :ratings, # Credit rating of the issuer. Higher rating is less risky investment.
+           #           Bond ratings are from Moody's and S&P respectively.
+           :desc_append, # Additional descriptive information about the bond.
+           :bond_type, #   The type of bond, such as "CORP."
+           :coupon_type, # The type of bond coupon.
+           :callable, # bool: Can be called by the issuer under certain conditions.
+           :puttable, # bool: Can be sold back to the issuer under certain conditions
+           :coupon, # double: The interest rate used to calculate the amount you
+           #          will receive in interest payments over the year. default 0
+           :convertible, # bool: Can be converted to stock under certain conditions.
+           :maturity, # The date on which the issuer must repay bond face value
+           :issue_date, # The date the bond was issued.
+           :next_option_date, # only if bond has embedded options.
+           :next_option_type, # only if bond has embedded options.
+           :next_option_partial, # bool: # only if bond has embedded options.
+           :notes # Additional notes, if populated for the bond in IB's database
 
       # Used for Delta-Neutral Combo contracts only!
       # UnderComp fields are bundled into Contract proper, as it should be.
-      attr_accessor :under_comp, # if not nil, attributes below are sent to server
-                    #:under_con_id is is already defined in ContractDetails section
-                    :under_delta, # double: The underlying stock or future delta.
-                    :under_price #  double: The price of the underlying.
+      prop :under_comp, # if not nil, attributes below are sent to server
+           #:under_con_id is is already defined in ContractDetails section
+           :under_delta, # double: The underlying stock or future delta.
+           :under_price #  double: The price of the underlying.
 
       attr_accessor :description # NB: local to ib-ruby, not part of TWS.
+      #:legs, - TODO: should not be a property!
 
-      alias combo_legs legs
-      alias combo_legs= legs=
+      ### Leg-related methods (better suited to BAG subclass?)
+      # TODO: Rewrite with legs and legs_description being strictly in sync...
+
+      # TODO: Find a way to serialize legs without references...
+      # IB-equivalent leg description.
+      def legs_description
+        self[:legs_description] || legs.map { |leg| "#{leg.con_id}|#{leg.weight}" }.join(',')
+      end
+
       alias combo_legs_description legs_description
       alias combo_legs_description= legs_description=
+
+      # Some messages send open_close too, some don't. WTF.
+      # "BAG" is not really a contract, but a combination (combo) of securities.
+      # AKA basket or bag of securities. Individual securities in combo are represented
+      # by ComboLeg objects.
+      def serialize_legs *fields
+        return [] unless sec_type.upcase == "BAG"
+        return [0] if legs.empty? || legs.nil?
+        [legs.size, legs.map { |leg| leg.serialize *fields }]
+      end
+
+      # Check if two Contracts have same legs (maybe in different order)
+      def same_legs? other
+        legs == other.legs ||
+            legs_description.split(',').sort == other.legs_description.split(',').sort
+      end
 
       def initialize opts = {}
         # Assign defaults to properties first!
@@ -149,57 +207,9 @@ module IB
         super opts
       end
 
-      # This property is from ContractDetails
+      # NB: ContractDetails reference - to self!
       def summary
         self
-      end
-
-      # some protective filters
-      def primary_exchange= x
-        x.upcase! if x.is_a?(String)
-
-        # per http://chuckcaplan.com/twsapi/index.php/Class%20Contract
-        raise(ArgumentError.new("Don't set primary_exchange to smart")) if x == 'SMART'
-
-        self[:primary_exchange] = x
-      end
-
-      def right= x
-        self[:right] =
-            case x.to_s.upcase
-              when '', '0', '?'
-                nil
-              when 'PUT', 'P'
-                'PUT'
-              when 'CALL', 'C'
-                'CALL'
-              else
-                raise ArgumentError.new("Invalid right '#{x}' (must be one of PUT, CALL, P, C)")
-            end
-      end
-
-      def expiry= x
-        self[:expiry] =
-            case x.to_s
-              when /\d{6,8}/
-                x.to_s
-              when ''
-                nil
-              else
-                raise ArgumentError.new("Invalid expiry '#{x}' (must be in format YYYYMM or YYYYMMDD)")
-            end
-      end
-
-      def sec_type= x
-        x = nil if !x.nil? && x.empty?
-        unless x.nil? || SECURITY_TYPES.values.include?(x)
-          raise(ArgumentError.new("Invalid security type '#{x}' (must be one of #{SECURITY_TYPES.values}"))
-        end
-        self[:sec_type] = x
-      end
-
-      def multiplier= x
-        self[:multiplier] = x.to_i
       end
 
       # This returns an Array of data from the given contract.
@@ -256,29 +266,6 @@ module IB
         end
       end
 
-      ### Leg-related methods (better suited to BAG subclass?)
-
-      # Some messages send open_close too, some don't. WTF.
-      # "BAG" is not really a contract, but a combination (combo) of securities.
-      # AKA basket or bag of securities. Individual securities in combo are represented
-      # by ComboLeg objects.
-      def serialize_legs *fields
-        return [] unless sec_type.upcase == "BAG"
-        return [0] if legs.empty? || legs.nil?
-        [legs.size, legs.map { |leg| leg.serialize *fields }]
-      end
-
-      # Check if two Contracts have same legs (maybe in different order)
-      def same_legs? other
-        legs == other.legs ||
-            legs_description.split(',').sort == other.legs_description.split(',').sort
-      end
-
-      # IB-equivalent leg description. TODO: Rewrite with self[:legs_description]
-      def legs_description
-        self[:legs_description] || legs.map { |leg| "#{leg.con_id}|#{leg.weight}" }.join(',')
-      end
-
       # Contract comparison
       def == other
         return false unless other.is_a?(self.class)
@@ -298,7 +285,7 @@ module IB
         # Different currency
         return false if currency && other.currency && currency != other.currency
 
-        # Different legs
+        # Different legs - TODO move to BAG subclass
         return false unless same_legs? other
 
         # Same con_id for all Bags, but unknown for new Contracts...

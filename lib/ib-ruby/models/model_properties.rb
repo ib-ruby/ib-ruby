@@ -52,9 +52,8 @@ module IB
 
             end
           else
-            define_method("#{name}=") do |value|
-              self[name] = value.send "to_#{body}"
-            end
+            define_property_methods name, :set =>
+                proc { |value| self[name] = value.send "to_#{body}" }
         end
       end
 
