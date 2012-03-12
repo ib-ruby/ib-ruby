@@ -22,6 +22,7 @@ describe IB::Models::ComboLeg do
       its(:ratio) {should == 0}
       its(:open_close) {should == 0}
       its(:short_sale_slot) {should == 0}
+      its(:designated_location) {should == ''}
       its(:exempt_code) {should == -1}
 
       its(:created_at) {should be_a Time}
