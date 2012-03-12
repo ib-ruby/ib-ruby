@@ -15,11 +15,11 @@ module IB
 
         def initialize opts = {}
           super opts
-          @sec_type = IB::SECURITY_TYPES[:bag]
+          self[:sec_type] = IB::SECURITY_TYPES[:bag]
         end
 
         def description
-          @description || to_human
+          self[:description] || to_human
         end
 
         def to_human

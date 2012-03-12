@@ -130,21 +130,21 @@ module IB
 
       def initialize opts = {}
         # Assign defaults to properties first!
-        @con_id = 0
-        @strike = 0
-        @sec_type = ''
-        @exchange = 'SMART'
-        @include_expired = false
-        @legs = Array.new
+        self[:con_id] = 0
+        self[:strike] = 0
+        self[:exchange] = 'SMART'
+        self[:include_expired] = false
+        self[:legs] = Array.new
+        #self[:sec_type] = '' # Turns into nil anyways
 
         # These properties are from ContractDetails
-        @under_con_id = 0
-        @min_tick = 0
-        @callable = false
-        @puttable = false
-        @coupon = 0
-        @convertible = false
-        @next_option_partial = false
+        self[:under_con_id] = 0
+        self[:min_tick] = 0
+        self[:callable] = false
+        self[:puttable] = false
+        self[:coupon] = 0
+        self[:convertible] = false
+        self[:next_option_partial] = false
 
         super opts
       end
@@ -161,11 +161,11 @@ module IB
         # per http://chuckcaplan.com/twsapi/index.php/Class%20Contract
         raise(ArgumentError.new("Don't set primary_exchange to smart")) if x == 'SMART'
 
-        @primary_exchange = x
+        self[:primary_exchange] = x
       end
 
       def right= x
-        @right =
+        self[:right] =
             case x.to_s.upcase
               when '', '0', '?'
                 nil
@@ -179,7 +179,7 @@ module IB
       end
 
       def expiry= x
-        @expiry =
+        self[:expiry] =
             case x.to_s
               when /\d{6,8}/
                 x.to_s
@@ -192,12 +192,14 @@ module IB
 
       def sec_type= x
         x = nil if !x.nil? && x.empty?
-        raise(ArgumentError.new("Invalid security type '#{x}' (must be one of #{SECURITY_TYPES.values}")) unless x.nil? || SECURITY_TYPES.values.include?(x)
-        @sec_type = x
+        unless x.nil? || SECURITY_TYPES.values.include?(x)
+          raise(ArgumentError.new("Invalid security type '#{x}' (must be one of #{SECURITY_TYPES.values}"))
+        end
+        self[:sec_type] = x
       end
 
       def multiplier= x
-        @multiplier = x.to_i
+        self[:multiplier] = x.to_i
       end
 
       # This returns an Array of data from the given contract.
@@ -274,7 +276,7 @@ module IB
 
       # IB-equivalent leg description. TODO: Rewrite with self[:legs_description]
       def legs_description
-        @legs_description || legs.map { |leg| "#{leg.con_id}|#{leg.weight}" }.join(',')
+        self[:legs_description] || legs.map { |leg| "#{leg.con_id}|#{leg.weight}" }.join(',')
       end
 
       # Contract comparison

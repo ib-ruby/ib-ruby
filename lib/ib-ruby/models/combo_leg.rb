@@ -36,12 +36,12 @@ module IB
                     :exempt_code # int: ?
 
       def initialize opts = {}
-        @con_id = 0
-        @ratio = 0
-        @open_close = SAME
-        @short_sale_slot = 0
-        @designated_location = ''
-        @exempt_code = -1
+        self[:con_id] = 0
+        self[:ratio] = 0
+        self[:open_close] = SAME
+        self[:short_sale_slot] = 0
+        self[:designated_location] = ''
+        self[:exempt_code] = -1
 
         super opts
       end

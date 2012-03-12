@@ -308,65 +308,40 @@ module IB
       #alias order_id id # TODO: Change due to ActiveRecord specifics
       #alias order_id= id= # TODO: Change due to ActiveRecord specifics
 
+      def initialize opts = {}
+        # Assign defaults first!
+        self[:aux_price] = 0.0
+        self[:parent_id] = 0
+        self[:tif] = 'DAY'
+
+        self[:outside_rth] = false
+        self[:open_close] = "O"
+        self[:origin] = Origin_Customer
+        self[:transmit] = true
+        self[:designated_location] = ''
+        self[:exempt_code] = -1
+        self[:delta_neutral_order_type] = ''
+        self[:what_if] = false
+        self[:not_held] = false
+        self[:algo_strategy] = ''
+        self[:algo_params] = []
+
+        super opts
+      end
+
       # IB uses weird String with Java Double.MAX_VALUE to indicate no value here
       def init_margin= val
-        @init_margin = val == "1.7976931348623157E308" ? nil : val
+        self[:init_margin] = val == "1.7976931348623157E308" ? nil : val
       end
 
       # IB uses weird String with Java Double.MAX_VALUE to indicate no value here
       def maint_margin= val
-        @maint_margin = val == "1.7976931348623157E308" ? nil : val
+        self[:maint_margin] = val == "1.7976931348623157E308" ? nil : val
       end
 
       # IB uses weird String with Java Double.MAX_VALUE to indicate no value here
       def equity_with_loan= val
-        @equity_with_loan = val == "1.7976931348623157E308" ? nil : val
-      end
-
-      def initialize opts = {}
-        # Assign defaults first!
-        @aux_price = 0.0
-        @parent_id=0
-        @tif='DAY'
-
-        @outside_rth = false
-        @open_close = "O"
-        @origin = Origin_Customer
-        @transmit = true
-        @designated_location = ''
-        @exempt_code = -1
-        @delta_neutral_order_type = ''
-        @what_if = false
-        @not_held = false
-        @algo_strategy = ''
-        @algo_params = []
-
-        # TODO: Initialize with nil instead of Max_Value, or change
-        #       Order sending code in IB::Messages::Outgoing::PlaceOrder
-        #@min_quantity = Max_Value
-        #@percent_offset = Max_Value # -"-
-        #@nbbo_price_cap = Max_Value # -"-
-        #@starting_price = Max_Value # -"-
-        #@stock_ref_price = Max_Value # -"-
-        #@delta = Max_Value
-        #@stock_range_lower = Max_Value # -"-
-        #@stock_range_upper = Max_Value # -"-
-        #@volatility = Max_Value # -"-
-        #@volatility_type = Max_Value # -"-
-        #@delta_neutral_aux_price = Max_Value # -"-
-        #@reference_price_type = Max_Value # -"-
-        #@trail_stop_price = Max_Value # -"-
-        #@basis_points = Max_Value # -"-
-        #@basis_points_type = Max_Value # -"-
-        #@scale_init_level_size = Max_Value # -"-
-        #@scale_subs_level_size = Max_Value # -"-
-        #@scale_price_increment = Max_Value # -"-
-        #@reference_price_type = Max_Value # -"-
-        #@reference_price_type = Max_Value # -"-
-        #@reference_price_type = Max_Value # -"-
-        #@reference_price_type = Max_Value # -"-
-
-        super opts
+        self[:equity_with_loan] = val == "1.7976931348623157E308" ? nil : val
       end
 
       # This returns an Array of data from the given order,

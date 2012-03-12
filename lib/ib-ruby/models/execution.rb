@@ -27,23 +27,16 @@ module IB
       alias account_number= account_name= # Legacy
 
       def side= value
-        @side = case value
-                  when 'BOT'
-                    :BUY
-                  when 'SLD'
-                    :SELL
-                  else
-                    value
-                end
+        self[:side] = value == 'BOT' ? :BUY : :SELL
       end
 
       def initialize opts = {}
-        @order_id = 0
-        @client_id = 0
-        @shares = 0
-        @price = 0
-        @perm_id = 0
-        @liquidation = 0
+        self[:order_id] = 0
+        self[:client_id] = 0
+        self[:shares] = 0
+        self[:price] = 0
+        self[:perm_id]= 0
+        self[:liquidation] = 0
 
         super opts
       end

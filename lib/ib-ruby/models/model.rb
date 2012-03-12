@@ -17,11 +17,11 @@ module IB
 
       # ActiveModel-style attribute accessors
       def [] key
-        self.send key
+        instance_variable_get "@#{key}".to_sym
       end
 
       def []= key, val
-        self.send "#{key}=", val
+        instance_variable_set "@#{key}".to_sym, val
       end
 
     end # Model
