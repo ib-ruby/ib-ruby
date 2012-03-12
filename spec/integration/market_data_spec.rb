@@ -23,15 +23,15 @@ describe 'Request Market Data', :connected => true, :integration => true do
 
     it_behaves_like 'Received Market Data'
 
-    it "logs no warning about unhandled :Alert message" do
+    it 'logs no warning about unhandled :Alert message' do
       should_not_log /No subscribers for message .*:Alert/
     end
 
-    it "logs no warning about unhandled :Tick... messages" do
+    it 'logs no warning about unhandled :Tick... messages' do
       should_not_log /No subscribers for message .*:TickPrice/
     end
 
-    it "logs no warning about unhandled :Tick... messages", :if => :forex_trading_hours do
+    it 'logs no warning about unhandled :Tick... messages', :if => :forex_trading_hours do
       should_not_log /No subscribers for message .*:TickSize/
     end
 
@@ -52,15 +52,15 @@ describe 'Request Market Data', :connected => true, :integration => true do
       close_connection
     end
 
-    it "logs warning about unhandled :Alert message" do
+    it 'logs warning about unhandled :Alert message' do
       should_log /No subscribers for message .*:Alert/
     end
 
-    it "logs warning about unhandled :Tick... messages" do
+    it 'logs warning about unhandled :Tick... messages' do
       should_log /No subscribers for message .*:TickPrice/
     end
 
-    it "logs warning about unhandled :Tick... messages", :if => :forex_trading_hours do
+    it 'logs warning about unhandled :Tick... messages', :if => :forex_trading_hours do
       should_log /No subscribers for message .*:TickSize/
     end
 
