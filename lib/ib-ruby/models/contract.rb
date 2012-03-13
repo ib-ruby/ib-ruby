@@ -156,32 +156,24 @@ module IB
 
       attr_accessor :description # NB: local to ib-ruby, not part of TWS.
 
-      def initialize opts = {}
-        # Assign defaults to properties first!
-        self[:con_id] = 0
-        self[:strike] = 0
-        self[:exchange] = 'SMART'
-        self[:include_expired] = false
-        #self[:sec_type] = '' # Turns into nil anyways
+      DEFAULT_PROPS = {:con_id => 0,
+                       :strike => 0,
+                       :exchange => 'SMART',
+                       :include_expired => false,
 
-        # These properties are from ContractDetails
-        self[:under_con_id] = 0
-        self[:min_tick] = 0
-        self[:callable] = false
-        self[:puttable] = false
-        self[:coupon] = 0
-        self[:convertible] = false
-        self[:next_option_partial] = false
-
-        super opts
-      end
+                       # These properties are from ContractDetails
+                       :under_con_id => 0,
+                       :min_tick => 0,
+                       :callable => false,
+                       :puttable => false,
+                       :coupon => 0,
+                       :convertible => false,
+                       :next_option_partial => false, }
 
       # NB: ContractDetails reference - to self!
       def summary
         self
       end
-
-      # Some messages send open_close too, some don't. WTF.
 
       # This returns an Array of data from the given contract.
       # Different messages serialize contracts differently. Go figure.
