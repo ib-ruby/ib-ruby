@@ -7,7 +7,7 @@ shared_examples_for 'Alert message' do
   its(:message_type) { should == :Alert }
   its(:message_id) { should == 4 }
   its(:version) { should == 2 }
-  its(:data) { should == {:version=>2, :error_id=>-1, :code=>2104, :message=>"Market data farm connection is OK:cashfarm"}}
+  its(:data) { should == {:version=>2, :error_id=>-1, :code=>2104, :message=>"Market data farm connection is OK:cashfarm"} }
   its(:error_id) { should == -1 }
   its(:code) { should == 2104 }
   its(:message) { should =~ /Market data farm connection is OK/ }
@@ -37,13 +37,13 @@ describe IB::Messages::Incoming do
   context 'Message received from IB', :connected => true do
 
     before(:all) do
-      connect_and_receive :Alert
-      wait_for(2) { received? :Alert }
+      @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
+      @ib.wait_for :Alert
     end
 
     after(:all) { close_connection }
 
-    subject { @received[:Alert].first }
+    subject { @ib.received[:Alert].first }
 
     it_behaves_like 'Alert message'
   end #

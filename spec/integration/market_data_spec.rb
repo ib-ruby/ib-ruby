@@ -1,17 +1,25 @@
 require 'integration_helper'
+#!/usr/bin/env ruby
 
+require 'ib-ruby'
+
+#OPTS[:silent] = false
 describe 'Request Market Data', :connected => true, :integration => true do
 
-  context 'when subscribed to :Tick... messages' do
+  require 'ib-ruby'
+  before(:all) { verify_account }
 
+  context 'US Stocks market', :if => :us_trading_hours do
     before(:all) do
-      verify_account
-      connect_and_receive :Alert, :TickPrice, :TickSize
-
-      ##TODO consider a follow the sun market lookup for windening the types tested
-      @ib.send_message :RequestMarketData, :id => 456,
-                       :contract => IB::Symbols::Forex[:eurusd]
-      wait_for(3) { received? :TickPrice }
+      @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
+      @contract = IB::Models::Contract.new(:symbol => 'AAPL',
+                                           :exchange => "Smart",
+                                           :currency => "USD",
+                                           :sec_type => IB::SECURITY_TYPES[:stock],
+                                           :description => "Apple"
+      )
+      @ib.send_message :RequestMarketData, :id => 456, :contract => @contract
+      @ib.wait_for 5, :TickSize, :TickString
     end
 
     after(:all) do
@@ -19,79 +27,84 @@ describe 'Request Market Data', :connected => true, :integration => true do
       close_connection
     end
 
-    context "received :Alert message " do
-      subject { @received[:Alert].first }
+    it_behaves_like 'Received Market Data'
 
-      it { should be_an IB::Messages::Incoming::Alert }
-      it { should be_warning }
-      it { should_not be_error }
-      its(:code) { should be_an Integer }
-      its(:message) { should =~ /Market data farm connection is OK/ }
-      its(:to_human) { should =~ /TWS Warning/ }
-    end
+    context "received :TickString message" do
+      subject { @ib.received[:TickString].first }
 
-    context "received :TickPrice message" do
-      subject { @received[:TickPrice].first }
-
-      it { should be_an IB::Messages::Incoming::TickPrice }
+      it { should be_an IB::Messages::Incoming::TickString }
       its(:tick_type) { should be_an Integer }
       its(:type) { should be_a Symbol }
-      its(:price) { should be_a Float }
-      its(:size) { should be_an Integer }
+      its(:value) { should be_a String }
       its(:data) { should be_a Hash }
       its(:ticker_id) { should == 456 } # ticker_id
-      its(:to_human) { should =~ /TickPrice/ }
+      its(:to_human) { should =~ /TickString/ }
     end
+  end
 
-    context "received :TickSize message", :if => :forex_trading_hours do
+  context 'FOREX market' do
+    context 'when subscribed to :Tick... messages' do
+
       before(:all) do
-        wait_for(3) { received? :TickSize }
+        @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
+
+        ##TODO consider a follow the sun market lookup for windening the types tested
+        @ib.subscribe(:Alert, :TickPrice, :TickSize) {}
+        @ib.send_message :RequestMarketData, :id => 456,
+                         :contract => IB::Symbols::Forex[:eurusd]
+
+        @ib.wait_for 3, :TickPrice, :TickSize
       end
 
-      subject { @received[:TickSize].first }
+      after(:all) do
+        @ib.send_message :CancelMarketData, :id => 456
+        close_connection
+      end
 
-      it { should be_an IB::Messages::Incoming::TickSize }
-      its(:type) { should_not be_nil }
-      its(:data) { should be_a Hash }
-      its(:tick_type) { should be_an Integer }
-      its(:type) { should be_a Symbol }
-      its(:size) { should be_an Integer }
-      its(:ticker_id) { should == 456 }
-      its(:to_human) { should =~ /TickSize/ }
-    end
-  end # when subscribed to :Tick... messages
+      it_behaves_like 'Received Market Data'
 
-  context 'when NOT subscribed to :Tick... messages', :slow => true do
+      it 'logs no warning about unhandled :Alert message' do
+        should_not_log /No subscribers for message .*:Alert/
+      end
 
-    before(:all) do
-      connect_and_receive :NextValidID
+      it 'logs no warning about unhandled :Tick... messages' do
+        should_not_log /No subscribers for message .*:TickPrice/
+      end
 
-      @ib.send_message :RequestMarketData, :id => 456,
-                       :contract => IB::Symbols::Forex[:eurusd]
-      wait_for(2)
-    end
+      it 'logs no warning about unhandled :Tick... messages', :if => :forex_trading_hours do
+        should_not_log /No subscribers for message .*:TickSize/
+      end
 
-    after(:all) do
-      @ib.send_message :CancelMarketData, :id => 456
-      close_connection
-    end
+    end # when subscribed to :Tick... messages
 
-    it "logs warning about unhandled :OpenOrderEnd message" do
-      should_log /No subscribers for message .*:OpenOrderEnd/
-    end
+    context 'when NOT subscribed to :Tick... messages', :slow => true do
 
-    it "logs warning about unhandled :Alert message" do
-      should_log /No subscribers for message .*:Alert/
-    end
+      before(:all) do
+        @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
 
-    it "logs warning about unhandled :Tick... messages" do
-      should_log /No subscribers for message .*:TickPrice/
-    end
+        @ib.send_message :RequestMarketData, :id => 456,
+                         :contract => IB::Symbols::Forex[:eurusd]
+        @ib.wait_for 3, :TickPrice, :TickSize
+      end
 
-    it "logs warning about unhandled :Tick... messages", :if => :forex_trading_hours do
-      should_log /No subscribers for message .*:TickSize/
-    end
+      after(:all) do
+        @ib.send_message :CancelMarketData, :id => 456
+        close_connection
+      end
 
-  end # NOT subscribed to :Tick... messages
+      it 'logs warning about unhandled :Alert message' do
+        should_log /No subscribers for message .*:Alert/
+      end
+
+      it 'logs warning about unhandled :Tick... messages' do
+        should_log /No subscribers for message .*:TickPrice/
+      end
+
+      it 'logs warning about unhandled :Tick... messages', :if => :forex_trading_hours do
+        should_log /No subscribers for message .*:TickSize/
+      end
+
+    end # NOT subscribed to :Tick... messages
+  end
 
 end # Request Market Data

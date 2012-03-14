@@ -4,8 +4,8 @@ describe "Request Contract Info", :connected => true, :integration => true do
 
   before(:all) do
     verify_account
-    connect_and_receive :NextValidID, :Alert, :ContractData, :ContractDataEnd
-    wait_for { received? :NextValidID }
+    @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
+    @ib.wait_for :NextValidId
   end
 
   after(:all) { close_connection }
@@ -15,20 +15,17 @@ describe "Request Contract Info", :connected => true, :integration => true do
     before(:all) do
       @contract = IB::Models::Contract.new :symbol => 'AAPL',
                                            :sec_type => IB::SECURITY_TYPES[:stock]
-      @ib.send_message :RequestContractData,
-                       :id => 111,
-                       :contract => @contract
-
-      wait_for(3) { received? :ContractDataEnd }
+      @ib.send_message :RequestContractData, :id => 111, :contract => @contract
+      @ib.wait_for 3, :ContractDataEnd
     end
 
     after(:all) { clean_connection } # Clear logs and message collector
 
-    it { @received[:ContractData].should have_exactly(2).contract_data }
-    it { @received[:ContractDataEnd].should have_exactly(1).contract_data_end }
+    it { @ib.received[:ContractData].should have_exactly(2).contract_data }
+    it { @ib.received[:ContractDataEnd].should have_exactly(1).contract_data_end }
 
     it 'receives Contract Data for requested contract' do
-      msg = @received[:ContractData].first
+      msg = @ib.received[:ContractData].first
       msg.request_id.should == 111
       msg.contract.should == @contract
     end
@@ -36,7 +33,7 @@ describe "Request Contract Info", :connected => true, :integration => true do
     it 'receives Contract Data with extended fields' do
       # Returns 2 contracts, one for NASDAQ and one for IBIS - internal crossing?
 
-      @received[:ContractData].each do |msg|
+      @ib.received[:ContractData].each do |msg|
         contract = msg.contract
         contract.symbol.should == 'AAPL'
 
@@ -68,19 +65,16 @@ describe "Request Contract Info", :connected => true, :integration => true do
                                                    :expiry => "201301",
                                                    :right => "CALL",
                                                    :strike => 500
-      @ib.send_message :RequestContractData,
-                       :id => 123,
-                       :contract => @contract
-
-      wait_for(3) { received? :ContractDataEnd }
+      @ib.send_message :RequestContractData, :id => 123, :contract => @contract
+      @ib.wait_for 3, :ContractDataEnd
     end
 
     after(:all) { clean_connection } # Clear logs and message collector
 
-    subject { @received[:ContractData].first }
+    subject { @ib.received[:ContractData].first }
 
-    it { @received[:ContractData].should have_exactly(1).contract_data }
-    it { @received[:ContractDataEnd].should have_exactly(1).contract_data_end }
+    it { @ib.received[:ContractData].should have_exactly(1).contract_data }
+    it { @ib.received[:ContractDataEnd].should have_exactly(1).contract_data_end }
 
     it 'receives Contract Data for requested contract' do
       subject.request_id.should == 123
@@ -117,20 +111,16 @@ describe "Request Contract Info", :connected => true, :integration => true do
                                            :currency => "USD",
                                            :exchange => "IDEALPRO",
                                            :sec_type => IB::SECURITY_TYPES[:forex]
-
-      @ib.send_message :RequestContractData,
-                       :id => 135,
-                       :contract => @contract
-
-      wait_for(3) { received? :ContractDataEnd }
+      @ib.send_message :RequestContractData, :id => 135, :contract => @contract
+      @ib.wait_for 3, :ContractDataEnd
     end
 
     after(:all) { clean_connection } # Clear logs and message collector
 
-    subject { @received[:ContractData].first }
+    subject { @ib.received[:ContractData].first }
 
-    it { @received[:ContractData].should have_exactly(1).contract_data }
-    it { @received[:ContractDataEnd].should have_exactly(1).contract_data_end }
+    it { @ib.received[:ContractData].should have_exactly(1).contract_data }
+    it { @ib.received[:ContractDataEnd].should have_exactly(1).contract_data_end }
 
     it 'receives Contract Data for requested contract' do
       subject.request_id.should == 135
@@ -164,20 +154,16 @@ describe "Request Contract Info", :connected => true, :integration => true do
 
     before(:all) do
       @contract = IB::Symbols::Futures[:ym] # Mini Dow Jones Industrial
-
-      @ib.send_message :RequestContractData,
-                       :id => 147,
-                       :contract => @contract
-
-      wait_for(3) { received? :ContractDataEnd }
+      @ib.send_message :RequestContractData, :id => 147, :contract => @contract
+      @ib.wait_for 3, :ContractDataEnd
     end
 
     after(:all) { clean_connection } # Clear logs and message collector
 
-    subject { @received[:ContractData].first }
+    subject { @ib.received[:ContractData].first }
 
-    it { @received[:ContractData].should have_exactly(1).contract_data }
-    it { @received[:ContractDataEnd].should have_exactly(1).contract_data_end }
+    it { @ib.received[:ContractData].should have_exactly(1).contract_data }
+    it { @ib.received[:ContractDataEnd].should have_exactly(1).contract_data_end }
 
     it 'receives Contract Data for requested contract' do
       subject.request_id.should == 147

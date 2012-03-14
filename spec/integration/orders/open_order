@@ -1,3 +1,5 @@
+This is just a dump file to compare received order messages:
+
 [#<IB::Messages::Incoming::OpenOrder:0xfdc        #<IB::Messages::Incoming::OpenOrder:0x10b8        #<IB::Messages::Incoming::OpenOrder:0x1198
   @contract=                                       @contract=                                        @contract=
    #<IB::Models::Contract:0xfe0                     #<IB::Models::Contract:0x10bc                     #<IB::Models::Contract:0x119c

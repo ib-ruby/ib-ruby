@@ -23,7 +23,7 @@ buy_order = IB::Models::Order.new :total_quantity => 100,
                                   :action => 'BUY',
                                   :order_type => 'LMT'
 
-sleep 0.5 # waiting for :NextValidID
+sleep 0.5 # waiting for :NextValidId
 
 ib.place_order buy_order, wfc
 

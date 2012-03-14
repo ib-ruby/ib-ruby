@@ -44,8 +44,8 @@ module IB
 
         def initialize opts = {}
           super opts
-          @sec_type = IB::SECURITY_TYPES[:option]
-          @description ||= osi ? osi : "#{symbol} #{strike} #{right} #{expiry}"
+          self[:sec_type] = IB::SECURITY_TYPES[:option]
+          self[:description] ||= osi ? osi : "#{symbol} #{strike} #{right} #{expiry}"
         end
 
         def to_human
