@@ -70,7 +70,7 @@ describe "Orders", :connected => true, :integration => true do
 
     context "Retrieving placed orders" do
       before(:all) do
-        @ib.send_message :RequestAllOpenOrders
+        @ib.send_message :RequestOpenOrders
         @ib.wait_for :OpenOrderEnd
       end
 

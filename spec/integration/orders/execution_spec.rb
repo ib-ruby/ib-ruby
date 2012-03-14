@@ -106,7 +106,7 @@ describe "Trades", :connected => true, :integration => true, :slow => true do
         @ib.send_message :RequestExecutions,
                          :request_id => 456,
                          :client_id => OPTS[:connection][:client_id],
-                         :time => (Time.now-10).to_ib
+                         :time => (Time.now-10).to_ib # Time zone problems possible
         @ib.wait_for 3, :ExecutionData
       end
 
