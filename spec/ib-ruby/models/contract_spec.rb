@@ -21,7 +21,7 @@ describe IB::Models::Contract do
       it { should_not be_nil }
       its(:con_id) { should == 0 }
       its(:strike) { should == 0 }
-      its(:sec_type) { should == '' }
+      its(:sec_type) { should be_nil }
       its(:created_at) { should be_a Time }
       its(:include_expired) { should == false }
     end

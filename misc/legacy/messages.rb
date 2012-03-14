@@ -1204,7 +1204,7 @@ module IB
     # The IB class subscribes to it automatically and stores the order id in
     # its :next_order_id attribute.
     #
-    class NextValidID < AbstractMessage
+    class NextValidId < AbstractMessage
       def self.message_id
         9
       end
@@ -1213,7 +1213,7 @@ module IB
         autoload([:version, :int], [:order_id, :int])
       end
 
-    end # NextValidIDMessage
+    end # NextValidIdMessage
 
 
     class ContractData < AbstractMessage

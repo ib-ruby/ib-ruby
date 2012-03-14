@@ -125,3 +125,11 @@
 == 0.5.21 / 2012-03-06
 
 * Fully tested with integration spec suite
+
+== 0.6.0 / 2012-03-09
+
+* Connection wait_for/received/received? API added
+
+== 0.6.1 / 2012-03-14
+
+* Version bump

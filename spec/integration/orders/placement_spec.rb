@@ -7,19 +7,20 @@ describe "Orders", :connected => true, :integration => true do
   context "Placing wrong order", :slow => true do
 
     before(:all) do
-      connect_and_receive :NextValidID, :Alert, :OpenOrder, :OrderStatus
-      wait_for { received? :NextValidID }
+      @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
+
+      @ib.wait_for :NextValidId
 
       place_order IB::Symbols::Stocks[:wfc],
                   :limit_price => 9.131313 # Weird non-acceptable price
-      wait_for 1
+      @ib.wait_for 1
     end
 
     after(:all) { close_connection }
 
     it 'does not place new Order' do
-      @received[:OpenOrder].should be_empty
-      @received[:OrderStatus].should be_empty
+      @ib.received[:OpenOrder].should be_empty
+      @ib.received[:OrderStatus].should be_empty
     end
 
     it 'still changes client`s next_order_id' do
@@ -28,7 +29,7 @@ describe "Orders", :connected => true, :integration => true do
     end
 
     context 'received :Alert message' do
-      subject { @received[:Alert].last }
+      subject { @ib.received[:Alert].last }
 
       it { should be_an IB::Messages::Incoming::Alert }
       it { should be_error }
@@ -40,12 +41,12 @@ describe "Orders", :connected => true, :integration => true do
 
   context "Off-market stock order" do
     before(:all) do
-      connect_and_receive :NextValidID, :Alert, :OpenOrder, :OrderStatus, :OpenOrderEnd
-      wait_for { received? :NextValidID }
+      @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
+      @ib.wait_for :NextValidId
 
       place_order IB::Symbols::Stocks[:wfc],
                   :limit_price => 9.13 # Set acceptable price
-      wait_for { @received[:OpenOrder].size > 2 && @received[:OpenOrder].size > 1 }
+      @ib.wait_for [:OpenOrder, 3], [:OrderStatus, 2]
     end
 
     after(:all) { close_connection }
@@ -58,8 +59,8 @@ describe "Orders", :connected => true, :integration => true do
         @ib.next_order_id.should == @order_id_before + 1
       end
 
-      it { @received[:OpenOrder].should have_at_least(1).open_order_message }
-      it { @received[:OrderStatus].should have_at_least(1).status_message }
+      it { @ib.received[:OpenOrder].should have_at_least(1).open_order_message }
+      it { @ib.received[:OrderStatus].should have_at_least(1).status_message }
 
       it 'receives confirmation of Order submission' do
         open_order_should_be /Submitted/ # ()Pre)Submitted
@@ -69,9 +70,8 @@ describe "Orders", :connected => true, :integration => true do
 
     context "Retrieving placed orders" do
       before(:all) do
-        @ib.send_message :RequestAllOpenOrders
-
-        wait_for { received?(:OpenOrderEnd) }
+        @ib.send_message :RequestOpenOrders
+        @ib.wait_for :OpenOrderEnd
       end
 
       after(:all) { clean_connection } # Clear logs and message collector
@@ -80,10 +80,10 @@ describe "Orders", :connected => true, :integration => true do
         @ib.next_order_id.should == @order_id_after
       end
 
-      it { @received[:OpenOrder].should have_exactly(1).open_order_message }
-      it { @received[:OrderStatus].should have_exactly(1).status_message }
-      it { @received[:OpenOrderEnd].should have_exactly(1).order_end_message }
-      it { @received[:Alert].should have_exactly(0).alert_messages }
+      it { @ib.received[:OpenOrder].should have_exactly(1).open_order_message }
+      it { @ib.received[:OrderStatus].should have_exactly(1).status_message }
+      it { @ib.received[:OpenOrderEnd].should have_exactly(1).order_end_message }
+      it { @ib.received[:Alert].should have_exactly(0).alert_messages }
 
       it 'receives OpenOrder and OrderStatus for placed order' do
         open_order_should_be /Submitted/
@@ -95,7 +95,7 @@ describe "Orders", :connected => true, :integration => true do
       before(:all) do
         @ib.cancel_order @order_id_placed
 
-        wait_for { received?(:OrderStatus) && received?(:Alert) }
+        @ib.wait_for :OrderStatus, :Alert
       end
 
       after(:all) { clean_connection } # Clear logs and message collector
@@ -105,18 +105,18 @@ describe "Orders", :connected => true, :integration => true do
       end
 
       it 'does not receive OpenOrder message' do
-        received?(:OpenOrder).should be_false
+        @ib.received?(:OpenOrder).should be_false
       end
 
-      it { @received[:OrderStatus].should have_exactly(1).status_message }
-      it { @received[:Alert].should have_exactly(1).alert_message }
+      it { @ib.received[:OrderStatus].should have_exactly(1).status_message }
+      it { @ib.received[:Alert].should have_exactly(1).alert_message }
 
       it 'receives cancellation Order Status' do
         order_status_should_be /Cancel/ # Cancelled / PendingCancel
       end
 
       it 'receives Order cancelled Alert' do
-        alert = @received[:Alert].first
+        alert = @ib.received[:Alert].first
         alert.should be_an IB::Messages::Incoming::Alert
         alert.message.should =~ /Order Canceled - reason:/
       end
@@ -126,22 +126,22 @@ describe "Orders", :connected => true, :integration => true do
       before(:all) do
         @ib.cancel_order rand(99999999)
 
-        wait_for { received?(:Alert) }
+        @ib.wait_for :Alert
       end
 
-      it { @received[:Alert].should have_exactly(1).alert_message }
+      it { @ib.received[:Alert].should have_exactly(1).alert_message }
 
       it 'does not increase client`s next_order_id further' do
         @ib.next_order_id.should == @order_id_after
       end
 
       it 'does not receive Order messages' do
-        received?(:OrderStatus).should be_false
-        received?(:OpenOrder).should be_false
+        @ib.received?(:OrderStatus).should be_false
+        @ib.received?(:OpenOrder).should be_false
       end
 
       it 'receives unable to find Order Alert' do
-        alert = @received[:Alert].first
+        alert = @ib.received[:Alert].first
         alert.should be_an IB::Messages::Incoming::Alert
         alert.message.should =~ /Can't find order with id =/
       end

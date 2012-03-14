@@ -1,31 +1,47 @@
 require 'message_helper'
+require 'account_helper'
 
-# Make sure integration tests are only run against the pre-configured PAPER ACCOUNT
-def verify_account
-  return OPTS[:account_verified] if OPTS[:account_verified]
+shared_examples_for 'Received Market Data' do
+  context "received :Alert message " do
+    subject { @ib.received[:Alert].first }
 
-  puts
-  puts 'WARNING: MAKE SURE TO RUN INTEGRATION TESTS AGAINST IB PAPER ACCOUNT ONLY!'
-  puts 'WARNING: FINANCIAL LOSSES MAY RESULT IF YOU RUN TESTS WITH REAL IB ACCOUNT!'
-  puts 'WARNING: YOU HAVE BEEN WARNED!'
-  puts
-  puts 'Configure your connection to IB PAPER ACCOUNT in spec/spec_helper.rb'
-  puts
+    it { should be_an IB::Messages::Incoming::Alert }
+    it { should be_warning }
+    it { should_not be_error }
+    its(:code) { should be_an Integer }
+    its(:message) { should =~ /Market data farm connection is OK/ }
+    its(:to_human) { should =~ /TWS Warning/ }
+  end
 
-  account = OPTS[:connection][:account] || OPTS[:connection][:account_name]
-  raise "Please configure IB PAPER ACCOUNT in spec/spec_helper.rb" unless account
+  context "received :TickPrice message" do
+    subject { @ib.received[:TickPrice].first }
 
-  connect_and_receive :AccountValue
-  @ib.send_message :RequestAccountData, :subscribe => true
+    it { should be_an IB::Messages::Incoming::TickPrice }
+    its(:tick_type) { should be_an Integer }
+    its(:type) { should be_a Symbol }
+    its(:price) { should be_a Float }
+    its(:size) { should be_an Integer }
+    its(:data) { should be_a Hash }
+    its(:ticker_id) { should == 456 } # ticker_id
+    its(:to_human) { should =~ /TickPrice/ }
+  end
 
-  wait_for { received? :AccountValue }
-  raise "Unable to verify IB PAPER ACCOUNT" unless received? :AccountValue
+  context "received :TickSize message", :if => :us_trading_hours do
+    before(:all) do
+      @ib.wait_for 3, :TickSize
+    end
 
-  received = @received[:AccountValue].first.account_name
-  raise "Connected to wrong account #{received}, expected #{account}" if account != received
+    subject { @ib.received[:TickSize].first }
 
-  close_connection
-  OPTS[:account_verified] = true
+    it { should be_an IB::Messages::Incoming::TickSize }
+    its(:type) { should_not be_nil }
+    its(:data) { should be_a Hash }
+    its(:tick_type) { should be_an Integer }
+    its(:type) { should be_a Symbol }
+    its(:size) { should be_an Integer }
+    its(:ticker_id) { should == 456 }
+    its(:to_human) { should =~ /TickSize/ }
+  end
 end
 
 ### Helpers for placing and verifying orders
@@ -51,7 +67,7 @@ def check_status item, status
 end
 
 def order_status_should_be status, index=0
-  msg = @received[:OrderStatus][index]
+  msg = @ib.received[:OrderStatus][index]
   msg.should be_an IB::Messages::Incoming::OrderStatus
   msg.order_id.should == @order_id_placed
   msg.perm_id.should be_an Integer
@@ -75,7 +91,7 @@ def order_status_should_be status, index=0
 end
 
 def open_order_should_be status, index=0
-  msg = @received[:OpenOrder][index]
+  msg = @ib.received[:OpenOrder][index]
   msg.should be_an IB::Messages::Incoming::OpenOrder
   msg.order.should == @order
   msg.contract.should == @contract
@@ -84,13 +100,13 @@ def open_order_should_be status, index=0
 end
 
 def execution_should_be side, opts={}
-  msg = @received[:ExecutionData][opts[:index] || -1]
+  msg = @ib.received[:ExecutionData][opts[:index] || -1]
   msg.request_id.should == (opts[:request_id] || -1)
   msg.contract.should == @contract
 
   exec = msg.execution
   exec.perm_id.should be_an Integer
-  exec.perm_id.should == @received[:OpenOrder].last.order.perm_id if @received[:OpenOrder].last
+  exec.perm_id.should == @ib.received[:OpenOrder].last.order.perm_id if @ib.received?(:OpenOrder)
   exec.client_id.should == OPTS[:connection][:client_id]
   exec.order_id.should be_an Integer
   exec.order_id.should == @order.order_id if @order
@@ -98,7 +114,7 @@ def execution_should_be side, opts={}
   exec.time.should =~ /\d\d:\d\d:\d\d/
   exec.account_name.should == OPTS[:connection][:account_name]
   exec.exchange.should == 'IDEALPRO'
-  exec.side.to_s.should == side
+  exec.side.should == side
   exec.shares.should == 20000
   exec.cumulative_quantity.should == 20000
   exec.price.should be > 1
@@ -106,5 +122,3 @@ def execution_should_be side, opts={}
   exec.price.should == exec.average_price
   exec.liquidation.should == 0
 end
-
-

@@ -13,8 +13,7 @@ RSpec.configure do |config|
             # 17:15 - 17:00 (ET) Sunday-Friday Forex  22:15 - 22:00 (UTC)
             !(t.wday > 0 && t.wday < 5 || t.wday == 5 && t.hour < 22)
         end
-
-      end # :slow => true
+      end
   }
   # config.filter = { :focus => true }
   # config.include(UserExampleHelpers)
@@ -25,7 +24,7 @@ end
 
 # Top level metadata for test suite level hacking
 OPTS = {
-    :silent => false, #true, # Verbosity of test outputs
+    :silent => true, #false, #true, # Verbosity of test outputs
     :brokertron => false, # Use mock (Brokertron) instead of paper account
 }
 

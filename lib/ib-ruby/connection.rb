@@ -15,9 +15,10 @@ module IB
                        :port => '4001', # IB Gateway connection (default)
                        #:port => '7496', # TWS connection, with annoying pop-ups
                        :client_id => nil, # Will be randomly assigned
-                       :connect => true,
-                       :reader => true,
-                       :logger => nil
+                       :connect => true, # Connect at initialization
+                       :reader => true, # Start a separate reader Thread
+                       :received => true, # Keep all received messages in a Hash
+                       :logger => nil,
     }
 
     # Singleton to make active Connection universally accessible as IB::Connection.current
@@ -28,7 +29,7 @@ module IB
     attr_reader :server #         Info about IB server and server connection state
     attr_accessor :next_order_id #  Next valid order id
 
-    def initialize(opts = {})
+    def initialize opts = {}
       @options = DEFAULT_OPTIONS.merge(opts)
 
       self.default_logger = @options[:logger] if @options[:logger]
@@ -40,19 +41,13 @@ module IB
       Connection.current = self
     end
 
-    # Message subscribers. Key is the message class to listen for.
-    # Value is a Hash of subscriber Procs, keyed by their subscription id.
-    # All subscriber Procs will be called with the message instance
-    # as an argument when a message of that type is received.
-    def subscribers
-      @subscribers ||= Hash.new { |hash, key| hash[key] = Hash.new }
-    end
+    ### Working with connection
 
     def connect
       raise "Already connected!" if connected?
 
-      # TWS always sends NextValidID message at connect - save this id
-      self.subscribe(:NextValidID) do |msg|
+      # TWS always sends NextValidId message at connect - save this id
+      self.subscribe(:NextValidId) do |msg|
         @next_order_id = msg.order_id
         log.info "Got next valid order id: #{@next_order_id}."
       end
@@ -101,16 +96,14 @@ module IB
       @connected
     end
 
-    def reader_running?
-      @reader_running && @server[:reader] && @server[:reader].alive?
-    end
+    ### Working with message subscribers
 
     # Subscribe Proc or block to specific type(s) of incoming message events.
     # Listener will be called later with received message instance as its argument.
     # Returns subscriber id to allow unsubscribing
-    def subscribe(*args, &block)
+    def subscribe *args, &block
       subscriber = args.last.respond_to?(:call) ? args.pop : block
-      subscriber_id = random_id
+      id = random_id
 
       raise ArgumentError.new "Need subscriber proc or block" unless subscriber.is_a? Proc
 
@@ -118,32 +111,141 @@ module IB
         message_classes =
             case
               when what.is_a?(Class) && what < Messages::Incoming::AbstractMessage
-                what
+                [what]
               when what.is_a?(Symbol)
-                Messages::Incoming.const_get(what)
+                [Messages::Incoming.const_get(what)]
               when what.is_a?(Regexp)
                 Messages::Incoming::Table.values.find_all { |klass| klass.to_s =~ what }
               else
                 raise ArgumentError.new "#{what} must represent incoming IB message class"
             end
-        [message_classes].flatten.each do |message_class|
+        message_classes.flatten.each do |message_class|
           # TODO: Fix: RuntimeError: can't add a new key into hash during iteration
-          subscribers[message_class][subscriber_id] = subscriber
+          subscribers[message_class][id] = subscriber
         end
       end
-      subscriber_id
+      id
     end
 
     # Remove all subscribers with specific subscriber id (TODO: multiple ids)
-    def unsubscribe(subscriber_id)
+    def unsubscribe *ids
+      removed = []
+      ids.each do |id|
+        removed_at_id = subscribers.map { |_, subscribers| subscribers.delete id }.compact
+        raise "No subscribers with id #{id}" if removed_at_id.empty?
+        removed << removed_at_id
+      end
+      removed.flatten
+    end
 
-      subscribers.each do |message_class, message_subscribers|
-        message_subscribers.delete subscriber_id
+    # Message subscribers. Key is the message class to listen for.
+    # Value is a Hash of subscriber Procs, keyed by their subscription id.
+    # All subscriber Procs will be called with the message instance
+    # as an argument when a message of that type is received.
+    def subscribers
+      @subscribers ||= Hash.new { |hash, subs| hash[subs] = Hash.new }
+    end
+
+    ## Check if subscribers for given type exists
+    #def subscribed? message_type
+    #  message_type
+    #  (subscribers[message_type.class] ||
+    #      subscribers[message_type.class] ||
+    #      subscribers[message_type]).empty?
+    #end
+
+    ### Working with received messages Hash
+
+    # Hash of received messages, keyed by message type
+    def received
+      @received ||= Hash.new { |hash, message_type| hash[message_type] = Array.new }
+    end
+
+    # Check if messages of given type were received at_least n times
+    def received? message_type, times=1
+      received[message_type].size >= times
+    end
+
+    # Clear received messages Hash
+    def clear_received message_type=nil
+      if message_type
+        received[message_type].clear
+      else
+        received.each { |_, message_type| message_type.clear }
       end
     end
 
+    # Wait for specific condition(s) - given as callable/block, or
+    # message type(s) - given as Symbol or [Symbol, times] pair.
+    # Timeout after given time or 2 seconds.
+    def wait_for *args, &block
+      time = args.find { |arg| arg.is_a? Numeric } || 2
+      timeout = Time.now + time
+      args.push(block) if block
+
+      sleep 0.1 until timeout < Time.now ||
+          args.inject(true) do |result, arg|
+            result && if arg.is_a?(Symbol)
+                        received?(arg)
+                      elsif arg.is_a?(Array)
+                        received?(*arg)
+                      elsif arg.respond_to?(:call)
+                        arg.call
+                      else
+                        true
+                      end
+          end
+    end
+
+    ### Working with Incoming messages from IB
+
+    # Start reader thread that continuously reads messages from server in background.
+    # If you don't start reader, you should manually poll @server[:socket] for messages
+    # or use #process_messages(msec) API.
+    def start_reader
+      Thread.abort_on_exception = true
+      @reader_running = true
+      @server[:reader] = Thread.new do
+        process_messages while @reader_running
+      end
+    end
+
+    def reader_running?
+      @reader_running && @server[:reader] && @server[:reader].alive?
+    end
+
+    # Process incoming messages during *poll_time* (200) msecs, nonblocking
+    def process_messages poll_time = 200 # in msec
+      time_out = Time.now + poll_time/1000.0
+      while (time_left = time_out - Time.now) > 0
+        # If server socket is readable, process single incoming message
+        process_message if select [@server[:socket]], nil, nil, time_left
+      end
+    end
+
+    # Process single incoming message (blocking!)
+    def process_message
+      msg_id = @server[:socket].read_int # This read blocks!
+
+      # Debug:
+      log.debug "Got message #{msg_id} (#{Messages::Incoming::Table[msg_id]})"
+
+      # Create new instance of the appropriate message type, and have it read the message.
+      # NB: Failure here usually means unsupported message type received
+      msg = Messages::Incoming::Table[msg_id].new(@server[:socket])
+
+      # Deliver message to all registered subscribers, alert if no subscribers
+      subscribers[msg.class].each { |_, subscriber| subscriber.call(msg) }
+      log.warn "No subscribers for message #{msg.class}!" if subscribers[msg.class].empty?
+
+      # Collect all received messages into a @received Hash
+      received[msg.message_type] << msg if @options[:received]
+    end
+
+    ### Sending Outgoing messages to IB
+
     # Send an outgoing message.
-    def send_message(what, *args)
+    def send_message what, *args
       message =
           case
             when what.is_a?(Messages::Outgoing::AbstractMessage)
@@ -161,36 +263,8 @@ module IB
 
     alias dispatch send_message # Legacy alias
 
-    # Process incoming messages during *poll_time* (200) msecs
-    def process_messages poll_time = 200 # in msec
-      time_out = Time.now + poll_time/1000.0
-      while (time_left = time_out - Time.now) > 0
-        # If server socket is readable, process single incoming message
-        process_message if select [@server[:socket]], nil, nil, time_left
-      end
-    end
-
-    # Process single incoming message (blocking)
-    def process_message
-      # This read blocks!
-      msg_id = @server[:socket].read_int
-
-      # Debug:
-      unless [1, 2, 4, 6, 7, 8, 9, 12, 21, 53].include? msg_id
-        log.debug "Got message #{msg_id} (#{Messages::Incoming::Table[msg_id]})"
-      end
-
-      # Create new instance of the appropriate message type, and have it read the message.
-      # NB: Failure here usually means unsupported message type received
-      msg = Messages::Incoming::Table[msg_id].new(@server[:socket])
-
-      subscribers[msg.class].each { |_, subscriber| subscriber.call(msg) }
-      log.warn "No subscribers for message #{msg.class}!" if subscribers[msg.class].empty?
-    end
-
-    # Place Order (convenience wrapper for message :PlaceOrder).
-    # Assigns client_id and order_id fields to placed order.
-    # Returns order_id.
+    # Place Order (convenience wrapper for send_message :PlaceOrder).
+    # Assigns client_id and order_id fields to placed order. Returns assigned order_id.
     def place_order order, contract
       send_message :PlaceOrder,
                    :order => order,
@@ -202,21 +276,10 @@ module IB
       order.order_id
     end
 
-    # Cancel Orders by their id (convenience wrapper for message :CancelOrder).
+    # Cancel Orders by their ids (convenience wrapper for send_message :CancelOrder).
     def cancel_order *order_ids
       order_ids.each do |order_id|
         send_message :CancelOrder, :id => order_id.to_i
-      end
-    end
-
-    # Start reader thread that continuously reads messages from server in background.
-    # If you don't start reader, you should manually poll @server[:socket] for messages
-    # or use #process_messages(msec) API.
-    def start_reader
-      Thread.abort_on_exception = true
-      @reader_running = true
-      @server[:reader] = Thread.new do
-        process_messages while @reader_running
       end
     end
 
@@ -227,6 +290,4 @@ module IB
     end
 
   end # class Connection
-  #IB = Connection # Legacy alias
-
 end # module IB
