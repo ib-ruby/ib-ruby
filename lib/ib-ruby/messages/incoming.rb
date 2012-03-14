@@ -146,7 +146,7 @@ module IB
       # This message is always sent by TWS automatically at connect.
       # The IB::Connection class subscribes to it automatically and stores
       # the order id in its @next_order_id attribute.
-      NextValidID = NextValidId = def_message( 9, [:order_id, :int])
+      NextValidID = NextValidId = def_message(9, [:order_id, :int])
 
       NewsBulletins =
           def_message 14, [:request_id, :int], # unique incrementing bulletin ID.
@@ -246,7 +246,7 @@ module IB
                              [:tick_type, :int],
                              [:size, :int]
 
-      TickGeneric = def_message 45, AbstractTick,
+      TickGeneric = def_message [45, 6], AbstractTick,
                                 [:ticker_id, :int],
                                 [:tick_type, :int],
                                 [:value, :decimal]
@@ -256,7 +256,7 @@ module IB
                                [:tick_type, :int],
                                [:value, :string]
 
-      TickEFP = def_message 47, AbstractTick,
+      TickEFP = def_message [47, 6], AbstractTick,
                             [:ticker_id, :int],
                             [:tick_type, :int],
                             [:basis_points, :decimal],
