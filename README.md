@@ -60,7 +60,7 @@ and :port options given to IB::Connection.new.
                                       :action => 'BUY',
                                       :order_type => 'LMT'
     ib.place_order buy_order, contract
-    ib.wait_for { ib.received? :OpenOrder || ib.received? :ExecutionData }
+    ib.wait_for :ExecutionData
 
 Your code interacts with TWS via exchange of messages. Messages that you send to
 TWS are called 'Outgoing', messages your code receives from TWS - 'Incoming'.
@@ -76,7 +76,7 @@ should have subscribed for, and these messages are be processed in a code block
 given to `#subscribe`.
 
 In order to give TWS time to respond, you either run a message processing loop or
-just wait until ib receives the messages you requested.
+just wait until Connection receives the messages type you requested.
 
 See `lib/ib-ruby/messages` for a full list of supported incoming/outgoing messages
 and their attributes. The original TWS docs and code samples can be found
