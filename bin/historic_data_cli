@@ -1,7 +1,5 @@
 #!/usr/bin/env ruby
-#
 # This script connects to IB API, and downloads historic data
-# TODO: Not working properly! Fix the Historical command line client
 
 require 'rubygems'
 require 'time'
