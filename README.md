@@ -72,7 +72,7 @@ from TWS, with the received message as its argument.
 
 Then, you request specific data from TWS using `Connection#send_message` or place
 your order using `Connection#place_order`. TWS will respond with messages that you
-should have subscribed for, and these messages are be processed in a code block
+should have subscribed for, and these messages will be processed in a code block
 given to `#subscribe`.
 
 In order to give TWS time to respond, you either run a message processing loop or

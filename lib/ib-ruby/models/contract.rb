@@ -20,10 +20,11 @@ module IB
 
       # This returns a Contract initialized from the serialize_ib_ruby format string.
       def self.from_ib_ruby string
-        c = Contract.new
-        c.symbol, c.sec_type, c.expiry, c.strike, c.right, c.multiplier,
-            c.exchange, c.primary_exchange, c.currency, c.local_symbol = string.split(":")
-        c
+        keys = [:symbol, :sec_type, :expiry, :strike, :right, :multiplier,
+                :exchange, :primary_exchange, :currency, :local_symbol]
+        props = Hash[keys.zip(string.split(":"))]
+        props.delete_if { |k, v| v.nil? || v.empty? }
+        Contract.new props
       end
 
       # Fields are Strings unless noted otherwise
@@ -230,8 +231,8 @@ module IB
       # expiring in September, 2008, the string is:
       #
       #    GBP:FUT:200809:::62500:GLOBEX::USD:
-      def serialize_ib_ruby version
-        serialize.join(":")
+      def serialize_ib_ruby
+        serialize_long.join(":")
       end
 
       # Contract comparison
