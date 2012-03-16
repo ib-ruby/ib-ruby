@@ -178,18 +178,19 @@ module IB
 
       # Receive Reuters global fundamental market data. There must be a subscription to
       # Reuters Fundamental set up in Account Management before you can receive this data.
-      FundamentalData = def_message 50, [:request_id, :int], # request_id
-                                    [:data, :string]
+      FundamentalData = def_message 50, [:request_id, :int], [:data, :string]
 
-      ContractDataEnd = def_message 52, [:request_id, :int] # request_id
+      ContractDataEnd = def_message 52, [:request_id, :int]
 
       OpenOrderEnd = def_message 53
 
       AccountDownloadEnd = def_message 54, [:account_name, :string]
 
-      ExecutionDataEnd = def_message 55, [:request_id, :int] # request_id
+      ExecutionDataEnd = def_message 55, [:request_id, :int]
 
       TickSnapshotEnd = def_message 57, [:ticker_id, :int]
+
+      MarketDataType = def_message 58, [:request_id, :int], [:market_data_type, :int]
 
       ### Actual message classes (long definitions):
 
@@ -815,3 +816,5 @@ __END__
     static final int EXECUTION_DATA_END = 55; *
     static final int DELTA_NEUTRAL_VALIDATION = 56; *
     static final int TICK_SNAPSHOT_END = 57;  *
+    static final int MARKET_DATA_TYPE = 58;
+    static final int COMMISSION_REPORT = 59;
