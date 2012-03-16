@@ -63,7 +63,7 @@ module IB
                # non-aggregate (ie not the SMART) exchange that the contract trades on.
                proc { |val|
                  val.upcase! if val.is_a?(String)
-                 raise(ArgumentError.new("Don't set primary_exchange to smart")) if val == 'SMART'
+                 error "Don't set primary_exchange to smart", :args if val == 'SMART'
                  self[:primary_exchange] = val
                },
 
@@ -78,7 +78,7 @@ module IB
                        when 'CALL', 'C'
                          'CALL'
                        else
-                         raise ArgumentError.new("Invalid right '#{val}' (must be one of PUT, CALL, P, C)")
+                         error "Right must be one of PUT, CALL, P, C - not '#{val}'", :args
                      end
                },
 
@@ -91,7 +91,7 @@ module IB
                        when nil, ''
                          nil
                        else
-                         raise ArgumentError.new("Invalid expiry '#{val}' (must be in format YYYYMM or YYYYMMDD)")
+                         error "Invalid expiry '#{val}' (must be in format YYYYMM or YYYYMMDD)", :args
                      end
                },
 
@@ -99,7 +99,7 @@ module IB
                proc { |val|
                  val = nil if !val.nil? && val.empty?
                  unless val.nil? || SECURITY_TYPES.values.include?(val)
-                   raise(ArgumentError.new("Invalid security type '#{val}' (must be one of #{SECURITY_TYPES.values}"))
+                   error "Invalid security type '#{val}' (must be one of #{SECURITY_TYPES.values}", :args
                  end
                  self[:sec_type] = val
                }

@@ -47,7 +47,7 @@ module IB
           @data[:version] = @socket.read_int
 
           if @data[:version] != self.class.version
-            raise "Unsupported version #{@data[:version]} of #{self.class} received"
+            error "Unsupported version #{@data[:version]} of #{self.class} received"
           end
 
           load_map *self.class.data_map

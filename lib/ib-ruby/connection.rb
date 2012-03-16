@@ -44,7 +44,7 @@ module IB
     ### Working with connection
 
     def connect
-      raise "Already connected!" if connected?
+      error "Already connected!" if connected?
 
       # TWS always sends NextValidId message at connect - save this id
       self.subscribe(:NextValidId) do |msg|
@@ -58,7 +58,7 @@ module IB
       @server[:socket].send(CLIENT_VERSION)
       @server[:version] = @server[:socket].read_int
       if @server[:version] < SERVER_VERSION
-        raise "TWS version #{@server[:version]}, #{SERVER_VERSION} required."
+        error "TWS version #{@server[:version]}, #{SERVER_VERSION} required."
       end
       @server[:local_connect_time] = Time.now()
       @server[:remote_connect_time] = @server[:socket].read_string
@@ -106,7 +106,7 @@ module IB
       subscriber = args.last.respond_to?(:call) ? args.pop : block
       id = random_id
 
-      raise ArgumentError.new "Need subscriber proc or block" unless subscriber.is_a? Proc
+      error "Need subscriber proc or block", :args unless subscriber.is_a? Proc
 
       args.each do |what|
         message_classes =
@@ -118,7 +118,7 @@ module IB
               when what.is_a?(Regexp)
                 Messages::Incoming::Table.values.find_all { |klass| klass.to_s =~ what }
               else
-                raise ArgumentError.new "#{what} must represent incoming IB message class"
+                error "#{what} must represent incoming IB message class", :args
             end
         message_classes.flatten.each do |message_class|
           # TODO: Fix: RuntimeError: can't add a new key into hash during iteration
@@ -133,7 +133,7 @@ module IB
       removed = []
       ids.each do |id|
         removed_at_id = subscribers.map { |_, subscribers| subscribers.delete id }.compact
-        raise "No subscribers with id #{id}" if removed_at_id.empty?
+        error "No subscribers with id #{id}" if removed_at_id.empty?
         removed << removed_at_id
       end
       removed.flatten
@@ -193,7 +193,7 @@ module IB
                       elsif condition.respond_to?(:call)
                         condition.call
                       else
-                        raise "Unknown wait condition #{condition}"
+                        error "Unknown wait condition #{condition}"
                       end
           end
     end
@@ -256,9 +256,9 @@ module IB
             when what.is_a?(Symbol)
               Messages::Outgoing.const_get(what).new *args
             else
-              raise ArgumentError.new "Only able to send outgoing IB messages"
+              error "Only able to send outgoing IB messages", :args
           end
-      raise "Not able to send messages, IB not connected!" unless connected?
+      error "Not able to send messages, IB not connected!" unless connected?
       message.send_to(@server)
     end
 

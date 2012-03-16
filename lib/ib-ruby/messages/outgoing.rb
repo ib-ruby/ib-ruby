@@ -330,12 +330,12 @@ module IB
         def parse data
           data_type = DATA_TYPES[data[:what_to_show]] || data[:what_to_show]
           unless  DATA_TYPES.values.include?(data_type)
-            raise ArgumentError.new(":what_to_show must be one of #{DATA_TYPES.inspect}.")
+            error ":what_to_show must be one of #{DATA_TYPES.inspect}", :args
           end
 
           bar_size = BAR_SIZES[data[:bar_size]] || data[:bar_size]
           unless  BAR_SIZES.values.include?(bar_size)
-            raise ArgumentError.new(":bar_size must be one of #{BAR_SIZES.inspect}.")
+            error ":bar_size must be one of #{BAR_SIZES.inspect}", :args
           end
 
           contract = data[:contract].is_a?(Models::Contract) ?
