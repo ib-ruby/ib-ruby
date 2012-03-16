@@ -66,7 +66,8 @@ module IB
     #      Outgoing messages: [field, default] or [field, method, [args]]
     def def_message id_version, *data_map, &to_human
       base = data_map.first.is_a?(Class) ? data_map.shift : self::AbstractMessage
-      Class.new(base) do
+
+      message_class = Class.new(base) do
         @message_id, @version = id_version
         @version ||= 1
         @data_map = data_map
@@ -81,6 +82,9 @@ module IB
 
         define_method(:to_human, &to_human) if to_human
       end
+
+      self::Classes << message_class
+      message_class
     end
 
   end # module Messages

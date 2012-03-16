@@ -15,14 +15,9 @@ module IB
     module Incoming
       extend Messages # def_message macros
 
-      Classes = Array.new
+      Classes = []
 
       class AbstractMessage < IB::Messages::AbstractMessage
-
-        def self.inherited(by)
-          super(by)
-          Classes.push(by)
-        end
 
         def version # Per message, received messages may have the different versions
           @data[:version]
@@ -46,7 +41,8 @@ module IB
         def load
           @data[:version] = @socket.read_int
 
-          if @data[:version] != self.class.version
+          unless @data[:version] == self.class.version ||
+              self.class.version.is_a?(Array) && self.class.version.include?(@data[:version])
             error "Unsupported version #{@data[:version]} of #{self.class} received"
           end
 

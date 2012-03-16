@@ -11,6 +11,7 @@ module IB
   module Messages
     module Outgoing
       extend Messages # def_message macros
+      Classes = []
 
       class AbstractMessage < IB::Messages::AbstractMessage
 
@@ -469,7 +470,6 @@ module IB
            contract.serialize_legs].flatten
         end
       end # RequestHistoricalData
-
 
     end # module Outgoing
   end # module Messages
