@@ -42,6 +42,7 @@ module IB
         end
 
         # Every message loads received message version first
+        # Override the load method in your subclass to do actual reading into @data.
         def load
           @data[:version] = @socket.read_int
 
@@ -52,7 +53,7 @@ module IB
           load_map *self.class.data_map
         end
 
-        # Load @data from the socket according to the given map.
+        # Load @data from the socket according to the given data map.
         #
         # map is a series of Arrays in the format of
         #   [ [ :name, :type ],
@@ -434,7 +435,7 @@ module IB
       end # ContractData
 
       ExecutionData =
-          def_message [11, 7],
+          def_message [11, 8],
                       # The reqID that was specified previously in the call to reqExecution()
                       [:request_id, :int],
                       [:execution, :order_id, :int],
@@ -460,6 +461,7 @@ module IB
                       [:execution, :liquidation, :int],
                       [:execution, :cumulative_quantity, :int],
                       [:execution, :average_price, :decimal]
+                      [:execution, :order_ref, :string]
 
       class ExecutionData
         def load

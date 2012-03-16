@@ -171,7 +171,7 @@ module IB
            # Institutional orders only!
            :open_close, #      String: O=Open, C=Close
            :origin, #          0=Customer, 1=Firm
-           :order_ref, #       String: The order reference. For institutional customers only.
+           :order_ref, #       String: Order reference. Customer defined order ID tag.
            :short_sale_slot, # 1 - you hold the shares,
            #                   2 - they will be delivered from elsewhere.
            #                   Only for Action="SSHORT

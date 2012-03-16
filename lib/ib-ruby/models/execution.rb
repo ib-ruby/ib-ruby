@@ -20,6 +20,7 @@ module IB
            :cumulative_quantity, # int: Cumulative quantity. Used in regular
            #                            trades, combo trades and legs of the combo
            :liquidation, #  int: This position is liquidated last should the need arise.
+           :order_ref, #  int: Same order_ref as in corresponding Order
            [:account_name, :account_number], # String: The customer account number.
            :side => #     String: Was the transaction a buy or a sale: BOT|SLD
                {:set => proc { |val| self[:side] = val.to_s.upcase[0..0] == 'B' ? :buy : :sell }}
@@ -34,7 +35,7 @@ module IB
       def to_s
         "<Execution #{time}: #{side} #{shares} @ #{price} on #{exchange}, " +
             "cumulative: #{cumulative_quantity} @ #{average_price}, " +
-            "ids: #{order_id} order, #{perm_id} perm, #{exec_id} exec>"
+            "ids: #{exec_id} exec #{perm_id} perm #{order_id} order #{order_ref} ref>"
       end
     end # Execution
   end # module Models

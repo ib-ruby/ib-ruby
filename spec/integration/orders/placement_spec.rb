@@ -1,5 +1,6 @@
 require 'integration_helper'
 
+#OPTS[:silent] = false
 describe "Orders", :connected => true, :integration => true do
 
   before(:all) { verify_account }

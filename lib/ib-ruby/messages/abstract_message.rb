@@ -16,14 +16,12 @@ module IB
     # @message_type - Symbol: message type (e.g. :OpenOrderEnd)
     #
     # Instance attributes (at least):
-    # version - int: current version of message format.
+    # @version - int: current version of message format.
     # @data - Hash of actual data read from a stream.
-    #
-    # Override the load(socket) method in your subclass to do actual reading into @data.
     class AbstractMessage
 
       # Class methods
-      def self.data_map # Data keys (with types?)
+      def self.data_map # Map for converting between structured message and raw data
         @data_map ||= []
       end
 
