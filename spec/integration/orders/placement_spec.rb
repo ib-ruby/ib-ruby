@@ -14,7 +14,7 @@ describe "Orders", :connected => true, :integration => true do
 
       place_order IB::Symbols::Stocks[:wfc],
                   :limit_price => 9.131313 # Weird non-acceptable price
-      @ib.wait_for 1
+      @ib.wait_for 1 # sec
     end
 
     after(:all) { close_connection }

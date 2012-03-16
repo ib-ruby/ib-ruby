@@ -9,7 +9,7 @@ describe 'Request Market Data for Options', :if => :us_trading_hours,
 
     @ib.send_message :RequestMarketData, :id => 456,
                      :contract => IB::Symbols::Options[:aapl500]
-    @ib.wait_for 5, :TickPrice, :TickSize, :TickString, :TickOption
+    @ib.wait_for :TickPrice, :TickSize, :TickString, :TickOption, 5 # sec
   end
 
   after(:all) do

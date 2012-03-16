@@ -41,7 +41,7 @@ describe 'Ids valid for Order placement', :connected => true, :integration => tr
   before(:all) do
     verify_account
     @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
-    @ib.wait_for 3, :OpenOrderEnd, :NextValidId
+    @ib.wait_for :OpenOrderEnd, :NextValidId, 3 # sec
     @id = {} # Moving id between contexts. Feels dirty.
   end
 

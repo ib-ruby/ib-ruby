@@ -37,7 +37,7 @@ describe 'Request Historic Data', :connected => true, :integration => true do
     before(:all) do
       # No historical data for GBP/CASH@IDEALPRO
       @ib.send_message :RequestHistoricalData, CORRECT_OPTS
-      @ib.wait_for 5, :HistoricalData
+      @ib.wait_for :HistoricalData, 5 # sec
     end
 
     subject { @ib.received[:HistoricalData].last }

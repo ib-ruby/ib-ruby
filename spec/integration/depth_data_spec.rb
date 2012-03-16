@@ -10,7 +10,7 @@ describe 'Request Depth of Market Data', :connected => true,
     @ib.send_message :RequestMarketDepth, :id => 456, :num_rows => 3,
                      :contract => IB::Symbols::Forex[:eurusd]
 
-    @ib.wait_for 10, [:MarketDepth, 8]
+    @ib.wait_for [:MarketDepth, 4], 6 # sec
   end
 
   after(:all) do

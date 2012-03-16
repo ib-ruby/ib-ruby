@@ -180,20 +180,20 @@ module IB
     # message type(s) - given as Symbol or [Symbol, times] pair.
     # Timeout after given time or 1 second.
     def wait_for *args, &block
-      time = args.find { |arg| arg.is_a? Numeric } || 1
-      timeout = Time.now + time
-      args.push(block) if block
+      timeout = args.find { |arg| arg.is_a? Numeric } # extract timeout from args
+      end_time = Time.now + (timeout || 1) # default timeout 1 sec
+      conditions = args.delete_if { |arg| arg.is_a? Numeric }.push(block).compact
 
-      sleep 0.1 until timeout < Time.now ||
-          args.inject(true) do |result, arg|
-            result && if arg.is_a?(Symbol)
-                        received?(arg)
-                      elsif arg.is_a?(Array)
-                        received?(*arg)
-                      elsif arg.respond_to?(:call)
-                        arg.call
+      sleep 0.1 until end_time < Time.now || !conditions.empty? &&
+          conditions.inject(true) do |result, condition|
+            result && if condition.is_a?(Symbol)
+                        received?(condition)
+                      elsif condition.is_a?(Array)
+                        received?(*condition)
+                      elsif condition.respond_to?(:call)
+                        condition.call
                       else
-                        false
+                        raise "Unknown wait condition #{condition}"
                       end
           end
     end

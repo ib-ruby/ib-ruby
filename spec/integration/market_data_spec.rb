@@ -19,7 +19,7 @@ describe 'Request Market Data', :connected => true, :integration => true do
                                            :description => "Apple"
       )
       @ib.send_message :RequestMarketData, :id => 456, :contract => @contract
-      @ib.wait_for 5, :TickSize, :TickString
+      @ib.wait_for :TickSize, :TickString, 3 # sec
     end
 
     after(:all) do
@@ -53,7 +53,7 @@ describe 'Request Market Data', :connected => true, :integration => true do
         @ib.send_message :RequestMarketData, :id => 456,
                          :contract => IB::Symbols::Forex[:eurusd]
 
-        @ib.wait_for 3, :TickPrice, :TickSize
+        @ib.wait_for :TickPrice, :TickSize, 3 # sec
       end
 
       after(:all) do
@@ -84,7 +84,7 @@ describe 'Request Market Data', :connected => true, :integration => true do
 
         @ib.send_message :RequestMarketData, :id => 456,
                          :contract => IB::Symbols::Forex[:eurusd]
-        @ib.wait_for 3, :TickPrice, :TickSize
+        @ib.wait_for :TickPrice, :TickSize, 3 # sec
       end
 
       after(:all) do

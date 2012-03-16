@@ -16,7 +16,7 @@ describe "Request Contract Info", :connected => true, :integration => true do
       @contract = IB::Models::Contract.new :symbol => 'AAPL',
                                            :sec_type => IB::SECURITY_TYPES[:stock]
       @ib.send_message :RequestContractData, :id => 111, :contract => @contract
-      @ib.wait_for 3, :ContractDataEnd
+      @ib.wait_for :ContractDataEnd, 3 # sec
     end
 
     after(:all) { clean_connection } # Clear logs and message collector
@@ -66,7 +66,7 @@ describe "Request Contract Info", :connected => true, :integration => true do
                                                    :right => "CALL",
                                                    :strike => 500
       @ib.send_message :RequestContractData, :id => 123, :contract => @contract
-      @ib.wait_for 3, :ContractDataEnd
+      @ib.wait_for :ContractDataEnd, 3 # sec
     end
 
     after(:all) { clean_connection } # Clear logs and message collector
@@ -112,7 +112,7 @@ describe "Request Contract Info", :connected => true, :integration => true do
                                            :exchange => "IDEALPRO",
                                            :sec_type => IB::SECURITY_TYPES[:forex]
       @ib.send_message :RequestContractData, :id => 135, :contract => @contract
-      @ib.wait_for 3, :ContractDataEnd
+      @ib.wait_for :ContractDataEnd, 3 # sec
     end
 
     after(:all) { clean_connection } # Clear logs and message collector
@@ -155,7 +155,7 @@ describe "Request Contract Info", :connected => true, :integration => true do
     before(:all) do
       @contract = IB::Symbols::Futures[:ym] # Mini Dow Jones Industrial
       @ib.send_message :RequestContractData, :id => 147, :contract => @contract
-      @ib.wait_for 3, :ContractDataEnd
+      @ib.wait_for :ContractDataEnd, 3 # sec
     end
 
     after(:all) { clean_connection } # Clear logs and message collector
