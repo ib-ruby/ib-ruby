@@ -9,8 +9,8 @@ module IB
     # thus improving performance at the expense of backwards compatibility.
     # Older protocol versions support can be found in older gem versions.
 
-    CLIENT_VERSION = 48 # Was 27 in original Ruby code
-    SERVER_VERSION = 53 # Minimal server version. Latest, was 38 in current Java code.
+    CLIENT_VERSION = 48 # 57 = can receive commissionReport message
+    SERVER_VERSION = 60 # Minimal server version. Latest, was 38 in current Java code.
     DEFAULT_OPTIONS = {:host =>'127.0.0.1',
                        :port => '4001', # IB Gateway connection (default)
                        #:port => '7496', # TWS connection, with annoying pop-ups
@@ -57,8 +57,9 @@ module IB
       # Secret handshake
       @server[:socket].send(CLIENT_VERSION)
       @server[:version] = @server[:socket].read_int
-      raise "TWS version >= #{SERVER_VERSION} required." if @server[:version] < SERVER_VERSION
-
+      if @server[:version] < SERVER_VERSION
+        raise "TWS version #{@server[:version]}, #{SERVER_VERSION} required."
+      end
       @server[:local_connect_time] = Time.now()
       @server[:remote_connect_time] = @server[:socket].read_string
 
@@ -177,9 +178,9 @@ module IB
 
     # Wait for specific condition(s) - given as callable/block, or
     # message type(s) - given as Symbol or [Symbol, times] pair.
-    # Timeout after given time or 2 seconds.
+    # Timeout after given time or 1 second.
     def wait_for *args, &block
-      time = args.find { |arg| arg.is_a? Numeric } || 2
+      time = args.find { |arg| arg.is_a? Numeric } || 1
       timeout = Time.now + time
       args.push(block) if block
 
@@ -192,7 +193,7 @@ module IB
                       elsif arg.respond_to?(:call)
                         arg.call
                       else
-                        true
+                        false
                       end
           end
     end
