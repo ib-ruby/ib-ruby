@@ -86,7 +86,8 @@ module IB
       end
 
       ### Actual message classes (short definitions):
-      #:status - String: Displays the order status. Possible values include:
+
+      # :status - String: Displays the order status. Possible values include:
       # • PendingSubmit - indicates that you have transmitted the order, but
       #   have not yet received confirmation that it has been accepted by the
       #   order destination. NOTE: This order status is NOT sent back by TWS
@@ -298,6 +299,14 @@ module IB
                 "gamma #{gamma}, vega #{vega}, theta #{theta}, pv_dividend #{pv_dividend}>"
           end
 
+      CommissionReport =
+          def_message 59, [:exec_id, :int],
+                      [:commission, :decimal], # Commission amount.
+                      [:currency, :int], #       Commission currency
+                      [:realized_pnl, :decimal],
+                      [:yield, :decimal],
+                      [:yield_redemption_date, :int]
+
       MarketDepth =
           def_message 12, [:request_id, :int],
                       [:position, :int], # The row Id of this market depth entry.
@@ -456,7 +465,7 @@ module IB
                       [:execution, :client_id, :int],
                       [:execution, :liquidation, :int],
                       [:execution, :cumulative_quantity, :int],
-                      [:execution, :average_price, :decimal]
+                      [:execution, :average_price, :decimal],
                       [:execution, :order_ref, :string]
 
       class ExecutionData
