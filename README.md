@@ -1,6 +1,6 @@
 # ib-ruby
 
-Ruby Implementation of the Interactive Brokers Trader Workstation (TWS) API v.965.
+Ruby Implementation of the Interactive Brokers Trader Workstation (TWS) API v.965-967.
 
 Copyright (C) 2006-2011 Paul Legato, Wes Devauld, and Ar Vicco.
 
@@ -17,11 +17,11 @@ This software is available under the LGPL. See the file LICENSE for full licensi
 ## REQUIREMENTS:
 
 Either the Interactive Brokers
-[TWS](http://www.interactivebrokers.com/en/p.php?f=tws) or
-[IB Gateway](http://www.interactivebrokers.com/en/control/systemstandalone-ibGateway.php?os=unix&ib_entity=llc)
-software must be installed and configured to allow API connections
-from the computer you plan to run ib-ruby on, which is typically
-localhost if you're running ib-ruby on the same machine as TWS.
+[TWS](http://www.interactivebrokers.com/en/p.php?f=tws) (at least v.9180) or
+[IB Gateway](http://www.interactivebrokers.com/en/p.php?f=programInterface&ib_entity=llc)
+(at least v.965) software must be installed and configured to allow API connections
+from the computer you plan to run ib-ruby on, which is typically localhost
+if you're running ib-ruby on the same machine as TWS.
 
 ## INSTALLATION:
 
@@ -44,7 +44,7 @@ and :port options given to IB::Connection.new.
 
     require 'ib-ruby'
 
-    ib = IB::Connection.new
+    ib = IB::Connection.new :port => 7496 # TWS on localhost
     ib.subscribe(:Alert, :AccountValue) { |msg| puts msg.to_human }
     ib.send_message :RequestAccountData
     ib.wait_for :AccountDownloadEnd
