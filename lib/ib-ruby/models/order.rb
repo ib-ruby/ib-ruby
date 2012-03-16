@@ -106,7 +106,7 @@ module IB
            #          GTD          Good-till-Date/Time
            #          GTC          Good-till-Canceled
            #          IOC          Immediate-or-Cancel
-           :oca_group, #   String: one cancels all group name
+           :oca_group, #   String: Identifies a member of a one-cancels-all group.
            :oca_type, # int: Tells how to handle remaining orders in an OCA group
            #            when one order or part of an order executes. Valid values:
            #            - 1 = Cancel all remaining orders with block
@@ -148,10 +148,12 @@ module IB
            #               of regular trading hours. (WAS: ignore_rth)
            :hidden, #      bool: the order will not be visible when viewing
            #               the market depth. Only for ISLAND exchange.
-           :good_after_time, # FORMAT: 20060505 08:00:00 {time zone}
-           #                  Use an empty String if not applicable.
-           :good_till_date, #  FORMAT: 20060505 08:00:00 {time zone}
-           #                  Use an empty String if not applicable.
+           :good_after_time, # Indicates that the trade should be submitted after the
+           #        time and date set, format YYYYMMDD HH:MM:SS (seconds are optional).
+           :good_till_date, # Indicates that the trade should remain working until the
+           #        time and date set, format YYYYMMDD HH:MM:SS (seconds are optional).
+           #        You must set the :tif to GTD when using this string.
+           #        Use an empty String if not applicable.
            :override_percentage_constraints, # bool: Precautionary constraints defined on
            # the TWS Presets page ensure that your price and size order values are reasonable.
            # Orders sent from the API are also validated against these safety constraints,
