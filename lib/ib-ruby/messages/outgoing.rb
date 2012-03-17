@@ -312,20 +312,21 @@ module IB
 
       ### Even more complex Outgoing Message classes, overriding #encode method:
 
-      # Data format is { :id => order_id (int),
+
+      # Data format is { :id => int: order_id,
       #                  :contract => Contract,
       #                  :order => Order }
-      class PlaceOrder < AbstractMessage
-        @message_id = 3
-        @version = 31
+      PlaceOrder = def_message [3, 31] # Need to set up Classes Hash properly
 
+      class PlaceOrder
         def encode
           [super,
            @data[:order].serialize_with(@data[:contract])].flatten
         end
       end # PlaceOrder
 
-      module DataParser
+      # Messages that request bar data have special processing of @data
+      class BarRequestMessage < AbstractMessage
         # Preprocessor for some data fields
         def parse data
           data_type = DATA_TYPES[data[:what_to_show]] || data[:what_to_show]
@@ -361,12 +362,9 @@ module IB
       #                     "Regular Trading Hours" of the product in question is returned,
       #                     even if the time span requested falls partially or completely
       #                     outside of them.
-      class RequestRealTimeBars < AbstractMessage
-        @message_id = 50
-        @version = 1 # ?
+      RequestRealTimeBars = def_message 50, BarRequestMessage
 
-        include DataParser
-
+      class RequestRealTimeBars
         def encode
           data_type, bar_size, contract = parse @data
 
@@ -449,12 +447,9 @@ module IB
       # For backfill on futures data, you may need to leave the Primary
       # Exchange field of the Contract structure blank; see
       # http://www.interactivebrokers.com/discus/messages/2/28477.html?1114646754
-      class RequestHistoricalData < AbstractMessage
-        @message_id = 20
-        @version = 4
+      RequestHistoricalData = def_message [20, 4], BarRequestMessage
 
-        include DataParser
-
+      class RequestHistoricalData
         def encode
           data_type, bar_size, contract = parse @data
 
