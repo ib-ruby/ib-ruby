@@ -59,11 +59,11 @@ module IB
 
     end # class AbstractMessage
 
-    # Macro that defines short message classes using a one-liner
-    #   id_version is either a [message_id, version] pair or just message_id (version 1)
+    # Macro that defines short message classes using a one-liner.
+    #   First arg is either a [message_id, version] pair or just message_id (version 1)
     #   data_map contains instructions for processing @data Hash. Format:
     #      Incoming messages: [field, type] or [group, field, type]
-    #      Outgoing messages: [field, default] or [field, method, [args]]
+    #      Outgoing messages: field, [field, default] or [field, method, [args]]
     def def_message message_id_version, *data_map, &to_human
       base = data_map.first.is_a?(Class) ? data_map.shift : self::AbstractMessage
       message_id, version = message_id_version

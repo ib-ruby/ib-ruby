@@ -24,6 +24,12 @@ module IB
           @data[:version]
         end
 
+        def check_version actual, expected
+          unless actual == expected || expected.is_a?(Array) && expected.include?(actual)
+            error "Unsupported version #{actual} of #{self.class} received"
+          end
+        end
+
         # Read incoming message from given socket or instantiate with given data
         def initialize socket_or_data
           @created_at = Time.now
@@ -42,10 +48,7 @@ module IB
         def load
           @data[:version] = @socket.read_int
 
-          unless @data[:version] == self.class.version ||
-              self.class.version.is_a?(Array) && self.class.version.include?(@data[:version])
-            error "Unsupported version #{@data[:version]} of #{self.class} received"
-          end
+          check_version @data[:version], self.class.version
 
           load_map *self.class.data_map
         end
@@ -53,8 +56,7 @@ module IB
         # Load @data from the socket according to the given data map.
         #
         # map is a series of Arrays in the format of
-        #   [ [ :name, :type ],
-        #     [  :group, :name, :type] ]
+        #   [ :name, :type ], [  :group, :name, :type]
         # type identifiers must have a corresponding read_type method on socket (read_int, etc.).
         # group is used to lump together aggregates, such as Contract or Order fields
         def load_map(*map)
@@ -117,7 +119,6 @@ module IB
             (why_held != "" ? "why_held: #{why_held}" : "") +
             " id/perm: #{order_id}/#{perm_id}>"
       end
-
 
       AccountValue = def_message([6, 2], [:key, :string],
                                  [:value, :string],
@@ -358,7 +359,7 @@ module IB
 
       BondContractData =
           def_message [18, 4],
-                      [:request_id, :int], # request id
+                      [:request_id, :int],
                       [:contract, :symbol, :string],
                       [:contract, :sec_type, :string],
                       [:contract, :cusip, :string],
