@@ -1,17 +1,16 @@
 require 'ib-ruby/messages/abstract_message'
 
-# EClientSocket.java uses sendMax() rather than send() for a number of these.
-# It sends an EOL rather than a number if the value == Integer.MAX_VALUE (or Double.MAX_VALUE).
-# These fields are initialized to this MAX_VALUE.
-# This has been implemented with nils in Ruby to represent the case where an EOL should be sent.
-
 # TODO: Don't instantiate messages, use their classes as just namespace for .encode/decode
 
 module IB
   module Messages
+
+    # Outgoing IB messages (sent to TWS/Gateway)
     module Outgoing
       extend Messages # def_message macros
-      Classes = []
+
+      # Container for specific message classes, keyed by their message_ids
+      Classes = {}
 
       class AbstractMessage < IB::Messages::AbstractMessage
 

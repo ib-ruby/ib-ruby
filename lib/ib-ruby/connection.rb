@@ -116,7 +116,7 @@ module IB
               when what.is_a?(Symbol)
                 [Messages::Incoming.const_get(what)]
               when what.is_a?(Regexp)
-                Messages::Incoming::Table.values.find_all { |klass| klass.to_s =~ what }
+                Messages::Incoming::Classes.values.find_all { |klass| klass.to_s =~ what }
               else
                 error "#{what} must represent incoming IB message class", :args
             end
@@ -229,11 +229,11 @@ module IB
       msg_id = @server[:socket].read_int # This read blocks!
 
       # Debug:
-      log.debug "Got message #{msg_id} (#{Messages::Incoming::Table[msg_id]})"
+      log.debug "Got message #{msg_id} (#{Messages::Incoming::Classes[msg_id]})"
 
       # Create new instance of the appropriate message type, and have it read the message.
       # NB: Failure here usually means unsupported message type received
-      msg = Messages::Incoming::Table[msg_id].new(@server[:socket])
+      msg = Messages::Incoming::Classes[msg_id].new(@server[:socket])
 
       # Deliver message to all registered subscribers, alert if no subscribers
       subscribers[msg.class].each { |_, subscriber| subscriber.call(msg) }

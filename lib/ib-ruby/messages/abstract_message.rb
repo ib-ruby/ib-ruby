@@ -64,12 +64,13 @@ module IB
     #   data_map contains instructions for processing @data Hash. Format:
     #      Incoming messages: [field, type] or [group, field, type]
     #      Outgoing messages: [field, default] or [field, method, [args]]
-    def def_message id_version, *data_map, &to_human
+    def def_message message_id_version, *data_map, &to_human
       base = data_map.first.is_a?(Class) ? data_map.shift : self::AbstractMessage
+      message_id, version = message_id_version
 
+      # Define new message class
       message_class = Class.new(base) do
-        @message_id, @version = id_version
-        @version ||= 1
+        @message_id, @version = message_id, version || 1
         @data_map = data_map
 
         @data_map.each do |(name, _, type_args)|
@@ -83,7 +84,9 @@ module IB
         define_method(:to_human, &to_human) if to_human
       end
 
-      self::Classes << message_class
+      # Add defined message class to Classes Hash keyed by its message_id
+      self::Classes[message_id] = message_class
+
       message_class
     end
 

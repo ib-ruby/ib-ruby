@@ -8,4 +8,5 @@ module IB
 
   IncomingMessages = Messages::Incoming # Legacy alias
   OutgoingMessages = Messages::Outgoing # Legacy alias
+
 end
