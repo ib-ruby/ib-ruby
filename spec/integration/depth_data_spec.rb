@@ -20,7 +20,7 @@ describe 'Request Depth of Market Data', :connected => true,
 
   subject { @ib.received[:MarketDepth].last }
 
-  it { @ib.received[:MarketDepth].should have_at_least(8).depth_data }
+  it { @ib.received[:MarketDepth].should have_at_least(4).depth_data }
 
   it { should be_an IB::Messages::Incoming::MarketDepth }
   its(:request_id) { should == 456 }

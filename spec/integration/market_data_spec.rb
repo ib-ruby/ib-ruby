@@ -48,7 +48,7 @@ describe 'Request Market Data', :connected => true, :integration => true do
       before(:all) do
         @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
 
-        ##TODO consider a follow the sun market lookup for windening the types tested
+        ##TODO consider a follow the sun market lookup for widening the types tested
         @ib.subscribe(:Alert, :TickPrice, :TickSize) {}
         @ib.send_message :RequestMarketData, :id => 456,
                          :contract => IB::Symbols::Forex[:eurusd]

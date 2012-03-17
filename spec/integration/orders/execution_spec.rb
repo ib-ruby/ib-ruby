@@ -1,5 +1,6 @@
 require 'integration_helper'
 
+#OPTS[:silent] = false
 describe "Trades", :connected => true, :integration => true, :slow => true do
 
   before(:all) { verify_account }
@@ -65,7 +66,7 @@ describe "Trades", :connected => true, :integration => true, :slow => true do
                     :limit_price => 1,
                     :action => 'SELL'
 
-        @ib.wait_for(5, :ExecutionData, :OpenOrder) do
+        @ib.wait_for(:ExecutionData, :OpenOrder, 5) do
           @ib.received[:OpenOrder].last.order.commission
         end
       end
