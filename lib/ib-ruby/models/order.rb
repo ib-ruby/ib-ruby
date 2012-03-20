@@ -144,6 +144,10 @@ module IB
            #          and the spread between the bid and ask must be less than
            #          0.1% of the midpoint
 
+           :what_if, # bool: Use to request pre-trade commissions and margin
+           # information. If set to true, margin and commissions data is received
+           # back via the OrderState() object for the openOrder() callback.
+           :not_held, # public boolean  m_notHeld; // Not Held
            :outside_rth, # bool: allows orders to also trigger or fill outside
            #               of regular trading hours. (WAS: ignore_rth)
            :hidden, #      bool: the order will not be visible when viewing
@@ -166,6 +170,8 @@ module IB
            :min_quantity, #     int: Identifies a minimum quantity order type.
            :percent_offset, #   double: percent offset amount for relative (REL)orders only
            :trail_stop_price, # double: for TRAILLIMIT orders only
+           # As of client v.56, we receive trailing_percent in openOrder
+           :trailing_percent,
 
            # Financial advisors only - use an empty String if not applicable.
            :fa_group, :fa_profile, :fa_method, :fa_percentage,
@@ -221,38 +227,55 @@ module IB
            #     - 1 = Average of National Best Bid or Ask,
            #     - 2 = National Best Bid when buying a call or selling a put;
            #           and National Best Ask when selling a call or buying a put.
-           :delta_neutral_order_type, # String: Enter an order type to instruct TWS
-           #    to submit a delta neutral trade on full or partial execution of the
-           #    VOL order. For no hedge delta order to be sent, specify NONE.
-           :delta_neutral_aux_price, #  double: Use this field to enter a value if
-           #           the value in the deltaNeutralOrderType field is an order
-           #           type that requires an Aux price, such as a REL order.
            :continuous_update, # int: Used for dynamic management of volatility orders.
            # Determines whether TWS is supposed to update the order price as the underlying
            # moves. If selected, the limit price sent to an exchange is modified by TWS
            # if the computed price of the option changes enough to warrant doing so. This
            # is helpful in keeping the limit price up to date as the underlying price changes.
 
+           # VOL ORDERS WITH HEDGE ONLY:
+           :delta_neutral_order_type, # String: Enter an order type to instruct TWS
+           #    to submit a delta neutral trade on full or partial execution of the
+           #    VOL order. For no hedge delta order to be sent, specify NONE.
+           :delta_neutral_aux_price, #  double: Use this field to enter a value if
+           #           the value in the deltaNeutralOrderType field is an order
+           #           type that requires an Aux price, such as a REL order.
+
+           # As of client v.52, we also receive delta... params in openOrder
+           :delta_neutral_con_id,
+           :delta_neutral_settling_firm,
+           :delta_neutral_clearing_account,
+           :delta_neutral_clearing_intent,
+
            # COMBO ORDERS ONLY:
            :basis_points, #      double: EFP orders only
            :basis_points_type, # double: EFP orders only
 
-           # SCALE ORDERS ONLY
-           :scale_init_level_size, # int: Size of the first (initial) order component.
-           :scale_subs_level_size, # int: Order size of the subsequent scale order
-           #             components. Used in conjunction with scaleInitLevelSize().
-           :scale_price_increment, # double: Defines the price increment between
-           # scale components. This field is required for Scale orders.
-
-           # ALGO ORDERS ONLY
+           # ALGO ORDERS ONLY:
            :algo_strategy, # String
            :algo_params, # public Vector<TagValue> m_algoParams; ?!
 
-           # WTF?!
-           :what_if, # bool: Use to request pre-trade commissions and margin
-           # information. If set to true, margin and commissions data is received
-           # back via the OrderState() object for the openOrder() callback.
-           :not_held # public boolean  m_notHeld; // Not Held
+           # SCALE ORDERS ONLY:
+           :scale_init_level_size, # int: Size of the first (initial) order component.
+           :scale_subs_level_size, # int: Order size of the subsequent scale order
+           #             components. Used in conjunction with scaleInitLevelSize().
+           :scale_price_increment, # double: Price increment between scale components.
+           #                         This field is required for Scale orders.
+
+           # As of client v.54, we can receive additional scale order fields:
+           :scale_price_adjust_value,
+           :scale_price_adjust_interval,
+           :scale_profit_offset,
+           :scale_auto_reset,
+           :scale_init_position,
+           :scale_init_position,
+           :scale_init_fill_qty,
+           :scale_random_percent,
+
+           # As of client v.49/50, we can receive in openOrder:
+           :hedge_type,
+           :hedge_param,
+           :opt_out_smart_routing
 
       # Some Order properties (received back from IB) are separated into
       # OrderState object. Here, they are lumped into Order proper: see OrderState.java
@@ -301,6 +324,11 @@ module IB
            # String: Shows the impact the order would have on your equity with loan value.
            :equity_with_loan => proc { |val| self[:equity_with_loan] = filter_max val }
 
+
+      # Returned in OpenOrder for Bag Contracts
+      # public Vector<OrderComboLeg> m_orderComboLegs
+      attr_accessor :leg_prices
+
       # IB uses weird String with Java Double.MAX_VALUE to indicate no value here
       def filter_max val
         val == "1.7976931348623157E308" ? nil : val.to_f
@@ -321,6 +349,7 @@ module IB
                        :algo_strategy => '', }
 
       def initialize opts = {}
+        @leg_prices = []
         @algo_params = []
         super opts
       end

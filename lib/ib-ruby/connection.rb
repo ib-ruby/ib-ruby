@@ -9,8 +9,8 @@ module IB
     # thus improving performance at the expense of backwards compatibility.
     # Older protocol versions support can be found in older gem versions.
 
-    CLIENT_VERSION = 48 # 57 = can receive commissionReport message
-    SERVER_VERSION = 60 # Minimal server version. Latest, was 38 in current Java code.
+    CLIENT_VERSION = 57 # 48 # 57 = can receive commissionReport message
+    SERVER_VERSION = 60 # 53? Minimal server version required.
     DEFAULT_OPTIONS = {:host =>'127.0.0.1',
                        :port => '4001', # IB Gateway connection (default)
                        #:port => '7496', # TWS connection, with annoying pop-ups

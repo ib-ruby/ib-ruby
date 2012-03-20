@@ -26,11 +26,12 @@ module IB
 
     def read_int_max
       str = self.read_string
-      str.nil? || str.empty? ? nil : str.to_i
+      str.to_i unless str.nil? || str.empty?
     end
 
     def read_boolean
-      self.read_string.to_i != 0
+      str = self.read_string
+      str.nil? ? false : str.to_i != 0
     end
 
     def read_decimal

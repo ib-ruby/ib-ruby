@@ -13,12 +13,6 @@ module IB
         # The exception is for a STK legs, which must specify the SMART exchange.
         # 2. :symbol => "USD" For combo Contract, this is an arbitrary value (like “USD”)
 
-        attr_reader :legs # leg definitions for this contract.
-
-        alias combo_legs legs
-        alias combo_legs_description legs_description
-        alias combo_legs_description= legs_description=
-
         def initialize opts = {}
           super opts
           @legs = Array.new

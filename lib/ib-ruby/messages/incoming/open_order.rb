@@ -4,7 +4,7 @@ module IB
     module Incoming
 
       OpenOrder =
-          def_message [5, 23],
+          def_message [5, [23, 28]],
                       [:order, :order_id, :int],
 
                       [:contract, :con_id, :int],
@@ -20,8 +20,8 @@ module IB
                       [:order, :action, :string],
                       [:order, :total_quantity, :int],
                       [:order, :order_type, :string],
-                      [:order, :limit_price, :decimal],
-                      [:order, :aux_price, :decimal],
+                      [:order, :limit_price, :decimal_max],
+                      [:order, :aux_price, :decimal_max],
                       [:order, :tif, :string],
                       [:order, :oca_group, :string],
                       [:order, :account, :string],
@@ -42,53 +42,126 @@ module IB
                       [:order, :fa_profile, :string],
                       [:order, :good_till_date, :string],
                       [:order, :rule_80a, :string],
-                      [:order, :percent_offset, :decimal],
+                      [:order, :percent_offset, :decimal_max],
                       [:order, :settling_firm, :string],
                       [:order, :short_sale_slot, :int],
                       [:order, :designated_location, :string],
                       [:order, :exempt_code, :int], # skipped in ver 51?
                       [:order, :auction_strategy, :int],
-                      [:order, :starting_price, :decimal],
-                      [:order, :stock_ref_price, :decimal],
-                      [:order, :delta, :decimal],
-                      [:order, :stock_range_lower, :decimal],
-                      [:order, :stock_range_upper, :decimal],
+                      [:order, :starting_price, :decimal_max],
+                      [:order, :stock_ref_price, :decimal_max],
+                      [:order, :delta, :decimal_max],
+                      [:order, :stock_range_lower, :decimal_max],
+                      [:order, :stock_range_upper, :decimal_max],
                       [:order, :display_size, :int],
                       #@order.rth_only = @socket.read_boolean
                       [:order, :block_order, :boolean],
                       [:order, :sweep_to_fill, :boolean],
                       [:order, :all_or_none, :boolean],
-                      [:order, :min_quantity, :int],
+                      [:order, :min_quantity, :int_max],
                       [:order, :oca_type, :int],
                       [:order, :etrade_only, :boolean],
                       [:order, :firm_quote_only, :boolean],
-                      [:order, :nbbo_price_cap, :decimal],
+                      [:order, :nbbo_price_cap, :decimal_max],
                       [:order, :parent_id, :int],
                       [:order, :trigger_method, :int],
-                      [:order, :volatility, :decimal],
+                      [:order, :volatility, :decimal_max],
                       [:order, :volatility_type, :int],
                       [:order, :delta_neutral_order_type, :string],
-                      [:order, :delta_neutral_aux_price, :decimal],
+                      [:order, :delta_neutral_aux_price, :decimal_max]
 
-                      [:order, :continuous_update, :int],
-                      [:order, :reference_price_type, :int],
-                      [:order, :trail_stop_price, :decimal],
-                      [:order, :basis_points, :decimal],
-                      [:order, :basis_points_type, :int],
-                      [:contract, :legs_description, :string],
-                      [:order, :scale_init_level_size, :int_max],
-                      [:order, :scale_subs_level_size, :int_max],
-                      [:order, :scale_price_increment, :decimal_max],
-                      [:order, :clearing_account, :string],
-                      [:order, :clearing_intent, :string],
-                      [:order, :not_held, :boolean] # (@socket.read_int == 1)
 
       class OpenOrder
+
+        # Returns loaded Array or [] if count was 0
+        def load_array &block
+          count = @socket.read_int
+          count > 0 ? Array.new(count, &block) : []
+        end
+
+        # Returns loaded Hash
+        def load_hash
+          tags = load_array { |_| [@socket.read_read_string, @socket.read_read_string] }
+          p tags
+          tags.empty? ? Hash.new : Hash.new[*tags.flatten]
+        end
 
         def load
           super
 
-          load_map [:contract, :under_comp, :boolean] # (@socket.read_int == 1)
+          # As of client v.52, we receive delta... params in openOrder
+          if version >= 27 && !@data[:order][:delta_neutral_order_type].empty?
+            load_map [:order, :delta_neutral_con_id, :int],
+                     [:order, :delta_neutral_settling_firm, :string],
+                     [:order, :delta_neutral_clearing_account, :string],
+                     [:order, :delta_neutral_clearing_intent, :string]
+          end
+
+          load_map [:order, :continuous_update, :int],
+                   [:order, :reference_price_type, :int],
+                   [:order, :trail_stop_price, :decimal_max]
+
+          # Never happens! 28 is the max supported version currently
+          # As of client v.56, we receive trailing_percent in openOrder
+          load_map [:order, :trailing_percent, :decimal_max] if version >= 30
+
+          load_map [:order, :basis_points, :decimal_max],
+                   [:order, :basis_points_type, :int_max],
+                   [:contract, :legs_description, :string]
+
+          # Never happens! 28 is the max supported version currently
+          # As of client v.55, we receive orderComboLegs (price) in openOrder
+          if version >= 29
+            @data[:contract][:legs] = load_array do |_|
+              Models::ComboLeg.new :con_id => @socket.read_int,
+                                   :ratio => @socket.read_int,
+                                   :action => @socket.read_string,
+                                   :exchange => @socket.read_string,
+                                   :open_close => @socket.read_int,
+                                   :short_sale_slot => @socket.read_int,
+                                   :designated_location => @socket.read_string,
+                                   :exempt_code => @socket.read_int
+            end
+
+            # Order keeps received leg prices in a separate Array for some reason ?!
+            @data[:order][:leg_prices] = load_array { |_| @socket.read_decimal_max }
+          end
+
+          # As of client v.51, we can receive smartComboRoutingParams in openOrder
+          @data[:smart_combo_routing_params] = load_hash if version >= 26
+
+          load_map [:order, :scale_init_level_size, :int_max],
+                   [:order, :scale_subs_level_size, :int_max],
+                   [:order, :scale_price_increment, :decimal_max]
+
+          # As of client v.54, we can receive scale order fields
+          if version >= 28 &&
+              @data[:order][:scale_price_increment] &&
+              @data[:order][:scale_price_increment] > 0
+
+            load_map [:order, :scale_price_adjust_value, :decimal_max],
+                     [:order, :scale_price_adjust_interval, :int_max],
+                     [:order, :scale_profit_offset, :decimal_max],
+                     [:order, :scale_auto_reset, :boolean],
+                     [:order, :scale_init_position, :int_max],
+                     [:order, :scale_init_position, :int_max],
+                     [:order, :scale_init_fill_qty, :decimal_max],
+                     [:order, :scale_random_percent, :boolean]
+          end
+
+          # As of client v.49/50, we can receive hedgeType, hedgeParam, optOutSmartRouting
+          if version >= 25
+            load_map [:order, :hedge_type, :string]
+            unless @data[:order][:hedge_type].nil? || @data[:order][:hedge_type].empty?
+              load_map [:order, :hedge_param, :string]
+            end
+            load_map [:order, :opt_out_smart_routing, :boolean]
+          end
+
+          load_map [:order, :clearing_account, :string],
+                   [:order, :clearing_intent, :string],
+                   [:order, :not_held, :boolean],
+                   [:contract, :under_comp, :boolean]
 
           if @data[:contract][:under_comp]
             load_map [:contract, :under_con_id, :int],
@@ -99,15 +172,7 @@ module IB
           load_map [:order, :algo_strategy, :string]
 
           unless @data[:order][:algo_strategy].nil? || @data[:order][:algo_strategy].empty?
-            load_map [:algo_params_count, :int]
-            if @data[:algo_params_count] > 0
-              @data[:order][:algo_params] = Hash.new
-              @data[:algo_params_count].times do
-                tag = @socket.read_string
-                value = @socket.read_string
-                @data[:order][:algo_params][tag] = value
-              end
-            end
+            @data[:order][:algo_params] = load_hash
           end
 
           load_map [:order, :what_if, :boolean], # (@socket.read_int == 1)

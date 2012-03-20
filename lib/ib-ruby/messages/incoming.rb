@@ -343,6 +343,7 @@ module IB
                       [:execution, :liquidation, :int],
                       [:execution, :cumulative_quantity, :int],
                       [:execution, :average_price, :decimal],
+                      # As of client v.53, we can receive orderRef in ExecutionData
                       [:execution, :order_ref, :string]
 
       class ExecutionData
@@ -456,7 +457,7 @@ module IB
         def load
           super
 
-          @results = Array.new(@data[:count]) do |index|
+          @results = Array.new(@data[:count]) do |_|
             {:rank => @socket.read_int,
              :contract => Contract.build(:con_id => @socket.read_int,
                                          :symbol => @socket.read_str,
@@ -509,7 +510,7 @@ module IB
         def load
           super
 
-          @results = Array.new(@data[:count]) do |index|
+          @results = Array.new(@data[:count]) do |_|
             Models::Bar.new :time => @socket.read_string,
                             :open => @socket.read_decimal,
                             :high => @socket.read_decimal,

@@ -155,6 +155,13 @@ module IB
            :under_delta, # double: The underlying stock or future delta.
            :under_price #  double: The price of the underlying.
 
+      # Legs arriving via OpenOrder message, need to define them here
+      attr_accessor :legs # leg definitions for this contract.
+      alias combo_legs legs
+      alias combo_legs= legs=
+      alias combo_legs_description legs_description
+      alias combo_legs_description= legs_description=
+
       attr_accessor :description # NB: local to ib-ruby, not part of TWS.
 
       DEFAULT_PROPS = {:con_id => 0,
