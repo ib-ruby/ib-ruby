@@ -4,7 +4,12 @@ module IB
   class IBSocket < TCPSocket
 
     # send nice null terminated binary data into socket
-    def send data
+    def write_data data
+      # TWS wants to receive booleans as 1 or 0
+      data = "1" if data == true
+      data = "0" if data == false
+
+      #p data.to_s + EOL
       self.syswrite(data.to_s + EOL)
     end
 

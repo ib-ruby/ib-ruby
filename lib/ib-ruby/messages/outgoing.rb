@@ -28,21 +28,16 @@ module IB
         # an Array of elements that ought to be sent to the server by calling to_s on
         # each one and postpending a '\0'.
         #
-        def send_to(server)
-          self.encode.flatten.each do |datum|
-            # TWS wants to receive booleans as 1 or 0... rewrite as necessary.
-            datum = "1" if datum == true
-            datum = "0" if datum == false
-
-            #p datum.to_s + EOL
-            server[:socket].syswrite(datum.to_s + EOL)
+        def send_to server
+          self.encode(server).flatten.each do |datum|
+            server[:socket].write_data datum
           end
         end
 
         # At minimum, Outgoing message contains message_id and version.
         # Most messages also contain (ticker, request or order) :id.
         # Then, content of @data Hash is encoded per instructions in data_map.
-        def encode
+        def encode server
           [self.class.message_id,
            self.class.version,
            @data[:id] || @data[:ticker_id] || @data[:request_id]|| @data[:order_id] || [],
@@ -292,21 +287,21 @@ module IB
                       :instrument,
                       :location_code,
                       :scan_code,
-                      [:above_price, EOL],
-                      [:below_price, EOL],
-                      [:above_volume, EOL],
-                      [:market_cap_above, EOL],
-                      [:market_cap_below, EOL],
+                      :above_price,
+                      :below_price,
+                      :above_volume,
+                      :market_cap_above,
+                      :market_cap_below,
                       :moody_rating_above,
                       :moody_rating_below,
                       :sp_rating_above,
                       :sp_rating_below,
                       :maturity_date_above,
                       :maturity_date_below,
-                      [:coupon_rate_above, EOL],
-                      [:coupon_rate_below, EOL],
+                      :coupon_rate_above,
+                      :coupon_rate_below,
                       :exclude_convertible,
-                      [:average_option_volume_above, EOL], # ?
+                      :average_option_volume_above, # ?
                       :scanner_setting_pairs,
                       :stock_type_filter)
 
@@ -316,12 +311,16 @@ module IB
       # Data format is { :id => int: order_id,
       #                  :contract => Contract,
       #                  :order => Order }
-      PlaceOrder = def_message [3, 31] # Need to set up Classes Hash properly
+      PlaceOrder = def_message [3, 31] # 38 Need to set up Classes Hash properly
 
       class PlaceOrder
-        def encode
+        def encode server
+
+          # Old server version supports no enhancements
+          @version = 31 if server[:server_version] <= 60
+
           [super,
-           @data[:order].serialize_with(@data[:contract])].flatten
+           @data[:order].serialize_with(server, @data[:contract])].flatten
         end
       end # PlaceOrder
 
@@ -365,7 +364,7 @@ module IB
       RequestRealTimeBars = def_message 50, BarRequestMessage
 
       class RequestRealTimeBars
-        def encode
+        def encode server
           data_type, bar_size, contract = parse @data
 
           [super,
@@ -450,7 +449,7 @@ module IB
       RequestHistoricalData = def_message [20, 4], BarRequestMessage
 
       class RequestHistoricalData
-        def encode
+        def encode server
           data_type, bar_size, contract = parse @data
 
           [super,

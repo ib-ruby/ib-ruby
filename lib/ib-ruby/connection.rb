@@ -56,7 +56,7 @@ module IB
       server[:socket] = IBSocket.open(options[:host], options[:port])
 
       # Secret handshake
-      socket.send options[:client_version]
+      socket.write_data options[:client_version]
       server[:client_version] = options[:client_version]
       server[:server_version] = socket.read_int
       if server[:server_version] < options[:server_version]
@@ -69,7 +69,7 @@ module IB
       # The client with a client_id of 0 can manage the TWS-owned open orders.
       # Other clients can only manage their own open orders.
       server[:client_id] = options[:client_id] || random_id
-      socket.send server[:client_id]
+      socket.write_data server[:client_id]
 
       @connected = true
       log.info "Connected to server, version: #{server[:server_version]}, connection time: " +
