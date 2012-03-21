@@ -66,7 +66,7 @@ def check_status item, status
   end
 end
 
-def order_status_should_be status, index=0
+def status_should_be status, index=0
   msg = @ib.received[:OrderStatus][index]
   msg.should be_an IB::Messages::Incoming::OrderStatus
   msg.order_id.should == @order_id_placed
@@ -90,7 +90,7 @@ def order_status_should_be status, index=0
   end
 end
 
-def open_order_should_be status, index=0
+def order_should_be status, index=0
   msg = @ib.received[:OpenOrder][index]
   msg.should be_an IB::Messages::Incoming::OpenOrder
   msg.order.should == @order

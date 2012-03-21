@@ -22,6 +22,11 @@ describe "Trades", :connected => true, :integration => true, :slow => true do
                     :total_quantity => 20000,
                     :limit_price => 2,
                     :action => 'BUY'
+                    #:all_or_none => 1,
+                    #:fa_profile => 2,
+                    #:percent_offset => 3,
+                    #:clearing_account => 'z',
+                    #:what_if => true
 
         @ib.wait_for(5, :ExecutionData, :OpenOrder) do
           @ib.received[:OpenOrder].last &&
@@ -45,7 +50,7 @@ describe "Trades", :connected => true, :integration => true, :slow => true do
       it { @ib.received[:ExecutionDataEnd].should be_empty }
 
       it 'receives filled OpenOrder' do
-        open_order_should_be 'Filled', -1
+        order_should_be 'Filled', -1
         msg = @ib.received[:OpenOrder].last
         msg.order.commission.should == 2.5
       end
@@ -55,7 +60,7 @@ describe "Trades", :connected => true, :integration => true, :slow => true do
       end
 
       it 'receives OrderStatus with fill details' do
-        order_status_should_be 'Filled', -1
+        status_should_be 'Filled', -1
       end
     end # Placing BUY
 
@@ -87,7 +92,7 @@ describe "Trades", :connected => true, :integration => true, :slow => true do
       it { @ib.received[:ExecutionData].should have_exactly(1).execution_data }
 
       it 'receives filled OpenOrder' do
-        open_order_should_be 'Filled', -1
+        order_should_be 'Filled', -1
         msg = @ib.received[:OpenOrder].last
         msg.order.commission.should == 2.5
       end
@@ -97,7 +102,7 @@ describe "Trades", :connected => true, :integration => true, :slow => true do
       end
 
       it 'receives OrderStatus with fill details' do
-        order_status_should_be 'Filled', -1
+        status_should_be 'Filled', -1
       end
     end # Placing SELL
 

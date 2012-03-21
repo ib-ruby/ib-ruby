@@ -34,7 +34,7 @@ module IB
                       [:order, :hidden, :boolean], # (@socket.read_int == 1)
                       [:order, :discretionary_amount, :decimal],
                       [:order, :good_after_time, :string],
-                      [:skip, :string], # skip deprecated sharesAllocation field
+                      [:shares_allocation, :string], # deprecated! field
 
                       [:order, :fa_group, :string],
                       [:order, :fa_method, :string],
