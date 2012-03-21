@@ -42,9 +42,6 @@ module IB
       Volatility_Ref_Price_Average = 1
       Volatility_Ref_Price_BidOrAsk = 2
 
-      # No idea why IB uses a large number as the default for some fields
-      Max_Value = 99999999
-
       # Main order fields
       prop :order_id, #  int: Order id associated with client (volatile).
            :client_id, # int: The id of the client that placed this order.
@@ -200,6 +197,7 @@ module IB
            :etrade_only, #     bool: Trade with electronic quotes.
            :firm_quote_only, # bool: Trade with firm quotes.
            :nbbo_price_cap, #  double: Maximum Smart order distance from the NBBO.
+           :opt_out_smart_routing,
 
            # BOX or VOL ORDERS ONLY
            :auction_strategy, # For BOX exchange only. Valid values:
@@ -232,8 +230,6 @@ module IB
            # moves. If selected, the limit price sent to an exchange is modified by TWS
            # if the computed price of the option changes enough to warrant doing so. This
            # is helpful in keeping the limit price up to date as the underlying price changes.
-
-           # VOL ORDERS WITH HEDGE ONLY:
            :delta_neutral_order_type, # String: Enter an order type to instruct TWS
            #    to submit a delta neutral trade on full or partial execution of the
            #    VOL order. For no hedge delta order to be sent, specify NONE.
@@ -246,6 +242,11 @@ module IB
            :delta_neutral_settling_firm,
            :delta_neutral_clearing_account,
            :delta_neutral_clearing_intent,
+
+           # HEDGE ORDERS ONLY:
+           # As of client v.49/50, we can receive in openOrder:
+           :hedge_type,
+           :hedge_param,
 
            # COMBO ORDERS ONLY:
            :basis_points, #      double: EFP orders only
@@ -268,14 +269,8 @@ module IB
            :scale_profit_offset,
            :scale_auto_reset,
            :scale_init_position,
-           :scale_init_position,
            :scale_init_fill_qty,
-           :scale_random_percent,
-
-           # As of client v.49/50, we can receive in openOrder:
-           :hedge_type,
-           :hedge_param,
-           :opt_out_smart_routing
+           :scale_random_percent
 
       # Some Order properties (received back from IB) are separated into
       # OrderState object. Here, they are lumped into Order proper: see OrderState.java
@@ -308,11 +303,9 @@ module IB
            #   the order is inactive due to system, exchange or other issues.
            :commission, # double: Shows the commission amount on the order.
            :commission_currency, # String: Shows the currency of the commission.
-
            #The possible range of the actual order commission:
            :min_commission,
            :max_commission,
-
            :warning_text, # String: Displays a warning message if warranted.
 
            # String: Shows the impact the order would have on your initial margin.
@@ -340,15 +333,23 @@ module IB
                        :parent_id => 0,
                        :tif => 'DAY',
                        :outside_rth => false,
-                       :open_close => "O",
+                       :open_close => 'O',
                        :origin => Origin_Customer,
                        :transmit => true,
                        :designated_location => '',
                        :exempt_code => -1,
                        :delta_neutral_order_type => '',
+                       :delta_neutral_con_id => 0,
+                       :delta_neutral_settling_firm => '',
+                       :delta_neutral_clearing_account => '',
+                       :delta_neutral_clearing_intent => '',
+                       :algo_strategy => '',
                        :what_if => false,
                        :not_held => false,
-                       :algo_strategy => '', }
+                       :scale_auto_reset => false,
+                       :scale_random_percent => false,
+                       :opt_out_smart_routing => false,
+      }
 
       def initialize opts = {}
         @leg_prices = []
@@ -453,7 +454,7 @@ module IB
 
       # Order comparison
       def == other
-        perm_id && perm_id == other.perm_id ||
+        perm_id && other.perm_id && perm_id == other.perm_id ||
             order_id == other.order_id && #   ((p __LINE__)||true) &&
                 (client_id == other.client_id || client_id == 0 || other.client_id == 0) &&
                 parent_id == other.parent_id &&
