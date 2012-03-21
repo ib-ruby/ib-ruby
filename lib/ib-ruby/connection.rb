@@ -56,19 +56,19 @@ module IB
       server[:socket] = IBSocket.open(options[:host], options[:port])
 
       # Secret handshake
-      server[:socket].send options[:client_version]
-      server[:version] = server[:socket].read_int
+      socket.send options[:client_version]
+      server[:version] = socket.read_int
       if server[:version] < options[:server_version]
         error "TWS version #{server[:version]}, #{options[:server_version]} required."
       end
-      server[:remote_connect_time] = server[:socket].read_string
+      server[:remote_connect_time] = socket.read_string
       server[:local_connect_time] = Time.now()
 
       # Sending (arbitrary) client ID to identify subsequent communications.
       # The client with a client_id of 0 can manage the TWS-owned open orders.
       # Other clients can only manage their own open orders.
       server[:client_id] = options[:client_id] || random_id
-      server[:socket].send server[:client_id]
+      socket.send server[:client_id]
 
       @connected = true
       log.info "Connected to server, version: #{server[:version]}, connection time: " +
@@ -86,7 +86,7 @@ module IB
         server[:reader].join
       end
       if connected?
-        server[:socket].close
+        socket.close
         server = Hash.new
         @connected = false
       end
@@ -96,6 +96,10 @@ module IB
 
     def connected?
       @connected
+    end
+
+    def socket
+      server[:socket]
     end
 
     ### Working with message subscribers
@@ -202,7 +206,7 @@ module IB
     ### Working with Incoming messages from IB
 
     # Start reader thread that continuously reads messages from server in background.
-    # If you don't start reader, you should manually poll @server[:socket] for messages
+    # If you don't start reader, you should manually poll @socket for messages
     # or use #process_messages(msec) API.
     def start_reader
       Thread.abort_on_exception = true
@@ -221,20 +225,20 @@ module IB
       time_out = Time.now + poll_time/1000.0
       while (time_left = time_out - Time.now) > 0
         # If server socket is readable, process single incoming message
-        process_message if select [server[:socket]], nil, nil, time_left
+        process_message if select [socket], nil, nil, time_left
       end
     end
 
     # Process single incoming message (blocking!)
     def process_message
-      msg_id = server[:socket].read_int # This read blocks!
+      msg_id = socket.read_int # This read blocks!
 
       # Debug:
       log.debug "Got message #{msg_id} (#{Messages::Incoming::Classes[msg_id]})"
 
       # Create new instance of the appropriate message type, and have it read the message.
       # NB: Failure here usually means unsupported message type received
-      msg = Messages::Incoming::Classes[msg_id].new(server[:socket])
+      msg = Messages::Incoming::Classes[msg_id].new(socket)
 
       # Deliver message to all registered subscribers, alert if no subscribers
       subscribers[msg.class].each { |_, subscriber| subscriber.call(msg) }
