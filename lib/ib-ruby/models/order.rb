@@ -327,7 +327,9 @@ module IB
 
       # Returned in OpenOrder for Bag Contracts
       # public Vector<OrderComboLeg> m_orderComboLegs
-      attr_accessor :leg_prices
+      attr_accessor :leg_prices, :combo_params
+      alias order_combo_legs leg_prices
+      alias smart_combo_routing_params combo_params
 
       # IB uses weird String with Java Double.MAX_VALUE to indicate no value here
       def filter_max val
@@ -350,20 +352,21 @@ module IB
 
       def initialize opts = {}
         @leg_prices = []
-        @algo_params = []
+        @algo_params = {}
+        @combo_params = {}
         super opts
       end
 
       # This returns an Array of data from the given order,
       # mixed with data from associated contract. Ugly mix, indeed.
-      def serialize_with contract
+      def serialize_with server, contract
         [contract.serialize_long(:con_id, :sec_id),
          action, # main order fields
          total_quantity,
          order_type,
          limit_price,
          aux_price,
-         tif, # xtended order fields
+         tif, # extended order fields
          oca_group,
          account,
          open_close,
@@ -378,6 +381,21 @@ module IB
          outside_rth, # was: ignore_rth
          hidden,
          contract.serialize_legs(:extended),
+
+         # Support for per-leg prices in Order
+         if server[:server_version] >= 61
+           leg_prices.empty? ? 0 : [leg_prices.size] + leg_prices
+         else
+           []
+         end,
+
+         # Support for combo routing params in Order
+         if server[:server_version] >= 57 && contract.sec_type == 'BAG'
+           combo_params.empty? ? 0 : [combo_params.size] + combo_params.to_a
+         else
+           []
+         end,
+
          '', # deprecated shares_allocation field
          discretionary_amount,
          good_after_time,
@@ -388,32 +406,33 @@ module IB
          fa_profile,
          short_sale_slot, #     0 only for retail, 1 or 2 for institution  (Institutional)
          designated_location, # only populate when short_sale_slot == 2    (Institutional)
+         exempt_code,
          oca_type,
          rule_80a,
          settling_firm,
          all_or_none,
-         min_quantity || EOL,
-         percent_offset || EOL,
+         min_quantity,
+         percent_offset,
          etrade_only,
          firm_quote_only,
-         nbbo_price_cap || EOL,
-         auction_strategy || EOL,
-         starting_price || EOL,
-         stock_ref_price || EOL,
-         delta || EOL,
-         stock_range_lower || EOL,
-         stock_range_upper || EOL,
+         nbbo_price_cap,
+         auction_strategy,
+         starting_price,
+         stock_ref_price,
+         delta,
+         stock_range_lower,
+         stock_range_upper,
          override_percentage_constraints,
-         volatility || EOL, #              Volatility orders
-         volatility_type || EOL, #         Volatility orders
-         delta_neutral_order_type, #       Volatility orders
-         delta_neutral_aux_price || EOL, # Volatility orders
-         continuous_update, #              Volatility orders
-         reference_price_type || EOL, #    Volatility orders
-         trail_stop_price || EOL, #        TRAIL_STOP_LIMIT stop price
-         scale_init_level_size || EOL, #   Scale Orders
-         scale_subs_level_size || EOL, #   Scale Orders
-         scale_price_increment || EOL, #   Scale Orders
+         volatility, #               Volatility orders
+         volatility_type, #          Volatility orders
+         delta_neutral_order_type, # Volatility orders
+         delta_neutral_aux_price, #  Volatility orders
+         continuous_update, #        Volatility orders
+         reference_price_type, #     Volatility orders
+         trail_stop_price, #         TRAIL_STOP_LIMIT stop price
+         scale_init_level_size, #    Scale Orders
+         scale_subs_level_size, #    Scale Orders
+         scale_price_increment, #    Scale Orders
          clearing_account,
          clearing_intent,
          not_held,
@@ -424,7 +443,7 @@ module IB
 
       def serialize_algo
         if algo_strategy.nil? || algo_strategy.empty?
-          ['']
+          ''
         else
           [algo_strategy,
            algo_params.size,
@@ -436,7 +455,7 @@ module IB
       def == other
         perm_id && perm_id == other.perm_id ||
             order_id == other.order_id && #   ((p __LINE__)||true) &&
-                client_id == other.client_id &&
+                (client_id == other.client_id || client_id == 0 || other.client_id == 0) &&
                 parent_id == other.parent_id &&
                 tif == other.tif &&
                 action == other.action &&
