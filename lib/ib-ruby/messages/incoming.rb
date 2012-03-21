@@ -60,15 +60,38 @@ module IB
         # type identifiers must have a corresponding read_type method on socket (read_int, etc.).
         # group is used to lump together aggregates, such as Contract or Order fields
         def load_map(*map)
-          map.each do |(m1, m2, m3)|
-            group, name, type = m3 ? [m1, m2, m3] : [nil, m1, m2]
+          map.each do |instruction|
+            # We determine the function of the first element
+            head = instruction.first
+            case head
+              when Integer # >= Version condition: [ min_version, [map]]
+                load_map *instruction.drop(1) if version >= head
 
-            data = @socket.__send__("read_#{type}")
-            if group
-              @data[group] ||= {}
-              @data[group][name] = data
-            else
-              @data[name] = data
+              when Proc # Callable condition: [ condition, [map]]
+                load_map *instruction.drop(1) if head.call
+
+              when true # Pre-condition already succeeded!
+                load_map *instruction.drop(1)
+
+              when nil, false # Pre-condition already failed! Do nothing...
+
+              when Symbol # Normal map
+                group, name, type, block =
+                    if  instruction[2].nil? || instruction[2].is_a?(Proc)
+                      [nil] + instruction # No group, [ :name, :type, (:block) ]
+                    else
+                      instruction # [ :group, :name, :type, (:block)]
+                    end
+
+                data = @socket.__send__("read_#{type}", &block)
+                if group
+                  @data[group] ||= {}
+                  @data[group][name] = data
+                else
+                  @data[name] = data
+                end
+              else
+                error "Unrecognized instruction #{instruction}"
             end
           end
         end

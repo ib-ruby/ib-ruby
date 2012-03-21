@@ -61,6 +61,21 @@ module IB
     def read_decimal_limit_2
       read_decimal_limit -2
     end
+
+    ### Complex operations
+
+    # Returns loaded Array or [] if count was 0
+    def read_array &block
+      count = read_int
+      count > 0 ? Array.new(count, &block) : []
+    end
+
+    # Returns loaded Hash
+    def read_hash
+      tags = read_array { |_| [read_string, read_string] }
+      tags.empty? ? Hash.new : Hash.new[*tags.flatten]
+    end
+
   end # class IBSocket
 
 end # module IB
