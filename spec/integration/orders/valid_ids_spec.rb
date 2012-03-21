@@ -1,5 +1,6 @@
 require 'integration_helper'
 
+#OPTS[:silent] = false
 shared_examples_for 'Received single id' do
   subject { @ib.received[:NextValidId].first }
 

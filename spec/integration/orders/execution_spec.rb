@@ -24,7 +24,8 @@ describe "Trades", :connected => true, :integration => true, :slow => true do
                     :action => 'BUY'
 
         @ib.wait_for(5, :ExecutionData, :OpenOrder) do
-          @ib.received[:OpenOrder].last.order.commission
+          @ib.received[:OpenOrder].last &&
+              @ib.received[:OpenOrder].last.order.commission
         end
       end
 
