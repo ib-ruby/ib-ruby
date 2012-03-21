@@ -17,7 +17,7 @@ module IB
                        :received => true, # Keep all received messages in a Hash
                        :logger => nil,
                        :client_id => nil, # Will be randomly assigned
-                       :client_version => 57, # 48, # 57, = can receive commissionReport message
+                       :client_version => 57, # 48, # 57 = can receive commissionReport message
                        :server_version => 60 # 53? Minimal server version required
     }
 
@@ -57,9 +57,10 @@ module IB
 
       # Secret handshake
       socket.send options[:client_version]
-      server[:version] = socket.read_int
-      if server[:version] < options[:server_version]
-        error "TWS version #{server[:version]}, #{options[:server_version]} required."
+      server[:client_version] = options[:client_version]
+      server[:server_version] = socket.read_int
+      if server[:server_version] < options[:server_version]
+        error "TWS version #{server[:server_version]}, #{options[:server_version]} required."
       end
       server[:remote_connect_time] = socket.read_string
       server[:local_connect_time] = Time.now()
@@ -71,7 +72,7 @@ module IB
       socket.send server[:client_id]
 
       @connected = true
-      log.info "Connected to server, version: #{server[:version]}, connection time: " +
+      log.info "Connected to server, version: #{server[:server_version]}, connection time: " +
                    "#{server[:local_connect_time]} local, " +
                    "#{server[:remote_connect_time]} remote."
 
@@ -152,14 +153,6 @@ module IB
       @subscribers ||= Hash.new { |hash, subs| hash[subs] = Hash.new }
     end
 
-    ## Check if subscribers for given type exists
-    #def subscribed? message_type
-    #  message_type
-    #  (subscribers[message_type.class] ||
-    #      subscribers[message_type.class] ||
-    #      subscribers[message_type]).empty?
-    #end
-
     ### Working with received messages Hash
 
     # Hash of received messages, keyed by message type
@@ -236,9 +229,10 @@ module IB
       # Debug:
       log.debug "Got message #{msg_id} (#{Messages::Incoming::Classes[msg_id]})"
 
-      # Create new instance of the appropriate message type, and have it read the message.
+      # Create new instance of the appropriate message type,
+      # and have it read the message from server.
       # NB: Failure here usually means unsupported message type received
-      msg = Messages::Incoming::Classes[msg_id].new(socket)
+      msg = Messages::Incoming::Classes[msg_id].new(server)
 
       # Deliver message to all registered subscribers, alert if no subscribers
       subscribers[msg.class].each { |_, subscriber| subscriber.call(msg) }

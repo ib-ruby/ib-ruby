@@ -30,23 +30,27 @@ module IB
           end
         end
 
-        # Read incoming message from given socket or instantiate with given data
-        def initialize socket_or_data
+        # Create incoming message from a given source (IB server or data Hash)
+        def initialize source
           @created_at = Time.now
-          if socket_or_data.is_a?(Hash)
-            @data = socket_or_data
-          else
-            @data = {}
-            @socket = socket_or_data
+          if source[:socket] # Source is a server
+            @server = source
+            @data = Hash.new
             self.load
-            @socket = nil
+            @server = nil
+          else # Source is a @data Hash
+            @data = source
           end
+        end
+
+        def socket
+          @server[:socket]
         end
 
         # Every message loads received message version first
         # Override the load method in your subclass to do actual reading into @data.
         def load
-          @data[:version] = @socket.read_int
+          @data[:version] = socket.read_int
 
           check_version @data[:version], self.class.version
 
@@ -83,7 +87,7 @@ module IB
                       instruction # [ :group, :name, :type, (:block)]
                     end
 
-                data = @socket.__send__("read_#{type}", &block)
+                data = socket.__send__("read_#{type}", &block)
                 if group
                   @data[group] ||= {}
                   @data[group][name] = data
@@ -365,13 +369,16 @@ module IB
                       [:execution, :client_id, :int],
                       [:execution, :liquidation, :int],
                       [:execution, :cumulative_quantity, :int],
-                      [:execution, :average_price, :decimal],
-                      # As of client v.53, we can receive orderRef in ExecutionData
-                      [:execution, :order_ref, :string]
+                      [:execution, :average_price, :decimal]
 
       class ExecutionData
         def load
           super
+
+          # As of client v.53, we can receive orderRef in ExecutionData
+          load_map [proc { | | @server[:client_version] >= 53 },
+                    [:execution, :order_ref, :string]
+                   ]
           @contract = Models::Contract.build @data[:contract]
           @execution = Models::Execution.new @data[:execution]
         end
@@ -379,6 +386,7 @@ module IB
         def to_human
           "<ExecutionData #{request_id}: #{contract.to_human}, #{execution}>"
         end
+
       end # ExecutionData
 
       BondContractData =
@@ -481,22 +489,22 @@ module IB
           super
 
           @results = Array.new(@data[:count]) do |_|
-            {:rank => @socket.read_int,
-             :contract => Contract.build(:con_id => @socket.read_int,
-                                         :symbol => @socket.read_str,
-                                         :sec_type => @socket.read_str,
-                                         :expiry => @socket.read_str,
-                                         :strike => @socket.read_decimal,
-                                         :right => @socket.read_str,
-                                         :exchange => @socket.read_str,
-                                         :currency => @socket.read_str,
-                                         :local_symbol => @socket.read_str,
-                                         :market_name => @socket.read_str,
-                                         :trading_class => @socket.read_str),
-             :distance => @socket.read_str,
-             :benchmark => @socket.read_str,
-             :projection => @socket.read_str,
-             :legs => @socket.read_str,
+            {:rank => socket.read_int,
+             :contract => Contract.build(:con_id => socket.read_int,
+                                         :symbol => socket.read_str,
+                                         :sec_type => socket.read_str,
+                                         :expiry => socket.read_str,
+                                         :strike => socket.read_decimal,
+                                         :right => socket.read_str,
+                                         :exchange => socket.read_str,
+                                         :currency => socket.read_str,
+                                         :local_symbol => socket.read_str,
+                                         :market_name => socket.read_str,
+                                         :trading_class => socket.read_str),
+             :distance => socket.read_str,
+             :benchmark => socket.read_str,
+             :projection => socket.read_str,
+             :legs => socket.read_str,
             }
           end
         end
@@ -534,15 +542,15 @@ module IB
           super
 
           @results = Array.new(@data[:count]) do |_|
-            Models::Bar.new :time => @socket.read_string,
-                            :open => @socket.read_decimal,
-                            :high => @socket.read_decimal,
-                            :low => @socket.read_decimal,
-                            :close => @socket.read_decimal,
-                            :volume => @socket.read_int,
-                            :wap => @socket.read_decimal,
-                            :has_gaps => @socket.read_string,
-                            :trades => @socket.read_int
+            Models::Bar.new :time => socket.read_string,
+                            :open => socket.read_decimal,
+                            :high => socket.read_decimal,
+                            :low => socket.read_decimal,
+                            :close => socket.read_decimal,
+                            :volume => socket.read_int,
+                            :wap => socket.read_decimal,
+                            :has_gaps => socket.read_string,
+                            :trades => socket.read_int
           end
         end
 

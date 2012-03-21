@@ -97,18 +97,18 @@ module IB
                    # Never happens! 28 is the max supported version currently
                    # As of client v.55, we receive orderComboLegs (price) in openOrder
                    [29, [:contract, :legs, :array, proc do |_|
-                     Models::ComboLeg.new :con_id => @socket.read_int,
-                                          :ratio => @socket.read_int,
-                                          :action => @socket.read_string,
-                                          :exchange => @socket.read_string,
-                                          :open_close => @socket.read_int,
-                                          :short_sale_slot => @socket.read_int,
-                                          :designated_location => @socket.read_string,
-                                          :exempt_code => @socket.read_int
+                     Models::ComboLeg.new :con_id => socket.read_int,
+                                          :ratio => socket.read_int,
+                                          :action => socket.read_string,
+                                          :exchange => socket.read_string,
+                                          :open_close => socket.read_int,
+                                          :short_sale_slot => socket.read_int,
+                                          :designated_location => socket.read_string,
+                                          :exempt_code => socket.read_int
                    end],
 
                     # Order keeps received leg prices in a separate Array for some reason ?!
-                    [:order, :leg_prices, :array, proc { |_| @socket.read_decimal_max }],
+                    [:order, :leg_prices, :array, proc { |_| socket.read_decimal_max }],
                    ],
                    # As of client v.51, we can receive smartComboRoutingParams in openOrder
                    [26, [:smart_combo_routing_params, :hash]],
