@@ -14,9 +14,9 @@ module IB
         # 2. :symbol => "USD" For combo Contract, this is an arbitrary value (like “USD”)
 
         def initialize opts = {}
-          super opts
           @legs = Array.new
           self[:sec_type] = IB::SECURITY_TYPES[:bag]
+          super opts
         end
 
         def description
