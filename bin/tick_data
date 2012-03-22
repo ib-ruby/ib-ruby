@@ -15,7 +15,9 @@ contract = IB::Models::Contract.new :symbol=> 'AAPL',
                                     :currency=> "USD",
                                     :sec_type=> IB::SECURITY_TYPES[:stock],
                                     :description=> "Some stock"
-ib = IB::Connection.new
+
+ib = IB::Connection.new :client_id => 1112 # Arbitrary id to identify your script
+
 ib.subscribe(:Alert) { |msg| puts msg.to_human }
 ib.subscribe(:TickGeneric, :TickString, :TickPrice, :TickSize) { |msg| puts msg.inspect }
 ib.send_message :RequestMarketData, :id => 123, :contract => contract

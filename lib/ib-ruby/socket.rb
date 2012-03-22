@@ -4,7 +4,12 @@ module IB
   class IBSocket < TCPSocket
 
     # send nice null terminated binary data into socket
-    def send data
+    def write_data data
+      # TWS wants to receive booleans as 1 or 0
+      data = "1" if data == true
+      data = "0" if data == false
+
+      #p data.to_s + EOL
       self.syswrite(data.to_s + EOL)
     end
 
@@ -26,11 +31,12 @@ module IB
 
     def read_int_max
       str = self.read_string
-      str.nil? || str.empty? ? nil : str.to_i
+      str.to_i unless str.nil? || str.empty?
     end
 
     def read_boolean
-      self.read_string.to_i != 0
+      str = self.read_string
+      str.nil? ? false : str.to_i != 0
     end
 
     def read_decimal
@@ -60,6 +66,21 @@ module IB
     def read_decimal_limit_2
       read_decimal_limit -2
     end
+
+    ### Complex operations
+
+    # Returns loaded Array or [] if count was 0
+    def read_array &block
+      count = read_int
+      count > 0 ? Array.new(count, &block) : []
+    end
+
+    # Returns loaded Hash
+    def read_hash
+      tags = read_array { |_| [read_string, read_string] }
+      tags.empty? ? Hash.new : Hash[*tags.flatten]
+    end
+
   end # class IBSocket
 
 end # module IB

@@ -20,10 +20,11 @@ module IB
 
       # This returns a Contract initialized from the serialize_ib_ruby format string.
       def self.from_ib_ruby string
-        c = Contract.new
-        c.symbol, c.sec_type, c.expiry, c.strike, c.right, c.multiplier,
-            c.exchange, c.primary_exchange, c.currency, c.local_symbol = string.split(":")
-        c
+        keys = [:symbol, :sec_type, :expiry, :strike, :right, :multiplier,
+                :exchange, :primary_exchange, :currency, :local_symbol]
+        props = Hash[keys.zip(string.split(":"))]
+        props.delete_if { |k, v| v.nil? || v.empty? }
+        Contract.new props
       end
 
       # Fields are Strings unless noted otherwise
@@ -62,7 +63,7 @@ module IB
                # non-aggregate (ie not the SMART) exchange that the contract trades on.
                proc { |val|
                  val.upcase! if val.is_a?(String)
-                 raise(ArgumentError.new("Don't set primary_exchange to smart")) if val == 'SMART'
+                 error "Don't set primary_exchange to smart", :args if val == 'SMART'
                  self[:primary_exchange] = val
                },
 
@@ -77,7 +78,7 @@ module IB
                        when 'CALL', 'C'
                          'CALL'
                        else
-                         raise ArgumentError.new("Invalid right '#{val}' (must be one of PUT, CALL, P, C)")
+                         error "Right must be one of PUT, CALL, P, C - not '#{val}'", :args
                      end
                },
 
@@ -90,7 +91,7 @@ module IB
                        when nil, ''
                          nil
                        else
-                         raise ArgumentError.new("Invalid expiry '#{val}' (must be in format YYYYMM or YYYYMMDD)")
+                         error "Invalid expiry '#{val}' (must be in format YYYYMM or YYYYMMDD)", :args
                      end
                },
 
@@ -98,7 +99,7 @@ module IB
                proc { |val|
                  val = nil if !val.nil? && val.empty?
                  unless val.nil? || SECURITY_TYPES.values.include?(val)
-                   raise(ArgumentError.new("Invalid security type '#{val}' (must be one of #{SECURITY_TYPES.values}"))
+                   error "Invalid security type '#{val}' (must be one of #{SECURITY_TYPES.values}", :args
                  end
                  self[:sec_type] = val
                }
@@ -153,6 +154,13 @@ module IB
            #:under_con_id is is already defined in ContractDetails section
            :under_delta, # double: The underlying stock or future delta.
            :under_price #  double: The price of the underlying.
+
+      # Legs arriving via OpenOrder message, need to define them here
+      attr_accessor :legs # leg definitions for this contract.
+      alias combo_legs legs
+      alias combo_legs= legs=
+      alias combo_legs_description legs_description
+      alias combo_legs_description= legs_description=
 
       attr_accessor :description # NB: local to ib-ruby, not part of TWS.
 
@@ -230,8 +238,8 @@ module IB
       # expiring in September, 2008, the string is:
       #
       #    GBP:FUT:200809:::62500:GLOBEX::USD:
-      def serialize_ib_ruby version
-        serialize.join(":")
+      def serialize_ib_ruby
+        serialize_long.join(":")
       end
 
       # Contract comparison

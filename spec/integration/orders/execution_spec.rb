@@ -1,5 +1,6 @@
-require 'integration_helper'
+require 'order_helper'
 
+#OPTS[:silent] = false
 describe "Trades", :connected => true, :integration => true, :slow => true do
 
   before(:all) { verify_account }
@@ -21,9 +22,15 @@ describe "Trades", :connected => true, :integration => true, :slow => true do
                     :total_quantity => 20000,
                     :limit_price => 2,
                     :action => 'BUY'
+                    #:all_or_none => 1,
+                    #:fa_profile => 2,
+                    #:percent_offset => 3,
+                    #:clearing_account => 'z',
+                    #:what_if => true
 
         @ib.wait_for(5, :ExecutionData, :OpenOrder) do
-          @ib.received[:OpenOrder].last.order.commission
+          @ib.received[:OpenOrder].last &&
+              @ib.received[:OpenOrder].last.order.commission
         end
       end
 
@@ -43,7 +50,7 @@ describe "Trades", :connected => true, :integration => true, :slow => true do
       it { @ib.received[:ExecutionDataEnd].should be_empty }
 
       it 'receives filled OpenOrder' do
-        open_order_should_be 'Filled', -1
+        order_should_be 'Filled', -1
         msg = @ib.received[:OpenOrder].last
         msg.order.commission.should == 2.5
       end
@@ -53,7 +60,7 @@ describe "Trades", :connected => true, :integration => true, :slow => true do
       end
 
       it 'receives OrderStatus with fill details' do
-        order_status_should_be 'Filled', -1
+        status_should_be 'Filled', -1
       end
     end # Placing BUY
 
@@ -65,7 +72,7 @@ describe "Trades", :connected => true, :integration => true, :slow => true do
                     :limit_price => 1,
                     :action => 'SELL'
 
-        @ib.wait_for(5, :ExecutionData, :OpenOrder) do
+        @ib.wait_for(:ExecutionData, :OpenOrder, 5) do
           @ib.received[:OpenOrder].last.order.commission
         end
       end
@@ -85,7 +92,7 @@ describe "Trades", :connected => true, :integration => true, :slow => true do
       it { @ib.received[:ExecutionData].should have_exactly(1).execution_data }
 
       it 'receives filled OpenOrder' do
-        open_order_should_be 'Filled', -1
+        order_should_be 'Filled', -1
         msg = @ib.received[:OpenOrder].last
         msg.order.commission.should == 2.5
       end
@@ -95,7 +102,7 @@ describe "Trades", :connected => true, :integration => true, :slow => true do
       end
 
       it 'receives OrderStatus with fill details' do
-        order_status_should_be 'Filled', -1
+        status_should_be 'Filled', -1
       end
     end # Placing SELL
 
@@ -107,7 +114,7 @@ describe "Trades", :connected => true, :integration => true, :slow => true do
                          :request_id => 456,
                          :client_id => OPTS[:connection][:client_id],
                          :time => (Time.now-10).to_ib # Time zone problems possible
-        @ib.wait_for 3, :ExecutionData
+        @ib.wait_for :ExecutionData, 3 # sec
       end
 
       #after(:all) { clean_connection }

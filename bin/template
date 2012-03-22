@@ -11,7 +11,7 @@ require 'bundler/setup'
 require 'ib-ruby'
 
 # Connect to IB TWS.
-ib = IB::Connection.new
+ib = IB::Connection.new :client_id => 1112 # Arbitrary id to identify your script
 
 # Subscribe to TWS alerts/errors
 ib.subscribe(:Alert) { |msg| puts msg.to_human }

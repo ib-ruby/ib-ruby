@@ -9,16 +9,16 @@ module IB
     # thus improving performance at the expense of backwards compatibility.
     # Older protocol versions support can be found in older gem versions.
 
-    CLIENT_VERSION = 48 # Was 27 in original Ruby code
-    SERVER_VERSION = 53 # Minimal server version. Latest, was 38 in current Java code.
     DEFAULT_OPTIONS = {:host =>'127.0.0.1',
                        :port => '4001', # IB Gateway connection (default)
                        #:port => '7496', # TWS connection, with annoying pop-ups
-                       :client_id => nil, # Will be randomly assigned
                        :connect => true, # Connect at initialization
                        :reader => true, # Start a separate reader Thread
                        :received => true, # Keep all received messages in a Hash
                        :logger => nil,
+                       :client_id => nil, # Will be randomly assigned
+                       :client_version => 57, # 48, # 57 = can receive commissionReport message
+                       :server_version => 60 # 53? Minimal server version required
     }
 
     # Singleton to make active Connection universally accessible as IB::Connection.current
@@ -26,54 +26,57 @@ module IB
       attr_accessor :current
     end
 
-    attr_reader :server #         Info about IB server and server connection state
-    attr_accessor :next_order_id #  Next valid order id
+    attr_accessor :server, #   Info about IB server and server connection state
+                  :options, #  Connection options
+                  :next_order_id # Next valid order id
 
     def initialize opts = {}
       @options = DEFAULT_OPTIONS.merge(opts)
 
-      self.default_logger = @options[:logger] if @options[:logger]
+      self.default_logger = options[:logger] if options[:logger]
       @connected = false
       @next_order_id = nil
       @server = Hash.new
 
-      connect if @options[:connect]
+      connect if options[:connect]
       Connection.current = self
     end
 
     ### Working with connection
 
     def connect
-      raise "Already connected!" if connected?
+      error "Already connected!" if connected?
 
       # TWS always sends NextValidId message at connect - save this id
       self.subscribe(:NextValidId) do |msg|
         @next_order_id = msg.order_id
-        log.info "Got next valid order id: #{@next_order_id}."
+        log.info "Got next valid order id: #{next_order_id}."
       end
 
-      @server[:socket] = IBSocket.open(@options[:host], @options[:port])
+      server[:socket] = IBSocket.open(options[:host], options[:port])
 
       # Secret handshake
-      @server[:socket].send(CLIENT_VERSION)
-      @server[:version] = @server[:socket].read_int
-      raise "TWS version >= #{SERVER_VERSION} required." if @server[:version] < SERVER_VERSION
-
-      @server[:local_connect_time] = Time.now()
-      @server[:remote_connect_time] = @server[:socket].read_string
+      socket.write_data options[:client_version]
+      server[:client_version] = options[:client_version]
+      server[:server_version] = socket.read_int
+      if server[:server_version] < options[:server_version]
+        error "TWS version #{server[:server_version]}, #{options[:server_version]} required."
+      end
+      server[:remote_connect_time] = socket.read_string
+      server[:local_connect_time] = Time.now()
 
       # Sending (arbitrary) client ID to identify subsequent communications.
       # The client with a client_id of 0 can manage the TWS-owned open orders.
       # Other clients can only manage their own open orders.
-      @server[:client_id] = @options[:client_id] || random_id
-      @server[:socket].send(@server[:client_id])
+      server[:client_id] = options[:client_id] || random_id
+      socket.write_data server[:client_id]
 
       @connected = true
-      log.info "Connected to server, version: #{@server[:version]}, connection time: " +
-                   "#{@server[:local_connect_time]} local, " +
-                   "#{@server[:remote_connect_time]} remote."
+      log.info "Connected to server, version: #{server[:server_version]}, connection time: " +
+                   "#{server[:local_connect_time]} local, " +
+                   "#{server[:remote_connect_time]} remote."
 
-      start_reader if @options[:reader] # Allows reconnect
+      start_reader if options[:reader] # Allows reconnect
     end
 
     alias open connect # Legacy alias
@@ -81,11 +84,11 @@ module IB
     def disconnect
       if reader_running?
         @reader_running = false
-        @server[:reader].join
+        server[:reader].join
       end
       if connected?
-        @server[:socket].close
-        @server = Hash.new
+        socket.close
+        server = Hash.new
         @connected = false
       end
     end
@@ -94,6 +97,10 @@ module IB
 
     def connected?
       @connected
+    end
+
+    def socket
+      server[:socket]
     end
 
     ### Working with message subscribers
@@ -105,7 +112,7 @@ module IB
       subscriber = args.last.respond_to?(:call) ? args.pop : block
       id = random_id
 
-      raise ArgumentError.new "Need subscriber proc or block" unless subscriber.is_a? Proc
+      error "Need subscriber proc or block", :args unless subscriber.is_a? Proc
 
       args.each do |what|
         message_classes =
@@ -115,9 +122,9 @@ module IB
               when what.is_a?(Symbol)
                 [Messages::Incoming.const_get(what)]
               when what.is_a?(Regexp)
-                Messages::Incoming::Table.values.find_all { |klass| klass.to_s =~ what }
+                Messages::Incoming::Classes.values.find_all { |klass| klass.to_s =~ what }
               else
-                raise ArgumentError.new "#{what} must represent incoming IB message class"
+                error "#{what} must represent incoming IB message class", :args
             end
         message_classes.flatten.each do |message_class|
           # TODO: Fix: RuntimeError: can't add a new key into hash during iteration
@@ -132,7 +139,7 @@ module IB
       removed = []
       ids.each do |id|
         removed_at_id = subscribers.map { |_, subscribers| subscribers.delete id }.compact
-        raise "No subscribers with id #{id}" if removed_at_id.empty?
+        error "No subscribers with id #{id}" if removed_at_id.empty?
         removed << removed_at_id
       end
       removed.flatten
@@ -145,14 +152,6 @@ module IB
     def subscribers
       @subscribers ||= Hash.new { |hash, subs| hash[subs] = Hash.new }
     end
-
-    ## Check if subscribers for given type exists
-    #def subscribed? message_type
-    #  message_type
-    #  (subscribers[message_type.class] ||
-    #      subscribers[message_type.class] ||
-    #      subscribers[message_type]).empty?
-    #end
 
     ### Working with received messages Hash
 
@@ -167,32 +166,32 @@ module IB
     end
 
     # Clear received messages Hash
-    def clear_received message_type=nil
-      if message_type
-        received[message_type].clear
+    def clear_received *message_types
+      if message_types.empty?
+        received.each { |message_type, container| container.clear }
       else
-        received.each { |_, message_type| message_type.clear }
+        message_types.each { |message_type| received[message_type].clear }
       end
     end
 
     # Wait for specific condition(s) - given as callable/block, or
     # message type(s) - given as Symbol or [Symbol, times] pair.
-    # Timeout after given time or 2 seconds.
+    # Timeout after given time or 1 second.
     def wait_for *args, &block
-      time = args.find { |arg| arg.is_a? Numeric } || 2
-      timeout = Time.now + time
-      args.push(block) if block
+      timeout = args.find { |arg| arg.is_a? Numeric } # extract timeout from args
+      end_time = Time.now + (timeout || 1) # default timeout 1 sec
+      conditions = args.delete_if { |arg| arg.is_a? Numeric }.push(block).compact
 
-      sleep 0.1 until timeout < Time.now ||
-          args.inject(true) do |result, arg|
-            result && if arg.is_a?(Symbol)
-                        received?(arg)
-                      elsif arg.is_a?(Array)
-                        received?(*arg)
-                      elsif arg.respond_to?(:call)
-                        arg.call
+      sleep 0.1 until end_time < Time.now || !conditions.empty? &&
+          conditions.inject(true) do |result, condition|
+            result && if condition.is_a?(Symbol)
+                        received?(condition)
+                      elsif condition.is_a?(Array)
+                        received?(*condition)
+                      elsif condition.respond_to?(:call)
+                        condition.call
                       else
-                        true
+                        error "Unknown wait condition #{condition}"
                       end
           end
     end
@@ -200,18 +199,18 @@ module IB
     ### Working with Incoming messages from IB
 
     # Start reader thread that continuously reads messages from server in background.
-    # If you don't start reader, you should manually poll @server[:socket] for messages
+    # If you don't start reader, you should manually poll @socket for messages
     # or use #process_messages(msec) API.
     def start_reader
       Thread.abort_on_exception = true
       @reader_running = true
-      @server[:reader] = Thread.new do
+      server[:reader] = Thread.new do
         process_messages while @reader_running
       end
     end
 
     def reader_running?
-      @reader_running && @server[:reader] && @server[:reader].alive?
+      @reader_running && server[:reader] && server[:reader].alive?
     end
 
     # Process incoming messages during *poll_time* (200) msecs, nonblocking
@@ -219,27 +218,28 @@ module IB
       time_out = Time.now + poll_time/1000.0
       while (time_left = time_out - Time.now) > 0
         # If server socket is readable, process single incoming message
-        process_message if select [@server[:socket]], nil, nil, time_left
+        process_message if select [socket], nil, nil, time_left
       end
     end
 
     # Process single incoming message (blocking!)
     def process_message
-      msg_id = @server[:socket].read_int # This read blocks!
+      msg_id = socket.read_int # This read blocks!
 
       # Debug:
-      log.debug "Got message #{msg_id} (#{Messages::Incoming::Table[msg_id]})"
+      log.debug "Got message #{msg_id} (#{Messages::Incoming::Classes[msg_id]})"
 
-      # Create new instance of the appropriate message type, and have it read the message.
+      # Create new instance of the appropriate message type,
+      # and have it read the message from server.
       # NB: Failure here usually means unsupported message type received
-      msg = Messages::Incoming::Table[msg_id].new(@server[:socket])
+      msg = Messages::Incoming::Classes[msg_id].new(server)
 
       # Deliver message to all registered subscribers, alert if no subscribers
       subscribers[msg.class].each { |_, subscriber| subscriber.call(msg) }
       log.warn "No subscribers for message #{msg.class}!" if subscribers[msg.class].empty?
 
       # Collect all received messages into a @received Hash
-      received[msg.message_type] << msg if @options[:received]
+      received[msg.message_type] << msg if options[:received]
     end
 
     ### Sending Outgoing messages to IB
@@ -255,10 +255,10 @@ module IB
             when what.is_a?(Symbol)
               Messages::Outgoing.const_get(what).new *args
             else
-              raise ArgumentError.new "Only able to send outgoing IB messages"
+              error "Only able to send outgoing IB messages", :args
           end
-      raise "Not able to send messages, IB not connected!" unless connected?
-      message.send_to(@server)
+      error "Not able to send messages, IB not connected!" unless connected?
+      message.send_to server
     end
 
     alias dispatch send_message # Legacy alias
@@ -270,7 +270,7 @@ module IB
                    :order => order,
                    :contract => contract,
                    :id => @next_order_id
-      order.client_id = @server[:client_id]
+      order.client_id = server[:client_id]
       order.order_id = @next_order_id
       @next_order_id += 1
       order.order_id

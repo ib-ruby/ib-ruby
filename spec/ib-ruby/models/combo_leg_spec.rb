@@ -19,7 +19,6 @@ describe IB::Models::ComboLeg do
 
       it { should_not be_nil }
       its(:con_id) {should == 0}
-      its(:ratio) {should == 0}
       its(:open_close) {should == 0}
       its(:short_sale_slot) {should == 0}
       its(:designated_location) {should == ''}

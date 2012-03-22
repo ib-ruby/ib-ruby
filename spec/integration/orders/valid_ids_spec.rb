@@ -1,5 +1,6 @@
-require 'integration_helper'
+require 'order_helper'
 
+#OPTS[:silent] = false
 shared_examples_for 'Received single id' do
   subject { @ib.received[:NextValidId].first }
 
@@ -41,7 +42,7 @@ describe 'Ids valid for Order placement', :connected => true, :integration => tr
   before(:all) do
     verify_account
     @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
-    @ib.wait_for 3, :OpenOrderEnd, :NextValidId
+    @ib.wait_for :NextValidId, 3 # , :OpenOrderEnd
     @id = {} # Moving id between contexts. Feels dirty.
   end
 
@@ -51,14 +52,13 @@ describe 'Ids valid for Order placement', :connected => true, :integration => tr
 
     it_behaves_like 'Received single id'
 
-    it { @ib.received[:OpenOrderEnd].should have_exactly(1).message }
-
-    it 'receives also :OpenOrderEnd message' do
+    it 'receives also :OpenOrderEnd message', :pending => 'not in GW 924.2e' do
+      @ib.received[:OpenOrderEnd].should have_exactly(1).message
       @ib.received[:OpenOrderEnd].first.should be_an IB::Messages::Incoming::OpenOrderEnd
     end
 
     it 'logs connection notification' do
-      should_log /Connected to server, version: 53, connection time/
+      should_log /Connected to server, version: .., connection time/
     end
   end # at connect
 
