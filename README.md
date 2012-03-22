@@ -7,9 +7,9 @@ Copyright (C) 2006-2012 Paul Legato, Wes Devauld, and Ar Vicco.
 https://github.com/ib-ruby/ib-ruby
 
 __WARNING:__ This software is provided __AS-IS__ with __NO WARRANTY__, express or
-implied. Your use of this software is at your own risk. It may contain
-any number of bugs, known or unknown, which might cause you to lose
-money if you use it. You've been warned.
+implied. Your use of this software is at your own risk. It may contain any number
+of bugs, known or unknown, which might cause you to lose money if you use it.
+You've been warned.
 
 This code is not sanctioned or supported by Interactive Brokers.
 
@@ -27,7 +27,7 @@ of TWS/Gateway API. Older versions of API are supported by previous gem versions
 ib-ruby gem     TWS version     API version
 0.5.21          918-920         965
 0.6.1           921-923         966
-0.7.1           923             967
+0.7.1           924+            967
 
 ## INSTALLATION:
 
