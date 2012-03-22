@@ -30,7 +30,7 @@ describe 'Request Depth of Market Data', :connected => true,
 
   it 'has position field reflecting the row Id of this market depth entry' do
     subject.position.should be_an Integer
-    subject.position.should be >= 1
+    subject.position.should be >= 0
     subject.position.should be <= 3
   end
 

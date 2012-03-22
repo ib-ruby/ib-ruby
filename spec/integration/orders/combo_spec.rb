@@ -28,83 +28,24 @@ def butterfly symbol, expiry, right, *strikes
                                 :legs => legs
 end
 
-describe "Combo Orders", :connected => true, :integration => true do
+describe "Combo Order", :connected => true, :integration => true do
 
-  before(:all) do
-    verify_account
-  end
-
-  after(:all) { close_connection }
+  before(:all) { verify_account }
 
   context "Limit" do # , :if => :us_trading_hours
     before(:all) do
       @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
       @ib.wait_for :NextValidId
+      @ib.clear_received # to avoid conflict with pre-existing Orders
 
       @combo = butterfly 'GOOG', '201301', 'CALL', 500, 510, 520
-      pp @combo
-      place_order @combo, :limit_price => 0.01
-      @ib.wait_for [:OpenOrder, 3], [:OrderStatus, 2]
+
+      place_order @combo, :limit_price => 0.01 #, :what_if => true
+      @ib.wait_for [:OpenOrder, 3], [:OrderStatus, 2], 5
     end
 
-    context "Placing" do
-      after(:all) { clean_connection } # Clear logs and message collector
+    after(:all) { close_connection }
 
-      it_behaves_like 'Placed Order'
-    end # Placing
-
-    #context "Retrieving placed" do
-    #  before(:all) do
-    #    @ib.send_message :RequestOpenOrders
-    #    @ib.wait_for :OpenOrderEnd
-    #  end
-    #
-    #  after(:all) { clean_connection } # Clear logs and message collector
-    #
-    #  it 'does not increase client`s next_order_id further' do
-    #    @ib.next_order_id.should == @order_id_after
-    #  end
-    #
-    #  it { @ib.received[:OpenOrder].should have_exactly(1).order_message }
-    #  it { @ib.received[:OrderStatus].should have_exactly(1).status_message }
-    #  it { @ib.received[:OpenOrderEnd].should have_exactly(1).order_end_message }
-    #  it { @ib.received[:Alert].should have_exactly(0).alert_messages }
-    #
-    #  it 'receives OpenOrder and OrderStatus for placed order' do
-    #    order_should_be /Submitted/
-    #    status_should_be /Submitted/
-    #  end
-    #end # Retrieving
-    #
-    #context "Cancelling placed order" do
-    #  before(:all) do
-    #    @ib.cancel_order @order_id_placed
-    #
-    #    @ib.wait_for :OrderStatus, :Alert
-    #  end
-    #
-    #  after(:all) { clean_connection } # Clear logs and message collector
-    #
-    #  it 'does not increase client`s next_order_id further' do
-    #    @ib.next_order_id.should == @order_id_after
-    #  end
-    #
-    #  it 'does not receive OpenOrder message' do
-    #    @ib.received?(:OpenOrder).should be_false
-    #  end
-    #
-    #  it { @ib.received[:OrderStatus].should have_exactly(1).status_message }
-    #  it { @ib.received[:Alert].should have_exactly(1).alert_message }
-    #
-    #  it 'receives cancellation Order Status' do
-    #    status_should_be /Cancel/ # Cancelled / PendingCancel
-    #  end
-    #
-    #  it 'receives Order cancelled Alert' do
-    #    alert = @ib.received[:Alert].first
-    #    alert.should be_an IB::Messages::Incoming::Alert
-    #    alert.message.should =~ /Order Canceled - reason:/
-    #  end
-    #end # Cancelling
+    it_behaves_like 'Placed Order'
   end # Limit
 end # Combo Orders

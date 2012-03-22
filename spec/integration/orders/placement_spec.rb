@@ -60,10 +60,18 @@ describe 'Orders', :connected => true, :integration => true do
     it { @ib.received[:OpenOrder].should have_at_least(1).open_order_message }
     it { @ib.received[:OrderStatus].should have_exactly(0).status_messages }
 
-    it 'returns as pre-submitted what-if Order' do
+    it 'returns as what-if Order with margin and commission info' do
       order_should_be /PreSubmitted/
       order = @ib.received[:OpenOrder].first.order
       order.what_if.should == true
+      order.equity_with_loan.should be_a Float
+      order.init_margin.should be_a Float
+      order.maint_margin.should be_a Float
+      order.commission.should be_a Float
+      order.equity_with_loan.should be > 0
+      order.init_margin.should be > 0
+      order.maint_margin.should be > 0
+      order.commission.should be > 1
     end
 
     it 'is not actually opened though' do
@@ -86,65 +94,7 @@ describe 'Orders', :connected => true, :integration => true do
 
     after(:all) { close_connection }
 
-    context "Placing" do
-      after(:all) { clean_connection } # Clear logs and message collector
-
-      it_behaves_like 'Placed Order'
-    end # Placing
-
-    context "Retrieving placed orders" do
-      before(:all) do
-        @ib.send_message :RequestOpenOrders
-        @ib.wait_for :OpenOrderEnd
-      end
-
-      after(:all) { clean_connection } # Clear logs and message collector
-
-      it 'does not increase client`s next_order_id further' do
-        @ib.next_order_id.should == @order_id_after
-      end
-
-      it { @ib.received[:OpenOrder].should have_exactly(1).order_message }
-      it { @ib.received[:OrderStatus].should have_exactly(1).status_message }
-      it { @ib.received[:OpenOrderEnd].should have_exactly(1).order_end_message }
-      it { @ib.received[:Alert].should have_exactly(0).alert_messages }
-
-      it 'receives OpenOrder and OrderStatus for placed order' do
-        order_should_be /Submitted/
-        status_should_be /Submitted/
-      end
-    end # Retrieving
-
-    context "Cancelling placed order" do
-      before(:all) do
-        @ib.cancel_order @order_id_placed
-
-        @ib.wait_for :OrderStatus, :Alert
-      end
-
-      after(:all) { clean_connection } # Clear logs and message collector
-
-      it 'does not increase client`s next_order_id further' do
-        @ib.next_order_id.should == @order_id_after
-      end
-
-      it 'does not receive OpenOrder message' do
-        @ib.received?(:OpenOrder).should be_false
-      end
-
-      it { @ib.received[:OrderStatus].should have_exactly(1).status_message }
-      it { @ib.received[:Alert].should have_exactly(1).alert_message }
-
-      it 'receives cancellation Order Status' do
-        status_should_be /Cancel/ # Cancelled / PendingCancel
-      end
-
-      it 'receives Order cancelled Alert' do
-        alert = @ib.received[:Alert].first
-        alert.should be_an IB::Messages::Incoming::Alert
-        alert.message.should =~ /Order Canceled - reason:/
-      end
-    end # Cancelling
+    it_behaves_like 'Placed Order'
 
     context "Cancelling wrong order" do
       before(:all) do
