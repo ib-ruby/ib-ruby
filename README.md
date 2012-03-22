@@ -1,27 +1,33 @@
 # ib-ruby
 
-Ruby Implementation of the Interactive Brokers Trader Workstation (TWS) API v.965.
+Ruby Implementation of the Interactive Brokers Trader Workstation (TWS) API v.965-967.
 
-Copyright (C) 2006-2011 Paul Legato, Wes Devauld, and Ar Vicco.
+Copyright (C) 2006-2012 Paul Legato, Wes Devauld, and Ar Vicco.
 
 https://github.com/ib-ruby/ib-ruby
 
 __WARNING:__ This software is provided __AS-IS__ with __NO WARRANTY__, express or
-implied. Your use of this software is at your own risk. It may contain
-any number of bugs, known or unknown, which might cause you to lose
-money if you use it. You've been warned.
+implied. Your use of this software is at your own risk. It may contain any number
+of bugs, known or unknown, which might cause you to lose money if you use it.
+You've been warned.
 
-This code is not sanctioned or supported by Interactive Brokers
-This software is available under the LGPL. See the file LICENSE for full licensing details.
+This code is not sanctioned or supported by Interactive Brokers.
 
 ## REQUIREMENTS:
 
-Either the Interactive Brokers
-[TWS](http://www.interactivebrokers.com/en/p.php?f=tws) or
-[IB Gateway](http://www.interactivebrokers.com/en/control/systemstandalone-ibGateway.php?os=unix&ib_entity=llc)
-software must be installed and configured to allow API connections
-from the computer you plan to run ib-ruby on, which is typically
-localhost if you're running ib-ruby on the same machine as TWS.
+Either the Interactive Brokers [TWS](http://www.interactivebrokers.com/en/p.php?f=tws) or
+[Gateway](http://www.interactivebrokers.com/en/p.php?f=programInterface&ib_entity=llc)
+software must be installed and configured to allow API connections from the computer
+you plan to run ib-ruby on, which is typically localhost if you're running ib-ruby on
+the same machine as TWS.
+
+As a rule of thumb, most recent version of ib-ruby gem only supports latest versions
+of TWS/Gateway API. Older versions of API are supported by previous gem versions:
+
+ib-ruby gem     TWS version     API version
+0.5.21          918-920         965
+0.6.1           921-923         966
+0.7.1           924+            967
 
 ## INSTALLATION:
 
@@ -44,7 +50,7 @@ and :port options given to IB::Connection.new.
 
     require 'ib-ruby'
 
-    ib = IB::Connection.new
+    ib = IB::Connection.new :port => 7496 # TWS on localhost
     ib.subscribe(:Alert, :AccountValue) { |msg| puts msg.to_human }
     ib.send_message :RequestAccountData
     ib.wait_for :AccountDownloadEnd
@@ -72,7 +78,7 @@ from TWS, with the received message as its argument.
 
 Then, you request specific data from TWS using `Connection#send_message` or place
 your order using `Connection#place_order`. TWS will respond with messages that you
-should have subscribed for, and these messages are be processed in a code block
+should have subscribed for, and these messages will be processed in a code block
 given to `#subscribe`.
 
 In order to give TWS time to respond, you either run a message processing loop or
@@ -88,6 +94,8 @@ directory for more scenarios and examples of handling IB messages.
 
 ## LICENSE:
 
+This software is available under the LGPL.
+
 This library is free software; you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as
 published by the Free Software Foundation; either version 2.1 of the
@@ -95,8 +103,8 @@ License, or (at your option) any later version.
 
 This library is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-Lesser General Public License for more details.
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the file LICENSE
+for full licensing details of GNU Lesser General Public License.
 
 You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software

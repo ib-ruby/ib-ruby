@@ -1,0 +1,63 @@
+#!/usr/bin/env ruby
+#
+# This script connects to IB API, subscribes to account info and prints out
+# messages received from IB (update every 3 minute or so)
+
+require 'pathname'
+LIB_DIR = (Pathname.new(__FILE__).dirname + '../lib/').realpath.to_s
+$LOAD_PATH.unshift LIB_DIR unless $LOAD_PATH.include?(LIB_DIR)
+
+require 'rubygems'
+require 'bundler/setup'
+require 'ib-ruby'
+
+# Utility method that helps us build multi-legged (BAG) Orders
+def butterfly symbol, expiry, right, *strikes
+  raise 'No Connection!' unless @ib && @ib.connected?
+
+  legs = strikes.zip([1, -2, 1]).map do |strike, weight|
+    # Create contract
+    contract = IB::Models::Contract::Option.new :symbol => symbol,
+                                                :expiry => expiry,
+                                                :right => right,
+                                                :strike => strike
+    # Find out contract's con_id
+    @ib.clear_received :ContractData, :ContractDataEnd
+    @ib.send_message :RequestContractData, :id => strike, :contract => contract
+    @ib.wait_for :ContractDataEnd, 3
+    con_id = @ib.received[:ContractData].last.contract.con_id
+
+    # Create Comboleg from con_id and weight
+    IB::Models::ComboLeg.new :con_id => con_id, :weight => weight
+  end
+
+  # Create new Combo contract
+  IB::Models::Contract::Bag.new :symbol => symbol,
+                                :currency => "USD", # Only US options in combo Contracts
+                                :exchange => "SMART",
+                                :legs => legs
+end
+
+
+# First, connect to IB TWS.
+@ib = IB::Connection.new :client_id => 1112 # Arbitrary id to identify your script
+@ib.wait_for :NextValidId
+
+# Subscribe to TWS alerts/errors and order-related messages
+@ib.subscribe(:Alert, :OpenOrder, :OrderStatus) { |msg| puts msg.to_human }
+
+# Create multi-legged option Combo using utility method above
+combo = butterfly 'GOOG', '201301', 'CALL', 500, 510, 520
+
+# Create Order stub
+order = IB::Models::Order.new :total_quantity => 10, # 10 butterflies
+                              :limit_price => 0.01, # at 0.01 x 100 USD per contract
+                              :action => 'BUY',
+                              :order_type => 'LMT'
+
+@ib.place_order order, combo
+
+@ib.wait_for [:OpenOrder, 3], [:OrderStatus, 2]
+
+puts "\n******** Press <Enter> to cancel... *********\n\n"
+STDIN.gets

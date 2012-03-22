@@ -1,16 +1,16 @@
 require 'ib-ruby/messages/abstract_message'
 
-# EClientSocket.java uses sendMax() rather than send() for a number of these.
-# It sends an EOL rather than a number if the value == Integer.MAX_VALUE (or Double.MAX_VALUE).
-# These fields are initialized to this MAX_VALUE.
-# This has been implemented with nils in Ruby to represent the case where an EOL should be sent.
-
 # TODO: Don't instantiate messages, use their classes as just namespace for .encode/decode
 
 module IB
   module Messages
+
+    # Outgoing IB messages (sent to TWS/Gateway)
     module Outgoing
       extend Messages # def_message macros
+
+      # Container for specific message classes, keyed by their message_ids
+      Classes = {}
 
       class AbstractMessage < IB::Messages::AbstractMessage
 
@@ -28,21 +28,16 @@ module IB
         # an Array of elements that ought to be sent to the server by calling to_s on
         # each one and postpending a '\0'.
         #
-        def send_to(server)
-          self.encode.flatten.each do |datum|
-            # TWS wants to receive booleans as 1 or 0... rewrite as necessary.
-            datum = "1" if datum == true
-            datum = "0" if datum == false
-
-            #p datum.to_s + EOL
-            server[:socket].syswrite(datum.to_s + EOL)
+        def send_to server
+          self.encode(server).flatten.each do |datum|
+            server[:socket].write_data datum
           end
         end
 
         # At minimum, Outgoing message contains message_id and version.
         # Most messages also contain (ticker, request or order) :id.
         # Then, content of @data Hash is encoded per instructions in data_map.
-        def encode
+        def encode server
           [self.class.message_id,
            self.class.version,
            @data[:id] || @data[:ticker_id] || @data[:request_id]|| @data[:order_id] || [],
@@ -122,6 +117,11 @@ module IB
       RequestFA = def_message 18, :fa_data_type
       # data = { :fa_data_type => int, :xml => String }
       ReplaceFA = def_message 19, :fa_data_type, :xml
+      # data = { :market_data_type => int }
+      # The API can now receive frozen market data from Trader Workstation. Frozen
+      # market data is the last data recorded in our system. Use this method with
+      # :market_data_type = 1 for real-time streaming, 2 for frozen market data
+      RequestMarketDataType = def_message 59, :market_data_type
 
       # @data = { :subscribe => boolean,
       #           :account_code => Advisor accounts only. Empty ('') for a standard account. }
@@ -292,50 +292,55 @@ module IB
                       :instrument,
                       :location_code,
                       :scan_code,
-                      [:above_price, EOL],
-                      [:below_price, EOL],
-                      [:above_volume, EOL],
-                      [:market_cap_above, EOL],
-                      [:market_cap_below, EOL],
+                      :above_price,
+                      :below_price,
+                      :above_volume,
+                      :market_cap_above,
+                      :market_cap_below,
                       :moody_rating_above,
                       :moody_rating_below,
                       :sp_rating_above,
                       :sp_rating_below,
                       :maturity_date_above,
                       :maturity_date_below,
-                      [:coupon_rate_above, EOL],
-                      [:coupon_rate_below, EOL],
+                      :coupon_rate_above,
+                      :coupon_rate_below,
                       :exclude_convertible,
-                      [:average_option_volume_above, EOL], # ?
+                      :average_option_volume_above, # ?
                       :scanner_setting_pairs,
                       :stock_type_filter)
 
       ### Even more complex Outgoing Message classes, overriding #encode method:
 
-      # Data format is { :id => order_id (int),
+
+      # Data format is { :id => int: order_id,
       #                  :contract => Contract,
       #                  :order => Order }
-      class PlaceOrder < AbstractMessage
-        @message_id = 3
-        @version = 31
+      PlaceOrder = def_message [3, 31] # 38 Need to set up Classes Hash properly
 
-        def encode
+      class PlaceOrder
+        def encode server
+
+          # Old server version supports no enhancements
+          @version = 31 if server[:server_version] <= 60
+
           [super,
-           @data[:order].serialize_with(@data[:contract])].flatten
+           @data[:order].serialize_with(server, @data[:contract])].flatten
         end
       end # PlaceOrder
 
-      module DataParser
+      # Messages that request bar data have special processing of @data
+      class BarRequestMessage < AbstractMessage
         # Preprocessor for some data fields
         def parse data
           data_type = DATA_TYPES[data[:what_to_show]] || data[:what_to_show]
           unless  DATA_TYPES.values.include?(data_type)
-            raise ArgumentError.new(":what_to_show must be one of #{DATA_TYPES.inspect}.")
+            error ":what_to_show must be one of #{DATA_TYPES.inspect}", :args
           end
 
           bar_size = BAR_SIZES[data[:bar_size]] || data[:bar_size]
           unless  BAR_SIZES.values.include?(bar_size)
-            raise ArgumentError.new(":bar_size must be one of #{BAR_SIZES.inspect}.")
+            error ":bar_size must be one of #{BAR_SIZES.inspect}", :args
           end
 
           contract = data[:contract].is_a?(Models::Contract) ?
@@ -347,7 +352,7 @@ module IB
 
       #  data = { :id => ticker_id (int),
       #           :contract => Contract ,
-      #           :bar_size => int/Symbol? Currently only 5 second bars (2?) are supported,
+      #           :bar_size => int/Symbol? Currently only 5 second bars are supported,
       #                        if any other value is used, an exception will be thrown.,
       #          :what_to_show => Symbol: Determines the nature of data being extracted.
       #                           Valid values:
@@ -361,13 +366,10 @@ module IB
       #                     "Regular Trading Hours" of the product in question is returned,
       #                     even if the time span requested falls partially or completely
       #                     outside of them.
-      class RequestRealTimeBars < AbstractMessage
-        @message_id = 50
-        @version = 1 # ?
+      RequestRealTimeBars = def_message 50, BarRequestMessage
 
-        include DataParser
-
-        def encode
+      class RequestRealTimeBars
+        def encode server
           data_type, bar_size, contract = parse @data
 
           [super,
@@ -449,13 +451,10 @@ module IB
       # For backfill on futures data, you may need to leave the Primary
       # Exchange field of the Contract structure blank; see
       # http://www.interactivebrokers.com/discus/messages/2/28477.html?1114646754
-      class RequestHistoricalData < AbstractMessage
-        @message_id = 20
-        @version = 4
+      RequestHistoricalData = def_message [20, 4], BarRequestMessage
 
-        include DataParser
-
-        def encode
+      class RequestHistoricalData
+        def encode server
           data_type, bar_size, contract = parse @data
 
           [super,
@@ -469,7 +468,6 @@ module IB
            contract.serialize_legs].flatten
         end
       end # RequestHistoricalData
-
 
     end # module Outgoing
   end # module Messages
@@ -512,3 +510,4 @@ __END__
     private static final int CANCEL_CALC_IMPLIED_VOLAT = 56;
     private static final int CANCEL_CALC_OPTION_PRICE = 57;
     private static final int REQ_GLOBAL_CANCEL = 58;
+     private static final int REQ_MARKET_DATA_TYPE = 59;

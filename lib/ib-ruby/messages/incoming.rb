@@ -11,85 +11,106 @@ require 'ib-ruby/messages/abstract_message'
 module IB
   module Messages
 
-    # Incoming IB messages
+    # Incoming IB messages (received from TWS/Gateway)
     module Incoming
       extend Messages # def_message macros
 
-      Classes = Array.new
+      # Container for specific message classes, keyed by their message_ids
+      Classes = {}
 
       class AbstractMessage < IB::Messages::AbstractMessage
-
-        def self.inherited(by)
-          super(by)
-          Classes.push(by)
-        end
 
         def version # Per message, received messages may have the different versions
           @data[:version]
         end
 
-        # Read incoming message from given socket or instantiate with given data
-        def initialize socket_or_data
-          @created_at = Time.now
-          if socket_or_data.is_a?(Hash)
-            @data = socket_or_data
-          else
-            @data = {}
-            @socket = socket_or_data
-            self.load
-            @socket = nil
+        def check_version actual, expected
+          unless actual == expected || expected.is_a?(Array) && expected.include?(actual)
+            error "Unsupported version #{actual} received, expected #{expected}"
           end
         end
 
-        # Every message loads received message version first
-        def load
-          @data[:version] = @socket.read_int
-
-          if @data[:version] != self.class.version
-            raise "Unsupported version #{@data[:version]} of #{self.class} received"
+        # Create incoming message from a given source (IB server or data Hash)
+        def initialize source
+          @created_at = Time.now
+          if source[:socket] # Source is a server
+            @server = source
+            @data = Hash.new
+            begin
+              self.load
+            rescue => e
+              error "Reading #{self.class}: #{e.class}: #{e.message}", :load, e.backtrace
+            ensure
+              @server = nil
+            end
+          else # Source is a @data Hash
+            @data = source
           end
+        end
+
+        def socket
+          @server[:socket]
+        end
+
+        # Every message loads received message version first
+        # Override the load method in your subclass to do actual reading into @data.
+        def load
+          @data[:version] = socket.read_int
+
+          check_version @data[:version], self.class.version
 
           load_map *self.class.data_map
         end
 
-        # Load @data from the socket according to the given map.
+        # Load @data from the socket according to the given data map.
         #
         # map is a series of Arrays in the format of
-        #   [ [ :name, :type ],
-        #     [  :group, :name, :type] ]
+        #   [ :name, :type ], [  :group, :name, :type]
         # type identifiers must have a corresponding read_type method on socket (read_int, etc.).
         # group is used to lump together aggregates, such as Contract or Order fields
         def load_map(*map)
-          map.each do |(m1, m2, m3)|
-            group, name, type = m3 ? [m1, m2, m3] : [nil, m1, m2]
+          map.each do |instruction|
+            # We determine the function of the first element
+            head = instruction.first
+            case head
+              when Integer # >= Version condition: [ min_version, [map]]
+                load_map *instruction.drop(1) if version >= head
 
-            data = @socket.__send__("read_#{type}")
-            if group
-              @data[group] ||= {}
-              @data[group][name] = data
-            else
-              @data[name] = data
+              when Proc # Callable condition: [ condition, [map]]
+                load_map *instruction.drop(1) if head.call
+
+              when true # Pre-condition already succeeded!
+                load_map *instruction.drop(1)
+
+              when nil, false # Pre-condition already failed! Do nothing...
+
+              when Symbol # Normal map
+                group, name, type, block =
+                    if  instruction[2].nil? || instruction[2].is_a?(Proc)
+                      [nil] + instruction # No group, [ :name, :type, (:block) ]
+                    else
+                      instruction # [ :group, :name, :type, (:block)]
+                    end
+
+                data = socket.__send__("read_#{type}", &block)
+                if group
+                  @data[group] ||= {}
+                  @data[group][name] = data
+                else
+                  @data[name] = data
+                end
+              else
+                error "Unrecognized instruction #{instruction}"
             end
           end
         end
-      end # class AbstractMessage
-
-      class AbstractTick < AbstractMessage
-        # Returns Symbol with a meaningful name for received tick type
-        def type
-          TICK_TYPES[@data[:tick_type]]
-        end
-
-        def to_human
-          "<#{self.message_type} #{type}:" +
-              @data.map do |key, value|
-                " #{key} #{value}" unless [:version, :ticker_id, :tick_type].include?(key)
-              end.compact.join(',') + " >"
-        end
       end
 
+      # class AbstractMessage
+
       ### Actual message classes (short definitions):
-      #:status - String: Displays the order status. Possible values include:
+
+      # :status - String: Displays the order status. Possible values include:
       # • PendingSubmit - indicates that you have transmitted the order, but
       #   have not yet received confirmation that it has been accepted by the
       #   order destination. NOTE: This order status is NOT sent back by TWS
@@ -132,7 +153,6 @@ module IB
             (why_held != "" ? "why_held: #{why_held}" : "") +
             " id/perm: #{order_id}/#{perm_id}>"
       end
-
 
       AccountValue = def_message([6, 2], [:key, :string],
                                  [:value, :string],
@@ -178,127 +198,25 @@ module IB
 
       # Receive Reuters global fundamental market data. There must be a subscription to
       # Reuters Fundamental set up in Account Management before you can receive this data.
-      FundamentalData = def_message 50, [:request_id, :int], # request_id
-                                    [:data, :string]
+      FundamentalData = def_message 50, [:request_id, :int], [:data, :string]
 
-      ContractDataEnd = def_message 52, [:request_id, :int] # request_id
+      ContractDataEnd = def_message 52, [:request_id, :int]
 
       OpenOrderEnd = def_message 53
 
       AccountDownloadEnd = def_message 54, [:account_name, :string]
 
-      ExecutionDataEnd = def_message 55, [:request_id, :int] # request_id
+      ExecutionDataEnd = def_message 55, [:request_id, :int]
 
-      TickSnapshotEnd = def_message 57, [:ticker_id, :int]
+      MarketDataType = def_message 58, [:request_id, :int], [:market_data_type, :int]
 
-      ### Actual message classes (long definitions):
-
-      # The IB code seems to dispatch up to two wrapped objects for this message, a tickPrice
-      # and sometimes a tickSize, which seems to be identical to the TICK_SIZE object.
-      #
-      # Important note from
-      # http://chuckcaplan.com/twsapi/index.php/void%20tickPrice%28%29 :
-      #
-      # "The low you get is NOT the low for the day as you'd expect it
-      # to be. It appears IB calculates the low based on all
-      # transactions after 4pm the previous day. The most inaccurate
-      # results occur when the stock moves up in the 4-6pm aftermarket
-      # on the previous day and then gaps open upward in the
-      # morning. The low you receive from TWS can be easily be several
-      # points different from the actual 9:30am-4pm low for the day in
-      # cases like this. If you require a correct traded low for the
-      # day, you can't get it from the TWS API. One possible source to
-      # help build the right data would be to compare against what Yahoo
-      # lists on finance.yahoo.com/q?s=ticker under the "Day's Range"
-      # statistics (be careful here, because Yahoo will use anti-Denial
-      # of Service techniques to hang your connection if you try to
-      # request too many bytes in a short period of time from them). For
-      # most purposes, a good enough approach would start by replacing
-      # the TWS low for the day with Yahoo's day low when you first
-      # start watching a stock ticker; let's call this time T. Then,
-      # update your internal low if the bid or ask tick you receive is
-      # lower than that for the remainder of the day. You should check
-      # against Yahoo again at time T+20min to handle the occasional
-      # case where the stock set a new low for the day in between
-      # T-20min (the real time your original quote was from, taking into
-      # account the delay) and time T. After that you should have a
-      # correct enough low for the rest of the day as long as you keep
-      # updating based on the bid/ask. It could still get slightly off
-      # in a case where a short transaction setting a new low appears in
-      # between ticks of data that TWS sends you.  The high is probably
-      # distorted in the same way the low is, which would throw your
-      # results off if the stock traded after-hours and gapped down. It
-      # should be corrected in a similar way as described above if this
-      # is important to you."
-      #
-      # IB then emits at most 2 events on eWrapper:
-      #          tickPrice( tickerId, tickType, price, canAutoExecute)
-      #          tickSize( tickerId, sizeTickType, size)
-      TickPrice = def_message [1, 6], AbstractTick,
-                              [:ticker_id, :int],
-                              [:tick_type, :int],
-                              [:price, :decimal],
-                              [:size, :int],
-                              [:can_auto_execute, :int]
-
-      TickSize = def_message [2, 6], AbstractTick,
-                             [:ticker_id, :int],
-                             [:tick_type, :int],
-                             [:size, :int]
-
-      TickGeneric = def_message [45, 6], AbstractTick,
-                                [:ticker_id, :int],
-                                [:tick_type, :int],
-                                [:value, :decimal]
-
-      TickString = def_message [46, 6], AbstractTick,
-                               [:ticker_id, :int],
-                               [:tick_type, :int],
-                               [:value, :string]
-
-      TickEFP = def_message [47, 6], AbstractTick,
-                            [:ticker_id, :int],
-                            [:tick_type, :int],
-                            [:basis_points, :decimal],
-                            [:formatted_basis_points, :string],
-                            [:implied_futures_price, :decimal],
-                            [:hold_days, :int],
-                            [:dividend_impact, :decimal],
-                            [:dividends_to_expiry, :decimal]
-
-      # This message is received when the market in an option or its underlier moves.
-      # TWS’s option model volatilities, prices, and deltas, along with the present
-      # value of dividends expected on that options underlier are received.
-      # TickOption message contains following @data:
-      #    :ticker_id - Id that was specified previously in the call to reqMktData()
-      #    :tick_type - Specifies the type of option computation (see TICK_TYPES).
-      #    :implied_volatility - The implied volatility calculated by the TWS option
-      #                          modeler, using the specified :tick_type value.
-      #    :delta - The option delta value.
-      #    :option_price - The option price.
-      #    :pv_dividend - The present value of dividends expected on the options underlier
-      #    :gamma - The option gamma value.
-      #    :vega - The option vega value.
-      #    :theta - The option theta value.
-      #    :under_price - The price of the underlying.
-      TickOptionComputation = TickOption =
-          def_message([21, 6], AbstractTick,
-                      [:ticker_id, :int],
-                      [:tick_type, :int],
-                      #                       What is the "not yet computed" indicator:
-                      [:implied_volatility, :decimal_limit_1], # -1 and below
-                      [:delta, :decimal_limit_2], #              -2 and below
-                      [:option_price, :decimal_limit_1], #       -1   -"-
-                      [:pv_dividend, :decimal_limit_1], #        -1   -"-
-                      [:gamma, :decimal_limit_2], #              -2   -"-
-                      [:vega, :decimal_limit_2], #               -2   -"-
-                      [:theta, :decimal_limit_2], #              -2   -"-
-                      [:under_price, :decimal_limit_1]) do
-
-            "<TickOption #{type} for #{:ticker_id}: underlying @ #{under_price}, "+
-                "option @ #{option_price}, IV #{implied_volatility}%, delta #{delta}, " +
-                "gamma #{gamma}, vega #{vega}, theta #{theta}, pv_dividend #{pv_dividend}>"
-          end
+      CommissionReport =
+          def_message 59, [:exec_id, :int],
+                      [:commission, :decimal], # Commission amount.
+                      [:currency, :int], #       Commission currency
+                      [:realized_pnl, :decimal],
+                      [:yield, :decimal],
+                      [:yield_redemption_date, :int]
 
       MarketDepth =
           def_message 12, [:request_id, :int],
@@ -433,7 +351,7 @@ module IB
       end # ContractData
 
       ExecutionData =
-          def_message [11, 7],
+          def_message [11, 8],
                       # The reqID that was specified previously in the call to reqExecution()
                       [:request_id, :int],
                       [:execution, :order_id, :int],
@@ -463,6 +381,11 @@ module IB
       class ExecutionData
         def load
           super
+
+          # As of client v.53, we can receive orderRef in ExecutionData
+          load_map [proc { | | @server[:client_version] >= 53 },
+                    [:execution, :order_ref, :string]
+                   ]
           @contract = Models::Contract.build @data[:contract]
           @execution = Models::Execution.new @data[:execution]
         end
@@ -470,11 +393,12 @@ module IB
         def to_human
           "<ExecutionData #{request_id}: #{contract.to_human}, #{execution}>"
         end
+
       end # ExecutionData
 
       BondContractData =
           def_message [18, 4],
-                      [:request_id, :int], # request id
+                      [:request_id, :int],
                       [:contract, :symbol, :string],
                       [:contract, :sec_type, :string],
                       [:contract, :cusip, :string],
@@ -571,23 +495,23 @@ module IB
         def load
           super
 
-          @results = Array.new(@data[:count]) do |index|
-            {:rank => @socket.read_int,
-             :contract => Contract.build(:con_id => @socket.read_int,
-                                         :symbol => @socket.read_str,
-                                         :sec_type => @socket.read_str,
-                                         :expiry => @socket.read_str,
-                                         :strike => @socket.read_decimal,
-                                         :right => @socket.read_str,
-                                         :exchange => @socket.read_str,
-                                         :currency => @socket.read_str,
-                                         :local_symbol => @socket.read_str,
-                                         :market_name => @socket.read_str,
-                                         :trading_class => @socket.read_str),
-             :distance => @socket.read_str,
-             :benchmark => @socket.read_str,
-             :projection => @socket.read_str,
-             :legs => @socket.read_str,
+          @results = Array.new(@data[:count]) do |_|
+            {:rank => socket.read_int,
+             :contract => Contract.build(:con_id => socket.read_int,
+                                         :symbol => socket.read_str,
+                                         :sec_type => socket.read_str,
+                                         :expiry => socket.read_str,
+                                         :strike => socket.read_decimal,
+                                         :right => socket.read_str,
+                                         :exchange => socket.read_str,
+                                         :currency => socket.read_str,
+                                         :local_symbol => socket.read_str,
+                                         :market_name => socket.read_str,
+                                         :trading_class => socket.read_str),
+             :distance => socket.read_str,
+             :benchmark => socket.read_str,
+             :projection => socket.read_str,
+             :legs => socket.read_str,
             }
           end
         end
@@ -624,16 +548,16 @@ module IB
         def load
           super
 
-          @results = Array.new(@data[:count]) do |index|
-            Models::Bar.new :time => @socket.read_string,
-                            :open => @socket.read_decimal,
-                            :high => @socket.read_decimal,
-                            :low => @socket.read_decimal,
-                            :close => @socket.read_decimal,
-                            :volume => @socket.read_int,
-                            :wap => @socket.read_decimal,
-                            :has_gaps => @socket.read_string,
-                            :trades => @socket.read_int
+          @results = Array.new(@data[:count]) do |_|
+            Models::Bar.new :time => socket.read_string,
+                            :open => socket.read_decimal,
+                            :high => socket.read_decimal,
+                            :low => socket.read_decimal,
+                            :close => socket.read_decimal,
+                            :volume => socket.read_int,
+                            :wap => socket.read_decimal,
+                            :has_gaps => socket.read_string,
+                            :trades => socket.read_int
           end
         end
 
@@ -642,147 +566,17 @@ module IB
         end
       end # HistoricalData
 
-
-      OpenOrder =
-          def_message [5, 23],
-                      # The reqID that was specified previously in the call to reqExecution()
-                      [:order, :order_id, :int],
-
-                      [:contract, :con_id, :int],
-                      [:contract, :symbol, :string],
-                      [:contract, :sec_type, :string],
-                      [:contract, :expiry, :string],
-                      [:contract, :strike, :decimal],
-                      [:contract, :right, :string],
-                      [:contract, :exchange, :string],
-                      [:contract, :currency, :string],
-                      [:contract, :local_symbol, :string],
-
-                      [:order, :action, :string],
-                      [:order, :total_quantity, :int],
-                      [:order, :order_type, :string],
-                      [:order, :limit_price, :decimal],
-                      [:order, :aux_price, :decimal],
-                      [:order, :tif, :string],
-                      [:order, :oca_group, :string],
-                      [:order, :account, :string],
-                      [:order, :open_close, :string],
-                      [:order, :origin, :int],
-                      [:order, :order_ref, :string],
-                      [:order, :client_id, :int],
-                      [:order, :perm_id, :int],
-                      [:order, :outside_rth, :boolean], # (@socket.read_int == 1)
-                      [:order, :hidden, :boolean], # (@socket.read_int == 1)
-                      [:order, :discretionary_amount, :decimal],
-                      [:order, :good_after_time, :string],
-                      [:skip, :string], # skip deprecated sharesAllocation field
-
-                      [:order, :fa_group, :string],
-                      [:order, :fa_method, :string],
-                      [:order, :fa_percentage, :string],
-                      [:order, :fa_profile, :string],
-                      [:order, :good_till_date, :string],
-                      [:order, :rule_80a, :string],
-                      [:order, :percent_offset, :decimal],
-                      [:order, :settling_firm, :string],
-                      [:order, :short_sale_slot, :int],
-                      [:order, :designated_location, :string],
-                      [:order, :exempt_code, :int], # skipped in ver 51?
-                      [:order, :auction_strategy, :int],
-                      [:order, :starting_price, :decimal],
-                      [:order, :stock_ref_price, :decimal],
-                      [:order, :delta, :decimal],
-                      [:order, :stock_range_lower, :decimal],
-                      [:order, :stock_range_upper, :decimal],
-                      [:order, :display_size, :int],
-                      #@order.rth_only = @socket.read_boolean
-                      [:order, :block_order, :boolean],
-                      [:order, :sweep_to_fill, :boolean],
-                      [:order, :all_or_none, :boolean],
-                      [:order, :min_quantity, :int],
-                      [:order, :oca_type, :int],
-                      [:order, :etrade_only, :boolean],
-                      [:order, :firm_quote_only, :boolean],
-                      [:order, :nbbo_price_cap, :decimal],
-                      [:order, :parent_id, :int],
-                      [:order, :trigger_method, :int],
-                      [:order, :volatility, :decimal],
-                      [:order, :volatility_type, :int],
-                      [:order, :delta_neutral_order_type, :string],
-                      [:order, :delta_neutral_aux_price, :decimal],
-
-                      [:order, :continuous_update, :int],
-                      [:order, :reference_price_type, :int],
-                      [:order, :trail_stop_price, :decimal],
-                      [:order, :basis_points, :decimal],
-                      [:order, :basis_points_type, :int],
-                      [:contract, :legs_description, :string],
-                      [:order, :scale_init_level_size, :int_max],
-                      [:order, :scale_subs_level_size, :int_max],
-                      [:order, :scale_price_increment, :decimal_max],
-                      [:order, :clearing_account, :string],
-                      [:order, :clearing_intent, :string],
-                      [:order, :not_held, :boolean] # (@socket.read_int == 1)
-
-      class OpenOrder
-
-        def load
-          super
-
-          load_map [:contract, :under_comp, :boolean] # (@socket.read_int == 1)
-
-          if @data[:contract][:under_comp]
-            load_map [:contract, :under_con_id, :int],
-                     [:contract, :under_delta, :decimal],
-                     [:contract, :under_price, :decimal]
-          end
-
-          load_map [:order, :algo_strategy, :string]
-
-          unless @data[:order][:algo_strategy].nil? || @data[:order][:algo_strategy].empty?
-            load_map [:algo_params_count, :int]
-            if @data[:algo_params_count] > 0
-              @data[:order][:algo_params] = Hash.new
-              @data[:algo_params_count].times do
-                tag = @socket.read_string
-                value = @socket.read_string
-                @data[:order][:algo_params][tag] = value
-              end
-            end
-          end
-
-          load_map [:order, :what_if, :boolean], # (@socket.read_int == 1)
-                   [:order, :status, :string],
-                   [:order, :init_margin, :string],
-                   [:order, :maint_margin, :string],
-                   [:order, :equity_with_loan, :string],
-                   [:order, :commission, :decimal_max], # May be nil!
-                   [:order, :min_commission, :decimal_max], # May be nil!
-                   [:order, :max_commission, :decimal_max], # May be nil!
-                   [:order, :commission_currency, :string],
-                   [:order, :warning_text, :string]
-
-          @order = Models::Order.new @data[:order]
-          @contract = Models::Contract.build @data[:contract]
-        end
-
-        def to_human
-          "<OpenOrder: #{@contract.to_human} #{@order.to_human}>"
-        end
-      end
-
-      # OpenOrder
-
-      Table = Hash.new
-      Classes.each { |msg_class| Table[msg_class.message_id] = msg_class }
-
     end # module Incoming
   end # module Messages
 end # module IB
-__END__
 
+# Require standalone message source files
+require 'ib-ruby/messages/incoming/ticks'
+require 'ib-ruby/messages/incoming/open_order'
+
+__END__
     // incoming msg id's
-    static final int TICK_PRICE		= 1; * TODO: realize both events
+    static final int TICK_PRICE		= 1; *
     static final int TICK_SIZE		= 2; *
     static final int ORDER_STATUS	= 3; *
     static final int ERR_MSG		= 4;   *
@@ -792,7 +586,7 @@ __END__
     static final int ACCT_UPDATE_TIME   = 8;  *
     static final int NEXT_VALID_ID      = 9;  *
     static final int CONTRACT_DATA      = 10; *
-    static final int EXECUTION_DATA     = 11; *
+    static final int EXECUTION_DATA     = 11; ?
     static final int MARKET_DEPTH     	= 12; *
     static final int MARKET_DEPTH_L2    = 13; *
     static final int NEWS_BULLETINS    	= 14; *
@@ -815,3 +609,5 @@ __END__
     static final int EXECUTION_DATA_END = 55; *
     static final int DELTA_NEUTRAL_VALIDATION = 56; *
     static final int TICK_SNAPSHOT_END = 57;  *
+    static final int MARKET_DATA_TYPE = 58;   ?
+    static final int COMMISSION_REPORT = 59;  ?

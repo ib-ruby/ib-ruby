@@ -42,9 +42,6 @@ module IB
       Volatility_Ref_Price_Average = 1
       Volatility_Ref_Price_BidOrAsk = 2
 
-      # No idea why IB uses a large number as the default for some fields
-      Max_Value = 99999999
-
       # Main order fields
       prop :order_id, #  int: Order id associated with client (volatile).
            :client_id, # int: The id of the client that placed this order.
@@ -106,7 +103,7 @@ module IB
            #          GTD          Good-till-Date/Time
            #          GTC          Good-till-Canceled
            #          IOC          Immediate-or-Cancel
-           :oca_group, #   String: one cancels all group name
+           :oca_group, #   String: Identifies a member of a one-cancels-all group.
            :oca_type, # int: Tells how to handle remaining orders in an OCA group
            #            when one order or part of an order executes. Valid values:
            #            - 1 = Cancel all remaining orders with block
@@ -144,14 +141,20 @@ module IB
            #          and the spread between the bid and ask must be less than
            #          0.1% of the midpoint
 
+           :what_if, # bool: Use to request pre-trade commissions and margin
+           # information. If set to true, margin and commissions data is received
+           # back via the OrderState() object for the openOrder() callback.
+           :not_held, # public boolean  m_notHeld; // Not Held
            :outside_rth, # bool: allows orders to also trigger or fill outside
            #               of regular trading hours. (WAS: ignore_rth)
            :hidden, #      bool: the order will not be visible when viewing
            #               the market depth. Only for ISLAND exchange.
-           :good_after_time, # FORMAT: 20060505 08:00:00 {time zone}
-           #                  Use an empty String if not applicable.
-           :good_till_date, #  FORMAT: 20060505 08:00:00 {time zone}
-           #                  Use an empty String if not applicable.
+           :good_after_time, # Indicates that the trade should be submitted after the
+           #        time and date set, format YYYYMMDD HH:MM:SS (seconds are optional).
+           :good_till_date, # Indicates that the trade should remain working until the
+           #        time and date set, format YYYYMMDD HH:MM:SS (seconds are optional).
+           #        You must set the :tif to GTD when using this string.
+           #        Use an empty String if not applicable.
            :override_percentage_constraints, # bool: Precautionary constraints defined on
            # the TWS Presets page ensure that your price and size order values are reasonable.
            # Orders sent from the API are also validated against these safety constraints,
@@ -164,6 +167,8 @@ module IB
            :min_quantity, #     int: Identifies a minimum quantity order type.
            :percent_offset, #   double: percent offset amount for relative (REL)orders only
            :trail_stop_price, # double: for TRAILLIMIT orders only
+           # As of client v.56, we receive trailing_percent in openOrder
+           :trailing_percent,
 
            # Financial advisors only - use an empty String if not applicable.
            :fa_group, :fa_profile, :fa_method, :fa_percentage,
@@ -171,7 +176,7 @@ module IB
            # Institutional orders only!
            :open_close, #      String: O=Open, C=Close
            :origin, #          0=Customer, 1=Firm
-           :order_ref, #       String: The order reference. For institutional customers only.
+           :order_ref, #       String: Order reference. Customer defined order ID tag.
            :short_sale_slot, # 1 - you hold the shares,
            #                   2 - they will be delivered from elsewhere.
            #                   Only for Action="SSHORT
@@ -192,6 +197,7 @@ module IB
            :etrade_only, #     bool: Trade with electronic quotes.
            :firm_quote_only, # bool: Trade with firm quotes.
            :nbbo_price_cap, #  double: Maximum Smart order distance from the NBBO.
+           :opt_out_smart_routing, # Australian exchange only, default false
 
            # BOX or VOL ORDERS ONLY
            :auction_strategy, # For BOX exchange only. Valid values:
@@ -219,38 +225,61 @@ module IB
            #     - 1 = Average of National Best Bid or Ask,
            #     - 2 = National Best Bid when buying a call or selling a put;
            #           and National Best Ask when selling a call or buying a put.
+           :continuous_update, # int: Used for dynamic management of volatility orders.
+           # Determines whether TWS is supposed to update the order price as the underlying
+           # moves. If selected, the limit price sent to an exchange is modified by TWS
+           # if the computed price of the option changes enough to warrant doing so. This
+           # is helpful in keeping the limit price up to date as the underlying price changes.
            :delta_neutral_order_type, # String: Enter an order type to instruct TWS
            #    to submit a delta neutral trade on full or partial execution of the
            #    VOL order. For no hedge delta order to be sent, specify NONE.
            :delta_neutral_aux_price, #  double: Use this field to enter a value if
            #           the value in the deltaNeutralOrderType field is an order
            #           type that requires an Aux price, such as a REL order.
-           :continuous_update, # int: Used for dynamic management of volatility orders.
-           # Determines whether TWS is supposed to update the order price as the underlying
-           # moves. If selected, the limit price sent to an exchange is modified by TWS
-           # if the computed price of the option changes enough to warrant doing so. This
-           # is helpful in keeping the limit price up to date as the underlying price changes.
+
+           # As of client v.52, we also receive delta... params in openOrder
+           :delta_neutral_con_id,
+           :delta_neutral_settling_firm,
+           :delta_neutral_clearing_account,
+           :delta_neutral_clearing_intent,
+
+           # HEDGE ORDERS ONLY:
+           # As of client v.49/50, we can now add hedge orders using the API.
+           # Hedge orders are child orders that take additional fields. There are four
+           # types of hedging orders supported by the API: Delta, Beta, FX, Pair.
+           # All hedge orders must have a parent order submitted first. The hedge order
+           # should set its :parent_id. If the hedgeType is Beta, the beta sent in the
+           # hedgeParm can be zero, which means it is not used. Delta is only valid
+           # if the parent order is an option and the child order is a stock.
+
+           :hedge_type, # String: D = Delta, B = Beta, F = FX or P = Pair
+           :hedge_param, # String; value depends on the hedgeType; sent from the API
+           # only if hedge_type is NOT null. It is required for Pair hedge order,
+           # optional for Beta hedge orders, and ignored for Delta and FX hedge orders.
 
            # COMBO ORDERS ONLY:
            :basis_points, #      double: EFP orders only
            :basis_points_type, # double: EFP orders only
 
-           # SCALE ORDERS ONLY
-           :scale_init_level_size, # int: Size of the first (initial) order component.
-           :scale_subs_level_size, # int: Order size of the subsequent scale order
-           #             components. Used in conjunction with scaleInitLevelSize().
-           :scale_price_increment, # double: Defines the price increment between
-           # scale components. This field is required for Scale orders.
-
-           # ALGO ORDERS ONLY
+           # ALGO ORDERS ONLY:
            :algo_strategy, # String
            :algo_params, # public Vector<TagValue> m_algoParams; ?!
 
-           # WTF?!
-           :what_if, # bool: Use to request pre-trade commissions and margin
-           # information. If set to true, margin and commissions data is received
-           # back via the OrderState() object for the openOrder() callback.
-           :not_held # public boolean  m_notHeld; // Not Held
+           # SCALE ORDERS ONLY:
+           :scale_init_level_size, # int: Size of the first (initial) order component.
+           :scale_subs_level_size, # int: Order size of the subsequent scale order
+           #             components. Used in conjunction with scaleInitLevelSize().
+           :scale_price_increment, # double: Price increment between scale components.
+           #                         This field is required for Scale orders.
+
+           # As of client v.54, we can receive additional scale order fields:
+           :scale_price_adjust_value,
+           :scale_price_adjust_interval,
+           :scale_profit_offset,
+           :scale_auto_reset,
+           :scale_init_position,
+           :scale_init_fill_qty,
+           :scale_random_percent
 
       # Some Order properties (received back from IB) are separated into
       # OrderState object. Here, they are lumped into Order proper: see OrderState.java
@@ -283,11 +312,9 @@ module IB
            #   the order is inactive due to system, exchange or other issues.
            :commission, # double: Shows the commission amount on the order.
            :commission_currency, # String: Shows the currency of the commission.
-
            #The possible range of the actual order commission:
            :min_commission,
            :max_commission,
-
            :warning_text, # String: Displays a warning message if warranted.
 
            # String: Shows the impact the order would have on your initial margin.
@@ -299,6 +326,13 @@ module IB
            # String: Shows the impact the order would have on your equity with loan value.
            :equity_with_loan => proc { |val| self[:equity_with_loan] = filter_max val }
 
+
+      # Returned in OpenOrder for Bag Contracts
+      # public Vector<OrderComboLeg> m_orderComboLegs
+      attr_accessor :leg_prices, :combo_params
+      alias order_combo_legs leg_prices
+      alias smart_combo_routing_params combo_params
+
       # IB uses weird String with Java Double.MAX_VALUE to indicate no value here
       def filter_max val
         val == "1.7976931348623157E308" ? nil : val.to_f
@@ -308,31 +342,41 @@ module IB
                        :parent_id => 0,
                        :tif => 'DAY',
                        :outside_rth => false,
-                       :open_close => "O",
+                       :open_close => 'O',
                        :origin => Origin_Customer,
                        :transmit => true,
                        :designated_location => '',
                        :exempt_code => -1,
                        :delta_neutral_order_type => '',
+                       :delta_neutral_con_id => 0,
+                       :delta_neutral_settling_firm => '',
+                       :delta_neutral_clearing_account => '',
+                       :delta_neutral_clearing_intent => '',
+                       :algo_strategy => '',
                        :what_if => false,
                        :not_held => false,
-                       :algo_strategy => '', }
+                       :scale_auto_reset => false,
+                       :scale_random_percent => false,
+                       :opt_out_smart_routing => false,
+      }
 
       def initialize opts = {}
-        @algo_params = []
+        @leg_prices = []
+        @algo_params = {}
+        @combo_params = {}
         super opts
       end
 
       # This returns an Array of data from the given order,
       # mixed with data from associated contract. Ugly mix, indeed.
-      def serialize_with contract
+      def serialize_with server, contract
         [contract.serialize_long(:con_id, :sec_id),
          action, # main order fields
          total_quantity,
          order_type,
          limit_price,
          aux_price,
-         tif, # xtended order fields
+         tif, # extended order fields
          oca_group,
          account,
          open_close,
@@ -347,6 +391,21 @@ module IB
          outside_rth, # was: ignore_rth
          hidden,
          contract.serialize_legs(:extended),
+
+         # Support for per-leg prices in Order
+         if server[:server_version] >= 61
+           leg_prices.empty? ? 0 : [leg_prices.size] + leg_prices
+         else
+           []
+         end,
+
+         # Support for combo routing params in Order
+         if server[:server_version] >= 57 && contract.sec_type == 'BAG'
+           combo_params.empty? ? 0 : [combo_params.size] + combo_params.to_a
+         else
+           []
+         end,
+
          '', # deprecated shares_allocation field
          discretionary_amount,
          good_after_time,
@@ -357,32 +416,33 @@ module IB
          fa_profile,
          short_sale_slot, #     0 only for retail, 1 or 2 for institution  (Institutional)
          designated_location, # only populate when short_sale_slot == 2    (Institutional)
+         exempt_code,
          oca_type,
          rule_80a,
          settling_firm,
          all_or_none,
-         min_quantity || EOL,
-         percent_offset || EOL,
+         min_quantity,
+         percent_offset,
          etrade_only,
          firm_quote_only,
-         nbbo_price_cap || EOL,
-         auction_strategy || EOL,
-         starting_price || EOL,
-         stock_ref_price || EOL,
-         delta || EOL,
-         stock_range_lower || EOL,
-         stock_range_upper || EOL,
+         nbbo_price_cap,
+         auction_strategy,
+         starting_price,
+         stock_ref_price,
+         delta,
+         stock_range_lower,
+         stock_range_upper,
          override_percentage_constraints,
-         volatility || EOL, #              Volatility orders
-         volatility_type || EOL, #         Volatility orders
-         delta_neutral_order_type, #       Volatility orders
-         delta_neutral_aux_price || EOL, # Volatility orders
-         continuous_update, #              Volatility orders
-         reference_price_type || EOL, #    Volatility orders
-         trail_stop_price || EOL, #        TRAIL_STOP_LIMIT stop price
-         scale_init_level_size || EOL, #   Scale Orders
-         scale_subs_level_size || EOL, #   Scale Orders
-         scale_price_increment || EOL, #   Scale Orders
+         volatility, #               Volatility orders
+         volatility_type, #          Volatility orders
+         delta_neutral_order_type, # Volatility orders
+         delta_neutral_aux_price, #  Volatility orders
+         continuous_update, #        Volatility orders
+         reference_price_type, #     Volatility orders
+         trail_stop_price, #         TRAIL_STOP_LIMIT stop price
+         scale_init_level_size, #    Scale Orders
+         scale_subs_level_size, #    Scale Orders
+         scale_price_increment, #    Scale Orders
          clearing_account,
          clearing_intent,
          not_held,
@@ -393,7 +453,7 @@ module IB
 
       def serialize_algo
         if algo_strategy.nil? || algo_strategy.empty?
-          ['']
+          ''
         else
           [algo_strategy,
            algo_params.size,
@@ -403,9 +463,9 @@ module IB
 
       # Order comparison
       def == other
-        perm_id && perm_id == other.perm_id ||
+        perm_id && other.perm_id && perm_id == other.perm_id ||
             order_id == other.order_id && #   ((p __LINE__)||true) &&
-                client_id == other.client_id &&
+                (client_id == other.client_id || client_id == 0 || other.client_id == 0) &&
                 parent_id == other.parent_id &&
                 tif == other.tif &&
                 action == other.action &&

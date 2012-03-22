@@ -10,7 +10,7 @@ describe 'Request Depth of Market Data', :connected => true,
     @ib.send_message :RequestMarketDepth, :id => 456, :num_rows => 3,
                      :contract => IB::Symbols::Forex[:eurusd]
 
-    @ib.wait_for 10, [:MarketDepth, 8]
+    @ib.wait_for [:MarketDepth, 4], 6 # sec
   end
 
   after(:all) do
@@ -20,7 +20,7 @@ describe 'Request Depth of Market Data', :connected => true,
 
   subject { @ib.received[:MarketDepth].last }
 
-  it { @ib.received[:MarketDepth].should have_at_least(8).depth_data }
+  it { @ib.received[:MarketDepth].should have_at_least(4).depth_data }
 
   it { should be_an IB::Messages::Incoming::MarketDepth }
   its(:request_id) { should == 456 }
@@ -30,7 +30,7 @@ describe 'Request Depth of Market Data', :connected => true,
 
   it 'has position field reflecting the row Id of this market depth entry' do
     subject.position.should be_an Integer
-    subject.position.should be >= 1
+    subject.position.should be >= 0
     subject.position.should be <= 3
   end
 

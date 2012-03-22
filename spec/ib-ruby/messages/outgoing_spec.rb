@@ -25,7 +25,7 @@ describe IB::Messages::Outgoing do
     end
 
     it 'encodes into Array' do
-      subject.encode.should == [6, 2, true, "DUH"]
+      subject.encode(:server_version => 60).should == [6, 2, true, "DUH"]
     end
 
   end

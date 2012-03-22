@@ -16,7 +16,8 @@ def verify_account
   @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
   @ib.send_message :RequestAccountData, :subscribe => true
 
-  @ib.wait_for 3, :AccountValue
+  @ib.wait_for :AccountDownloadEnd
+  @ib.send_message :RequestAccountData, :subscribe => false
   raise "Unable to verify IB PAPER ACCOUNT" unless @ib.received?(:AccountValue)
 
   received = @ib.received[:AccountValue].first.account_name

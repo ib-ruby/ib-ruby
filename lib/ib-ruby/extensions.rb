@@ -6,3 +6,10 @@ class Time
   end
 end # Time
 
+### Patching Object#error in ib-ruby/errors
+#  def error message, type=:standard
+
+### Patching Object#log, #default_logger= in ib-ruby/logger
+#  def default_logger
+#  def default_logger= logger
+#  def log *args

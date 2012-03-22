@@ -14,7 +14,7 @@ module IB
       # If a opts hash is given, keys are taken as attribute names, values as data.
       # The model instance fields are then set automatically from the opts Hash.
       def initialize(opts={})
-        raise ArgumentError.new("Argument must be a Hash") unless opts.is_a?(Hash)
+        error "Argument must be a Hash", :args unless opts.is_a?(Hash)
         @created_at = Time.now
 
         props = self.class::DEFAULT_PROPS.merge(opts)

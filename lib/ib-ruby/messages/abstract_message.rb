@@ -16,14 +16,12 @@ module IB
     # @message_type - Symbol: message type (e.g. :OpenOrderEnd)
     #
     # Instance attributes (at least):
-    # version - int: current version of message format.
+    # @version - int: current version of message format.
     # @data - Hash of actual data read from a stream.
-    #
-    # Override the load(socket) method in your subclass to do actual reading into @data.
     class AbstractMessage
 
       # Class methods
-      def self.data_map # Data keys (with types?)
+      def self.data_map # Map for converting between structured message and raw data
         @data_map ||= []
       end
 
@@ -61,16 +59,18 @@ module IB
 
     end # class AbstractMessage
 
-    # Macro that defines short message classes using a one-liner
-    #   id_version is either a [message_id, version] pair or just message_id (version 1)
+    # Macro that defines short message classes using a one-liner.
+    #   First arg is either a [message_id, version] pair or just message_id (version 1)
     #   data_map contains instructions for processing @data Hash. Format:
     #      Incoming messages: [field, type] or [group, field, type]
-    #      Outgoing messages: [field, default] or [field, method, [args]]
-    def def_message id_version, *data_map, &to_human
+    #      Outgoing messages: field, [field, default] or [field, method, [args]]
+    def def_message message_id_version, *data_map, &to_human
       base = data_map.first.is_a?(Class) ? data_map.shift : self::AbstractMessage
-      Class.new(base) do
-        @message_id, @version = id_version
-        @version ||= 1
+      message_id, version = message_id_version
+
+      # Define new message class
+      message_class = Class.new(base) do
+        @message_id, @version = message_id, version || 1
         @data_map = data_map
 
         @data_map.each do |(name, _, type_args)|
@@ -83,6 +83,11 @@ module IB
 
         define_method(:to_human, &to_human) if to_human
       end
+
+      # Add defined message class to Classes Hash keyed by its message_id
+      self::Classes[message_id] = message_class
+
+      message_class
     end
 
   end # module Messages

@@ -34,11 +34,26 @@ module IB
            :exempt_code # int: ?
 
       DEFAULT_PROPS = {:con_id => 0,
-                       :ratio => 0,
                        :open_close => SAME,
                        :short_sale_slot => 0,
                        :designated_location => '',
                        :exempt_code => -1, }
+
+      #  Leg's weight is a combination of action and ratio
+      def weight
+        action == 'BUY' ? ratio : -ratio
+      end
+
+      def weight= value
+        value = value.to_i
+        if value > 0
+          self.action = 'BUY'
+          self.ratio = value
+        else
+          self.action = 'SELL'
+          self.ratio = -value
+        end
+      end
 
       # Some messages include open_close, some don't. wtf.
       def serialize *fields

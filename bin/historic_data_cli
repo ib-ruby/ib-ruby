@@ -1,11 +1,8 @@
 #!/usr/bin/env ruby
-#
 # This script connects to IB API, and downloads historic data
-# TODO: Fix the Historical command line client
 
 require 'rubygems'
 require 'time'
-require 'duration'
 require 'pathname'
 require 'getopt/long'
 require 'bundler/setup'
@@ -20,22 +17,19 @@ include Getopt
 opt = Getopt::Long.getopts(
     ["--help", BOOLEAN],
     ["--end", REQUIRED],
+    ["--port", REQUIRED],
     ["--security", REQUIRED],
     ["--duration", REQUIRED],
     ["--barsize", REQUIRED],
-    ["--header", BOOLEAN],
+    ["--csv", BOOLEAN],
     ["--dateformat", REQUIRED],
-    ["--nonregularhours", BOOLEAN],
+    ["--nonregularhours", BOOLEAN]
 )
 
 if opt["help"] || opt["security"].nil? || opt["security"].empty?
   puts <<ENDHELP
 
-***
-
-This program requires a TWS running on localhost on the standard port
-that uses API protocol version 15 or higher. Any modern TWS should
-work. (Patches to make it work on an arbitrary host/port are welcome.)
+This program requires a TWS or Gateway running on localhost.
 
 ----------
 
@@ -46,82 +40,65 @@ One argument is required: --security, the security specification you want, in
 
 Fields not needed for a particular security should be left blank (e.g. strike and right are only relevant for options.)
 
-For example, to query the British pound futures contract trading on Globex expiring in September, 2008,
-the correct command line is:
+For example, to query the Apple 500 Strike Call expiring in January 2013, use:
 
-  ./RequestHistoricData.rb --security GBP:FUT:200809:::62500:GLOBEX::USD:
+  $ historic_data_cli --security AAPL:OPT:201301:500:CALL::SMART::USD:
 
-Consult datatypes.rb for allowed values, and see also the examples in the symbols/ directory (load them in
-irb and run security#serialize_ib_ruby(ib_version) to see the appropriate string.)
+Consult contract.rb for allowed values, and see also the examples in the symbols/ directory
+(load them in irb and run security#serialize_ib_ruby to see the appropriate string.)
 
-***
+----------
 
 Options:
 
 --end is is the last time we want data for. The default is now.
   This is eval'ed by Ruby, so you can use a Ruby expression, which must return a Time object.
 
+--duration is time period before --end, in seconds. The default is 86400 sec (1 day).
+  TWS imposes limit of 86400 sec (1 day) worth of historic data per request.
 
---duration is how much historic data we want, in seconds, before --end's time.
-  The default is 86400 (seconds, which is 1 day.)
-  The TWS-imposed limit is 86400 (1 day per request.) Requests for more than 86400 seconds worth of historic data will fail.
-
---what determines what the data will be comprised of. This can be "trades", "midpoint", "bid", or "asked".
-  The default is "trades".
+--what determines what the data will be comprised of. This can be
+  "trades", "midpoint", "bid", or "ask". The default is "trades".
 
 --barsize determines how long each bar will be.
 
-Possible values (from the IB documentation):
+  Possible bar values (from the IB documentation):
+  Values less than 30 sec do not appear to work for some securities.
 
- 1 = 1 sec
- 2 = 5 sec
- 3 = 15 sec
- 4 = 30 sec
- 5 = 1 minute
- 6 = 2 minutes
- 7 = 5 minutes
- 8 = 15 minutes
- 9 = 30 minutes
- 10 = 1 hour
- 11 = 1 day
+  sec1 = 1 sec
+  sec5 = 5 sec
+  sec15 = 15 sec
+  sec30 = 30 sec
+  min1 = 1 minute
+  min2 = 2 minutes
+  min5 = 5 minutes
+  min15 = 15 minutes (default)
+  min30 = 30 minutes
+  hour1 = 1 hour
+  day1 = 1 day
 
- Values less than 4 do not appear to work for some securities.
- The default is 8, 15 minutes.
+--nonregularhours : Normally, only data from the instrument's regular trading
+ hours is returned. If --nonregularhours is given, all data available during the time
+ span requested is returned, even for time intervals when the market was illiquid.
 
---nonregularhours :
- Normally, only data from the instrument's regular trading hours is returned.
- If --nonregularhours is given, all data available during the time
- span requested is returned, even data bars covering time
- intervals where the market in question was illiquid. If
+--dateformat : 1 (default) human-readable time/date format, like "20050307 11:32:16".
+ If you set it to 2 instead, you will get UNIX epoch offsets (seconds since Jan 1, 1970).
 
+--csv : print out the historic data in CSV format, with header.
 
---dateformat : a --dateformat of 1 will cause the dates in the returned
- messages with the historic data to be in a text format, like
- "20050307 11:32:16". If you set it to 2 instead, you
- will get an offset in seconds from the beginning of 1970, which
- is the same format as the UNIX epoch time.
-
- The default is 1 (human-readable time.)
-
---header : if present, prints a 1 line CSV header describing the fields in the CSV.
-
- Otherwise, in the default mode, prints only the historic data (and any errors),
- and prints the data in CSV format.
+--port : 4001 for Gateway (default), 7496 for TWS, or your custom port
 
 ENDHELP
-
   exit
-
 end
 
 ### Parameters
 
 # DURATION is how much historic data we want, in seconds, before END_DATE_TIME.
-# (The 'duration' gem gives us methods like #hour on integers.)
-DURATION = (opt["duration"] && opt["duration"].to_i) || 1.day
+DURATION = (opt["duration"] && opt["duration"].to_i) || 86400
 
 if DURATION > 86400
-  STDERR.puts("\nTWS does not accept a --duration longer than 86400 seconds (1 day.) Please try again with a smaller duration.\n\n")
+  STDERR.puts("\nTWS rejects --duration longer than 86400 seconds (1 day).\n")
   exit(1)
 end
 
@@ -131,22 +108,10 @@ END_DATE_TIME = (opt["end"] && eval(opt["end"]).to_ib) || Time.now.to_ib
 # This can be :trades, :midpoint, :bid, or :asked
 WHAT = (opt["what"] && opt["what"].to_sym) || :trades
 
-# Possible bar size values:
-# 1 = 1 sec
-# 2 = 5 sec
-# 3 = 15 sec
-# 4 = 30 sec
-# 5 = 1 minute
-# 6 = 2 minutes
-# 7 = 5 minutes
-# 8 = 15 minutes
-# 9 = 30 minutes
-# 10 = 1 hour
-# 11 = 1 day
-#
+
 # Values less than 4 do not appear to actually work; they are rejected by the server.
 #
-BAR_SIZE = (opt["barsize"] && opt["barsize"].to_i) || 8
+BAR_SIZE = (opt["barsize"] && opt["barsize"].to_sym) || :min15
 
 # If REGULAR_HOURS_ONLY is set to 0, all data available during the time
 # span requested is returned, even data bars covering time
@@ -165,25 +130,16 @@ REGULAR_HOURS_ONLY = opt["nonregularhours"] ? 0 : 1
 
 DATE_FORMAT = (opt["dateformat"] && opt["dateformat"].to_i) || 1
 
-#
-# Definition of what we want market data for.  We have to keep track
-# of what ticker id corresponds to what symbol ourselves, because the
-# ticks don't include any other identifying information.
-#
-# The choice of ticker ids is, as far as I can tell, arbitrary.
-#
-# Note that as of 4/07 there is no historical data available for forex spot.
-#
-@market = {123 => opt["security"]}
+PORT = (opt["port"] && opt["port"]) || '4001'
 
 # First, connect to IB TWS.
-ib = IB::Connection.new
+ib = IB::Connection.new :client_id => 1112 # Arbitrary id to identify your script
 
-puts "datetime,open,high,low,close,volume,wap,has_gaps" if !opt["header"].nil?
+# Subscribe to TWS alerts/errors
+ib.subscribe(:Alert) { |msg| puts msg.to_human }
 
 lastMessageTime = Queue.new # for communicating with the reader thread.
 
-#
 # Subscribe to incoming HistoricalData events. The code passed in the
 # block will be executed when a message of the subscribed type is
 # received, with the received message as its argument. In this case,
@@ -194,15 +150,15 @@ lastMessageTime = Queue.new # for communicating with the reader thread.
 # The incoming message packet from TWS just identifies it by ticker id.
 #
 ib.subscribe(:HistoricalData) do |msg|
-  STDERR.puts @market[msg.data[:req_id]].description + ": " + msg.data[:item_count].to_s("F") + " items:" if VERBOSE
-
-  msg.data[:results].each do |datum|
-    if VERBOSE
-      puts datum.to_s
-    else
-      puts "#{datum.date},#{datum.open},#{datum.high},#{datum.low}," +
+  if opt["csv"]
+    puts "date,time,open,high,low,close,volume,wap,has_gaps"
+    msg.results.each do |datum|
+      puts "#{datum.time},#{datum.open},#{datum.high},#{datum.low}," +
                "#{datum.close},#{datum.volume},#{datum.wap},#{datum.has_gaps}"
     end
+  else
+    STDERR.puts "Received #{msg.count} items:"
+    msg.results.each { |datum| puts datum.to_s }
   end
   lastMessageTime.push(Time.now)
 end
@@ -210,18 +166,15 @@ end
 # Now we actually request historical data for the symbols we're
 # interested in.  TWS will respond with a HistoricalData message,
 # which will be received by the code above.
-@market.each_pair { |id, contract|
-  ib.send_message :RequestHistoricalData,
-                  :id => id,
-                  :contract => contract,
-                  :end_date_time => END_DATE_TIME,
-                  :duration => DURATION, # seconds == 1 hour
-                  :bar_size => BAR_SIZE, # 1 minute bars
-                  :what_to_show => WHAT,
-                  :use_RTH => REGULAR_HOURS_ONLY,
-                  :format_date => DATE_FORMAT
-
-}
+ib.send_message :RequestHistoricalData,
+                :request_id => 123,
+                :contract => opt["security"],
+                :end_date_time => END_DATE_TIME,
+                :duration => DURATION, # seconds == 1 hour
+                :bar_size => BAR_SIZE, # 1 minute bars
+                :what_to_show => WHAT,
+                :use_RTH => REGULAR_HOURS_ONLY,
+                :format_date => DATE_FORMAT
 
 # A complication here is that IB does not send any indication when all historic data is done being delivered.
 # So we have to guess - when there is no more new data for some period, we interpret that as "end of data" and exit.
