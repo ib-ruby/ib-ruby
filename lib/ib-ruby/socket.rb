@@ -78,7 +78,7 @@ module IB
     # Returns loaded Hash
     def read_hash
       tags = read_array { |_| [read_string, read_string] }
-      tags.empty? ? Hash.new : Hash.new[*tags.flatten]
+      tags.empty? ? Hash.new : Hash[*tags.flatten]
     end
 
   end # class IBSocket
