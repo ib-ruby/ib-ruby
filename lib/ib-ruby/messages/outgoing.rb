@@ -117,6 +117,11 @@ module IB
       RequestFA = def_message 18, :fa_data_type
       # data = { :fa_data_type => int, :xml => String }
       ReplaceFA = def_message 19, :fa_data_type, :xml
+      # data = { :market_data_type => int }
+      # The API can now receive frozen market data from Trader Workstation. Frozen
+      # market data is the last data recorded in our system. Use this method with
+      # :market_data_type = 1 for real-time streaming, 2 for frozen market data
+      RequestMarketDataType = def_message 59, :market_data_type
 
       # @data = { :subscribe => boolean,
       #           :account_code => Advisor accounts only. Empty ('') for a standard account. }
@@ -347,7 +352,7 @@ module IB
 
       #  data = { :id => ticker_id (int),
       #           :contract => Contract ,
-      #           :bar_size => int/Symbol? Currently only 5 second bars (2?) are supported,
+      #           :bar_size => int/Symbol? Currently only 5 second bars are supported,
       #                        if any other value is used, an exception will be thrown.,
       #          :what_to_show => Symbol: Determines the nature of data being extracted.
       #                           Valid values:
@@ -505,3 +510,4 @@ __END__
     private static final int CANCEL_CALC_IMPLIED_VOLAT = 56;
     private static final int CANCEL_CALC_OPTION_PRICE = 57;
     private static final int REQ_GLOBAL_CANCEL = 58;
+     private static final int REQ_MARKET_DATA_TYPE = 59;
