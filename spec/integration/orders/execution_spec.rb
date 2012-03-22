@@ -1,4 +1,4 @@
-require 'integration_helper'
+require 'order_helper'
 
 #OPTS[:silent] = false
 describe "Trades", :connected => true, :integration => true, :slow => true do

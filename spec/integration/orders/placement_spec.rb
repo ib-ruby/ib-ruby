@@ -1,4 +1,4 @@
-require 'integration_helper'
+require 'order_helper'
 
 #OPTS[:silent] = false
 describe 'Orders', :connected => true, :integration => true do
@@ -89,18 +89,7 @@ describe 'Orders', :connected => true, :integration => true do
     context "Placing" do
       after(:all) { clean_connection } # Clear logs and message collector
 
-      it 'changes client`s next_order_id' do
-        @order_id_placed.should == @order_id_before
-        @ib.next_order_id.should == @order_id_before + 1
-      end
-
-      it { @ib.received[:OpenOrder].should have_at_least(1).order_message }
-      it { @ib.received[:OrderStatus].should have_at_least(1).status_message }
-
-      it 'receives confirmation of Order submission' do
-        order_should_be /Submitted/ # ()Pre)Submitted
-        status_should_be /Submitted/
-      end
+      it_behaves_like 'Placed Order'
     end # Placing
 
     context "Retrieving placed orders" do
