@@ -26,7 +26,7 @@ module IB
 
         def check_version actual, expected
           unless actual == expected || expected.is_a?(Array) && expected.include?(actual)
-            error "Unsupported version #{actual} of #{self.class} received"
+            error "Unsupported version #{actual} received, expected #{expected}"
           end
         end
 
@@ -36,8 +36,13 @@ module IB
           if source[:socket] # Source is a server
             @server = source
             @data = Hash.new
-            self.load
-            @server = nil
+            begin
+              self.load
+            rescue => e
+              error "Reading #{self.class}: #{e.class}: #{e.message}", :load, e.backtrace
+            ensure
+              @server = nil
+            end
           else # Source is a @data Hash
             @data = source
           end
@@ -99,7 +104,9 @@ module IB
             end
           end
         end
-      end # class AbstractMessage
+      end
+
+      # class AbstractMessage
 
       ### Actual message classes (short definitions):
 
