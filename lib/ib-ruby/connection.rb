@@ -166,11 +166,11 @@ module IB
     end
 
     # Clear received messages Hash
-    def clear_received message_type=nil
-      if message_type
-        received[message_type].clear
+    def clear_received *message_types
+      if message_types.empty?
+        received.each { |message_type, container| container.clear }
       else
-        received.each { |_, message_type| message_type.clear }
+        message_types.each { |message_type| received[message_type].clear }
       end
     end
 
