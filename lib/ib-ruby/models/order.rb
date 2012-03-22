@@ -197,7 +197,7 @@ module IB
            :etrade_only, #     bool: Trade with electronic quotes.
            :firm_quote_only, # bool: Trade with firm quotes.
            :nbbo_price_cap, #  double: Maximum Smart order distance from the NBBO.
-           :opt_out_smart_routing,
+           :opt_out_smart_routing, # Australian exchange only, default false
 
            # BOX or VOL ORDERS ONLY
            :auction_strategy, # For BOX exchange only. Valid values:
@@ -244,9 +244,18 @@ module IB
            :delta_neutral_clearing_intent,
 
            # HEDGE ORDERS ONLY:
-           # As of client v.49/50, we can receive in openOrder:
-           :hedge_type,
-           :hedge_param,
+           # As of client v.49/50, we can now add hedge orders using the API.
+           # Hedge orders are child orders that take additional fields. There are four
+           # types of hedging orders supported by the API: Delta, Beta, FX, Pair.
+           # All hedge orders must have a parent order submitted first. The hedge order
+           # should set its :parent_id. If the hedgeType is Beta, the beta sent in the
+           # hedgeParm can be zero, which means it is not used. Delta is only valid
+           # if the parent order is an option and the child order is a stock.
+
+           :hedge_type, # String: D = Delta, B = Beta, F = FX or P = Pair
+           :hedge_param, # String; value depends on the hedgeType; sent from the API
+           # only if hedge_type is NOT null. It is required for Pair hedge order,
+           # optional for Beta hedge orders, and ignored for Delta and FX hedge orders.
 
            # COMBO ORDERS ONLY:
            :basis_points, #      double: EFP orders only
