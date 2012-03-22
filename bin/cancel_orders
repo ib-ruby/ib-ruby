@@ -13,7 +13,7 @@ require 'bundler/setup'
 require 'ib-ruby'
 
 # First, connect to IB TWS.
-ib = IB::Connection.new
+ib = IB::Connection.new :client_id => 1112 # Arbitrary id to identify your script
 
 # Subscribe to TWS alerts/errors and order-related messages
 ib.subscribe(:Alert, :OpenOrder, :OrderStatus, :OpenOrderEnd) { |msg| puts msg.to_human }
@@ -21,6 +21,7 @@ ib.subscribe(:Alert, :OpenOrder, :OrderStatus, :OpenOrderEnd) { |msg| puts msg.t
 if ARGV.empty?
   ib.send_message :RequestGlobalCancel
 else
+  # Will only work for Orders placed under the same :client_id
   ib.cancel_order *ARGV
 end
 

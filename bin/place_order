@@ -12,7 +12,7 @@ require 'bundler/setup'
 require 'ib-ruby'
 
 # First, connect to IB TWS.
-ib = IB::Connection.new
+ib = IB::Connection.new :client_id => 1112 # Arbitrary id to identify your script
 
 # Subscribe to TWS alerts/errors and order-related messages
 ib.subscribe(:Alert, :OpenOrder, :OrderStatus) { |msg| puts msg.to_human }
@@ -22,9 +22,7 @@ buy_order = IB::Models::Order.new :total_quantity => 100,
                                   :limit_price => 1 + rand().round(2),
                                   :action => 'BUY',
                                   :order_type => 'LMT'
-
-sleep 0.5 # waiting for :NextValidId
-
+ib.wait_for :NextValidId
 ib.place_order buy_order, wfc
 
 ib.send_message :RequestAllOpenOrders

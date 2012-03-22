@@ -12,12 +12,12 @@ require 'bundler/setup'
 require 'ib-ruby'
 
 # First, connect to IB TWS.
-ib = IB::Connection.new :client_id => 0
+ib = IB::Connection.new :client_id => 0 # All Orders, including TWS-generated ones
 
 # Subscribe to TWS alerts/errors and order-related messages
 @counter = 0
 
-ib.subscribe(:Alert, :OrderStatus) { |msg| puts msg.to_human }
+ib.subscribe(:Alert, :OrderStatus, :OpenOrderEnd) { |msg| puts msg.to_human }
 
 ib.subscribe(:OpenOrder) do |msg|
   @counter += 1
@@ -26,4 +26,5 @@ end
 
 ib.send_message :RequestAllOpenOrders
 
-sleep 2
+# Wait for IB to respond to our request
+ib.wait_for :OpenOrderEnd
