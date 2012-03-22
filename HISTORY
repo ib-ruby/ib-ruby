@@ -137,3 +137,7 @@
 == 0.7.0 / 2012-03-22
 
 * Support for API v.967
+
+== 0.7.1 / 2012-03-22
+
+* Starting preparation for ActiveModel compatibility
