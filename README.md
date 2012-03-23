@@ -24,10 +24,10 @@ the same machine as TWS.
 As a rule of thumb, most recent version of ib-ruby gem only supports latest versions
 of TWS/Gateway API. Older versions of API are supported by previous gem versions:
 
-ib-ruby gem     TWS version     API version
-0.5.21          918-920         965
-0.6.1           921-923         966
-0.7.1           924+            967
+  ib-ruby gem     TWS version     API version
+  0.5.21          918-920         965
+  0.6.1           921-923         966
+  0.7.1           924+            967
 
 ## INSTALLATION:
 
@@ -91,6 +91,26 @@ in `misc` directory.
 The sample scripts in `bin` directory provide examples of how common tasks
 can be achieved using ib-ruby. You may also want to look into `spec/integration`
 directory for more scenarios and examples of handling IB messages.
+
+## RUNNING TESTS:
+
+The gem comes with a spec suit that may be used to test ib-ruby compatibility
+with your specific TWS/Gateway installation. The test suit should be run ONLY
+against your IB paper trading account. Running it against live account may result
+in financial losses.
+
+In order to run tests, you should set up your IB paper trading connection parameters
+in 'spec/spec_helper' file. Modify account_name, host and port under section
+'Your IB PAPER ACCOUNT'. Do not change the client_id.
+
+Before running tests, you need to start your TWS/Gateway and allow API connection.
+You should not have any open/pending orders on your IB paper trading account prior
+to running tests, otherwise some tests will fail. Use 'bin/cancel_orders' script for
+bulk cancelling of open orders before running tests as needed.
+
+You can easily create your own tests following the guide in 'spec/README'.
+Help the development! See 'spec/TODO' for the list of use cases/scenarios
+that still need to be tested.
 
 ## LICENSE:
 

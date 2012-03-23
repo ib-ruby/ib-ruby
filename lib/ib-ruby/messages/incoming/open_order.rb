@@ -73,6 +73,15 @@ module IB
 
       class OpenOrder
 
+        # Accessors to make OpenOrder API-compatible with OrderStatus message
+        def order_id
+          order && order.order_id
+        end
+
+        def status
+          order && order.status
+        end
+
         def load
           super
 

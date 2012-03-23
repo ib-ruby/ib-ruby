@@ -77,3 +77,22 @@ This is just a dump file to compare received order messages:
     :why_held=>""},
   @socket=nil>]
 
+Original Combo:                                 Attached Auto Combo Limit:
+
+<Order: LMT DAY BUY 100 PreSubmitted 0.01       2: <Order: LMT DAY SELL 100 PreSubmitted 1.01
+id: 3/173276893 from: 1111/DU118180>>           id: 0/173276895 from: 0/DU118180>>
+#<IB::Models::Order:0xfa0                       #<IB::Models::Order:0x102c
+ @action="BUY",                                  @action="SELL",
+ @client_id=1111,                                @client_id=0,    # Attached via TWS
+ @created_at=Fri Mar 23 09:09:16 +0400 2012,     @created_at=Fri Mar 23 09:09:16 +0400 2012,
+ @limit_price=0.01,                              @limit_price=1.01,
+ @oca_group="",                                  @oca_group="173276893",
+ @oca_type=3,                                    @oca_type=3,
+ @order_id=3,                                    @order_id=0,
+ @order_type="LMT",                              @order_type="LMT",
+ @parent_id=0,                                   @parent_id=3,
+ @perm_id=173276893,                             @perm_id=173276895,
+ @status="PreSubmitted",                         @status="PreSubmitted",
+ @tif="DAY",                                     @tif="DAY",
+ @total_quantity=100,                            @total_quantity=100,
+ @what_if=false>                                 @what_if=false>
