@@ -23,11 +23,12 @@ Done:
 
 2. IB#subscribe should accept regexes.
 
-3. Compatibility with for API v.966, 967
+3. Compatibility with API v.966, 967
 
 4. Collect all received messages in Connection#received[:type] by default
 
 5. Flow handlers: Connection#wait_for / Connection#received?
+
 
 Ideas for future:
 

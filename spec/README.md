@@ -21,7 +21,7 @@ Pattern for writing integration specs is like this:
    wait_for in a context before(:all) block.
 
 6. It is now time to examine what responses you've got from IB and see if they meet
-   your expectations. All messages received frem IB are caught and placed into
+   your expectations. All messages received from IB are caught and placed into
    @ib.received Hash, keyed by message type. The Hash has following structure:
    {:MessageType1 => [msg1, msg2, msg3...], :MessageType2 => [msg1, msg2, msg3...] }.
 

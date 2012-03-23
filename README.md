@@ -24,10 +24,11 @@ the same machine as TWS.
 As a rule of thumb, most recent version of ib-ruby gem only supports latest versions
 of TWS/Gateway API. Older versions of API are supported by previous gem versions:
 
-  ib-ruby gem     TWS version     API version
-  0.5.21          918-920         965
-  0.6.1           921-923         966
-  0.7.1           924+            967
+    ib-ruby gem     TWS version     API version
+
+    0.5.21          918-920         965
+    0.6.1           921-923         966
+    0.7.1+          924+            967
 
 ## INSTALLATION:
 
