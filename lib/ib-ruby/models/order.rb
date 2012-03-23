@@ -475,7 +475,6 @@ module IB
                 aux_price == other.aux_price &&
                 outside_rth == other.outside_rth &&
                 origin == other.origin &&
-                transmit == other.transmit &&
                 designated_location == other.designated_location &&
                 exempt_code == other.exempt_code &&
                 what_if == other.what_if &&
