@@ -358,6 +358,7 @@ module IB
                        :scale_auto_reset => false,
                        :scale_random_percent => false,
                        :opt_out_smart_routing => false,
+                       :status => 'New' # Starting new Orders with this statu
       }
 
       def initialize opts = {}
