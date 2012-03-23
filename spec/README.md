@@ -2,7 +2,7 @@
 
 Pattern for writing integration specs is like this:
 
-1. You define your user scenario (such as: subscribe for FOREX market data).
+1. You define your user scenario (such as: subscribe for FUTURES market data).
 
 2. You find out experimentally, what messages should be sent to IB to accomplish it,
    and what messages are sent by IB in return.
@@ -38,13 +38,5 @@ Pattern for writing integration specs is like this:
    call 'clean_connection' in after block to remove old content from @ib.received Hash,
    or otherwise manually clean it to remove old/not needed messages from it.
 
-TODO: Add more scenarios:
-0. Attached orders (Combo Auto Limit)
-1. RealTimeBars
-2. BondContractData
-3. RequestScannerParameters + RequestScannerSubscription
-4. RequestFundamentalData
-5. ExerciseOptions
-6. RequestMarketData + special tick list
-7. RequestNewsBulletins
-8. RequestImpliedVolatility / RequestOptionPrice
+Help the development!
+See 'spec/TODO' file for list of scenarios that still need to be tested.

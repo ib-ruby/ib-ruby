@@ -108,6 +108,10 @@ You should not have any open/pending orders on your IB paper trading account pri
 to running tests, otherwise some tests will fail. Use 'bin/cancel_orders' script for
 bulk cancelling of open orders before running tests as needed.
 
+You can easily create your own tests following the guide in 'spec/README'.
+Help the development! See 'spec/TODO' for the list of use cases/scenarios
+that still need to be tested.
+
 ## LICENSE:
 
 This software is available under the LGPL.

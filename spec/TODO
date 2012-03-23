@@ -1,0 +1,10 @@
+TODO: Add more scenarios:
+
+1. RealTimeBars
+2. BondContractData
+3. RequestScannerParameters + RequestScannerSubscription
+4. RequestFundamentalData
+5. ExerciseOptions
+6. RequestMarketData + special tick list
+7. RequestNewsBulletins
+8. RequestImpliedVolatility / RequestOptionPrice
