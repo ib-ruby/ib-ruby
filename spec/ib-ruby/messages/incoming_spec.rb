@@ -7,7 +7,7 @@ shared_examples_for 'Alert message' do
   its(:message_type) { should == :Alert }
   its(:message_id) { should == 4 }
   its(:version) { should == 2 }
-  its(:data) { should == {:version=>2, :error_id=>-1, :code=>2104, :message=>"Market data farm connection is OK:cashfarm"} }
+  its(:data) { should_not be_empty }
   its(:error_id) { should == -1 }
   its(:code) { should == 2104 }
   its(:message) { should =~ /Market data farm connection is OK/ }

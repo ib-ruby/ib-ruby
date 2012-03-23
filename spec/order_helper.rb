@@ -6,7 +6,7 @@ shared_examples_for 'Placed Order' do
 
     it 'changes client`s next_order_id' do
       @order_id_placed.should == @order_id_before
-      @ib.next_order_id.should == @order_id_before + 1
+      @ib.next_order_id.should be >= @order_id_before
     end
 
     it { @ib.received[:OpenOrder].should have_at_least(1).order_message }
@@ -30,10 +30,11 @@ shared_examples_for 'Placed Order' do
       @ib.next_order_id.should == @order_id_after
     end
 
-    it { @ib.received[:OpenOrder].should have_exactly(1).order_message }
-    it { @ib.received[:OrderStatus].should have_exactly(1).status_message }
+    it { @ib.received[:OpenOrder].should have_at_least(1).order_message }
+    it { @ib.received[:OrderStatus].should have_at_least(1).status_message }
     it { @ib.received[:OpenOrderEnd].should have_exactly(1).order_end_message }
-    it { @ib.received[:Alert].should have_exactly(0).alert_messages }
+
+    #it { @ib.received[:Alert].should have_exactly(0).alert_messages }
 
     it 'receives OpenOrder and OrderStatus for placed order' do
       order_should_be /Submitted/
@@ -44,7 +45,7 @@ shared_examples_for 'Placed Order' do
   context "Cancelling placed order" do
     before(:all) do
       @ib.cancel_order @order_id_placed
-      @ib.wait_for :OrderStatus, :Alert
+      @ib.wait_for [:OrderStatus, 2], :Alert
     end
 
     after(:all) { clean_connection } # Clear logs and message collector
@@ -57,8 +58,8 @@ shared_examples_for 'Placed Order' do
       @ib.received?(:OpenOrder).should be_false
     end
 
-    it { @ib.received[:OrderStatus].should have_exactly(1).status_message }
-    it { @ib.received[:Alert].should have_exactly(1).alert_message }
+    it { @ib.received[:OrderStatus].should have_at_least(1).status_message }
+    it { @ib.received[:Alert].should have_at_least(1).alert_message }
 
     it 'receives cancellation Order Status' do
       status_should_be /Cancel/ # Cancelled / PendingCancel
@@ -86,24 +87,18 @@ def place_order contract, opts
   @order_id_after = @ib.next_order_id
 end
 
-def check_status item, status
-  case status
-    when Regexp
-      item.status.should =~ status
-    when String
-      item.status.should == status
+def status_should_be status
+  msg = @ib.received[:OrderStatus].find do |msg|
+    msg.order_id == @order_id_placed &&
+        status.is_a?(Regexp) ? msg.status =~ status : msg.status == status
   end
-end
-
-def status_should_be status, index=0
-  msg = @ib.received[:OrderStatus][index]
+  msg.should_not be_nil
   msg.should be_an IB::Messages::Incoming::OrderStatus
   msg.order_id.should == @order_id_placed
   msg.perm_id.should be_an Integer
   msg.client_id.should == OPTS[:connection][:client_id]
   msg.parent_id.should == 0
   msg.why_held.should == ''
-  check_status msg, status
 
   if @contract == IB::Symbols::Forex[:eurusd]
     msg.filled.should == 20000
@@ -119,13 +114,16 @@ def status_should_be status, index=0
   end
 end
 
-def order_should_be status, index=0
-  msg = @ib.received[:OpenOrder][index]
+def order_should_be status
+  msg = @ib.received[:OpenOrder].find do |msg|
+    msg.order_id == @order_id_placed &&
+        status.is_a?(Regexp) ? msg.status =~ status : msg.status == status
+  end
+  msg.should_not be_nil
   msg.should be_an IB::Messages::Incoming::OpenOrder
   msg.order.should == @order
   msg.contract.should == @contract
   msg.order.order_id.should == @order_id_placed
-  check_status msg.order, status
 end
 
 def execution_should_be side, opts={}
