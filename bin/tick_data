@@ -16,7 +16,8 @@ contract = IB::Models::Contract.new :symbol=> 'AAPL',
                                     :sec_type=> IB::SECURITY_TYPES[:stock],
                                     :description=> "Some stock"
 
-ib = IB::Connection.new :client_id => 1112 # Arbitrary id to identify your script
+# First, connect to IB TWS. Arbitrary :client_id is used to identify your script
+ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS
 
 ib.subscribe(:Alert) { |msg| puts msg.to_human }
 ib.subscribe(:TickGeneric, :TickString, :TickPrice, :TickSize) { |msg| puts msg.inspect }

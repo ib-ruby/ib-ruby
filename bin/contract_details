@@ -18,7 +18,7 @@ require 'ib-ruby'
            144 => IB::Symbols::Stocks[:wrong]}
 
 # Connect to IB TWS.
-ib = IB::Connection.new :client_id => 1112 # Arbitrary id to identify your script
+ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS
 
 # Subscribe to TWS alerts/errors
 ib.subscribe(IB::Messages::Incoming::Alert) { |msg| puts msg.to_human }
