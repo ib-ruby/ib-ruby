@@ -316,27 +316,15 @@ module IB
            :min_commission,
            :max_commission,
            :warning_text, # String: Displays a warning message if warranted.
-
-           # String: Shows the impact the order would have on your initial margin.
-           :init_margin => proc { |val| self[:init_margin] = filter_max val },
-
-           # String: Shows the impact the order would have on your maintenance margin.
-           :maint_margin => proc { |val| self[:maint_margin] = filter_max val },
-
-           # String: Shows the impact the order would have on your equity with loan value.
-           :equity_with_loan => proc { |val| self[:equity_with_loan] = filter_max val }
-
+           :init_margin, # Float: The impact the order would have on your initial margin.
+           :maint_margin, # Float: The impact the order would have on your maintenance margin.
+           :equity_with_loan # Float: The impact the order would have on your equity
 
       # Returned in OpenOrder for Bag Contracts
       # public Vector<OrderComboLeg> m_orderComboLegs
       attr_accessor :leg_prices, :combo_params
       alias order_combo_legs leg_prices
       alias smart_combo_routing_params combo_params
-
-      # IB uses weird String with Java Double.MAX_VALUE to indicate no value here
-      def filter_max val
-        val == "1.7976931348623157E308" ? nil : val.to_f
-      end
 
       DEFAULT_PROPS = {:aux_price => 0.0,
                        :parent_id => 0,

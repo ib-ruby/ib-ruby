@@ -167,9 +167,11 @@ module IB
 
                    [:order, :what_if, :boolean],
                    [:order, :status, :string],
-                   [:order, :init_margin, :string],
-                   [:order, :maint_margin, :string],
-                   [:order, :equity_with_loan, :string],
+
+                   # IB uses weird String with Java Double.MAX_VALUE to indicate no value here
+                   [:order, :init_margin, :decimal_max], # :string],
+                   [:order, :maint_margin, :decimal_max], # :string],
+                   [:order, :equity_with_loan, :decimal_max], # :string],
                    [:order, :commission, :decimal_max], # May be nil!
                    [:order, :min_commission, :decimal_max], # May be nil!
                    [:order, :max_commission, :decimal_max], # May be nil!
