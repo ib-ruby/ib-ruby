@@ -35,7 +35,7 @@ module IB
       def to_s
         "<Execution #{time}: #{side} #{shares} @ #{price} on #{exchange}, " +
             "cumulative: #{cumulative_quantity} @ #{average_price}, " +
-            "ids: #{exec_id} exec #{perm_id} perm #{order_id} order #{order_ref} ref>"
+            "order: #{order_id}/#{perm_id}#{order_ref}, exec: #{exec_id}>"
       end
     end # Execution
   end # module Models

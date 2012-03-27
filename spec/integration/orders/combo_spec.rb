@@ -41,7 +41,8 @@ describe "Combo Order", :connected => true, :integration => true, :slow => true 
       @contract = butterfly 'GOOG', '201301', 'CALL', 500, 510, 520
 
       place_order @contract, :limit_price => 0.01 #, :what_if => true
-      @ib.wait_for :OpenOrder, :OrderStatus, 8
+      @ib.wait_for [:OpenOrder, 2], [:OrderStatus, 2], 8
+      #@ib.wait_for :OpenOrder, :OrderStatus, 8
     end
 
     after(:all) { close_connection }

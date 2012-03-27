@@ -38,5 +38,11 @@ Pattern for writing integration specs is like this:
    call 'clean_connection' in after block to remove old content from @ib.received Hash,
    or otherwise manually clean it to remove old/not needed messages from it.
 
+11. If you want to see exactly what's going on inside ib-ruby while your examples are
+    running, set OPTS[:silent] = false in your context, and you'll see all the
+    messages received and log entries made as as result of your examples. Be warned,
+    output is very verbose, so don't forget to switch OPTS[:silent] = true after
+    you've done debugging your examples.
+
 Help the development!
 See 'spec/TODO' file for list of scenarios that still need to be tested.

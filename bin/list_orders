@@ -23,7 +23,7 @@ ib.subscribe(:Alert, :OrderStatus, :OpenOrderEnd) { |msg| puts msg.to_human }
 ib.subscribe(:OpenOrder) do |msg|
   @counter += 1
   puts "#{@counter}: #{msg.to_human}"
-  pp msg.order
+  #pp msg.order
 end
 
 ib.send_message :RequestAllOpenOrders
