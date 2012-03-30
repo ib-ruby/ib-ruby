@@ -303,6 +303,6 @@ module IB
 end # module IB
 
 # TODO Where should we require this?
-require 'ib-ruby/models/contract/option'
-require 'ib-ruby/models/contract/bag'
+require 'ib-ruby/models/contracts/option'
+require 'ib-ruby/models/contracts/bag'
 
