@@ -9,8 +9,10 @@ shared_examples_for 'Placed Order' do
       @ib.next_order_id.should be >= @order_id_before
     end
 
-    it { @ib.received[:OpenOrder].should have_at_least(1).order_message }
-    it { @ib.received[:OrderStatus].should have_at_least(1).status_message }
+    it 'receives all appropriate response messages' do
+      @ib.received[:OpenOrder].should have_at_least(1).order_message
+      @ib.received[:OrderStatus].should have_at_least(1).status_message
+    end
 
     it 'receives confirmation of Order submission' do
       order_should_be /Submitted/ # ()Pre)Submitted
@@ -30,17 +32,60 @@ shared_examples_for 'Placed Order' do
       @ib.next_order_id.should == @order_id_after
     end
 
-    it { @ib.received[:OpenOrder].should have_at_least(1).order_message }
-    it { @ib.received[:OrderStatus].should have_at_least(1).status_message }
-    it { @ib.received[:OpenOrderEnd].should have_exactly(1).order_end_message }
-
-    #it { @ib.received[:Alert].should have_exactly(0).alert_messages }
+    it 'receives all appropriate response messages' do
+      @ib.received[:OpenOrder].should have_at_least(1).order_message
+      @ib.received[:OrderStatus].should have_at_least(1).status_message
+      @ib.received[:OpenOrderEnd].should have_exactly(1).order_end_message
+    end
 
     it 'receives OpenOrder and OrderStatus for placed order' do
       order_should_be /Submitted/
       status_should_be /Submitted/
     end
   end # Retrieving
+
+  context "Modifying Order" do
+    before(:all) do
+      if defined?(contract_type) && contract_type == :butterfly
+        pending 'API Bug: Order modification not working for butterflies!'
+      else
+        # Modify original order
+        @order.transmit = true
+        @order.total_quantity = 200
+        @order.limit_price = 3.02
+        @ib.modify_order @order, @contract # IB::Symbols::Stocks[:wfc] #
+
+        if @attached_order
+          # Modify attached order too (if any)
+          @attached_order.limit_price = 25.0
+          @ib.modify_order @attached_order, @contract
+        end
+        @ib.send_message :RequestOpenOrders
+        @ib.wait_for :OpenOrderEnd, 6 #sec
+      end
+    end
+
+    after(:all) { clean_connection } # Clear logs and message collector
+
+    it 'does not increase client`s next_order_id further' do
+      @ib.next_order_id.should == @order_id_after
+    end
+
+    it 'receives all appropriate response messages' do
+      @ib.received[:OpenOrder].should have_at_least(1).order_message
+      @ib.received[:OrderStatus].should have_at_least(1).status_message
+      @ib.received[:OpenOrderEnd].should have_exactly(1).order_end_message
+    end
+
+    it 'modifies the placed order' do
+      @contract.should == @ib.received[:OpenOrder].first.contract
+      order_should_be /Submit/
+      status_should_be /Submit/
+      if @attached_order
+        pending 'Need to check received OpenOrder for modified attach'
+      end
+    end
+  end # Modifying
 
   context "Cancelling placed order" do
     before(:all) do
@@ -54,12 +99,16 @@ shared_examples_for 'Placed Order' do
       @ib.next_order_id.should == @order_id_after
     end
 
-    it 'does not receive OpenOrder message' do
-      @ib.received?(:OpenOrder).should be_false
+    it 'only receives OpenOrder message with PendingCancel' do
+      if @ib.received? :OpenOrder
+        order_should_be /PendingCancel/
+      end
     end
 
-    it { @ib.received[:OrderStatus].should have_at_least(1).status_message }
-    it { @ib.received[:Alert].should have_at_least(1).alert_message }
+    it 'receives all appropriate response messages' do
+      @ib.received[:OrderStatus].should have_at_least(1).status_message
+      @ib.received[:Alert].should have_at_least(1).alert_message
+    end
 
     it 'receives cancellation Order Status' do
       status_should_be /Cancel/ # Cancelled / PendingCancel
@@ -72,7 +121,6 @@ shared_examples_for 'Placed Order' do
     end
   end # Cancelling
 end
-
 
 ### Helpers for placing and verifying orders
 

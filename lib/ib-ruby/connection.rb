@@ -277,20 +277,25 @@ module IB
     # Place Order (convenience wrapper for send_message :PlaceOrder).
     # Assigns client_id and order_id fields to placed order. Returns assigned order_id.
     def place_order order, contract
-      send_message :PlaceOrder,
-                   :order => order,
-                   :contract => contract,
-                   :id => @next_order_id
       order.client_id = server[:client_id]
       order.order_id = @next_order_id
       @next_order_id += 1
+      modify_order order, contract
+    end
+
+    # Modify Order (convenience wrapper for send_message :PlaceOrder). Returns order_id.
+    def modify_order order, contract
+      send_message :PlaceOrder,
+                   :order => order,
+                   :contract => contract,
+                   :order_id => order.order_id
       order.order_id
     end
 
     # Cancel Orders by their ids (convenience wrapper for send_message :CancelOrder).
     def cancel_order *order_ids
       order_ids.each do |order_id|
-        send_message :CancelOrder, :id => order_id.to_i
+        send_message :CancelOrder, :order_id => order_id.to_i
       end
     end
 
