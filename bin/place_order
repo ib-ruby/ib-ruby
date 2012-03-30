@@ -18,10 +18,10 @@ ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS
 ib.subscribe(:Alert, :OpenOrder, :OrderStatus) { |msg| puts msg.to_human }
 
 wfc = IB::Symbols::Stocks[:wfc]
-buy_order = IB::Models::Order.new :total_quantity => 100,
-                                  :limit_price => 1 + rand().round(2),
-                                  :action => 'BUY',
-                                  :order_type => 'LMT'
+buy_order = IB::Order.new :total_quantity => 100,
+                          :limit_price => 1 + rand().round(2),
+                          :action => 'BUY',
+                          :order_type => 'LMT'
 ib.wait_for :NextValidId
 ib.place_order buy_order, wfc
 

@@ -10,11 +10,11 @@ require 'rubygems'
 require 'bundler/setup'
 require 'ib-ruby'
 
-contract = IB::Models::Contract.new :symbol=> 'AAPL',
-                                    :exchange=> "Smart",
-                                    :currency=> "USD",
-                                    :sec_type=> IB::SECURITY_TYPES[:stock],
-                                    :description=> "Some stock"
+contract = IB::Contract.new :symbol=> 'AAPL',
+                            :exchange=> "Smart",
+                            :currency=> "USD",
+                            :sec_type=> IB::SECURITY_TYPES[:stock],
+                            :description=> "Some stock"
 
 # First, connect to IB TWS. Arbitrary :client_id is used to identify your script
 ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS

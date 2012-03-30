@@ -149,8 +149,8 @@ module IB
                                 [:why_held, :string] do
         "<OrderStatus: #{status} filled: #{filled}/#{remaining + filled}" +
             " @ last/avg: #{last_fill_price}/#{average_fill_price}" +
-            (parent_id > 0 ? "parent_id: #{parent_id}" : "") +
-            (why_held != "" ? "why_held: #{why_held}" : "") +
+            (parent_id > 0 ? " parent_id: #{parent_id}" : "") +
+            (why_held != "" ? " why_held: #{why_held}" : "") +
             " id/perm: #{order_id}/#{perm_id}>"
       end
 
@@ -302,7 +302,7 @@ module IB
 
         def load
           super
-          @contract = Models::Contract.build @data[:contract]
+          @contract = IB::Contract.build @data[:contract]
         end
 
         def to_human
@@ -346,7 +346,7 @@ module IB
       class ContractData
         def load
           super
-          @contract = Models::Contract.build @data[:contract]
+          @contract = IB::Contract.build @data[:contract]
         end
       end # ContractData
 
@@ -386,8 +386,8 @@ module IB
           load_map [proc { | | @server[:client_version] >= 53 },
                     [:execution, :order_ref, :string]
                    ]
-          @contract = Models::Contract.build @data[:contract]
-          @execution = Models::Execution.new @data[:execution]
+          @contract = IB::Contract.build @data[:contract]
+          @execution = IB::Execution.new @data[:execution]
         end
 
         def to_human
@@ -429,7 +429,7 @@ module IB
       class BondContractData
         def load
           super
-          @contract = Models::Contract.build @data[:contract]
+          @contract = IB::Contract.build @data[:contract]
         end
       end # BondContractData
 
@@ -443,7 +443,7 @@ module IB
       class DeltaNeutralValidation
         def load
           super
-          @contract = Models::Contract.build @data[:contract].merge(:under_comp => true)
+          @contract = IB::Contract.build @data[:contract].merge(:under_comp => true)
         end
       end # DeltaNeutralValidation
 
@@ -465,7 +465,7 @@ module IB
       class RealTimeBar
         def load
           super
-          @bar = Models::Bar.new @data[:bar]
+          @bar = IB::Bar.new @data[:bar]
         end
 
         def to_human
@@ -549,15 +549,15 @@ module IB
           super
 
           @results = Array.new(@data[:count]) do |_|
-            Models::Bar.new :time => socket.read_string,
-                            :open => socket.read_decimal,
-                            :high => socket.read_decimal,
-                            :low => socket.read_decimal,
-                            :close => socket.read_decimal,
-                            :volume => socket.read_int,
-                            :wap => socket.read_decimal,
-                            :has_gaps => socket.read_string,
-                            :trades => socket.read_int
+            IB::Bar.new :time => socket.read_string,
+                        :open => socket.read_decimal,
+                        :high => socket.read_decimal,
+                        :low => socket.read_decimal,
+                        :close => socket.read_decimal,
+                        :volume => socket.read_int,
+                        :wap => socket.read_decimal,
+                        :has_gaps => socket.read_string,
+                        :trades => socket.read_int
           end
         end
 
