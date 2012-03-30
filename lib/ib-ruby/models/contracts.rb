@@ -17,6 +17,11 @@ module IB
       TYPES = Hash.new(Contract)
       TYPES[IB::SECURITY_TYPES[:bag]] = Bag
       TYPES[IB::SECURITY_TYPES[:option]] = Option
+
+      # Returns concrete subclass for this sec_type, or default Contract
+      def [] sec_type
+        TYPES[sec_type]
+      end
     end
   end
 end

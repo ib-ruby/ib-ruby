@@ -7,12 +7,7 @@ module IB
 
         # This returns a Contract initialized from the serialize_ib_ruby format string.
         def self.build opts = {}
-          type = opts[:sec_type]
-          if Contracts::TYPES[type]
-            Contracts::TYPES[type].new opts
-          else
-            new opts
-          end
+          Contracts::TYPES[opts[:sec_type]].new opts
         end
 
         # This returns a Contract initialized from the serialize_ib_ruby format string.
