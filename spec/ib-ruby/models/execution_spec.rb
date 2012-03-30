@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe IB::Models::Execution do
+describe IB::Models::Execution do # AKA IB::Execution
 
   let(:properties) do
     {:account_name => "DU111110",
@@ -21,7 +21,7 @@ describe IB::Models::Execution do
 
   context "instantiation" do
     context 'empty without properties' do
-      subject { IB::Models::Execution.new }
+      subject { IB::Execution.new }
 
       it { should_not be_nil }
       its(:order_id) { should == 0 }
@@ -34,7 +34,7 @@ describe IB::Models::Execution do
     end
 
     context 'with properties' do
-      subject { IB::Models::Execution.new properties }
+      subject { IB::Execution.new properties }
 
       it 'sets properties right' do
         properties.each do |name, value|
@@ -48,7 +48,7 @@ describe IB::Models::Execution do
 
     it 'allows setting properties' do
       expect {
-        x = IB::Models::Execution.new
+        x = IB::Execution.new
         properties.each do |name, value|
           subject.send("#{name}=", value)
           subject.send(name).should == value
@@ -57,7 +57,7 @@ describe IB::Models::Execution do
     end
 
     it 'sets side as directed by its setter' do
-      @x = IB::Models::Execution.new
+      @x = IB::Execution.new
       ['BOT', 'BUY', 'Buy', 'buy', :BUY, :BOT, :Buy, :buy, 'B', :b].each do |val|
         expect { @x.side = val }.to_not raise_error
         @x.side.should == :buy

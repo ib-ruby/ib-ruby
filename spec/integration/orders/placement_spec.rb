@@ -144,11 +144,11 @@ describe 'Orders', :connected => true, :integration => true do
 
     context 'Attaching takeprofit' do
       before(:all) do
-        @attached_order = IB::Models::Order.new :total_quantity => 100,
-                                                :limit_price => 15.0,
-                                                :action => 'SELL',
-                                                :order_type => 'LMT',
-                                                :parent_id => @order_id_placed
+        @attached_order = IB::Order.new :total_quantity => 100,
+                                        :limit_price => 15.0,
+                                        :action => 'SELL',
+                                        :order_type => 'LMT',
+                                        :parent_id => @order_id_placed
 
         @order_id_attached = @ib.place_order @attached_order, IB::Symbols::Stocks[:wfc]
         @order_id_after = @ib.next_order_id

@@ -7,10 +7,10 @@ def butterfly symbol, expiry, right, *strikes
 
   legs = strikes.zip([1, -2, 1]).map do |strike, weight|
     # Create contract
-    contract = IB::Models::Contract::Option.new :symbol => symbol,
-                                                :expiry => expiry,
-                                                :right => right,
-                                                :strike => strike
+    contract = IB::Option.new :symbol => symbol,
+                              :expiry => expiry,
+                              :right => right,
+                              :strike => strike
     # Find out contract's con_id
     @ib.clear_received :ContractData, :ContractDataEnd
     @ib.send_message :RequestContractData, :id => strike, :contract => contract
@@ -18,14 +18,14 @@ def butterfly symbol, expiry, right, *strikes
     con_id = @ib.received[:ContractData].last.contract.con_id
 
     # Create Comboleg from con_id and weight
-    IB::Models::ComboLeg.new :con_id => con_id, :weight => weight
+    IB::ComboLeg.new :con_id => con_id, :weight => weight
   end
 
   # Create new Combo contract
-  IB::Models::Contract::Bag.new :symbol => symbol,
-                                :currency => "USD", # Only US options in combo Contracts
-                                :exchange => "SMART",
-                                :legs => legs
+  IB::Bag.new :symbol => symbol,
+              :currency => "USD", # Only US options in combo Contracts
+              :exchange => "SMART",
+              :legs => legs
 end
 
 describe "Combo Order", :connected => true, :integration => true, :slow => true do
@@ -123,11 +123,11 @@ describe "Combo Order", :connected => true, :integration => true, :slow => true 
 
     context 'Attaching takeprofit' do
       before(:all) do
-        @attached_order = IB::Models::Order.new :total_quantity => 100,
-                                                :limit_price => 0.5,
-                                                :action => 'SELL',
-                                                :order_type => 'LMT',
-                                                :parent_id => @order_id_placed
+        @attached_order = IB::Order.new :total_quantity => 100,
+                                        :limit_price => 0.5,
+                                        :action => 'SELL',
+                                        :order_type => 'LMT',
+                                        :parent_id => @order_id_placed
 
         @order_id_attached = @ib.place_order @attached_order, @contract
         @order_id_after = @ib.next_order_id

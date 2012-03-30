@@ -126,7 +126,7 @@ end
 
 def place_order contract, opts
   @contract = contract
-  @order = IB::Models::Order.new({:total_quantity => 100,
+  @order = IB::Order.new({:total_quantity => 100,
                                   :limit_price => 9.13,
                                   :action => 'BUY',
                                   :order_type => 'LMT'}.merge(opts))
