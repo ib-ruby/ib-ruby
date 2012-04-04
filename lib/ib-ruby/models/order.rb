@@ -453,14 +453,15 @@ module IB
       # Order comparison
       def == other
         perm_id && other.perm_id && perm_id == other.perm_id ||
-            order_id == other.order_id && #   ((p __LINE__)||true) &&
+            order_id == other.order_id && # ((p __LINE__)||true) &&
                 (client_id == other.client_id || client_id == 0 || other.client_id == 0) &&
                 parent_id == other.parent_id &&
                 tif == other.tif &&
                 action == other.action &&
                 order_type == other.order_type &&
                 total_quantity == other.total_quantity &&
-                limit_price == other.limit_price &&
+                (limit_price == other.limit_price || # TODO Floats should be Decimals!
+                    (limit_price - other.limit_price).abs < 0.00001) &&
                 aux_price == other.aux_price &&
                 outside_rth == other.outside_rth &&
                 origin == other.origin &&
