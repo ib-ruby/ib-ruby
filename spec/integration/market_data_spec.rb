@@ -12,11 +12,11 @@ describe 'Request Market Data', :connected => true, :integration => true do
   context 'US Stocks market', :if => :us_trading_hours do
     before(:all) do
       @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
-      @contract = IB::Models::Contract.new(:symbol => 'AAPL',
-                                           :exchange => "Smart",
-                                           :currency => "USD",
-                                           :sec_type => IB::SECURITY_TYPES[:stock],
-                                           :description => "Apple"
+      @contract = IB::Contract.new(:symbol => 'AAPL',
+                                   :exchange => "Smart",
+                                   :currency => "USD",
+                                   :sec_type => IB::SECURITY_TYPES[:stock],
+                                   :description => "Apple"
       )
       @ib.send_message :RequestMarketData, :id => 456, :contract => @contract
       @ib.wait_for :TickSize, :TickString, 3 # sec

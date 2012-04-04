@@ -3,11 +3,8 @@
 # This script connects to IB API and subscribes to L2 (depth of market) data for
 # specific symbols
 
-require 'pathname'
-LIB_DIR = (Pathname.new(__FILE__).dirname + '../lib/').realpath.to_s
-$LOAD_PATH.unshift LIB_DIR unless $LOAD_PATH.include?(LIB_DIR)
-
 require 'rubygems'
+require 'pathname'
 require 'bundler/setup'
 require 'ib-ruby'
 

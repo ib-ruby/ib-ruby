@@ -1,8 +1,8 @@
-require 'ib-ruby/models/contract'
+require 'ib-ruby/models/contracts/contract'
 
 module IB
   module Models
-    class Contract
+    module Contracts
 
       # "BAG" is not really a contract, but a combination (combo) of securities.
       # AKA basket or bag of securities. Individual securities in combo are represented
@@ -53,9 +53,6 @@ module IB
         end
 
       end # class Bag
-
-      TYPES[IB::SECURITY_TYPES[:bag]] = Bag
-
-    end # class Contract
-  end # module Models
-end # module IB
+    end # Contracts
+  end # Models
+end # IB

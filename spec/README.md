@@ -21,7 +21,7 @@ Pattern for writing integration specs is like this:
    wait_for in a context before(:all) block.
 
 6. It is now time to examine what responses you've got from IB and see if they meet
-   your expectations. All messages received frem IB are caught and placed into
+   your expectations. All messages received from IB are caught and placed into
    @ib.received Hash, keyed by message type. The Hash has following structure:
    {:MessageType1 => [msg1, msg2, msg3...], :MessageType2 => [msg1, msg2, msg3...] }.
 
@@ -37,6 +37,12 @@ Pattern for writing integration specs is like this:
 10. If you reuse the connection between contexts and requests, it is recommended to
    call 'clean_connection' in after block to remove old content from @ib.received Hash,
    or otherwise manually clean it to remove old/not needed messages from it.
+
+11. If you want to see exactly what's going on inside ib-ruby while your examples are
+    running, set OPTS[:silent] = false in your context, and you'll see all the
+    messages received and log entries made as as result of your examples. Be warned,
+    output is very verbose, so don't forget to switch OPTS[:silent] = true after
+    you've done debugging your examples.
 
 Help the development!
 See 'spec/TODO' file for list of scenarios that still need to be tested.

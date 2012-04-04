@@ -145,3 +145,11 @@
 == 0.7.2 / 2012-03-23
 
 * Better spec documentation
+
+== 0.7.3 / 2012-03-23
+
+* Connection API extended
+
+== 0.7.4 / 2012-04-04
+
+* Order equality bug fixed

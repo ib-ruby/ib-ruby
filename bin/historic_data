@@ -2,11 +2,8 @@
 #
 # This script downloads historic data for specific symbols from IB
 
-require 'pathname'
-LIB_DIR = (Pathname.new(__FILE__).dirname + '../lib/').realpath.to_s
-$LOAD_PATH.unshift LIB_DIR unless $LOAD_PATH.include?(LIB_DIR)
-
 require 'rubygems'
+require 'pathname'
 require 'bundler/setup'
 require 'ib-ruby'
 

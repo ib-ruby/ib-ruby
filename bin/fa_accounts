@@ -1,0 +1,22 @@
+#!/usr/bin/env ruby
+#
+# This script receives Financial Adviser and Managed Accounts info
+
+require 'rubygems'
+require 'pathname'
+require 'bundler/setup'
+require 'ib-ruby'
+
+# First, connect to IB TWS.
+ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS
+
+# Subscribe to TWS alerts/errors and FA/managed account info
+ib.subscribe(:Alert, :ManagedAccounts, :ReceiveFA) { |msg| puts msg.to_human }
+
+ib.send_message :RequestFA
+ib.send_message :RequestManagedAccounts
+
+ib.wait_for :Alert
+
+puts "\n******** Press <Enter> to cancel... *********\n\n"
+STDIN.gets

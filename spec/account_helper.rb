@@ -57,7 +57,7 @@ shared_examples_for 'Valid account data request' do
     subject { @ib.received[:PortfolioValue].first }
 
     it { should be_an IB::Messages::Incoming::PortfolioValue }
-    its(:contract) { should be_a IB::Models::Contract }
+    its(:contract) { should be_a IB::Contract }
     its(:data) { should be_a Hash }
     its(:position) { should be_a Integer }
     its(:market_price) { should be_a Float }

@@ -1,7 +1,9 @@
 require 'order_helper'
 
 #OPTS[:silent] = false
+
 describe 'Orders', :connected => true, :integration => true do
+  let(:contract_type) { :stock }
 
   before(:all) { verify_account }
 
@@ -60,7 +62,7 @@ describe 'Orders', :connected => true, :integration => true do
     it { @ib.received[:OpenOrder].should have_at_least(1).open_order_message }
     it { @ib.received[:OrderStatus].should have_exactly(0).status_messages }
 
-    it 'returns as what-if Order with margin and commission info' do
+    it 'responds with margin and commission info' do
       order_should_be /PreSubmitted/
       order = @ib.received[:OpenOrder].first.order
       order.what_if.should == true
@@ -74,7 +76,7 @@ describe 'Orders', :connected => true, :integration => true do
       order.commission.should be > 1
     end
 
-    it 'is not actually opened though' do
+    it 'is not actually being placed though' do
       @ib.clear_received
       @ib.send_message :RequestOpenOrders
       @ib.wait_for :OpenOrderEnd
@@ -82,14 +84,12 @@ describe 'Orders', :connected => true, :integration => true do
     end
   end
 
-  context 'Off-market stock order' do
+  context 'Off-market limit' do
     before(:all) do
       @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
       @ib.wait_for :NextValidId
-
-      place_order IB::Symbols::Stocks[:wfc],
-                  :limit_price => 9.13 # Set acceptable price
-      @ib.wait_for [:OpenOrder, 3], [:OrderStatus, 2]
+      place_order IB::Symbols::Stocks[:wfc], :limit_price => 9.13 # Acceptable price
+      @ib.wait_for [:OpenOrder, 3], [:OrderStatus, 2], 10
     end
 
     after(:all) { close_connection }
@@ -120,5 +120,5 @@ describe 'Orders', :connected => true, :integration => true do
         alert.message.should =~ /Can't find order with id =/
       end
     end # Cancelling
-  end # Off-market order
+  end # Off-market limit
 end # Orders

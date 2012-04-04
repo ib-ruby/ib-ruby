@@ -8,22 +8,22 @@ module IB
   module Symbols
 
     Stocks =
-        {:wfc => Models::Contract.new(:symbol => "WFC",
-                                      :exchange => "NYSE",
-                                      :currency => "USD",
-                                      :sec_type => SECURITY_TYPES[:stock],
-                                      :description => "Wells Fargo"),
+        {:wfc => IB::Contract.new(:symbol => "WFC",
+                                  :exchange => "NYSE",
+                                  :currency => "USD",
+                                  :sec_type => SECURITY_TYPES[:stock],
+                                  :description => "Wells Fargo"),
 
-         :aapl => Models::Contract.new(:symbol => "AAPL",
-                                       :currency => "USD",
-                                       :sec_type => SECURITY_TYPES[:stock],
-                                       :description => "Apple Inc."),
+         :aapl => IB::Contract.new(:symbol => "AAPL",
+                                   :currency => "USD",
+                                   :sec_type => SECURITY_TYPES[:stock],
+                                   :description => "Apple Inc."),
 
-         :wrong => Models::Contract.new(:symbol => "QEEUUE",
-                                        :exchange => "NYSE",
-                                        :currency => "USD",
-                                        :sec_type => SECURITY_TYPES[:stock],
-                                        :description => "Non-existent stock"),
+         :wrong => IB::Contract.new(:symbol => "QEEUUE",
+                                    :exchange => "NYSE",
+                                    :currency => "USD",
+                                    :sec_type => SECURITY_TYPES[:stock],
+                                    :description => "Non-existent stock"),
         }
   end
 end

@@ -55,7 +55,7 @@ describe 'Request Historic Data', :connected => true, :integration => true do
       subject.results.should be_an Array
       subject.results.size.should == subject.count
       subject.results.each do |bar|
-        bar.should be_an IB::Models::Bar
+        bar.should be_an IB::Bar
         bar.time.should =~ /\d{8} *\d\d:\d\d:\d\d/
         bar.open.should be_a Float
         bar.high.should be_a Float

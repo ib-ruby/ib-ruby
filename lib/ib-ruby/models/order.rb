@@ -316,27 +316,15 @@ module IB
            :min_commission,
            :max_commission,
            :warning_text, # String: Displays a warning message if warranted.
-
-           # String: Shows the impact the order would have on your initial margin.
-           :init_margin => proc { |val| self[:init_margin] = filter_max val },
-
-           # String: Shows the impact the order would have on your maintenance margin.
-           :maint_margin => proc { |val| self[:maint_margin] = filter_max val },
-
-           # String: Shows the impact the order would have on your equity with loan value.
-           :equity_with_loan => proc { |val| self[:equity_with_loan] = filter_max val }
-
+           :init_margin, # Float: The impact the order would have on your initial margin.
+           :maint_margin, # Float: The impact the order would have on your maintenance margin.
+           :equity_with_loan # Float: The impact the order would have on your equity
 
       # Returned in OpenOrder for Bag Contracts
       # public Vector<OrderComboLeg> m_orderComboLegs
       attr_accessor :leg_prices, :combo_params
       alias order_combo_legs leg_prices
       alias smart_combo_routing_params combo_params
-
-      # IB uses weird String with Java Double.MAX_VALUE to indicate no value here
-      def filter_max val
-        val == "1.7976931348623157E308" ? nil : val.to_f
-      end
 
       DEFAULT_PROPS = {:aux_price => 0.0,
                        :parent_id => 0,
@@ -358,6 +346,7 @@ module IB
                        :scale_auto_reset => false,
                        :scale_random_percent => false,
                        :opt_out_smart_routing => false,
+                       :status => 'New' # Starting new Orders with this statu
       }
 
       def initialize opts = {}
@@ -464,14 +453,15 @@ module IB
       # Order comparison
       def == other
         perm_id && other.perm_id && perm_id == other.perm_id ||
-            order_id == other.order_id && #   ((p __LINE__)||true) &&
+            order_id == other.order_id && # ((p __LINE__)||true) &&
                 (client_id == other.client_id || client_id == 0 || other.client_id == 0) &&
                 parent_id == other.parent_id &&
                 tif == other.tif &&
                 action == other.action &&
                 order_type == other.order_type &&
                 total_quantity == other.total_quantity &&
-                limit_price == other.limit_price &&
+                (limit_price == other.limit_price || # TODO Floats should be Decimals!
+                    (limit_price - other.limit_price).abs < 0.00001) &&
                 aux_price == other.aux_price &&
                 outside_rth == other.outside_rth &&
                 origin == other.origin &&

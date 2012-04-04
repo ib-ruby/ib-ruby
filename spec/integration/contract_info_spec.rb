@@ -13,8 +13,8 @@ describe "Request Contract Info", :connected => true, :integration => true do
   context "Request Stock data" do
 
     before(:all) do
-      @contract = IB::Models::Contract.new :symbol => 'AAPL',
-                                           :sec_type => IB::SECURITY_TYPES[:stock]
+      @contract = IB::Contract.new :symbol => 'AAPL',
+                                   :sec_type => IB::SECURITY_TYPES[:stock]
       @ib.send_message :RequestContractData, :id => 111, :contract => @contract
       @ib.wait_for :ContractDataEnd, 3 # sec
     end
@@ -61,10 +61,8 @@ describe "Request Contract Info", :connected => true, :integration => true do
   context "Request Option contract data" do
 
     before(:all) do
-      @contract = IB::Models::Contract::Option.new :symbol => "AAPL",
-                                                   :expiry => "201301",
-                                                   :right => "CALL",
-                                                   :strike => 500
+      @contract = IB::Option.new :symbol => "AAPL", :expiry => "201301",
+                                 :right => "CALL", :strike => 500
       @ib.send_message :RequestContractData, :id => 123, :contract => @contract
       @ib.wait_for :ContractDataEnd, 3 # sec
     end
@@ -107,10 +105,10 @@ describe "Request Contract Info", :connected => true, :integration => true do
   context "Request Forex contract data" do
 
     before(:all) do
-      @contract = IB::Models::Contract.new :symbol => 'EUR', # EURUSD pair
-                                           :currency => "USD",
-                                           :exchange => "IDEALPRO",
-                                           :sec_type => IB::SECURITY_TYPES[:forex]
+      @contract = IB::Contract.new :symbol => 'EUR', # EURUSD pair
+                                   :currency => "USD",
+                                   :exchange => "IDEALPRO",
+                                   :sec_type => IB::SECURITY_TYPES[:forex]
       @ib.send_message :RequestContractData, :id => 135, :contract => @contract
       @ib.wait_for :ContractDataEnd, 3 # sec
     end
