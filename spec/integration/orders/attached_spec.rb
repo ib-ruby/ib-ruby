@@ -1,7 +1,7 @@
 require 'order_helper'
 require 'combo_helper'
 
-OPTS[:silent] = false
+#OPTS[:silent] = false
 
 def define_contracts
   @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
@@ -19,16 +19,17 @@ describe 'Attached Orders', :connected => true, :integration => true do
     define_contracts
   end
 
+  # Testing different combinations of Parent + Attached Orders:
   [
-      [:stock, 100, 'DAY', 'LMT', 9.13, 20.0],
-      #[:stock, 100, 'GTC', 'LMT', 9.13, 20.0],
-      #[:butterfly, 100, 'DAY', 'LMT', 0.05, 1.0],
-      #[:butterfly, 10, 'GTC', 'LMT', 0.05, 1.0],
-  #[:butterfly, 100, 'GTC', 'STPLMT', 0.05, 0.05, 1.0],
+      #[:stock, 100, 'DAY', 'LMT', 9.13, 20.0], # Parent + takeprofit target
+      [:stock, 100, 'DAY', 'STP', 9.13, 0.0, 8.0], # Parent + stoploss
+      [:stock, 100, 'GTC', 'LMT', 9.13, 20.0], # GTC Parent + target
+      [:butterfly, 10, 'DAY', 'LMT', 0.05, 1.0], # Combo Parent + target
+      #[:butterfly, 10, 'GTC', 'LMT', 0.05, 1.0], # GTC Combo Parent + target
+      [:butterfly, 100, 'GTC', 'STPLMT', 0.05, 0.05, 1.0], # GTC Combo Parent + stoplimit target
 
   ].each do |(contract, qty, tif, attach_type, limit_price, attach_price, aux_price)|
     context "#{tif} BUY (#{contract}) limit order with attached #{attach_type} SELL" do
-      # Needed to pend Modifying Order context (in order_helper.rb) specially for Combos
       let(:contract_type) { contract }
 
       before(:all) do
@@ -36,8 +37,10 @@ describe 'Attached Orders', :connected => true, :integration => true do
         @ib.wait_for :NextValidId
         @ib.clear_received # to avoid conflict with pre-existing Orders
 
+        #p [contract, qty, tif, attach_type, limit_price, attach_price, aux_price]
         @contract = @contracts[contract]
         place_order @contract,
+                    :total_quantity => qty,
                     :limit_price => limit_price,
                     :tif => tif,
                     :transmit => false
@@ -52,7 +55,7 @@ describe 'Attached Orders', :connected => true, :integration => true do
         @ib.received[:OrderStatus].should have_exactly(0).status_message
       end
 
-      context "Attaching #{attach_type} takeprofit" do
+      context "Attaching #{attach_type} order" do
         before(:all) do
           @attached_order = IB::Order.new :total_quantity => qty,
                                           :limit_price => attach_price,
@@ -64,7 +67,7 @@ describe 'Attached Orders', :connected => true, :integration => true do
 
           @order_id_attached = @ib.place_order @attached_order, @contract
           @order_id_after = @ib.next_order_id
-          @ib.wait_for [:OpenOrder, 2], [:OrderStatus, 2], 5
+          @ib.wait_for [:OpenOrder, 3], [:OrderStatus, 3], 4
         end
 
         it_behaves_like 'Placed Order'

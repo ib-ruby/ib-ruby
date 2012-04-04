@@ -15,8 +15,8 @@ shared_examples_for 'Placed Order' do
     end
 
     it 'receives confirmation of Order submission' do
-      order_should_be /Submitted/ # ()Pre)Submitted
-      status_should_be /Submitted/
+      order_should_be /Submit/ # ()Pre)Submitted
+      status_should_be /Submit/
     end
   end # Placing
 
@@ -41,8 +41,13 @@ shared_examples_for 'Placed Order' do
     it 'receives OpenOrder and OrderStatus for placed order(s)' do
       order_should_be /Submitted/
       status_should_be /Submitted/
+
       if @attached_order
-        order_should_be /Submit/, @attached_order
+        if contract_type == :butterfly && @attached_order.tif == 'GTC'
+          pending 'API Bug: Attached DAY orders not working for butterflies!'
+        else
+          order_should_be /Submit/, @attached_order
+        end
       end
     end
   end # Retrieving
@@ -51,29 +56,22 @@ shared_examples_for 'Placed Order' do
     before(:all) do
       if defined?(contract_type) && contract_type == :butterfly
         pending 'API Bug: Order modification not working for butterflies!'
-      elsif @attached_order
-        pending 'API Bug: Order modification does not work for attached orders!'
-        # Modify original order
-        @order.total_quantity = 200
-        @order.limit_price += 0.05
-        @ib.modify_order @order, @contract # IB::Symbols::Stocks[:wfc] #
-
-        # Modify attached order too (if any)
-        @attached_order.limit_price = 25.0
-        #@attached_order.tif = 'GTC'
-        @ib.modify_order @attached_order, @contract
-
-        @ib.send_message :RequestOpenOrders
-        @ib.wait_for :OpenOrderEnd, 6 #sec
       else
         # Modification only works for non-attached, non-combo orders
         @order.total_quantity = 200
         @order.limit_price += 0.05
-        @ib.modify_order @order, @contract # IB::Symbols::Stocks[:wfc] #
+        @order.transmit = true
+        @ib.modify_order @order, @contract
 
-        @ib.send_message :RequestOpenOrders
-        @ib.wait_for :OpenOrderEnd, 6 #sec
+        if @attached_order
+          # Modify attached order, if any
+          @attached_order.limit_price *= 1.5
+          @attached_order.tif = 'GTC'
+          @ib.modify_order @attached_order, @contract
+        end
       end
+      @ib.send_message :RequestOpenOrders
+      @ib.wait_for :OpenOrderEnd, 6 #sec
     end
 
     after(:all) { clean_connection } # Clear logs and message collector
@@ -92,8 +90,13 @@ shared_examples_for 'Placed Order' do
       @contract.should == @ib.received[:OpenOrder].first.contract
       order_should_be /Submit/
       status_should_be /Submit/
+
       if @attached_order
-        order_should_be /Submit/, @attached_order
+        if contract_type == :butterfly && @attached_order.tif == 'GTC'
+          pending 'API Bug: Attached DAY orders not working for butterflies!'
+        else
+          order_should_be /Submit/, @attached_order
+        end
       end
     end
   end # Modifying
@@ -101,7 +104,7 @@ shared_examples_for 'Placed Order' do
   context "Cancelling placed order" do
     before(:all) do
       @ib.cancel_order @order_id_placed
-      @ib.wait_for [:OrderStatus, 7], :Alert
+      @ib.wait_for [:OrderStatus, 3], :Alert
     end
 
     after(:all) { clean_connection } # Clear logs and message collector
@@ -124,7 +127,11 @@ shared_examples_for 'Placed Order' do
     it 'receives cancellation Order Status' do
       status_should_be /Cancel/ # Cancelled / PendingCancel
       if @attached_order
-        order_should_be /Cancel/, @attached_order
+        if contract_type == :butterfly && @attached_order.tif == 'GTC'
+          pending 'API Bug: Attached DAY orders not working for butterflies!'
+        else
+          status_should_be /Cancel/, @attached_order
+        end
       end
     end
 
@@ -159,7 +166,7 @@ def status_should_be status, order=@order
   msg.order_id.should == order.order_id
   msg.perm_id.should be_an Integer
   msg.client_id.should == OPTS[:connection][:client_id]
-  msg.parent_id.should == 0
+  msg.parent_id.should == 0 unless @attached_order
   msg.why_held.should == ''
 
   if @contract == IB::Symbols::Forex[:eurusd]

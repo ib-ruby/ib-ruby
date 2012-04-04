@@ -1,7 +1,9 @@
 require 'order_helper'
 
-OPTS[:silent] = false
+#OPTS[:silent] = false
+
 describe 'Orders', :connected => true, :integration => true do
+  let(:contract_type) { :stock }
 
   before(:all) { verify_account }
 

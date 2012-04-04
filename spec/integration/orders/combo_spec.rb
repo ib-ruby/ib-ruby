@@ -1,7 +1,7 @@
 require 'order_helper'
 require 'combo_helper'
 
-OPTS[:silent] = false
+#OPTS[:silent] = false
 
 describe "Combo Order", :connected => true, :integration => true, :slow => true do
 
