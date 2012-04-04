@@ -1,13 +1,9 @@
 #!/usr/bin/env ruby
 #
-# This script connects to IB API, subscribes to account info and prints out
-# messages received from IB (update every 3 minute or so)
-
-require 'pathname'
-LIB_DIR = (Pathname.new(__FILE__).dirname + '../lib/').realpath.to_s
-$LOAD_PATH.unshift LIB_DIR unless $LOAD_PATH.include?(LIB_DIR)
+# This script places GOOG option butterfly combo order
 
 require 'rubygems'
+require 'pathname'
 require 'bundler/setup'
 require 'ib-ruby'
 
@@ -38,9 +34,8 @@ def butterfly symbol, expiry, right, *strikes
               :legs => legs
 end
 
-
 # First, connect to IB TWS. Arbitrary :client_id is used to identify your script
-ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS
+@ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS
 
 # Subscribe to TWS alerts/errors and order-related messages
 @ib.subscribe(:Alert, :OpenOrder, :OrderStatus) { |msg| puts msg.to_human }

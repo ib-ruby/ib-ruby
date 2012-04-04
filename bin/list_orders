@@ -1,12 +1,8 @@
 #!/usr/bin/env ruby
 #
-# This script connects to IB API, subscribes to account info and prints out
-# messages received from IB (update every 3 minute or so)
+# This script retrieves list of all Orders from TWS
 
 require 'pathname'
-LIB_DIR = (Pathname.new(__FILE__).dirname + '../lib/').realpath.to_s
-$LOAD_PATH.unshift LIB_DIR unless $LOAD_PATH.include?(LIB_DIR)
-
 require 'rubygems'
 require 'bundler/setup'
 require 'pp'
