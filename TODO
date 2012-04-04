@@ -16,6 +16,7 @@ http://finance.groups.yahoo.com/group/TWSAPI/message/25413
 
 7. Create integration tests for more use cases (spec/README)
 
+8. Move Float values to Decimal (roundoff errors showed in spec!)
 
 Done:
 

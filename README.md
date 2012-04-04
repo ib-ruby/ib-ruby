@@ -36,7 +36,7 @@ define. The execution flow is under your control, rather than delegated somewher
 Using this clear paradigm, you can hack together a simple automation of your
 daily TWS-related routine in just a couple of minutes. Alternatively, you can
 create a mechanical trading system with complex order processing logics, that
-contains 1/10th of code and is 500% more maintaineable when it is possible with
+contains 1/10th of code and is 500% more maintaineable than it is possible with
 other API implementations. The choice is yours.
 
 ## INSTALLATION:
@@ -58,7 +58,7 @@ other API implementations. The choice is yours.
 
 2. Configure the software to allow API connections from the computer you plan to run
    ib-ruby on, which is typically localhost (127.0.0.1) if you're running ib-ruby on
-   the same machine as TWS/Gateway.[Here](http://www.youtube.com/watch?v=53tmypRq5wI)
+   the same machine as TWS/Gateway. [Here](http://www.youtube.com/watch?v=53tmypRq5wI)
    you can see how this is done for TWS.
 
 3. Make sure sure your ib-ruby gem version is compatible with your software version.
@@ -75,7 +75,7 @@ other API implementations. The choice is yours.
 4. Start Interactive Broker's Trader Work Station or Gateway before your code
    attempts to connect to it. Note that TWS and Gateway listen to different ports,
    this library assumes connection to Gateway on the same machine (localhost:4001)
-   by default, this can changed via :host and :port options given to IB::Connection.new.
+   by default, this can be changed via :host and :port options given to IB::Connection.new.
 
 ## SYNOPSIS:
 

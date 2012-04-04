@@ -91,7 +91,7 @@ module IB
                             [:dividends_to_expiry, :decimal]
 
       # This message is received when the market in an option or its underlier moves.
-      # TWS’s option model volatilities, prices, and deltas, along with the present
+      # TWS option model volatilities, prices, and deltas, along with the present
       # value of dividends expected on that options underlier are received.
       # TickOption message contains following @data:
       #    :ticker_id - Id that was specified previously in the call to reqMktData()
