@@ -5,7 +5,7 @@ describe IB::Models::Order do
   let(:properties) do
     {:outside_rth => true,
      :open_close => 'C',
-     :origin => IB::Models::Order::Origin_Firm,
+     :origin => IB::Order::Origin_Firm,
      :transmit => false,
      :designated_location => "WHATEVER",
      :exempt_code => 123,
@@ -16,12 +16,12 @@ describe IB::Models::Order do
 
   context "instantiation" do
     context 'empty without properties' do
-      subject { IB::Models::Order.new }
+      subject { IB::Order.new }
 
       it { should_not be_nil }
       its(:outside_rth) { should == false }
       its(:open_close) { should == "O" }
-      its(:origin) { should == IB::Models::Order::Origin_Customer }
+      its(:origin) { should == IB::Order::Origin_Customer }
       its(:transmit) { should == true }
       its(:designated_location) { should == '' }
       its(:exempt_code) { should == -1 }
@@ -32,7 +32,7 @@ describe IB::Models::Order do
     end
 
     context 'with properties' do
-      subject { IB::Models::Order.new properties }
+      subject { IB::Order.new properties }
 
       it 'sets properties right' do
         properties.each do |name, value|
@@ -46,7 +46,7 @@ describe IB::Models::Order do
     end
 
     it 'allows setting attributes' do
-      x = IB::Models::Order.new
+      x = IB::Order.new
       properties.each do |name, value|
         subject.send("#{name}=", value)
         subject.send(name).should == value
@@ -55,22 +55,22 @@ describe IB::Models::Order do
   end #instantiation
 
   context 'equality' do
-    subject { IB::Models::Order.new properties }
+    subject { IB::Order.new properties }
 
     it 'is  self-equal ' do
       should == subject
     end
 
     it 'is equal to Order with the same properties' do
-      should == IB::Models::Order.new(properties)
+      should == IB::Order.new(properties)
     end
 
     it 'is not equal for Orders with different limit price' do
-      order1 = IB::Models::Order.new :total_quantity => 100,
+      order1 = IB::Order.new :total_quantity => 100,
                                      :limit_price => 1,
                                      :action => 'BUY'
 
-      order2 = IB::Models::Order.new :total_quantity => 100,
+      order2 = IB::Order.new :total_quantity => 100,
                                      :limit_price => 2,
                                      :action => 'BUY'
       order1.should_not == order2
@@ -78,11 +78,11 @@ describe IB::Models::Order do
     end
 
     it 'is not equal for Orders with different total_quantity' do
-      order1 = IB::Models::Order.new :total_quantity => 20000,
+      order1 = IB::Order.new :total_quantity => 20000,
                                      :limit_price => 1,
                                      :action => 'BUY'
 
-      order2 = IB::Models::Order.new :total_quantity => 100,
+      order2 = IB::Order.new :total_quantity => 100,
                                      :action => 'BUY',
                                      :limit_price => 1
       order1.should_not == order2
@@ -90,11 +90,11 @@ describe IB::Models::Order do
     end
 
     it 'is not equal for Orders with different action/side' do
-      order1 = IB::Models::Order.new :total_quantity => 100,
+      order1 = IB::Order.new :total_quantity => 100,
                                      :limit_price => 1,
                                      :action => 'SELL'
 
-      order2 = IB::Models::Order.new :total_quantity => 100,
+      order2 = IB::Order.new :total_quantity => 100,
                                      :action => 'BUY',
                                      :limit_price => 1
       order1.should_not == order2
@@ -102,12 +102,12 @@ describe IB::Models::Order do
     end
 
     it 'is not equal for Orders with different order_type' do
-      order1 = IB::Models::Order.new :total_quantity => 100,
+      order1 = IB::Order.new :total_quantity => 100,
                                      :limit_price => 1,
                                      :action => 'BUY',
                                      :order_type => 'LMT'
 
-      order2 = IB::Models::Order.new :total_quantity => 100,
+      order2 = IB::Order.new :total_quantity => 100,
                                      :action => 'BUY',
                                      :limit_price => 1,
                                      :order_type => 'MKT'
@@ -116,4 +116,4 @@ describe IB::Models::Order do
     end
   end
 
-end # describe IB::Models::Order
+end # describe IB::Order

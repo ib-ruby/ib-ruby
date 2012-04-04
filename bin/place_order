@@ -1,13 +1,9 @@
 #!/usr/bin/env ruby
 #
-# This script connects to IB API, subscribes to account info and prints out
-# messages received from IB (update every 3 minute or so)
-
-require 'pathname'
-LIB_DIR = (Pathname.new(__FILE__).dirname + '../lib/').realpath.to_s
-$LOAD_PATH.unshift LIB_DIR unless $LOAD_PATH.include?(LIB_DIR)
+# This script places WFC buy order for 100 lots
 
 require 'rubygems'
+require 'pathname'
 require 'bundler/setup'
 require 'ib-ruby'
 
@@ -18,10 +14,10 @@ ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS
 ib.subscribe(:Alert, :OpenOrder, :OrderStatus) { |msg| puts msg.to_human }
 
 wfc = IB::Symbols::Stocks[:wfc]
-buy_order = IB::Models::Order.new :total_quantity => 100,
-                                  :limit_price => 1 + rand().round(2),
-                                  :action => 'BUY',
-                                  :order_type => 'LMT'
+buy_order = IB::Order.new :total_quantity => 100,
+                          :limit_price => 1 + rand().round(2),
+                          :action => 'BUY',
+                          :order_type => 'LMT'
 ib.wait_for :NextValidId
 ib.place_order buy_order, wfc
 

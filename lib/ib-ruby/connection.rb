@@ -155,6 +155,15 @@ module IB
 
     ### Working with received messages Hash
 
+    # Clear received messages Hash
+    def clear_received *message_types
+      if message_types.empty?
+        received.each { |message_type, container| container.clear }
+      else
+        message_types.each { |message_type| received[message_type].clear }
+      end
+    end
+
     # Hash of received messages, keyed by message type
     def received
       @received ||= Hash.new { |hash, message_type| hash[message_type] = Array.new }
@@ -165,24 +174,9 @@ module IB
       received[message_type].size >= times
     end
 
-    # Clear received messages Hash
-    def clear_received *message_types
-      if message_types.empty?
-        received.each { |message_type, container| container.clear }
-      else
-        message_types.each { |message_type| received[message_type].clear }
-      end
-    end
-
-    # Wait for specific condition(s) - given as callable/block, or
-    # message type(s) - given as Symbol or [Symbol, times] pair.
-    # Timeout after given time or 1 second.
-    def wait_for *args, &block
-      timeout = args.find { |arg| arg.is_a? Numeric } # extract timeout from args
-      end_time = Time.now + (timeout || 1) # default timeout 1 sec
-      conditions = args.delete_if { |arg| arg.is_a? Numeric }.push(block).compact
-
-      sleep 0.1 until end_time < Time.now || !conditions.empty? &&
+    # Check if all given conditions are satisfied
+    def satisfied? *conditions
+      !conditions.empty? &&
           conditions.inject(true) do |result, condition|
             result && if condition.is_a?(Symbol)
                         received?(condition)
@@ -194,6 +188,23 @@ module IB
                         error "Unknown wait condition #{condition}"
                       end
           end
+    end
+
+    # Wait for specific condition(s) - given as callable/block, or
+    # message type(s) - given as Symbol or [Symbol, times] pair.
+    # Timeout after given time or 1 second.
+    def wait_for *args, &block
+      timeout = args.find { |arg| arg.is_a? Numeric } # extract timeout from args
+      end_time = Time.now + (timeout || 1) # default timeout 1 sec
+      conditions = args.delete_if { |arg| arg.is_a? Numeric }.push(block).compact
+
+      until end_time < Time.now || satisfied?(*conditions)
+        if server[:reader]
+          sleep 0.05
+        else
+          process_messages 50
+        end
+      end
     end
 
     ### Working with Incoming messages from IB
@@ -266,20 +277,25 @@ module IB
     # Place Order (convenience wrapper for send_message :PlaceOrder).
     # Assigns client_id and order_id fields to placed order. Returns assigned order_id.
     def place_order order, contract
-      send_message :PlaceOrder,
-                   :order => order,
-                   :contract => contract,
-                   :id => @next_order_id
       order.client_id = server[:client_id]
       order.order_id = @next_order_id
       @next_order_id += 1
+      modify_order order, contract
+    end
+
+    # Modify Order (convenience wrapper for send_message :PlaceOrder). Returns order_id.
+    def modify_order order, contract
+      send_message :PlaceOrder,
+                   :order => order,
+                   :contract => contract,
+                   :order_id => order.order_id
       order.order_id
     end
 
     # Cancel Orders by their ids (convenience wrapper for send_message :CancelOrder).
     def cancel_order *order_ids
       order_ids.each do |order_id|
-        send_message :CancelOrder, :id => order_id.to_i
+        send_message :CancelOrder, :order_id => order_id.to_i
       end
     end
 

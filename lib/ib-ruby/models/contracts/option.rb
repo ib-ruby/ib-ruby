@@ -1,8 +1,8 @@
-require 'ib-ruby/models/contract'
+require 'ib-ruby/models/contracts/contract'
 
 module IB
   module Models
-    class Contract
+    module Contracts
       class Option < Contract
 
         # For Options, this is contract's OSI (Option Symbology Initiative) name/code
@@ -52,8 +52,6 @@ module IB
           "<Option: " + [symbol, expiry, right, strike, exchange, currency].join("-") + ">"
         end
       end # class Option
-
-      TYPES[IB::SECURITY_TYPES[:option]] = Option
     end # class Contract
   end # module Models
 end # module IB

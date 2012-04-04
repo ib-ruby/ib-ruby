@@ -13,58 +13,89 @@ You've been warned.
 
 This code is not sanctioned or supported by Interactive Brokers.
 
-## REQUIREMENTS:
+## SUMMARY:
 
-Either the Interactive Brokers [TWS](http://www.interactivebrokers.com/en/p.php?f=tws) or
-[Gateway](http://www.interactivebrokers.com/en/p.php?f=programInterface&ib_entity=llc)
-software must be installed and configured to allow API connections from the computer
-you plan to run ib-ruby on, which is typically localhost if you're running ib-ruby on
-the same machine as TWS.
+This is a pure Ruby implementation of Interactive Brokers API. It is NOT a wrapper
+for a Java or C++ API, but rather uses socket API directly. So it does not have any
+dependencies other than TWS/Gateway itself.
 
-As a rule of thumb, most recent version of ib-ruby gem only supports latest versions
-of TWS/Gateway API. Older versions of API are supported by previous gem versions:
+Why Ruby? Many people are put off by the amount of boilerplate code/plumbing required
+by Java, ActiveX or C++ API to do even the simplest of things, like getting account
+data and placing/monitoring orders. This library intends to keep all the fluff away
+and let you focus on writing your business logics, rather than useless boilerplate.
 
-  ib-ruby gem     TWS version     API version
-  0.5.21          918-920         965
-  0.6.1           921-923         966
-  0.7.1           924+            967
+No more endless definitions of obligatory methods you'd never need, no spaghetti code
+to divide your execution flow between multiple callbacks and interfaces.
+
+Instead, a very simple paradigm is offered: your code interacts with the server
+(TWS or Gateway) via exchange of messages. You subscribe to the server messages
+that you're interested in, and send messages to server that request specific data
+from it. You wait for specific messages being received, or other conditions you
+define. The execution flow is under your control, rather than delegated somewhere.
+
+Using this clear paradigm, you can hack together a simple automation of your
+daily TWS-related routine in just a couple of minutes. Alternatively, you can
+create a mechanical trading system with complex order processing logics, that
+contains 1/10th of code and is 500% more maintaineable than it is possible with
+other API implementations. The choice is yours.
 
 ## INSTALLATION:
 
 ### From RubyGems
 
-    $ sudo gem install ib-ruby
+    $ sudo gem install ib-ruby [-v version]
 
 ### From Source
 
     $ git clone https://github.com/ib-ruby/ib-ruby
     $ cd ib-ruby; rake gem:install
 
+## PREREQUISITES:
+
+1. Install Interactive Brokers connectivity software: either
+   [TWS](http://www.interactivebrokers.com/en/p.php?f=tws) or
+   [Gateway](http://www.interactivebrokers.com/en/p.php?f=programInterface&ib_entity=llc)
+
+2. Configure the software to allow API connections from the computer you plan to run
+   ib-ruby on, which is typically localhost (127.0.0.1) if you're running ib-ruby on
+   the same machine as TWS/Gateway. [Here](http://www.youtube.com/watch?v=53tmypRq5wI)
+   you can see how this is done for TWS.
+
+3. Make sure sure your ib-ruby gem version is compatible with your software version.
+   As a rule of thumb, most recent ib-ruby gem only supports latest versions of
+   TWS/Gateway API. Older versions of API are supported by previous gem versions:
+
+    | ib-ruby gem | TWS version | API version  |
+    |:------------|------------:|:------------:|
+    | 0.5.21      |    918-920  |    965       |
+    | 0.6.1       |    921-923  |    966       |
+    | 0.7.1+      |      924+   |    967       |
+
+
+4. Start Interactive Broker's Trader Work Station or Gateway before your code
+   attempts to connect to it. Note that TWS and Gateway listen to different ports,
+   this library assumes connection to Gateway on the same machine (localhost:4001)
+   by default, this can be changed via :host and :port options given to IB::Connection.new.
+
 ## SYNOPSIS:
 
-First, start up Interactive Broker's Trader Work Station or Gateway.
-Make sure it is configured to allow API connections on localhost.
-Note that TWS and Gateway listen to different ports, this library assumes
-connection to Gateway (localhost:4001) by default, this can changed via :host
-and :port options given to IB::Connection.new.
+This is an example of your script that requests and prints out account data, then
+places limit order to buy 100 lots of WFC and waits for execution. All in about ten
+lines of code - and without sacrificing code readability or flexibility.
 
     require 'ib-ruby'
 
-    ib = IB::Connection.new :port => 7496 # TWS on localhost
+    ib = IB::Connection.new :port => 7496
     ib.subscribe(:Alert, :AccountValue) { |msg| puts msg.to_human }
     ib.send_message :RequestAccountData
     ib.wait_for :AccountDownloadEnd
 
     ib.subscribe(:OpenOrder) { |msg| puts "Placed: #{msg.order}!" }
     ib.subscribe(:ExecutionData) { |msg| puts "Filled: #{msg.execution}!" }
-    contract = IB::Models::Contract.new :symbol => 'WFC',
-                                        :exchange => 'NYSE'
-                                        :currency => 'USD',
-                                        :sec_type => IB::SECURITY_TYPES[:stock]
-    buy_order = IB::Models::Order.new :total_quantity => 100,
-                                      :limit_price => 21.00,
-                                      :action => 'BUY',
-                                      :order_type => 'LMT'
+    contract = IB::Contract.new :symbol => 'WFC', :exchange => 'NYSE',
+                                :currency => 'USD', :sec_type => 'STK'
+    buy_order = IB::Order.new :total_quantity => 100, :limit_price => 21.00,
+                                :action => 'BUY', :order_type => 'LMT'
     ib.place_order buy_order, contract
     ib.wait_for :ExecutionData
 
@@ -73,8 +104,8 @@ TWS are called 'Outgoing', messages your code receives from TWS - 'Incoming'.
 
 First, you need to subscribe to incoming message types you're interested in
 using `Connection#subscribe`. The code block (or proc) given to `#subscribe`
-will be executed when an incoming message of the requested type is received
-from TWS, with the received message as its argument.
+will be executed when an incoming message of the this type is received from TWS,
+with the received message as its argument.
 
 Then, you request specific data from TWS using `Connection#send_message` or place
 your order using `Connection#place_order`. TWS will respond with messages that you
@@ -85,7 +116,7 @@ In order to give TWS time to respond, you either run a message processing loop o
 just wait until Connection receives the messages type you requested.
 
 See `lib/ib-ruby/messages` for a full list of supported incoming/outgoing messages
-and their attributes. The original TWS docs and code samples can be found
+and their attributes. The original TWS docs and code samples can also be found
 in `misc` directory.
 
 The sample scripts in `bin` directory provide examples of how common tasks

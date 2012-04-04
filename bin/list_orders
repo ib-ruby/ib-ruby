@@ -1,12 +1,8 @@
 #!/usr/bin/env ruby
 #
-# This script connects to IB API, subscribes to account info and prints out
-# messages received from IB (update every 3 minute or so)
+# This script retrieves list of all Orders from TWS
 
 require 'pathname'
-LIB_DIR = (Pathname.new(__FILE__).dirname + '../lib/').realpath.to_s
-$LOAD_PATH.unshift LIB_DIR unless $LOAD_PATH.include?(LIB_DIR)
-
 require 'rubygems'
 require 'bundler/setup'
 require 'pp'
@@ -23,7 +19,7 @@ ib.subscribe(:Alert, :OrderStatus, :OpenOrderEnd) { |msg| puts msg.to_human }
 ib.subscribe(:OpenOrder) do |msg|
   @counter += 1
   puts "#{@counter}: #{msg.to_human}"
-  pp msg.order
+  #pp msg.order
 end
 
 ib.send_message :RequestAllOpenOrders

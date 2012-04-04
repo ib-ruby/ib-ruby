@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe IB::Models::Contract do
+describe IB::Models::Contracts::Contract do # AKA IB::Contract
 
   let(:properties) do
     {:symbol => "TEST",
@@ -15,7 +15,7 @@ describe IB::Models::Contract do
   end
 
   context "instantiation" do
-    context 'empty without properties' do
+    context 'using fully qualified class name without properties' do
       subject { IB::Models::Contract.new }
 
       it { should_not be_nil }
@@ -26,8 +26,19 @@ describe IB::Models::Contract do
       its(:include_expired) { should == false }
     end
 
+    context 'using short class name without properties' do
+      subject { IB::Contract.new }
+
+      it { should_not be_nil }
+      its(:con_id) { should == 0 }
+      its(:strike) { should == 0 }
+      its(:sec_type) { should be_nil }
+      its(:created_at) { should be_a Time }
+      its(:include_expired) { should == false }
+    end
+
     context 'with properties' do
-      subject { IB::Models::Contract.new properties }
+      subject { IB::Contract.new properties }
 
       it 'sets properties right' do
         properties.each do |name, value|
@@ -54,7 +65,7 @@ describe IB::Models::Contract do
       end
 
       context 'empty without properties' do
-        subject { IB::Models::Contract.new }
+        subject { IB::Contract.new }
 
         its(:summary) { should == subject }
         its(:under_con_id) { should == 0 }
@@ -68,7 +79,7 @@ describe IB::Models::Contract do
       end
 
       context 'with properties' do
-        subject { IB::Models::Contract.new detailed_properties }
+        subject { IB::Contract.new detailed_properties }
 
         its(:summary) { should == subject }
         its(:created_at) { should be_a Time }
@@ -83,7 +94,7 @@ describe IB::Models::Contract do
 
     it 'allows setting attributes' do
       expect {
-        x = IB::Models::Contract.new
+        x = IB::Contract.new
         properties.each do |name, value|
           subject.send("#{name}=", value)
           subject.send(name).should == value
@@ -94,7 +105,7 @@ describe IB::Models::Contract do
     end
 
     it 'allows setting ContractDetails attributes' do
-      x = IB::Models::Contract.new
+      x = IB::Contract.new
       expect {
         x.callable = true
         x.puttable = true
@@ -113,53 +124,53 @@ describe IB::Models::Contract do
     end
 
     it 'converts multiplier to int' do
-      expect { @contract = IB::Models::Contract.new(:multiplier => '123') }.to_not raise_error
+      expect { @contract = IB::Contract.new(:multiplier => '123') }.to_not raise_error
       expect { @contract.multiplier = '123' }.to_not raise_error
       @contract.multiplier.should == 123
     end
 
     it 'raises on wrong security type' do
-      expect { IB::Models::Contract.new(:sec_type => "asdf") }.to raise_error ArgumentError
+      expect { IB::Contract.new(:sec_type => "asdf") }.to raise_error ArgumentError
 
-      expect { IB::Models::Contract.new.sec_type = "asdf" }.to raise_error ArgumentError
+      expect { IB::Contract.new.sec_type = "asdf" }.to raise_error ArgumentError
     end
 
     it 'accepts pre-determined security types' do
       IB::SECURITY_TYPES.values.each do |type|
-        expect { IB::Models::Contract.new(:sec_type => type) }.to_not raise_error
+        expect { IB::Contract.new(:sec_type => type) }.to_not raise_error
 
-        expect { IB::Models::Contract.new.sec_type = type }.to_not raise_error
+        expect { IB::Contract.new.sec_type = type }.to_not raise_error
       end
     end
 
     it 'raises on wrong expiry' do
-      expect { IB::Models::Contract.new(:expiry => "foo") }.to raise_error ArgumentError
+      expect { IB::Contract.new(:expiry => "foo") }.to raise_error ArgumentError
 
-      expect { IB::Models::Contract.new.expiry = "foo" }.to raise_error ArgumentError
+      expect { IB::Contract.new.expiry = "foo" }.to raise_error ArgumentError
     end
 
     it 'accepts correct expiry' do
-      expect { IB::Models::Contract.new(:expiry => "200607") }.to_not raise_error
+      expect { IB::Contract.new(:expiry => "200607") }.to_not raise_error
 
-      expect { IB::Models::Contract.new.expiry = "200607" }.to_not raise_error
+      expect { IB::Contract.new.expiry = "200607" }.to_not raise_error
 
-      expect { IB::Models::Contract.new(:expiry => 200607) }.to_not raise_error
+      expect { IB::Contract.new(:expiry => 200607) }.to_not raise_error
 
       expect {
-        x = IB::Models::Contract.new
+        x = IB::Contract.new
         x.expiry = 200607
         x.expiry.should == "200607" # converted to a string
       }.to_not raise_error
     end
 
     it 'raises on incorrect right (option type)' do
-      expect { IB::Models::Contract.new(:right => "foo") }.to raise_error ArgumentError
-      expect { IB::Models::Contract.new.right = "foo" }.to raise_error ArgumentError
+      expect { IB::Contract.new(:right => "foo") }.to raise_error ArgumentError
+      expect { IB::Contract.new.right = "foo" }.to raise_error ArgumentError
     end
 
     it 'accepts all correct values for right (option type)' do
       ["PUT", "put", "P", "p"].each do |right|
-        expect { @contract = IB::Models::Contract.new(:right => right) }.to_not raise_error
+        expect { @contract = IB::Contract.new(:right => right) }.to_not raise_error
         @contract.right.should == "PUT"
 
         expect { @contract.right = right }.to_not raise_error
@@ -167,7 +178,7 @@ describe IB::Models::Contract do
       end
 
       ["CALL", "call", "C", "c"].each do |right|
-        expect { @contract = IB::Models::Contract.new(:right => right) }.to_not raise_error
+        expect { @contract = IB::Contract.new(:right => right) }.to_not raise_error
         @contract.right.should == "CALL"
 
         expect { @contract.right = right }.to_not raise_error
@@ -177,7 +188,7 @@ describe IB::Models::Contract do
   end #instantiation
 
   context "serialization" do
-    subject { IB::Models::Contract.new properties }
+    subject { IB::Contract.new properties }
 
     it "serializes long" do
       subject.serialize_long.should ==
@@ -191,15 +202,15 @@ describe IB::Models::Contract do
   end #serialization
 
   context 'equality' do
-    subject { IB::Models::Contract.new properties }
+    subject { IB::Contract.new properties }
 
     it 'be self-equal ' do
       should == subject
     end
 
     it 'be equal to object with the same properties' do
-      should == IB::Models::Contract.new(properties)
+      should == IB::Contract.new(properties)
     end
   end
 
-end # describe IB::Models::Contract
+end # describe IB::Contract

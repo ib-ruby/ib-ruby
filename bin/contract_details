@@ -1,12 +1,9 @@
 #!/usr/bin/env ruby
 #
-# This script gets details for specific symbol from IB
-
-require 'pathname'
-LIB_DIR = (Pathname.new(__FILE__).dirname + '../lib/').realpath.to_s
-$LOAD_PATH.unshift LIB_DIR unless $LOAD_PATH.include?(LIB_DIR)
+# This script gets details for specific contract from IB
 
 require 'rubygems'
+require 'pathname'
 require 'bundler/setup'
 require 'ib-ruby'
 

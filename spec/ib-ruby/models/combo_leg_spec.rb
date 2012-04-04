@@ -7,7 +7,7 @@ describe IB::Models::ComboLeg do
      :ratio=> 1234,
      :action => 'BUY',
      :exchange => 'BLAH',
-     :open_close => IB::Models::ComboLeg::OPEN,
+     :open_close => IB::ComboLeg::OPEN,
      :short_sale_slot => 1,
      :designated_location => 'BLEH',
      :exempt_code => 12}
@@ -15,7 +15,7 @@ describe IB::Models::ComboLeg do
 
   context "instantiation" do
     context 'empty without properties' do
-      subject { IB::Models::ComboLeg.new }
+      subject { IB::ComboLeg.new }
 
       it { should_not be_nil }
       its(:con_id) {should == 0}
@@ -28,7 +28,7 @@ describe IB::Models::ComboLeg do
     end
 
     context 'with properties' do
-      subject { IB::Models::ComboLeg.new properties }
+      subject { IB::ComboLeg.new properties }
 
       it 'sets properties right' do
         properties.each do |name, value|
@@ -43,7 +43,7 @@ describe IB::Models::ComboLeg do
 
     it 'allows setting attributes' do
       expect {
-        x = IB::Models::ComboLeg.new
+        x = IB::ComboLeg.new
         properties.each do |name, value|
           subject.send("#{name}=", value)
           subject.send(name).should == value

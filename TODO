@@ -16,6 +16,7 @@ http://finance.groups.yahoo.com/group/TWSAPI/message/25413
 
 7. Create integration tests for more use cases (spec/README)
 
+8. Move Float values to Decimal (roundoff errors showed in spec!)
 
 Done:
 
@@ -23,11 +24,12 @@ Done:
 
 2. IB#subscribe should accept regexes.
 
-3. Compatibility with for API v.966, 967
+3. Compatibility with API v.966, 967
 
 4. Collect all received messages in Connection#received[:type] by default
 
 5. Flow handlers: Connection#wait_for / Connection#received?
+
 
 Ideas for future:
 
