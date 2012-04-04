@@ -1,6 +1,6 @@
 require 'order_helper'
 
-#OPTS[:silent] = false
+OPTS[:silent] = false
 describe 'Orders', :connected => true, :integration => true do
 
   before(:all) { verify_account }
@@ -86,10 +86,8 @@ describe 'Orders', :connected => true, :integration => true do
     before(:all) do
       @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
       @ib.wait_for :NextValidId
-
-      place_order IB::Symbols::Stocks[:wfc],
-                  :limit_price => 9.13 # Set acceptable price
-      @ib.wait_for [:OpenOrder, 3], [:OrderStatus, 2]
+      place_order IB::Symbols::Stocks[:wfc], :limit_price => 9.13 # Acceptable price
+      @ib.wait_for [:OpenOrder, 3], [:OrderStatus, 2], 10
     end
 
     after(:all) { close_connection }
@@ -121,51 +119,4 @@ describe 'Orders', :connected => true, :integration => true do
       end
     end # Cancelling
   end # Off-market limit
-
-  context "Limit with attached takeprofit" do
-    before(:all) do
-      @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
-      @ib.wait_for :NextValidId
-      @ib.clear_received # to avoid conflict with pre-existing Orders
-
-      place_order IB::Symbols::Stocks[:wfc],
-                  :limit_price => 9.13,
-                  :transmit => false
-
-      @ib.wait_for :OpenOrder, :OrderStatus, 2
-    end
-
-    after(:all) { close_connection }
-
-    it 'does not transmit original Order just yet' do
-      @ib.received[:OpenOrder].should have_exactly(0).order_message
-      @ib.received[:OrderStatus].should have_exactly(0).status_message
-    end
-
-    context 'Attaching takeprofit' do
-      before(:all) do
-        @attached_order = IB::Order.new :total_quantity => 100,
-                                        :limit_price => 15.0,
-                                        :action => 'SELL',
-                                        :order_type => 'LMT',
-                                        :parent_id => @order_id_placed
-
-        @order_id_attached = @ib.place_order @attached_order, IB::Symbols::Stocks[:wfc]
-        @order_id_after = @ib.next_order_id
-        @ib.wait_for [:OpenOrder, 2], [:OrderStatus, 2], 5
-      end
-
-      it_behaves_like 'Placed Order'
-    end
-
-    context 'When original Order cancels' do
-      it 'attached takeprofit is cancelled implicitly' do
-        @ib.send_message :RequestOpenOrders
-        @ib.wait_for :OpenOrderEnd
-        @ib.received[:OpenOrder].should have_exactly(0).order_message
-        @ib.received[:OrderStatus].should have_exactly(0).status_message
-      end
-    end
-  end # Attached
-
 end # Orders
