@@ -1,11 +1,15 @@
 # DB configuration file
 
-# Test stand configuration (Gateway)
+# Test stand configurations
 test: &test
-  :adapter:     jdbcsqlite3
+  :adapter:     sqlite3
   :database:    db/test.sqlite3
   :pool:        5
   :timeout:     5000
+
+test-jruby:
+  <<: *test
+  :adapter:     jdbcsqlite3
 
 # Battle configurations
 prod:

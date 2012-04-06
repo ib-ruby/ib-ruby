@@ -13,13 +13,22 @@ RSpec.configure do |config|
             # 17:15 - 17:00 (ET) Sunday-Friday Forex  22:15 - 22:00 (UTC)
             !(t.wday > 0 && t.wday < 5 || t.wday == 5 && t.hour < 22)
         end
-      end
+      end,
+
+      :db => proc { |condition| !IB::DB == condition } # true/false
   }
   # config.filter = { :focus => true }
   # config.include(UserExampleHelpers)
   # config.mock_with :mocha
   # config.mock_with :flexmock
   # config.mock_with :rr
+
+  if IB::DB
+    config.before(:suite) do
+      DatabaseCleaner.strategy = :truncation
+      DatabaseCleaner.clean
+    end
+  end
 end
 
 # Top level metadata for test suite level hacking
