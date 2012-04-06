@@ -21,7 +21,8 @@ module IB
            #                            trades, combo trades and legs of the combo
            :liquidation, #  int: This position is liquidated last should the need arise.
            :side => #     String: Was the transaction a buy or a sale: BOT|SLD
-               {:set => proc { |val| self[:side] = val.to_s.upcase[0..0] == 'B' ? :buy : :sell }}
+               {:set => proc { |val| self[:side] = val.to_s.upcase[0..0] },
+                :get => proc { | | self[:side] == 'B' ? :buy : :sell }}
 
       DEFAULT_PROPS = {:order_id => 0,
                        :client_id => 0,
@@ -29,6 +30,18 @@ module IB
                        :price => 0,
                        :perm_id => 0,
                        :liquidation => 0, }
+      # Comparison
+      def == other
+        perm_id == other.perm_id &&
+            order_id == other.order_id && # ((p __LINE__)||true) &&
+            client_id == other.client_id &&
+            exec_id == other.exec_id &&
+            time == other.time &&
+            exchange == other.exchange &&
+            order_ref == other.order_ref &&
+            side == other.side
+        # TODO: || compare all attributes!
+      end
 
       def to_s
         "<Execution #{time}: #{side} #{shares} @ #{price} on #{exchange}, " +

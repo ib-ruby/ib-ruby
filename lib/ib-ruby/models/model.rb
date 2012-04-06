@@ -10,6 +10,7 @@ module IB
         if DB
           case subclass
             when :execution
+              # Just one AR model introduced for now...
               ActiveRecord::Base
             else
               Model

@@ -43,7 +43,7 @@ module IB
       prop :order_id, #  int: Order id associated with client (volatile).
            :client_id, # int: The id of the client that placed this order.
            :perm_id, #   int: TWS permanent id, remains the same over TWS sessions.
-           :action, #    String: Identifies the side: BUY/SELL/SSHORT
+           [:side, :action], # String: Identifies the side: BUY/SELL/SSHORT
            :total_quantity, # int: The order quantity.
 
            :order_type, #  String: Identifies the order type. Valid values are:
