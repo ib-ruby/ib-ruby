@@ -1,7 +1,8 @@
 module IB
   module Models
     module Contracts
-      class Contract < Model
+      class Contract < Model.for(:contract)
+        include ModelProperties
 
         # This returns a Contract initialized from the serialize_ib_ruby format string.
         def self.build opts = {}

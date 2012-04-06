@@ -2,7 +2,9 @@ module IB
   module Models
     # This is a single data point delivered by HistoricData messages.
     # Instantiate with a Hash of attributes, to be auto-set via initialize in Model.
-    class Bar < Model
+    class Bar < Model.for(:bar)
+      include ModelProperties
+
       prop :time, # The date-time stamp of the start of the bar. The format is
            #        determined by the reqHistoricalData() formatDate parameter.
            :open, #   The bar opening price.

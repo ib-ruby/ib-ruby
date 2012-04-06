@@ -1,13 +1,23 @@
-require 'ib-ruby/models/model_properties'
-
 module IB
   module Models
 
     # Base IB data Model class, in future it will be developed into ActiveModel
     class Model
-      extend ModelProperties
 
-      attr_reader :created_at
+      # IB Models can be either database-backed, or not
+      # require 'ib-ruby/db' # to make IB models database-backed
+      def self.for subclass
+        if DB
+          case subclass
+            when :execution
+              ActiveRecord::Base
+            else
+              Model
+          end
+        else
+          Model
+        end
+      end
 
       DEFAULT_PROPS = {}
 
@@ -15,7 +25,6 @@ module IB
       # The model instance fields are then set automatically from the opts Hash.
       def initialize(opts={})
         error "Argument must be a Hash", :args unless opts.is_a?(Hash)
-        @created_at = Time.now
 
         props = self.class::DEFAULT_PROPS.merge(opts)
         props.keys.each { |key| self.send("#{key}=", props[key]) }

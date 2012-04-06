@@ -4,7 +4,9 @@ module IB
     # ComboLeg objects represent individual securities in a "BAG" contract - which
     # is not really a contract, but a combination (combo) of securities. AKA basket
     # or bag of securities.
-    class ComboLeg < Model
+    class ComboLeg < Model.for(:combo_leg)
+      include ModelProperties
+
       # General Notes:
       # 1. The exchange for the leg definition must match that of the combination order.
       # The exception is for a STK leg definition, which must specify the SMART exchange.

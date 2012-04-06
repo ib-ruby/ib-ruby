@@ -1,6 +1,7 @@
 module IB
   module Models
-    class Order < Model
+    class Order < Model.for(:order)
+      include ModelProperties
 
       # General Notes:
       # 1. Placing Orders by con_id - When you place an order by con_id, you must
