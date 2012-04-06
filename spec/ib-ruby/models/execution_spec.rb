@@ -36,12 +36,29 @@ describe IB::Models::Execution do # AKA IB::Execution
     context 'with properties' do
       subject { IB::Execution.new properties }
 
-      it 'sets properties right' do
+      it 'sets all properties just right' do
         properties.each do |name, value|
           subject.send(name).should == value
         end
       end
+
+      context 'with DB backend', :db => true do
+        after(:all) do
+          DatabaseCleaner.clean
+        end
+
+        it 'is saved' do
+          subject.save.should be_true
+        end
+
+        it 'is loaded' do
+          models = described_class.find(:all)
+          models.should have_exactly(1).model
+          models.first.should == subject
+        end
+      end # DB
     end
+
   end #instantiation
 
   context "properties" do
@@ -69,5 +86,4 @@ describe IB::Models::Execution do # AKA IB::Execution
       end
     end
   end # properties
-
 end # describe IB::Models::Contract
