@@ -1,5 +1,3 @@
-require 'ib-ruby/models/model'
-
 module IB
   module Models
     # This is a single data point delivered by HistoricData messages.

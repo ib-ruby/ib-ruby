@@ -1,5 +1,3 @@
-require 'ib-ruby/models/model'
-
 module IB
   module Models
     # This is IB Order execution report.

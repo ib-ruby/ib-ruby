@@ -1,5 +1,3 @@
-require 'ib-ruby/models/model'
-
 module IB
   module Models
     module Contracts

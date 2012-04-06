@@ -1,4 +1,8 @@
 module IB
+  # IB Models can be either database-backed, or not
+  # By default there is no DB backend, unless specifically requested
+  # require 'ib-ruby/db' # to make all IB models database-backed
+  DB ||= false
 
   require 'ib-ruby/version'
   require 'ib-ruby/extensions'
