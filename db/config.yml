@@ -1,0 +1,14 @@
+# DB configuration file
+
+# Test stand configuration (Gateway)
+test: &test
+  :adapter:     jdbcsqlite3
+  :database:    db/test.sqlite3
+  :pool:        5
+  :timeout:     5000
+
+# Battle configurations
+prod:
+  <<: *test
+  :database:      db/prod.sqlite3
+
