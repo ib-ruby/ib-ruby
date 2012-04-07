@@ -1,5 +1,7 @@
 require 'message_helper'
 
+OPTS[:silent] = false
+
 shared_examples_for 'Alert message' do
   it { should be_an IB::Messages::Incoming::Alert }
   it { should be_warning }
@@ -39,6 +41,7 @@ describe IB::Messages::Incoming do
     before(:all) do
       @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
       @ib.wait_for :Alert
+      pending 'No Alert received upon connect!' unless @ib.received? :Alert
     end
 
     after(:all) { close_connection }

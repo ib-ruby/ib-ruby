@@ -3,13 +3,25 @@ require 'spec_helper'
 describe IB::Models::Order do
 
   let(:properties) do
-    {:outside_rth => true,
+    {:client_id => 1111,
+     :perm_id => 173276893,
+     :parent_id => 0,
+     :order_type => 'LMT',
+     :side => 'BUY',
+     :limit_price => 0.01,
+     :total_quantity => 100,
+     :tif => 'DAY',
      :open_close => 'C',
+     :oca_group => '',
+     :oca_type => 3,
      :origin => IB::Order::Origin_Firm,
-     :transmit => false,
      :designated_location => "WHATEVER",
      :exempt_code => 123,
      :delta_neutral_order_type => "HACK",
+     :commission_currency => "USD",
+     :status => 'PreSubmitted',
+     :transmit => false,
+     :outside_rth => true,
      :what_if => true,
      :not_held => true}
   end
@@ -67,50 +79,50 @@ describe IB::Models::Order do
 
     it 'is not equal for Orders with different limit price' do
       order1 = IB::Order.new :total_quantity => 100,
-                                     :limit_price => 1,
-                                     :action => 'BUY'
+                             :limit_price => 1,
+                             :action => 'BUY'
 
       order2 = IB::Order.new :total_quantity => 100,
-                                     :limit_price => 2,
-                                     :action => 'BUY'
+                             :limit_price => 2,
+                             :action => 'BUY'
       order1.should_not == order2
       order2.should_not == order1
     end
 
     it 'is not equal for Orders with different total_quantity' do
       order1 = IB::Order.new :total_quantity => 20000,
-                                     :limit_price => 1,
-                                     :action => 'BUY'
+                             :limit_price => 1,
+                             :action => 'BUY'
 
       order2 = IB::Order.new :total_quantity => 100,
-                                     :action => 'BUY',
-                                     :limit_price => 1
+                             :action => 'BUY',
+                             :limit_price => 1
       order1.should_not == order2
       order2.should_not == order1
     end
 
     it 'is not equal for Orders with different action/side' do
       order1 = IB::Order.new :total_quantity => 100,
-                                     :limit_price => 1,
-                                     :action => 'SELL'
+                             :limit_price => 1,
+                             :action => 'SELL'
 
       order2 = IB::Order.new :total_quantity => 100,
-                                     :action => 'BUY',
-                                     :limit_price => 1
+                             :action => 'BUY',
+                             :limit_price => 1
       order1.should_not == order2
       order2.should_not == order1
     end
 
     it 'is not equal for Orders with different order_type' do
       order1 = IB::Order.new :total_quantity => 100,
-                                     :limit_price => 1,
-                                     :action => 'BUY',
-                                     :order_type => 'LMT'
+                             :limit_price => 1,
+                             :action => 'BUY',
+                             :order_type => 'LMT'
 
       order2 = IB::Order.new :total_quantity => 100,
-                                     :action => 'BUY',
-                                     :limit_price => 1,
-                                     :order_type => 'MKT'
+                             :action => 'BUY',
+                             :limit_price => 1,
+                             :order_type => 'MKT'
       order1.should_not == order2
       order2.should_not == order1
     end
