@@ -1,7 +1,5 @@
 require 'order_helper'
 
-#OPTS[:silent] = false
-
 describe 'Orders', :connected => true, :integration => true do
   let(:contract_type) { :stock }
 

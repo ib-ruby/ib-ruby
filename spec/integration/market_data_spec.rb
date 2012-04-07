@@ -1,9 +1,7 @@
 require 'integration_helper'
-#!/usr/bin/env ruby
 
 require 'ib-ruby'
 
-#OPTS[:silent] = false
 describe 'Request Market Data', :connected => true, :integration => true do
 
   require 'ib-ruby'

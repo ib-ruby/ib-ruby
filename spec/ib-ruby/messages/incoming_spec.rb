@@ -1,7 +1,5 @@
 require 'message_helper'
 
-OPTS[:silent] = false
-
 shared_examples_for 'Alert message' do
   it { should be_an IB::Messages::Incoming::Alert }
   it { should be_warning }

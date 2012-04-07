@@ -31,12 +31,11 @@ describe IB::Models::Execution do # AKA IB::Execution
      :perm_id => 0,
      :shares=> 0,
      :price => 0,
-     :liquidation => false,
-     :created_at => Time}
+     :liquidation => false}
   end
 
   let(:errors) do
-    {:side=>["should be buy or sell"],
+    {:side=>["should be buy/sell/short"],
      :cumulative_quantity=>["is not a number"],
      :average_price=>["is not a number"]}
   end
@@ -49,16 +48,6 @@ describe IB::Models::Execution do # AKA IB::Execution
     }
   end
 
-  context 'instantiation without properties' do
-    subject { IB::Execution.new }
-
-    it_behaves_like 'Model instantiated empty'
-  end
-
-  context 'instantiation with properties' do
-    subject { IB::Execution.new props }
-
-    it_behaves_like 'Model instantiated with properties'
-  end
+  it_behaves_like 'Model'
 
 end # describe IB::Models::Contract

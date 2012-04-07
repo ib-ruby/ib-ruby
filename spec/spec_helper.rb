@@ -32,8 +32,8 @@ RSpec.configure do |config|
 end
 
 # Top level metadata for test suite level hacking
-OPTS = {
-    :silent => true, #false, #true, # Verbosity of test outputs
+OPTS ||= {
+    :verbose => false, #true, # Verbosity of test outputs
     :brokertron => false, # Use mock (Brokertron) instead of paper account
 }
 
