@@ -28,6 +28,7 @@ doc
 pkg
 log
 tmp
+Gemfile.lock
 
 ## PROJECT::SPECIFIC
 *.db
