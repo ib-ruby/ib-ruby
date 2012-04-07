@@ -1,16 +1,17 @@
-require 'spec_helper'
+require 'model_helper'
 
 describe IB::Models::Order do
 
-  let(:properties) do
-    {:client_id => 1111,
+  let(:props) do
+    {:order_id => 13,
+     :client_id => 1111,
      :perm_id => 173276893,
      :parent_id => 0,
-     :order_type => 'LMT',
+     :order_type => 'MIT',
      :side => 'BUY',
      :limit_price => 0.01,
      :total_quantity => 100,
-     :tif => 'DAY',
+     :tif => 'GTC',
      :open_close => 'C',
      :oca_group => '',
      :oca_type => 3,
@@ -20,61 +21,63 @@ describe IB::Models::Order do
      :delta_neutral_order_type => "HACK",
      :commission_currency => "USD",
      :status => 'PreSubmitted',
-     :transmit => false,
-     :outside_rth => true,
-     :what_if => true,
-     :not_held => true}
+     :transmit => 1,
+     :outside_rth => 0,
+     :what_if => 0,
+     :not_held => 0}
   end
 
-  context "instantiation" do
-    context 'empty without properties' do
-      subject { IB::Order.new }
+  let(:values) do
+    {:what_if => false,
+     :transmit => true,
+     :outside_rth => false,
+     :not_held => false,
+     :side => :buy,
+    }
+  end
 
-      it { should_not be_nil }
-      its(:outside_rth) { should == false }
-      its(:open_close) { should == "O" }
-      its(:origin) { should == IB::Order::Origin_Customer }
-      its(:transmit) { should == true }
-      its(:designated_location) { should == '' }
-      its(:exempt_code) { should == -1 }
-      its(:delta_neutral_order_type) { should == '' }
-      its(:what_if) { should == false }
-      its(:not_held) { should == false }
-      its(:created_at) { should be_a Time }
-    end
+  let(:defaults) do
+    {:outside_rth => false,
+     :open_close => "O",
+     :tif => 'DAY',
+     :order_type => 'LMT',
+     :origin => IB::Order::Origin_Customer,
+     :transmit => true,
+     :designated_location => '',
+     :exempt_code => -1,
+     :delta_neutral_order_type => '',
+     :what_if => false,
+     :not_held => false,
+     :status => 'New'}
+  end
 
-    context 'with properties' do
-      subject { IB::Order.new properties }
+  let(:errors) do
+    {:side=>["should be buy/sell/short"],
+     :order_id => ["is not a number"], }
+  end
 
-      it 'sets properties right' do
-        properties.each do |name, value|
-          subject.send(name).should == value
-        end
-      end
+  let(:assigns) do
+    {:side =>
+         {['BOT', 'BUY', 'Buy', 'buy', :BUY, :BOT, :Buy, :buy, 'B', :b] => :buy,
+          ['SELL', 'SLD', 'Sel', 'sell', :SELL, :SLD, :Sell, :sell, 'S', :S] => :sell,
+          ['SSHORT', 'Short', 'short', :SHORT, :short] => :short},
+     [:what_if, :not_held, :outside_rth, :hidden, :transmit, :block_order, :sweep_to_fill,
+      :override_percentage_constraints, :all_or_none, :etrade_only, :firm_quote_only
+     ] => {[1, true] => true, [0, false]=> false},
+    }
+  end
 
-      context 'essential properties are still set, even if not given explicitely' do
-        its(:created_at) { should be_a Time }
-      end
-    end
-
-    it 'allows setting attributes' do
-      x = IB::Order.new
-      properties.each do |name, value|
-        subject.send("#{name}=", value)
-        subject.send(name).should == value
-      end
-    end
-  end #instantiation
+  it_behaves_like 'Model'
 
   context 'equality' do
-    subject { IB::Order.new properties }
+    subject { IB::Order.new props }
 
     it 'is  self-equal ' do
       should == subject
     end
 
     it 'is equal to Order with the same properties' do
-      should == IB::Order.new(properties)
+      should == IB::Order.new(props)
     end
 
     it 'is not equal for Orders with different limit price' do

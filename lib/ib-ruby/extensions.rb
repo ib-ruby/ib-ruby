@@ -13,6 +13,18 @@ class Fixnum
   end
 end
 
+class TrueClass
+  def to_bool
+    self
+  end
+end
+
+class FalseClass
+  def to_bool
+    self
+  end
+end
+
 ### Patching Object#error in ib-ruby/errors
 #  def error message, type=:standard
 

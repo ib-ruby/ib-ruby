@@ -43,7 +43,6 @@ module IB
       prop :order_id, #  int: Order id associated with client (volatile).
            :client_id, # int: The id of the client that placed this order.
            :perm_id, #   int: TWS permanent id, remains the same over TWS sessions.
-           [:side, :action], # String: Identifies the side: BUY/SELL/SSHORT
            :total_quantity, # int: The order quantity.
 
            :order_type, #  String: Identifies the order type. Valid values are:
@@ -94,12 +93,6 @@ module IB
            :aux_price, #   double: STOP price for stop-limit orders, and the OFFSET amount
            #               for relative orders. In all other cases, specify zero.
 
-           :tif, #         String: Time to Market:
-           #          DAY
-           #          GAT          Good-after-Time/Date
-           #          GTD          Good-till-Date/Time
-           #          GTC          Good-till-Canceled
-           #          IOC          Immediate-or-Cancel
            :oca_group, #   String: Identifies a member of a one-cancels-all group.
            :oca_type, # int: Tells how to handle remaining orders in an OCA group
            #            when one order or part of an order executes. Valid values:
@@ -110,11 +103,8 @@ module IB
            #             overfill protection. This means that only one order in
            #             the group will be routed at a time to remove the
            #             possibility of an overfill.
-           :transmit, #  bool:if false, order will be created but not transmitted.
            :parent_id, # int: The order ID of the parent (original) order, used
            #             for bracket (STP) and auto trailing stop (TRAIL) orders.
-           :block_order, #    bool: the order is an ISE Block order.
-           :sweep_to_fill, #  bool: the order is a Sweep-to-Fill order.
            :display_size, #   int: publicly disclosed order size for Iceberg orders.
 
            :trigger_method, # Specifies how Simulated Stop, Stop-Limit and Trailing
@@ -138,29 +128,16 @@ module IB
            #          and the spread between the bid and ask must be less than
            #          0.1% of the midpoint
 
-           :what_if, # bool: Use to request pre-trade commissions and margin
-           # information. If set to true, margin and commissions data is received
-           # back via the OrderState() object for the openOrder() callback.
-           :not_held, # public boolean  m_notHeld; // Not Held
-           :outside_rth, # bool: allows orders to also trigger or fill outside
-           #               of regular trading hours. (WAS: ignore_rth)
-           :hidden, #      bool: the order will not be visible when viewing
-           #               the market depth. Only for ISLAND exchange.
            :good_after_time, # Indicates that the trade should be submitted after the
            #        time and date set, format YYYYMMDD HH:MM:SS (seconds are optional).
            :good_till_date, # Indicates that the trade should remain working until the
            #        time and date set, format YYYYMMDD HH:MM:SS (seconds are optional).
            #        You must set the :tif to GTD when using this string.
            #        Use an empty String if not applicable.
-           :override_percentage_constraints, # bool: Precautionary constraints defined on
-           # the TWS Presets page ensure that your price and size order values are reasonable.
-           # Orders sent from the API are also validated against these safety constraints,
-           # unless this parameter is set to True.
 
            :rule_80a, # Individual = 'I', Agency = 'A', AgentOtherMember = 'W',
            #            IndividualPTIA = 'J', AgencyPTIA = 'U', AgentOtherMemberPTIA = 'M',
            #            IndividualPT = 'K', AgencyPT = 'Y', AgentOtherMemberPT = 'N'
-           :all_or_none, #      bool: yes=1, no=0
            :min_quantity, #     int: Identifies a minimum quantity order type.
            :percent_offset, #   double: percent offset amount for relative (REL)orders only
            :trail_stop_price, # double: for TRAILLIMIT orders only
@@ -191,8 +168,6 @@ module IB
            # SMART routing only
            :discretionary_amount, # double: The amount off the limit price
            #                        allowed for discretionary orders.
-           :etrade_only, #     bool: Trade with electronic quotes.
-           :firm_quote_only, # bool: Trade with firm quotes.
            :nbbo_price_cap, #  double: Maximum Smart order distance from the NBBO.
            :opt_out_smart_routing, # Australian exchange only, default false
 
@@ -317,6 +292,32 @@ module IB
            :maint_margin, # Float: The impact the order would have on your maintenance margin.
            :equity_with_loan # Float: The impact the order would have on your equity
 
+      # Properties with complex processing logics
+      prop :tif, #  String: Time to Market:
+           #          DAY
+           #          GAT      Good-after-Time/Date
+           #          GTD      Good-till-Date/Time
+           #          GTC      Good-till-Canceled
+           #          IOC      Immediate-or-Cancel
+           :what_if => :bool, # Only return pre-trade commissions and margin info, do not place
+           :not_held => :bool, # Not Held
+           :outside_rth => :bool, # Order may trigger or fill outside of regular hours. (WAS: ignore_rth)
+           :hidden => :bool, # Order will not be visible in market depth. ISLAND only.
+           :transmit => :bool, #  If false, order will be created but not transmitted.
+           :block_order => :bool, #   This is an ISE Block order.
+           :sweep_to_fill => :bool, # This is a Sweep-to-Fill order.
+           :override_percentage_constraints => :bool,
+           # TWS Presets page constraints ensure that your price and size order values
+           # are reasonable. Orders sent from the API are also validated against these
+           # safety constraints, unless this parameter is set to True.
+           :all_or_none => :bool, #     AON
+           :etrade_only => :bool, #     Trade with electronic quotes.
+           :firm_quote_only => :bool, # Trade with firm quotes.
+           [:side, :action] => PROPS[:side] # String: Identifies the side: BUY/SELL/SSHORT
+
+      # Order is not valid without correct :order_id
+      validates_numericality_of :order_id
+
       # Returned in OpenOrder for Bag Contracts
       # public Vector<OrderComboLeg> m_orderComboLegs
       attr_accessor :leg_prices, :combo_params
@@ -326,6 +327,7 @@ module IB
       DEFAULT_PROPS = {:aux_price => 0.0,
                        :parent_id => 0,
                        :tif => 'DAY',
+                       :order_type => 'LMT',
                        :outside_rth => false,
                        :open_close => 'O',
                        :origin => Origin_Customer,
@@ -357,7 +359,8 @@ module IB
       # mixed with data from associated contract. Ugly mix, indeed.
       def serialize_with server, contract
         [contract.serialize_long(:con_id, :sec_id),
-         action, # main order fields
+         # main order fields
+         side == :short ? 'SSHORT' : side,
          total_quantity,
          order_type,
          limit_price,
