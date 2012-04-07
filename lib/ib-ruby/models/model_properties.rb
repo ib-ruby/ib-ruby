@@ -30,6 +30,8 @@ module IB
               }
       }.freeze
 
+      DEFAULT_PROPS = {}
+
       def self.included base
         base.extend Macros
 

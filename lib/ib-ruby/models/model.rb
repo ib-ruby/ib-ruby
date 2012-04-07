@@ -9,7 +9,7 @@ module IB
       def self.for subclass
         if DB
           case subclass
-            when :execution
+            when :execution, :bar
               # Just one AR model introduced for now...
               ActiveRecord::Base
             else
@@ -19,8 +19,6 @@ module IB
           Model
         end
       end
-
-      DEFAULT_PROPS = {}
 
       # If a opts hash is given, keys are taken as attribute names, values as data.
       # The model instance fields are then set automatically from the opts Hash.

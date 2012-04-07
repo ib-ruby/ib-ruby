@@ -10,7 +10,19 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 101) do
+ActiveRecord::Schema.define(:version => 111) do
+
+  create_table "bars", :force => true do |t|
+    t.string  "time",     :limit => 18
+    t.float   "open"
+    t.float   "high"
+    t.float   "low"
+    t.float   "close"
+    t.float   "wap"
+    t.integer "volume"
+    t.integer "trades"
+    t.boolean "has_gaps", :limit => 1
+  end
 
   create_table "executions", :force => true do |t|
     t.integer "order_id"
