@@ -35,7 +35,7 @@ module IB
       def self.included base
         base.extend Macros
 
-        # Extending lighweight (not DB-backed) class
+        # Extending lighweight (not DB-backed) Model class
         unless base.ancestors.include? ActiveModel::Validations
           base.send :include, ActiveModel::Validations
 

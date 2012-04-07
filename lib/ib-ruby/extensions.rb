@@ -25,6 +25,20 @@ class FalseClass
   end
 end
 
+class String
+  def to_bool
+    case self.chomp.upcase
+      when 'TRUE', 'T'
+       true
+      when 'FALSE', 'F', ''
+       false
+      else
+        error "Unable to convert #{self} to bool"
+    end
+  end
+end
+
+
 ### Patching Object#error in ib-ruby/errors
 #  def error message, type=:standard
 
