@@ -5,6 +5,10 @@ module IB
     class Execution < Model.for(:execution)
       include ModelProperties
 
+      VALUES ={
+          :side => {'B' => :buy, 'S' => :sell},
+      }.freeze
+
       prop :order_id, #     int: order id. TWS orders have a fixed order id of 0.
            :client_id, #    int: client id. TWS orders have a fixed client id of 0.
            :perm_id, #      int: TWS id used to identify orders over TWS sessions
@@ -19,10 +23,16 @@ module IB
            :shares, #       int: The number of shares filled.
            :cumulative_quantity, # int: Cumulative quantity. Used in regular
            #                            trades, combo trades and legs of the combo
-           :liquidation, #  int: This position is liquidated last should the need arise.
-           :side => #     String: Was the transaction a buy or a sale: BOT|SLD
+           :liquidation => :bool, #  int: This position is liquidated last should the need arise.
+           [:side, :action] => # String: Was the transaction a buy or a sale: BOT|SLD
                {:set => proc { |val| self[:side] = val.to_s.upcase[0..0] },
-                :get => proc { | | self[:side] == 'B' ? :buy : :sell }}
+                :get => proc { | | VALUES[:side][self[:side]] }, # :buy / :sell
+                :validate => {:format => {:with => /^buy|sell$/,
+                                          :message => "should be buy or sell"}},
+               }
+
+      # Extra validations
+      validates_numericality_of :shares, :cumulative_quantity, :price, :average_price
 
       DEFAULT_PROPS = {:order_id => 0,
                        :client_id => 0,

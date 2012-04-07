@@ -1,3 +1,6 @@
+require 'active_model'
+#require 'active_model/validations'
+
 module IB
   module Models
 
@@ -6,19 +9,15 @@ module IB
 
       def self.included base
         base.extend Macros
+        base.send :include, ActiveModel::Validations unless base.ancestors.include? ActiveModel::Validations
       end
 
       attr_reader :created_at
 
       def initialize opts={}
-        #p 'init fired!'
         @created_at = Time.now
         super self.class::DEFAULT_PROPS.merge(opts)
       end
-
-      #def after_initialize
-      #  puts "I'm Initializing!"
-      #end
 
       module Macros
         def prop *properties
@@ -55,10 +54,14 @@ module IB
                                       :set => body[1],
                                       :validate => body[2]
             when Hash # recursion ends HERE!
+
+              # Define getter
               define_method(name, &body[:get] || proc { self[name] })
 
+              # Define setter
               define_method("#{name}=", &body[:set] || proc { |value| self[name] = value })
 
+              # Define validator(s)
               [body[:validate]].flatten.compact.each do |validator|
                 case validator
                   when Proc
@@ -66,8 +69,8 @@ module IB
                   when Hash
                     validates name, validator
                 end
-
               end
+
             else
               define_property_methods name, :set =>
                   proc { |value| self[name] = value.send "to_#{body}" }

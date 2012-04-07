@@ -17,7 +17,7 @@ ActiveRecord::Schema.define(:version => 101) do
     t.integer "client_id"
     t.integer "perm_id"
     t.string  "exec_id"
-    t.string  "time"
+    t.string  "time",                :limit => 18
     t.string  "exchange"
     t.string  "order_ref"
     t.string  "account_name"
@@ -25,8 +25,8 @@ ActiveRecord::Schema.define(:version => 101) do
     t.float   "average_price"
     t.integer "shares"
     t.integer "cumulative_quantity"
-    t.integer "liquidation"
-    t.string  "side"
+    t.boolean "liquidation",         :limit => 1
+    t.string  "side",                :limit => 1
   end
 
 end
