@@ -7,9 +7,37 @@ module IB
     # Module adds prop Macro and
     module ModelProperties
 
+      # Short codes for most common Model properties
+      CODES = {
+          :side => {'B' => :buy, 'S' => :sell, 'H' => :short},
+      }.freeze
+
+      # Most common property processors
+      PROPS = {
+          :side =>
+              {:get => proc { | | CODES[:side][self[:side]] }, # :buy / :sell / :short
+               :set => proc { |val| # BUY/SELL/SSHORT/BOT/SOLD
+                 self[:side] = case val.to_s.upcase
+                                 when /SHORT/
+                                   'H'
+                                 when /^B/
+                                   'B'
+                                 when /^S/
+                                   'S'
+                               end },
+               :validate => {:format => {:with => /^buy|sell|short$/,
+                                         :message => "should be buy/sell/short"}},
+              }
+      }.freeze
+
       def self.included base
         base.extend Macros
-        base.send :include, ActiveModel::Validations unless base.ancestors.include? ActiveModel::Validations
+
+        # Extending lighweight (not DB-backed) class
+        unless base.ancestors.include? ActiveModel::Validations
+          base.send :include, ActiveModel::Validations
+
+        end
       end
 
       attr_reader :created_at
@@ -67,7 +95,7 @@ module IB
                   when Proc
                     validates_each name, &validator
                   when Hash
-                    validates name, validator
+                    validates name, validator.dup
                 end
               end
 
