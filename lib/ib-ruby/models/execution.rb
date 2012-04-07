@@ -9,7 +9,8 @@ module IB
            :client_id, #    int: client id. TWS orders have a fixed client id of 0.
            :perm_id, #      int: TWS id used to identify orders over TWS sessions
            :exec_id, #      String: Unique order execution id over TWS sessions.
-           :time, #         String: The order execution time.
+           :time, #         # TODO: convert into Time object?
+           #                String: The order execution time.
            :exchange, #     String: Exchange that executed the order.
            :order_ref, #  int: Same order_ref as in corresponding Order
            [:account_name, :account_number], # String: The customer account number.

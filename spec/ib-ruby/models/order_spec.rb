@@ -63,7 +63,7 @@ describe IB::Models::Order do
           ['SSHORT', 'Short', 'short', :SHORT, :short] => :short},
      [:what_if, :not_held, :outside_rth, :hidden, :transmit, :block_order, :sweep_to_fill,
       :override_percentage_constraints, :all_or_none, :etrade_only, :firm_quote_only
-     ] => {[1, true] => true, [0, false]=> false},
+     ] => {[1, true] => true, [0, false] => false},
     }
   end
 

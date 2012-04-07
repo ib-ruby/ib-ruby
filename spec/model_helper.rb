@@ -18,7 +18,7 @@ shared_examples_for 'Model instantiated empty' do
   it { should_not be_nil }
 
   it 'sets all properties to defaults' do
-    defaults.each do |name, value|
+    defined?(defaults) && defaults.each do |name, value|
       case value
         when Module
           subject.send(name).should be_a value
@@ -58,7 +58,7 @@ shared_examples_for 'Model properties' do
   end
 
   it 'sets values to properties as directed by its setters' do
-    assigns.each do |props, cases|
+    defined?(assigns) && assigns.each do |props, cases|
       [props].flatten.each do |prop|
         cases.each do |values, result|
           [values].flatten.each do |value|
@@ -108,7 +108,7 @@ shared_examples_for 'Invalid Model' do
     subject.should_not be_valid
     subject.should be_invalid
     subject.errors.should_not be_empty
-    subject.errors.messages.should == errors if errors
+    subject.errors.messages.should == errors if defined? errors
   end
 
   context 'with DB backend', :db => true do

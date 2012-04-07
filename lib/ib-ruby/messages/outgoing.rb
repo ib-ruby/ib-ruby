@@ -174,8 +174,8 @@ module IB
       #                       have override set to "yes" the natural action would be
       #                       overridden and the out-of-the money option would be
       #                       exercised. Values are:
-      #                              • 0 = do not override
-      #                              • 1 = override
+      #                              - 0 = do not override
+      #                              - 1 = override
       ExerciseOptions = def_message(21,
                                     [:contract, :serialize_short],
                                     :exercise_action,
@@ -251,12 +251,12 @@ module IB
       #                                'STOCK.HK' - Asian stocks
       #                                'STOCK.EU' - European stocks
       #  :location_code => Legal Values include:
-      #                           • STK.US - US stocks
-      #                           • STK.US.MAJOR - US stocks (without pink sheet)
-      #                           • STK.US.MINOR - US stocks (only pink sheet)
-      #                           • STK.HK.SEHK - Hong Kong stocks
-      #                           • STK.HK.ASX - Australian Stocks
-      #                           • STK.EU - European stocks
+      #                           - STK.US - US stocks
+      #                           - STK.US.MAJOR - US stocks (without pink sheet)
+      #                           - STK.US.MINOR - US stocks (only pink sheet)
+      #                           - STK.HK.SEHK - Hong Kong stocks
+      #                           - STK.HK.ASX - Australian Stocks
+      #                           - STK.EU - European stocks
       #  :scan_code => The type of the scan, such as HIGH_OPT_VOLUME_PUT_CALL_RATIO.
       #  :above_price => double: Only contracts with a price above this value.
       #  :below_price => double: Only contracts with a price below this value.

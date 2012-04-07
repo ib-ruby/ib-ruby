@@ -44,7 +44,7 @@ describe IB::Models::Execution do # AKA IB::Execution
     {:side =>
          {['BOT', 'BUY', 'Buy', 'buy', :BUY, :BOT, :Buy, :buy, 'B', :b] => :buy,
           ['SELL', 'SLD', 'Sel', 'sell', :SELL, :SLD, :Sell, :sell, 'S', :S] => :sell},
-     :liquidation => {1 => true, 0 => false},
+     :liquidation => {[1, true] => true, [0, false] => false},
     }
   end
 
