@@ -1,44 +1,5 @@
 require 'model_helper'
 
-shared_examples_for 'Contract' do
-  it 'summary points to itself (ContractDetails artifact' do
-    subject.summary.should == subject
-  end
-
-  it 'becomes invalid if assigned wrong :sec_type property' do
-    c = IB::Contract.new props
-    c.should be_valid
-    c.sec_type = 'FOO'
-    c.should be_invalid
-    c.errors.messages.should == {:sec_type => ["should be valid security type"]}
-  end
-
-  it 'becomes invalid if assigned wrong :right property' do
-    c = IB::Contract.new props
-    c.should be_valid
-    c.right = 'BAR'
-    c.should be_invalid
-    c.errors.messages.should == {:right => ["should be put, call or nil"]}
-  end
-
-  it 'becomes invalid if assigned wrong :expiry property' do
-    c = IB::Contract.new props
-    c.should be_valid
-    c.expiry = 'BAR'
-    c.should be_invalid
-    c.errors.messages.should == {:expiry => ["should be YYYYMM or YYYYMMDD"]}
-  end
-
-  it 'becomes invalid if primary_exchange is set to SMART' do
-    c = IB::Contract.new props
-    c.should be_valid
-    c.primary_exchange = 'SMART'
-    c.should be_invalid
-    c.errors.messages.should == {:primary_exchange => ["should not be SMART"]}
-  end
-
-end
-
 describe IB::Models::Contracts::Contract do # AKA IB::Contract
 
   let(:props) do
@@ -81,7 +42,7 @@ describe IB::Models::Contracts::Contract do # AKA IB::Contract
          {[200609, '200609'] => '200609',
           [nil, ''] => nil},
      :multiplier => {['123', 123] => 123},
-     :sec_type => IB::SECURITY_TYPES.values,
+     :sec_type => IB::Contract::CODES[:sec_type].invert,
      :right =>
          {["PUT", "put", "P", "p", :put] => 'PUT',
           ["CALL", "call", "C", "c", :call] => 'CALL'},

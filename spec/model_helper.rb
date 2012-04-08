@@ -139,3 +139,34 @@ shared_examples_for 'Invalid Model' do
     end
   end # DB
 end
+
+shared_examples_for 'Contract' do
+  it 'summary points to itself (ContractDetails artifact' do
+    subject.summary.should == subject
+  end
+
+  it 'becomes invalid if assigned wrong :sec_type property' do
+    subject.sec_type = 'FOO'
+    subject.should be_invalid
+    subject.errors.messages[:sec_type].should include "should be valid security type"
+  end
+
+  it 'becomes invalid if assigned wrong :right property' do
+    subject.right = 'BAR'
+    subject.should be_invalid
+    subject.errors.messages[:right].should include "should be put, call or nil"
+  end
+
+  it 'becomes invalid if assigned wrong :expiry property' do
+    subject.expiry = 'BAR'
+    subject.should be_invalid
+    subject.errors.messages[:expiry].should include "should be YYYYMM or YYYYMMDD"
+  end
+
+  it 'becomes invalid if primary_exchange is set to SMART' do
+    subject.primary_exchange = 'SMART'
+    subject.should be_invalid
+    subject.errors.messages[:primary_exchange].should include "should not be SMART"
+  end
+
+end

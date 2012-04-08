@@ -259,9 +259,9 @@ module IB
           if sec_type == SECURITY_TYPES[:bond] || sec_type == SECURITY_TYPES[:option]
             return false if right != other.right || strike != other.strike
             return false if multiplier && other.multiplier && multiplier != other.multiplier
-            return false if expiry[0..5] != other.expiry[0..5]
-            return false unless expiry[6..7] == other.expiry[6..7] ||
-                expiry[6..7].empty? || other.expiry[6..7].empty?
+            return false if expiry && expiry[0..5] != other.expiry[0..5]
+            return false unless expiry && (expiry[6..7] == other.expiry[6..7] ||
+                expiry[6..7].empty? || other.expiry[6..7].empty?)
           end
 
           # All else being equal...
