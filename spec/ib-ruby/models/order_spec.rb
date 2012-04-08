@@ -68,17 +68,12 @@ describe IB::Models::Order do
   end
 
   it_behaves_like 'Model'
+  it_behaves_like 'Self-equal Model'
 
   context 'equality' do
     subject { IB::Order.new props }
 
-    it 'is  self-equal ' do
-      should == subject
-    end
-
-    it 'is equal to Order with the same properties' do
-      should == IB::Order.new(props)
-    end
+    it_behaves_like 'Self-equal Model'
 
     it 'is not equal for Orders with different limit price' do
       order1 = IB::Order.new :total_quantity => 100,

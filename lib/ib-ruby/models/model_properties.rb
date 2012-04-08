@@ -10,6 +10,14 @@ module IB
       # Short codes for most common Model properties
       CODES = {
           :side => {'B' => :buy, 'S' => :sell, 'H' => :short},
+          :sec_type => {'STK' => :stock,
+                        'OPT' => :option,
+                        'FUT' => :future,
+                        'IND' => :index,
+                        'FOP' => :futures_option,
+                        'CASH' => :forex,
+                        'BOND' => :bond,
+                        'BAG' => :bag},
       }.freeze
 
       # Most common property processors

@@ -38,7 +38,6 @@ class String
   end
 end
 
-
 ### Patching Object#error in ib-ruby/errors
 #  def error message, type=:standard
 

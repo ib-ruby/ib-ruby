@@ -14,6 +14,18 @@ shared_examples_for 'Model' do
   end
 end
 
+shared_examples_for 'Self-equal Model' do
+  subject { described_class.new(props) }
+
+  it 'is self-equal ' do
+    should == subject
+  end
+
+  it 'is equal to Model with the same properties' do
+    should == described_class.new(props)
+  end
+end
+
 shared_examples_for 'Model instantiated empty' do
   it { should_not be_nil }
 
@@ -60,7 +72,8 @@ shared_examples_for 'Model properties' do
   it 'sets values to properties as directed by its setters' do
     defined?(assigns) && assigns.each do |props, cases|
       [props].flatten.each do |prop|
-        cases.each do |values, result|
+        (cases.is_a?(Array) ? cases.map { |e| [e, e] } : cases).
+            each do |values, result|
           [values].flatten.each do |value|
             expect {
               subject.send "#{prop}=", value

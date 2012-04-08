@@ -16,7 +16,8 @@ module IB
                :min15 => '15 mins',
                :min30 => '30 mins',
                :hour1 => '1 hour',
-               :day1 => '1 day'}
+               :day1 => '1 day'
+  }.freeze
 
   # Enumeration of data types.
   # Determines the nature of data being extracted. Valid values:
@@ -29,7 +30,7 @@ module IB
                 :option_implied_volatility => 'OPTION_IMPLIED_VOLATILITY',
                 :option_volume => 'OPTION_VOLUME',
                 :option_open_interest => 'OPTION_OPEN_INTEREST',
-  }
+  }.freeze
 
   # Valid security types (sec_type attribute of IB::Contract)
   SECURITY_TYPES = {:stock => "STK",
@@ -39,7 +40,8 @@ module IB
                     :futures_option => "FOP",
                     :forex => "CASH",
                     :bond => "BOND",
-                    :bag => "BAG"}
+                    :bag => "BAG"
+  }.freeze
 
   ### These values are typically received from TWS in incoming messages
 

@@ -21,7 +21,6 @@ module IB
         # Fields are Strings unless noted otherwise
         prop :con_id, # int: The unique contract identifier.
              :symbol, # This is the symbol of the underlying asset.
-             :sec_type, # Security type. Valid values are: SECURITY_TYPES
              :strike, # double: The strike price.
              :exchange, # The order destination, such as Smart.
              :currency, # Only needed if there is an ambiguity, e.g. when SMART exchange
@@ -47,19 +46,19 @@ module IB
              # COMBOS
              :legs_description, # received in OpenOrder for all combos
 
-             :multiplier => :i,
              # Future/option contract multiplier (only needed when multiple possibilities exist)
+             :multiplier => :i,
 
+             # Non-aggregate (ie not the SMART) exchange that the contract trades on.
              :primary_exchange =>
-                 # non-aggregate (ie not the SMART) exchange that the contract trades on.
-                 proc { |val|
-                   val.upcase! if val.is_a?(String)
-                   error "Don't set primary_exchange to smart", :args if val == 'SMART'
-                   self[:primary_exchange] = val
+                 {:set => proc { |val| self[:primary_exchange] = val.to_s.upcase },
+                  :validate => {:format => {:without => /^SMART$/,
+                                            :message => "should not be SMART"}}
                  },
 
-             :right => # Specifies a Put or Call. Valid input values are: P, PUT, C, CALL
-                 proc { |val|
+             # Specifies a Put or Call. Valid input values are: P, PUT, C, CALL
+             :right =>
+                 {:set => proc { |val|
                    self[:right] =
                        case val.to_s.upcase
                          when '', '0', '?'
@@ -69,31 +68,26 @@ module IB
                          when 'CALL', 'C'
                            'CALL'
                          else
-                           error "Right must be one of PUT, CALL, P, C - not '#{val}'", :args
-                       end
+                           val
+                       end },
+                  :validate => {:format => {:with => /^PUT$|^CALL$|^$/,
+                                            :message => "should be put, call or nil"}}
                  },
 
-             :expiry => # The expiration date. Use the format YYYYMM.
-                 proc { |val|
-                   self[:expiry] =
-                       case val.to_s
-                         when /\d{6,8}/
-                           val.to_s
-                         when nil, ''
-                           nil
-                         else
-                           error "Invalid expiry '#{val}' (must be in format YYYYMM or YYYYMMDD)", :args
-                       end
+             # The expiration date. Use the format YYYYMM
+             :expiry =>
+                 {:set => proc { |val| self[:expiry] = val.to_s.empty? ? nil : val.to_s },
+                  :validate => {:format => {:with => /\d{6}|\d{8}|^$/,
+                                            :message => "should be YYYYMM or YYYYMMDD"}}
                  },
 
-             :sec_type => # Security type. Valid values are: SECURITY_TYPES
-                 proc { |val|
-                   val = nil if !val.nil? && val.empty?
-                   unless val.nil? || SECURITY_TYPES.values.include?(val)
-                     error "Invalid security type '#{val}' (must be one of #{SECURITY_TYPES.values}", :args
-                   end
-                   self[:sec_type] = val
-                 }
+             # Security type. Valid values are: SECURITY_TYPES
+             :sec_type =>
+                 {:set => proc { |val| # either string, of symbol like :stock
+                   self[:sec_type] = CODES[:sec_type][val] ?
+                       val : CODES[:sec_type].invert[val] },
+                  :validate => {:format => {:with => /^STK$|^OPT$|^FUT$|^IND$|^FOP$|^CASH$|^BOND$|^BAG$/,
+                                            :message => "should be valid security type"}}}
 
         # ContractDetails fields are bundled into Contract proper, as it should be
         # All fields Strings, unless specified otherwise:
@@ -127,17 +121,17 @@ module IB
              :desc_append, # Additional descriptive information about the bond.
              :bond_type, #   The type of bond, such as "CORP."
              :coupon_type, # The type of bond coupon.
-             :callable, # bool: Can be called by the issuer under certain conditions.
-             :puttable, # bool: Can be sold back to the issuer under certain conditions
              :coupon, # double: The interest rate used to calculate the amount you
              #          will receive in interest payments over the year. default 0
-             :convertible, # bool: Can be converted to stock under certain conditions.
              :maturity, # The date on which the issuer must repay bond face value
              :issue_date, # The date the bond was issued.
              :next_option_date, # only if bond has embedded options.
              :next_option_type, # only if bond has embedded options.
-             :next_option_partial, # bool: # only if bond has embedded options.
-             :notes # Additional notes, if populated for the bond in IB's database
+             :notes, # Additional notes, if populated for the bond in IB's database
+             :callable => :bool, # Can be called by the issuer under certain conditions.
+             :puttable => :bool, # Can be sold back to the issuer under certain conditions
+             :convertible => :bool, # Can be converted to stock under certain conditions.
+             :next_option_partial => :bool # # only if bond has embedded options.
 
         # Used for Delta-Neutral Combo contracts only!
         # UnderComp fields are bundled into Contract proper, as it should be.

@@ -1,216 +1,126 @@
-require 'spec_helper'
+require 'model_helper'
+
+shared_examples_for 'Contract' do
+  it 'summary points to itself (ContractDetails artifact' do
+    subject.summary.should == subject
+  end
+
+  it 'becomes invalid if assigned wrong :sec_type property' do
+    c = IB::Contract.new props
+    c.should be_valid
+    c.sec_type = 'FOO'
+    c.should be_invalid
+    c.errors.messages.should == {:sec_type => ["should be valid security type"]}
+  end
+
+  it 'becomes invalid if assigned wrong :right property' do
+    c = IB::Contract.new props
+    c.should be_valid
+    c.right = 'BAR'
+    c.should be_invalid
+    c.errors.messages.should == {:right => ["should be put, call or nil"]}
+  end
+
+  it 'becomes invalid if assigned wrong :expiry property' do
+    c = IB::Contract.new props
+    c.should be_valid
+    c.expiry = 'BAR'
+    c.should be_invalid
+    c.errors.messages.should == {:expiry => ["should be YYYYMM or YYYYMMDD"]}
+  end
+
+  it 'becomes invalid if primary_exchange is set to SMART' do
+    c = IB::Contract.new props
+    c.should be_valid
+    c.primary_exchange = 'SMART'
+    c.should be_invalid
+    c.errors.messages.should == {:primary_exchange => ["should not be SMART"]}
+  end
+
+end
 
 describe IB::Models::Contracts::Contract do # AKA IB::Contract
 
-  let(:properties) do
-    {:symbol => "TEST",
-     :sec_type => IB::SECURITY_TYPES[:stock],
-     :expiry => '200609',
-     :strike => 1234,
-     :right => "PUT",
-     :multiplier => 123,
-     :exchange => "SMART",
-     :currency => "USD",
-     :local_symbol => "baz"}
+  let(:props) do
+    {:symbol => 'AAPL',
+     :sec_type => :option,
+     :expiry => '201301',
+     :strike => 600,
+     :right => :put,
+     :multiplier => 10,
+     :exchange => 'SMART',
+     :currency => 'USD',
+     :local_symbol => 'AAPL  130119C00500000'}
   end
 
-  context "instantiation" do
-    context 'using fully qualified class name without properties' do
-      subject { IB::Models::Contract.new }
+  let(:values) do
+    {:right => 'PUT',
+     :sec_type => 'OPT',
+    }
+  end
 
-      it { should_not be_nil }
-      its(:con_id) { should == 0 }
-      its(:strike) { should == 0 }
-      its(:sec_type) { should be_nil }
-      its(:created_at) { should be_a Time }
-      its(:include_expired) { should == false }
-    end
+  let(:defaults) do
+    {:con_id => 0,
+     :strike => 0,
+     :min_tick => 0,
+     :coupon => 0,
+     :callable => false,
+     :puttable => false,
+     :convertible => false,
+     :next_option_partial => false,
+     :include_expired => false}
+  end
 
-    context 'using short class name without properties' do
-      subject { IB::Contract.new }
+  let(:errors) do
+    {:sec_type => ["should be valid security type"],
+    }
+  end
 
-      it { should_not be_nil }
-      its(:con_id) { should == 0 }
-      its(:strike) { should == 0 }
-      its(:sec_type) { should be_nil }
-      its(:created_at) { should be_a Time }
-      its(:include_expired) { should == false }
-    end
+  let(:assigns) do
+    {:expiry =>
+         {[200609, '200609'] => '200609',
+          [nil, ''] => nil},
+     :multiplier => {['123', 123] => 123},
+     :sec_type => IB::SECURITY_TYPES.values,
+     :right =>
+         {["PUT", "put", "P", "p", :put] => 'PUT',
+          ["CALL", "call", "C", "c", :call] => 'CALL'},
+     # ContractDetails properties
+     [:under_con_id, :min_tick, :coupon] => {123 => 123},
+     [:callable, :puttable, :convertible, :next_option_partial] =>
+         {[1, true] => true, [0, false] => false},
+    }
+  end
 
-    context 'with properties' do
-      subject { IB::Contract.new properties }
+  it_behaves_like 'Model'
+  it_behaves_like 'Self-equal Model'
 
-      it 'sets properties right' do
-        properties.each do |name, value|
-          subject.send(name).should == value
-        end
-      end
+  context 'using shorter class name without properties' do
+    subject { IB::Models::Contract.new }
+    it_behaves_like 'Model instantiated empty'
+    it_behaves_like 'Self-equal Model'
+    it_behaves_like 'Contract'
+  end
 
-      context 'essential properties are still set, even if not given explicitely' do
-        its(:con_id) { should == 0 }
-        its(:created_at) { should be_a Time }
-        its(:include_expired) { should == false }
-      end
-    end
-
-    context "ContractDetails properties" do
-      let(:detailed_properties) do
-        {:under_con_id => 123,
-         :min_tick=> 1234,
-         :callable => true,
-         :puttable => true,
-         :coupon => 12345,
-         :convertible => true,
-         :next_option_partial => true}
-      end
-
-      context 'empty without properties' do
-        subject { IB::Contract.new }
-
-        its(:summary) { should == subject }
-        its(:under_con_id) { should == 0 }
-        its(:min_tick) { should == 0 }
-        its(:callable) { should == false }
-        its(:puttable) { should == false }
-        its(:coupon) { should == 0 }
-        its(:convertible) { should == false }
-        its(:next_option_partial) { should == false }
-        its(:created_at) { should be_a Time }
-      end
-
-      context 'with properties' do
-        subject { IB::Contract.new detailed_properties }
-
-        its(:summary) { should == subject }
-        its(:created_at) { should be_a Time }
-
-        it 'sets properties right' do
-          detailed_properties.each do |name, value|
-            subject.send(name).should == value
-          end
-        end
-      end
-    end #instantiation
-
-    it 'allows setting attributes' do
-      expect {
-        x = IB::Contract.new
-        properties.each do |name, value|
-          subject.send("#{name}=", value)
-          subject.send(name).should == value
-        end
-        x.expiry = 200609
-        x.expiry.should == '200609'
-      }.to_not raise_error
-    end
-
-    it 'allows setting ContractDetails attributes' do
-      x = IB::Contract.new
-      expect {
-        x.callable = true
-        x.puttable = true
-        x.convertible = true
-        x.under_con_id = 321
-        x.min_tick = 123
-        x.next_option_partial = true
-      }.to_not raise_error
-
-      x.callable.should == true
-      x.puttable.should == true
-      x.convertible.should == true
-      x.under_con_id.should == 321
-      x.min_tick.should == 123
-      x.next_option_partial.should == true
-    end
-
-    it 'converts multiplier to int' do
-      expect { @contract = IB::Contract.new(:multiplier => '123') }.to_not raise_error
-      expect { @contract.multiplier = '123' }.to_not raise_error
-      @contract.multiplier.should == 123
-    end
-
-    it 'raises on wrong security type' do
-      expect { IB::Contract.new(:sec_type => "asdf") }.to raise_error ArgumentError
-
-      expect { IB::Contract.new.sec_type = "asdf" }.to raise_error ArgumentError
-    end
-
-    it 'accepts pre-determined security types' do
-      IB::SECURITY_TYPES.values.each do |type|
-        expect { IB::Contract.new(:sec_type => type) }.to_not raise_error
-
-        expect { IB::Contract.new.sec_type = type }.to_not raise_error
-      end
-    end
-
-    it 'raises on wrong expiry' do
-      expect { IB::Contract.new(:expiry => "foo") }.to raise_error ArgumentError
-
-      expect { IB::Contract.new.expiry = "foo" }.to raise_error ArgumentError
-    end
-
-    it 'accepts correct expiry' do
-      expect { IB::Contract.new(:expiry => "200607") }.to_not raise_error
-
-      expect { IB::Contract.new.expiry = "200607" }.to_not raise_error
-
-      expect { IB::Contract.new(:expiry => 200607) }.to_not raise_error
-
-      expect {
-        x = IB::Contract.new
-        x.expiry = 200607
-        x.expiry.should == "200607" # converted to a string
-      }.to_not raise_error
-    end
-
-    it 'raises on incorrect right (option type)' do
-      expect { IB::Contract.new(:right => "foo") }.to raise_error ArgumentError
-      expect { IB::Contract.new.right = "foo" }.to raise_error ArgumentError
-    end
-
-    it 'accepts all correct values for right (option type)' do
-      ["PUT", "put", "P", "p"].each do |right|
-        expect { @contract = IB::Contract.new(:right => right) }.to_not raise_error
-        @contract.right.should == "PUT"
-
-        expect { @contract.right = right }.to_not raise_error
-        @contract.right.should == "PUT"
-      end
-
-      ["CALL", "call", "C", "c"].each do |right|
-        expect { @contract = IB::Contract.new(:right => right) }.to_not raise_error
-        @contract.right.should == "CALL"
-
-        expect { @contract.right = right }.to_not raise_error
-        @contract.right.should == "CALL"
-      end
-    end
-  end #instantiation
+  context 'using shortest class name without properties' do
+    subject { IB::Contract.new }
+    it_behaves_like 'Model instantiated empty'
+    it_behaves_like 'Self-equal Model'
+    it_behaves_like 'Contract'
+  end
 
   context "serialization" do
-    subject { IB::Contract.new properties }
+    subject { IB::Contract.new props }
 
     it "serializes long" do
       subject.serialize_long.should ==
-          ["TEST", IB::SECURITY_TYPES[:stock], "200609", 1234, "PUT", 123, "SMART", nil, "USD", "baz"]
+          ["AAPL", "OPT", "201301", 600, "PUT", 10, "SMART", nil, "USD", "AAPL  130119C00500000"]
     end
 
     it "serializes short" do
       subject.serialize_short.should ==
-          ["TEST", IB::SECURITY_TYPES[:stock], "200609", 1234, "PUT", 123, "SMART", "USD", "baz"]
+          ["AAPL", "OPT", "201301", 600, "PUT", 10, "SMART", "USD", "AAPL  130119C00500000"]
     end
   end #serialization
-
-  context 'equality' do
-    subject { IB::Contract.new properties }
-
-    it 'be self-equal ' do
-      should == subject
-    end
-
-    it 'be equal to object with the same properties' do
-      should == IB::Contract.new(properties)
-    end
-  end
 
 end # describe IB::Contract
