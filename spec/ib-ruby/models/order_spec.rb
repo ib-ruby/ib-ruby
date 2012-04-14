@@ -1,9 +1,5 @@
 require 'model_helper'
 
-def codes_and_values_for property
-  Hash[IB::VALUES[property].map { |code, value| [[code, value], value] }]
-end
-
 describe IB::Models::Order do
 
   let(:props) do
@@ -31,8 +27,8 @@ describe IB::Models::Order do
      :not_held => true}
   end
 
-  let(:values) do
-    {}
+  let(:human) do
+    "<Order: MIT GTC buy 100 PreSubmitted 0.01 id: 23/173276893 from: 1111/>"
   end
 
   let(:defaults) do
@@ -81,15 +77,6 @@ describe IB::Models::Order do
   it_behaves_like 'Model'
   it_behaves_like 'Self-equal Model'
 
-  context 'presentation' do
-    subject { IB::Order.new props }
-
-    it 'can be converted to short human-readeable format' do
-      subject.to_human.should ==
-          "<Order: MIT GTC buy 100 PreSubmitted 0.01 id: 23/173276893 from: 1111/>"
-    end
-
-  end
 
   context 'equality' do
     subject { IB::Order.new props }

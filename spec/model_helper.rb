@@ -1,5 +1,9 @@
 require 'spec_helper'
 
+def codes_and_values_for property
+  Hash[IB::VALUES[property].map { |code, value| [[code, value], value] }]
+end
+
 shared_examples_for 'Model' do
   context 'instantiation without properties' do
     subject { described_class.new }
@@ -11,6 +15,11 @@ shared_examples_for 'Model' do
     subject { described_class.new props }
 
     it_behaves_like 'Model instantiated with properties'
+
+
+    it 'has correct human-readeable format' do
+      subject.to_human.should == human
+    end
   end
 end
 
@@ -47,7 +56,7 @@ end
 shared_examples_for 'Model instantiated with properties' do
   it 'auto-assigns all properties given to initializer' do
     props.each do |name, value|
-      subject.send(name).should == (values[name].nil? ? value : values[name])
+      subject.send(name).should == value
     end
   end
 
@@ -64,13 +73,15 @@ shared_examples_for 'Model properties' do
     expect {
       props.each do |name, value|
         subject.send("#{name}=", value)
-        subject.send(name).should == (values[name].nil? ? value : values[name])
+        subject.send(name).should == value
       end
     }.to_not raise_error
   end
 
   it 'sets values to properties as directed by its setters' do
     defined?(assigns) && assigns.each do |props, cases|
+      #p props, cases
+
       # For each given property ...
       [props].flatten.each do |prop|
 
@@ -79,7 +90,6 @@ shared_examples_for 'Model properties' do
 
           # For all values in this test case ...
           [values].flatten.each do |value|
-            #p value, result
 
             # Assigning this value to property results in ...
             case result
@@ -90,7 +100,13 @@ shared_examples_for 'Model properties' do
               when Regexp # ... Non-exceptional error, making model invalid
                 expect { subject.send "#{prop}=", value }.to_not raise_error
                 subject.should be_invalid
-                subject.errors.messages[prop].first.should =~ result
+
+                #pp subject.errors.messages
+                #p value, result
+
+                subject.errors.messages[prop].should_not be_nil
+                subject.errors.messages[prop].
+                    any? { |msg| msg =~ result }.should be_true
 
               else # ... correct uniform assignment to result
                 expect { subject.send "#{prop}=", value }.to_not raise_error
@@ -106,6 +122,7 @@ end
 
 shared_examples_for 'Valid Model' do
   it 'validates' do
+    #subject.valid?
     #pp subject.errors.messages
     subject.should be_valid
     subject.errors.should be_empty
@@ -128,7 +145,7 @@ shared_examples_for 'Valid Model' do
       model.should == subject
       model.should be_valid
       props.each do |name, value|
-        model.send(name).should == (values[name].nil? ? value : values[name])
+        model.send(name).should == value
       end
     end
   end # DB
@@ -172,7 +189,7 @@ shared_examples_for 'Contract' do
   it 'becomes invalid if assigned wrong :right property' do
     subject.right = 'BAR'
     subject.should be_invalid
-    subject.errors.messages[:right].should include "should be put, call or nil"
+    subject.errors.messages[:right].should include "should be put, call or none"
   end
 
   it 'becomes invalid if assigned wrong :expiry property' do

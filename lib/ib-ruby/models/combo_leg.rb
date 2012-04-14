@@ -31,7 +31,7 @@ module IB
       # CLOSE = 2 Close. This value is only valid for institutional customers.
       # UNKNOWN = 3
 
-
+      # Extra validations
       validates_numericality_of :ratio, :con_id
       validates_format_of :designated_location, :with => /^$/,
                           :message => "should be blank or orders will be rejected"

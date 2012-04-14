@@ -7,22 +7,21 @@ describe IB::Models::Execution do # AKA IB::Execution
      :client_id => 1111,
      :exchange => "IDEALPRO",
      :exec_id => "0001f4e8.4f5d48f1.01.01",
-     :liquidation => 1,
+     :liquidation => true,
      :order_id => 373,
      :perm_id => 1695693619,
      :price => 1.31075,
      :average_price => 1.31075,
      :shares => 20000,
      :cumulative_quantity => 20000,
-     :side => 'BOT',
+     :side => :buy,
      :time => "20120312  15:41:09"
     }
   end
 
-  let(:values) do
-    {:liquidation => true,
-     :side => :buy,
-    }
+  let(:human) do
+    "<Execution: 20120312  15:41:09 buy 20000 at 1.31075 on IDEALPRO, " +
+        "cumulative 20000 at 1.31075, ids 373/1695693619/0001f4e8.4f5d48f1.01.01>"
   end
 
   let(:defaults) do
@@ -44,6 +43,10 @@ describe IB::Models::Execution do # AKA IB::Execution
     {:side =>
          {['BOT', 'BUY', 'Buy', 'buy', :BUY, :BOT, :Buy, :buy, 'B', :b] => :buy,
           ['SELL', 'SLD', 'Sel', 'sell', :SELL, :SLD, :Sell, :sell, 'S', :S] => :sell},
+
+     [:shares, :cumulative_quantity, :price, :average_price] =>
+         {[:foo, 'BAR', nil] => /is not a number/},
+
      :liquidation => {[1, true] => true, [0, false] => false},
     }
   end

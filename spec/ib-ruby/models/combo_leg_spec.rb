@@ -13,8 +13,8 @@ describe IB::Models::ComboLeg do
      :exempt_code => 12}
   end
 
-  let(:values) do
-    {}
+  let(:human) do
+    "<ComboLeg: buy 2 con_id 81032967 at CBOE>"
   end
 
   let(:defaults) do
@@ -53,13 +53,4 @@ describe IB::Models::ComboLeg do
 
   it_behaves_like 'Model'
 
-  context 'presentation' do
-    subject { IB::ComboLeg.new props }
-
-    it 'can be converted to short human-readeable format' do
-      subject.to_human.should ==
-          "<ComboLeg: buy 2 con_id 81032967 at CBOE>"
-    end
-
-  end
 end # describe IB::Models::Contract::ComboLeg

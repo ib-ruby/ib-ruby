@@ -45,11 +45,14 @@ module IB
         # TODO: || compare all attributes!
       end
 
-      def to_s
-        "<Execution #{time}: #{side} #{shares} @ #{price} on #{exchange}, " +
-            "cumulative: #{cumulative_quantity} @ #{average_price}, " +
-            "order: #{order_id}/#{perm_id}#{order_ref}, exec: #{exec_id}>"
+      def to_human
+        "<Execution: #{time} #{side} #{shares} at #{price} on #{exchange}, " +
+            "cumulative #{cumulative_quantity} at #{average_price}, " +
+            "ids #{order_id}/#{perm_id}/#{exec_id}>"
       end
+
+      alias to_s to_human
+
     end # Execution
   end # module Models
 end # module IB

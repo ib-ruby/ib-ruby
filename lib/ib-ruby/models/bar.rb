@@ -32,10 +32,12 @@ module IB
             volume == other.volume
       end
 
-      def to_s
-        "<Bar #{time}: wap: #{wap}, OHLC: #{open}, #{high}, #{low}, #{close}, " +
-            (trades ? "trades: #{trades}," : "") + " vol: #{volume}, gaps? #{has_gaps}>"
+      def to_human
+        "<Bar: #{time} wap #{wap} OHLC #{open} #{high} #{low} #{close} " +
+            (trades ? "trades #{trades}" : "") + " vol #{volume} gaps #{has_gaps}>"
       end
+
+      alias to_s to_human
     end # class Bar
   end # module Models
 end # module IB
