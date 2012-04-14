@@ -38,6 +38,10 @@ class String
   end
 end
 
+def to_sup
+  to_s.upcase
+end
+
 ### Patching Object#error in ib-ruby/errors
 #  def error message, type=:standard
 

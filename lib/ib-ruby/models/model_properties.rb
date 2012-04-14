@@ -65,26 +65,38 @@ module IB
           case body
             when '' # default getter and setter
               define_property_methods name
-            when Proc # setter
-              define_property_methods name, :set => body
+
             when Array # [setter, getter, validators]
               define_property_methods name,
                                       :get => body[0],
                                       :set => body[1],
                                       :validate => body[2]
-            when Hash # recursion ends HERE!
 
-              # Define getter
-              default_getter = VALUES[name] ?
-                  proc { VALUES[name][self[name]] } : # property is encoded
-                  proc { self[name] }
-              define_method name, &(body[:get] || default_getter)
+            when Hash # recursion base case
 
-              # Define setter
-              default_setter = CODES[name] ?
-                  proc { |value| self[name] = CODES[name][value] || value } : # property is encoded
-                  proc { |value| self[name] = value }
-              define_method "#{name}=", &(body[:set] || default_setter)
+              getter = case # Define getter
+                         when body[:get].respond_to?(:call)
+                           body[:get]
+                         when body[:get]
+                           proc { self[name].send "to_#{body[:get]}" }
+                         when VALUES[name] # property is encoded
+                           proc { VALUES[name][self[name]] }
+                         else
+                           proc { self[name] }
+                       end
+              define_method name, &getter
+
+              setter = case # Define setter
+                         when body[:set].respond_to?(:call)
+                           body[:set]
+                         when body[:set]
+                           proc { |value| self[name] = value.send "to_#{body[:set]}" }
+                         when CODES[name] # property is encoded
+                           proc { |value| self[name] = CODES[name][value] || value }
+                         else
+                           proc { |value| self[name] = value }
+                       end
+              define_method "#{name}=", &setter
 
               # Define validator(s)
               [body[:validate]].flatten.compact.each do |validator|
@@ -96,9 +108,8 @@ module IB
                 end
               end
 
-            else
-              define_property_methods name, :set =>
-                  proc { |value| self[name] = value.send "to_#{body}" }
+            else # setter given
+              define_property_methods name, :set => body
           end
         end
       end # module Macros

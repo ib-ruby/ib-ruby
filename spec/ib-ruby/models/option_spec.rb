@@ -10,14 +10,13 @@ describe IB::Models::Contracts::Option do # AKA IB::Option
     }
   end
 
-  let(:values) do
-    {:right => 'PUT',
-     :sec_type => 'OPT',
-    }
+  let(:human) do
+    "<Option: AAPL 201301 put 600 SMART >"
   end
 
   let(:defaults) do
-    {:con_id => 0,
+    {:sec_type => :option,
+     :con_id => 0,
      :strike => 0,
      :min_tick => 0,
      :include_expired => false}
@@ -30,14 +29,36 @@ describe IB::Models::Contracts::Option do # AKA IB::Option
 
   let(:assigns) do
     {:expiry =>
-         {[200609, '200609'] => '200609', [nil, ''] => nil},
-     :multiplier => {['123', 123] => 123},
-     :sec_type => IB::Contract::CODES[:sec_type].invert,
+         {[200609, '200609'] => '200609',
+          [20060913, '20060913'] => '20060913',
+          [:foo, 2006, 42, 'bar'] => /should be YYYYMM or YYYYMMDD/},
+
+     :sec_type =>
+         {['OPT', :option] => :option,
+          IB::CODES[:sec_type].reject { |k, v,| k == :option }.to_a =>
+              /should be an option/},
+
      :right =>
-         {["PUT", "put", "P", "p", :put] => 'PUT',
-          ["CALL", "call", "C", "c", :call] => 'CALL'},
-     # ContractDetails properties
-     [:under_con_id, :min_tick] => {123 => 123},
+         {["PUT", "put", "P", "p", :put] => :put,
+          ["CALL", "call", "C", "c", :call] => :call,
+          ['', '0', '?', :none, :foo, 'BAR', 42] => /should be put or call/},
+
+     :exchange =>
+         {[:cboe, 'cboE', 'CBOE'] => 'CBOE',
+          [:smart, 'SMART', 'smArt'] => 'SMART'},
+
+     :primary_exchange =>
+         {[:cboe, 'cboE', 'CBOE'] => 'CBOE',
+          [:SMART, 'SMART'] => /should not be SMART/},
+
+     :local_symbol =>
+         {'AAPL  130119C00500000' => 'AAPL  130119C00500000',
+          'BAR'=> /invalid OSI code/},
+
+     :multiplier => {['123', 123] => 123},
+
+     [:under_con_id, :min_tick, :coupon] => {123 => 123}
+
     }
   end
 
@@ -58,15 +79,13 @@ describe IB::Models::Contracts::Option do # AKA IB::Option
     subject { IB::Option.new props }
     it_behaves_like 'Contract'
 
-    it 'has extra osi accessor' do
-      subject.osi.should == nil
+    it 'has extra osi accessor, aliasing :local_symbol' do
+      subject.osi = 'FOO'
+      subject.local_symbol.should == 'FOO'
+      subject.local_symbol = :bar
+      subject.osi.should == :bar
     end
 
-    it 'becomes invalid if assigned wrong :osi property' do
-      subject.osi = 'BAR'
-      subject.should be_invalid
-      subject.errors.messages[:local_symbol].should include "invalid OSI code"
-    end
   end
 
   context '.from_osi class builder' do
@@ -77,7 +96,7 @@ describe IB::Models::Contracts::Option do # AKA IB::Option
       subject.should be_valid
       subject.symbol.should == 'AAPL'
       subject.expiry.should == '130118' # <- NB: Change in date!
-      subject.right.should == 'CALL'
+      subject.right.should == :call
       subject.strike.should == 500
       #subject.osi.should == 'AAPL  130119C00500000'
     end

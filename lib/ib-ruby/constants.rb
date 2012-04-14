@@ -185,6 +185,11 @@ module IB
            2 => :close, # Close. For Legs, this value is only used by institutions.
            3 => :unknown}, # WTF
 
+      :right =>
+          {'' => :none, # Not an option
+           'P' => :put,
+           'C' => :call},
+
       :side => # AKA action
           {'B' => :buy, # or BOT
            'S' => :sell, # or SLD

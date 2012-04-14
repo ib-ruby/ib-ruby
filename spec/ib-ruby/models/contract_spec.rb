@@ -14,10 +14,8 @@ describe IB::Models::Contracts::Contract do # AKA IB::Contract
      :local_symbol => 'AAPL  130119C00500000'}
   end
 
-  let(:values) do
-    {:right => 'PUT',
-     :sec_type => 'OPT',
-    }
+  let(:human) do
+    "<Contract: AAPL option 201301 put 600 SMART USD>"
   end
 
   let(:defaults) do
@@ -40,14 +38,30 @@ describe IB::Models::Contracts::Contract do # AKA IB::Contract
   let(:assigns) do
     {:expiry =>
          {[200609, '200609'] => '200609',
-          [nil, ''] => nil},
-     :multiplier => {['123', 123] => 123},
-     :sec_type => IB::CODES[:sec_type],
+          [20060913, '20060913'] => '20060913',
+          [:foo, 2006, 42, 'bar'] => /should be YYYYMM or YYYYMMDD/},
+
+     :sec_type => codes_and_values_for(:sec_type).
+         merge([:foo, 'BAR', 42] => /should be valid security type/),
+
      :right =>
-         {["PUT", "put", "P", "p", :put] => 'PUT',
-          ["CALL", "call", "C", "c", :call] => 'CALL'},
-     # ContractDetails properties
+         {["PUT", "put", "P", "p", :put] => :put,
+          ["CALL", "call", "C", "c", :call] => :call,
+          ['', '0', '?', :none] => :none,
+          [:foo, 'BAR', 42] => /should be put, call or none/},
+
+     :exchange =>
+         {[:cboe, 'cboE', 'CBOE'] => 'CBOE',
+          [:smart, 'SMART', 'smArt'] => 'SMART'},
+
+     :primary_exchange =>
+         {[:cboe, 'cboE', 'CBOE'] => 'CBOE',
+          [:SMART, 'SMART'] => /should not be SMART/},
+
+     :multiplier => {['123', 123] => 123},
+
      [:under_con_id, :min_tick, :coupon] => {123 => 123},
+
      [:callable, :puttable, :convertible, :next_option_partial] =>
          {[1, true] => true, [0, false] => false},
     }

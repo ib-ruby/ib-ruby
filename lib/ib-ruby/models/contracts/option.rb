@@ -5,12 +5,13 @@ module IB
     module Contracts
       class Option < Contract
 
-        validates_format_of :sec_type, :with => /^OPT$/, :message => "should be OPT"
+        validates_numericality_of :strike
+        validates_format_of :sec_type, :with => /^option$/,
+                            :message => "should be an option"
         validates_format_of :local_symbol, :with => /^\w+\s*\d{15}$|^$/,
                             :message => "invalid OSI code"
-        validates_format_of :right, :with => /^PUT$|^CALL$$/,
+        validates_format_of :right, :with => /^put$|^call$/,
                             :message => "should be put or call"
-        validates_numericality_of :strike
 
         # For Options, this is contract's OSI (Option Symbology Initiative) name/code
         alias osi local_symbol
@@ -44,7 +45,7 @@ module IB
 
           new :symbol => symbol,
               :exchange => "SMART",
-              :expiry => expiry_date.to_ib[2..7],
+              :expiry => expiry_date.to_ib[2..7], # YYMMDD
               :right => right,
               :strike => strike
         end
@@ -56,8 +57,9 @@ module IB
         end
 
         def to_human
-          "<Option: " + [symbol, expiry, right, strike, exchange, currency].join("-") + ">"
+          "<Option: " + [symbol, expiry, right, strike, exchange, currency].join(" ") + ">"
         end
+
       end # class Option
     end # class Contract
   end # module Models
