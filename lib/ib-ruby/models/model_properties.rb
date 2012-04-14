@@ -7,46 +7,27 @@ module IB
     # Module adds prop Macro and
     module ModelProperties
 
-      # Short codes for most common Model properties
-      CODES = {
-          :side => {'B' => :buy, 'S' => :sell, 'H' => :short},
-          :sec_type => {'STK' => :stock,
-                        'OPT' => :option,
-                        'FUT' => :future,
-                        'IND' => :index,
-                        'FOP' => :futures_option,
-                        'CASH' => :forex,
-                        'BOND' => :bond,
-                        'BAG' => :bag},
-      }.freeze
-
-      # Most common property processors
-      PROPS = {
-          :side =>
-              {:get => proc { | | CODES[:side][self[:side]] }, # :buy / :sell / :short
-               :set => proc { |val| # BUY/SELL/SSHORT/BOT/SOLD
-                 self[:side] = case val.to_s.upcase
-                                 when /SHORT/
-                                   'H'
-                                 when /^B/
-                                   'B'
-                                 when /^S/
-                                   'S'
-                               end },
-               :validate => {:format => {:with => /^buy|sell|short$/,
-                                         :message => "should be buy/sell/short"}},
-              }
-      }.freeze
-
       DEFAULT_PROPS = {}
 
       def self.included base
         base.extend Macros
 
-        # Extending lighweight (not DB-backed) Model class
+        # Extending lighweight (not DB-backed) Model class to mimic AR::Base
         unless base.ancestors.include? ActiveModel::Validations
-          base.send :include, ActiveModel::Validations
+          base.class_eval do
+            include ActiveModel::Validations
 
+            def save
+              false
+            end
+
+            alias save! save
+
+            def self.find *args
+              []
+            end
+
+          end
         end
       end
 
@@ -94,10 +75,16 @@ module IB
             when Hash # recursion ends HERE!
 
               # Define getter
-              define_method(name, &body[:get] || proc { self[name] })
+              default_getter = VALUES[name] ?
+                  proc { VALUES[name][self[name]] } : # property is encoded
+                  proc { self[name] }
+              define_method name, &(body[:get] || default_getter)
 
               # Define setter
-              define_method("#{name}=", &body[:set] || proc { |value| self[name] = value })
+              default_setter = CODES[name] ?
+                  proc { |value| self[name] = CODES[name][value] || value } : # property is encoded
+                  proc { |value| self[name] = value }
+              define_method "#{name}=", &(body[:set] || default_setter)
 
               # Define validator(s)
               [body[:validate]].flatten.compact.each do |validator|
