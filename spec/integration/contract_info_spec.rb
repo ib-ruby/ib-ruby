@@ -13,8 +13,7 @@ describe "Request Contract Info", :connected => true, :integration => true do
   context "Request Stock data" do
 
     before(:all) do
-      @contract = IB::Contract.new :symbol => 'AAPL',
-                                   :sec_type => IB::SECURITY_TYPES[:stock]
+      @contract = IB::Contract.new :symbol => 'AAPL', :sec_type => :stock
       @ib.send_message :RequestContractData, :id => 111, :contract => @contract
       @ib.wait_for :ContractDataEnd, 3 # sec
     end
@@ -52,8 +51,7 @@ describe "Request Contract Info", :connected => true, :integration => true do
         contract.order_types.should be_a String
         contract.price_magnifier.should == 1
         contract.min_tick.should be <= 0.01
-
-        contract.expiry.should be_nil
+        contract.expiry.should == ''
       end
     end
   end # Stock
@@ -108,7 +106,7 @@ describe "Request Contract Info", :connected => true, :integration => true do
       @contract = IB::Contract.new :symbol => 'EUR', # EURUSD pair
                                    :currency => "USD",
                                    :exchange => "IDEALPRO",
-                                   :sec_type => IB::SECURITY_TYPES[:forex]
+                                   :sec_type => :forex
       @ib.send_message :RequestContractData, :id => 135, :contract => @contract
       @ib.wait_for :ContractDataEnd, 3 # sec
     end
@@ -136,7 +134,7 @@ describe "Request Contract Info", :connected => true, :integration => true do
       contract.industry.should == ''
       contract.category.should == ''
       contract.subcategory.should == ''
-      contract.expiry.should be_nil
+      contract.expiry.should == ''
       contract.exchange.should == 'IDEALPRO'
       contract.con_id.should be_an Integer
       contract.trading_hours.should =~ /\d{8}:\d{4}-\d{4}/

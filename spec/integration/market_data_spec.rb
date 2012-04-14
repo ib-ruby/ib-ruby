@@ -13,7 +13,7 @@ describe 'Request Market Data', :connected => true, :integration => true do
       @contract = IB::Contract.new(:symbol => 'AAPL',
                                    :exchange => "Smart",
                                    :currency => "USD",
-                                   :sec_type => IB::SECURITY_TYPES[:stock],
+                                   :sec_type => :stock,
                                    :description => "Apple"
       )
       @ib.send_message :RequestMarketData, :id => 456, :contract => @contract
