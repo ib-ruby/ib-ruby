@@ -111,32 +111,33 @@ module IB
       ### Actual message classes (short definitions):
 
       # :status - String: Displays the order status. Possible values include:
-      # • PendingSubmit - indicates that you have transmitted the order, but
+      # ï¿½ PendingSubmit - indicates that you have transmitted the order, but
       #   have not yet received confirmation that it has been accepted by the
       #   order destination. NOTE: This order status is NOT sent back by TWS
       #   and should be explicitly set by YOU when an order is submitted.
-      # • PendingCancel - indicates that you have sent a request to cancel
+      # ï¿½ PendingCancel - indicates that you have sent a request to cancel
       #   the order but have not yet received cancel confirmation from the
       #   order destination. At this point, your order cancel is not confirmed.
       #   You may still receive an execution while your cancellation request
       #   is pending. NOTE: This order status is not sent back by TWS and
       #   should be explicitly set by YOU when an order is canceled.
-      # • PreSubmitted - indicates that a simulated order type has been
+      # ï¿½ PreSubmitted - indicates that a simulated order type has been
       #   accepted by the IB system and that this order has yet to be elected.
       #   The order is held in the IB system until the election criteria are
       #   met. At that time the order is transmitted to the order destination
       #   as specified.
-      # • Submitted - indicates that your order has been accepted at the order
+      # ï¿½ Submitted - indicates that your order has been accepted at the order
       #   destination and is working.
-      # • Cancelled - indicates that the balance of your order has been
+      # ï¿½ Cancelled - indicates that the balance of your order has been
       #   confirmed canceled by the IB system. This could occur unexpectedly
       #   when IB or the destination has rejected your order.
-      # • Filled - indicates that the order has been completely filled.
-      # • Inactive - indicates that the order has been accepted by the system
+      # ï¿½ Filled - indicates that the order has been completely filled.
+      # ï¿½ Inactive - indicates that the order has been accepted by the system
       #   (simulated orders) or an exchange (native orders) but that currently
       #   the order is inactive due to system, exchange or other issues.
-      # :why_held - This field is used to identify an order held when TWS is trying to
-      #      locate shares for a short sell. The value used to indicate this is 'locate'.
+      # :why_held - This property contains the comma-separated list of reasons for
+      #      order to be held. For example, when TWS is trying to locate shares for
+      #      a short sell, the value used to indicate this is 'locate'.
       OrderStatus = def_message [3, 6], [:order_id, :int],
                                 [:status, :string],
                                 [:filled, :int],

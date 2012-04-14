@@ -2,7 +2,7 @@ desc 'Alias to doc:rdoc'
 task :doc => 'doc:rdoc'
 
 namespace :doc do
-  require 'rake/rdoctask'
+  require 'rdoc/task'
   Rake::RDocTask.new do |rdoc|
 #    Rake::RDocTask.new(:rdoc => "rdoc", :clobber_rdoc => "clobber", :rerdoc => "rerdoc") do |rdoc|
     rdoc.rdoc_dir = DOC_PATH.basename.to_s

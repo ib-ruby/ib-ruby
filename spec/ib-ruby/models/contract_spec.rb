@@ -42,7 +42,7 @@ describe IB::Models::Contracts::Contract do # AKA IB::Contract
          {[200609, '200609'] => '200609',
           [nil, ''] => nil},
      :multiplier => {['123', 123] => 123},
-     :sec_type => IB::Contract::CODES[:sec_type].invert,
+     :sec_type => IB::CODES[:sec_type],
      :right =>
          {["PUT", "put", "P", "p", :put] => 'PUT',
           ["CALL", "call", "C", "c", :call] => 'CALL'},

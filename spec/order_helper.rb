@@ -216,5 +216,5 @@ def execution_should_be side, opts={}
   exec.price.should be > 1
   exec.price.should be < 2
   exec.price.should == exec.average_price
-  exec.liquidation.should == 0
+  exec.liquidation.should == false
 end
