@@ -1,55 +1,65 @@
-require 'spec_helper'
+require 'model_helper'
 
 describe IB::Models::ComboLeg do
 
-  let(:properties) do
-    {:con_id => 123,
-     :ratio=> 1234,
-     :action => 'BUY',
-     :exchange => 'BLAH',
-     :open_close => IB::ComboLeg::OPEN,
-     :short_sale_slot => 1,
-     :designated_location => 'BLEH',
+  let(:props) do
+    {:con_id => 81032967,
+     :ratio => 2,
+     :action => :buy,
+     :exchange => 'CBOE',
+     :open_close => :open,
+     :short_sale_slot => :broker,
+     :designated_location => nil,
      :exempt_code => 12}
   end
 
-  context "instantiation" do
-    context 'empty without properties' do
-      subject { IB::ComboLeg.new }
+  let(:values) do
+    {}
+  end
 
-      it { should_not be_nil }
-      its(:con_id) {should == 0}
-      its(:open_close) {should == 0}
-      its(:short_sale_slot) {should == 0}
-      its(:designated_location) {should == ''}
-      its(:exempt_code) {should == -1}
+  let(:defaults) do
+    {:con_id => 0,
+     :open_close => :same,
+     :designated_location => '',
+     :exempt_code => -1,
+     :exchange => 'SMART', # Unless SMART, Order modification fails
+    }
+  end
 
-      its(:created_at) {should be_a Time}
+  let(:errors) do
+    {:ratio => ["is not a number"],
+     :side => ["should be buy/sell/short"]}
+  end
+
+  let(:assigns) do
+    {:open_close =>
+         {['SAME', 'same', 'S', 's', :same, 0, '0'] => :same,
+          ['OPEN', 'open', 'O', 'o', :open, 1, '1'] => :open,
+          ['CLOSE', 'close', 'C', 'c', :close, 2, '2'] => :close,
+          ['UNKNOWN', 'unknown', 'U', 'u', :unknown, 3, '3'] => :unknown,
+          [42, nil, 'Foo', :bar] => /should be same.open.close.unknown/},
+
+     :side =>
+         {['BOT', 'BUY', 'Buy', 'buy', :BUY, :BOT, :Buy, :buy, 'B', :b] => :buy,
+          ['SELL', 'SLD', 'Sel', 'sell', :SELL, :SLD, :Sell, :sell, 'S', :S] => :sell,
+          ['SSHORT', 'Short', 'short', :SHORT, :short, 'T', :T] => :short,
+          ['SSHORTX', 'Shortextemt', 'shortx', :short_exempt, 'X', :X] => :short_exempt,
+          [42, nil, 'ASK', :foo] => /should be buy.sell.short/},
+
+     :designated_location =>
+         {[42, 'FOO', :bar] => /should be blank or orders will be rejected/},
+    }
+  end
+
+  it_behaves_like 'Model'
+
+  context 'presentation' do
+    subject { IB::ComboLeg.new props }
+
+    it 'can be converted to short human-readeable format' do
+      subject.to_human.should ==
+          "<ComboLeg: buy 2 con_id 81032967 at CBOE>"
     end
 
-    context 'with properties' do
-      subject { IB::ComboLeg.new properties }
-
-      it 'sets properties right' do
-        properties.each do |name, value|
-          subject.send(name).should == value
-        end
-      end
-
-      context 'essential properties are still set, even if not given explicitely' do
-        its(:created_at) {should be_a Time}
-      end
-    end
-
-    it 'allows setting attributes' do
-      expect {
-        x = IB::ComboLeg.new
-        properties.each do |name, value|
-          subject.send("#{name}=", value)
-          subject.send(name).should == value
-        end
-      }.to_not raise_error
-    end
-  end #instantiation
-
+  end
 end # describe IB::Models::Contract::ComboLeg
