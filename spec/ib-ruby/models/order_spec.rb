@@ -1,74 +1,95 @@
 require 'model_helper'
 
+def codes_and_values_for property
+  Hash[IB::VALUES[property].map { |code, value| [[code, value], value] }]
+end
+
 describe IB::Models::Order do
 
   let(:props) do
-    {:order_id => 13,
+    {:order_id => 23,
      :client_id => 1111,
      :perm_id => 173276893,
      :parent_id => 0,
-     :order_type => 'MIT',
-     :side => 'BUY',
+     :side => :buy,
+     :order_type => :market_if_touched,
      :limit_price => 0.01,
      :total_quantity => 100,
-     :tif => 'GTC',
-     :open_close => 'C',
+     :tif => :good_till_cancelled,
+     :open_close => :close,
      :oca_group => '',
-     :oca_type => 3,
-     :origin => IB::Order::Origin_Firm,
+     :oca_type => :reduce_no_block,
+     :origin => :firm,
      :designated_location => "WHATEVER",
      :exempt_code => 123,
-     :delta_neutral_order_type => "HACK",
+     :delta_neutral_order_type => :market,
      :commission_currency => "USD",
      :status => 'PreSubmitted',
-     :transmit => 1,
-     :outside_rth => 0,
-     :what_if => 0,
-     :not_held => 0}
+     :transmit => false,
+     :outside_rth => true,
+     :what_if => true,
+     :not_held => true}
   end
 
   let(:values) do
-    {:what_if => false,
-     :transmit => true,
-     :outside_rth => false,
-     :not_held => false,
-     :side => :buy,
-    }
+    {}
   end
 
   let(:defaults) do
     {:outside_rth => false,
-     :open_close => "O",
-     :tif => 'DAY',
-     :order_type => 'LMT',
-     :origin => IB::Order::Origin_Customer,
+     :open_close => :open,
+     :short_sale_slot => :default,
+     :tif => :day,
+     :order_type => :limit,
+     :origin => :customer,
      :transmit => true,
      :designated_location => '',
      :exempt_code => -1,
-     :delta_neutral_order_type => '',
      :what_if => false,
      :not_held => false,
      :status => 'New'}
   end
 
   let(:errors) do
-    {:side=>["should be buy/sell/short"],
+    {:side =>["should be buy/sell/short"],
      :order_id => ["is not a number"], }
   end
 
   let(:assigns) do
-    {:side =>
+    {[:order_type, :delta_neutral_order_type] => codes_and_values_for(:order_type),
+     :open_close =>
+         {['SAME', 'same', 'S', 's', :same, 0, '0'] => :same,
+          ['OPEN', 'open', 'O', 'o', :open, 1, '1'] => :open,
+          ['CLOSE', 'close', 'C', 'c', :close, 2, '2'] => :close,
+          ['UNKNOWN', 'unknown', 'U', 'u', :unknown, 3, '3'] => :unknown,
+          [42, nil, 'Foo', :bar] => /should be same.open.close.unknown/},
+
+     :side =>
          {['BOT', 'BUY', 'Buy', 'buy', :BUY, :BOT, :Buy, :buy, 'B', :b] => :buy,
           ['SELL', 'SLD', 'Sel', 'sell', :SELL, :SLD, :Sell, :sell, 'S', :S] => :sell,
-          ['SSHORT', 'Short', 'short', :SHORT, :short] => :short},
+          ['SSHORT', 'Short', 'short', :SHORT, :short, 'T', :T] => :short,
+          ['SSHORTX', 'Shortextemt', 'shortx', :short_exempt, 'X', :X] => :short_exempt,
+          [1, nil, 'ASK', :foo] => /should be buy.sell.short/, },
+
      [:what_if, :not_held, :outside_rth, :hidden, :transmit, :block_order, :sweep_to_fill,
-      :override_percentage_constraints, :all_or_none, :etrade_only, :firm_quote_only
+      :override_percentage_constraints, :all_or_none, :etrade_only, :firm_quote_only,
+      :opt_out_smart_routing, :scale_auto_reset, :scale_random_percent
      ] => {[1, true] => true, [0, false] => false},
     }
   end
 
   it_behaves_like 'Model'
   it_behaves_like 'Self-equal Model'
+
+  context 'presentation' do
+    subject { IB::Order.new props }
+
+    it 'can be converted to short human-readeable format' do
+      subject.to_human.should ==
+          "<Order: MIT GTC buy 100 PreSubmitted 0.01 id: 23/173276893 from: 1111/>"
+    end
+
+  end
 
   context 'equality' do
     subject { IB::Order.new props }

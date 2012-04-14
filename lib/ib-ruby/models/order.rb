@@ -8,36 +8,8 @@ module IB
       # provide the con_id AND the exchange. If you provide extra fields when placing
       # an order by conid, the order may not work.
 
-      # 2. Order IDs - Each order you place must have a unique Order ID. We recommend
-      # that you increment your own Order IDs to avoid conflicts between orders placed
-      # from your API application.
-
-      # Constants used in Order objects. Drawn from Order.java
-      Origin_Customer = 0
-      Origin_Firm = 1
-
-      Opt_Unknown = '?'
-      Opt_Broker_Dealer = 'b'
-      Opt_Customer = 'c'
-      Opt_Firm = 'f'
-      Opt_Isemm = 'm'
-      Opt_Farmm = 'n'
-      Opt_Specialist = 'y'
-
-      OCA_Cancel_with_block = 1
-      OCA_Reduce_with_block = 2
-      OCA_Reduce_non_block = 3
-
-      # Box orders consts:
-      Box_Auction_Match = 1
-      Box_Auction_Improvement = 2
-      Box_Auction_Transparent = 3
-
-      # Volatility orders consts:
-      Volatility_Type_Daily = 1
-      Volatility_Type_Annual = 2
-      Volatility_Ref_Price_Average = 1
-      Volatility_Ref_Price_BidOrAsk = 2
+      # 2. Order IDs - Each order you place must have a unique Order ID. Increment
+      # your own Order IDs to avoid conflicts between orders placed from your API application.
 
       # Main order fields
       prop :order_id, #  int: Order id associated with client (volatile).
@@ -109,8 +81,7 @@ module IB
 
            :trigger_method, # Specifies how Simulated Stop, Stop-Limit and Trailing
            #                  Stop orders are triggered. Valid values are:
-           #      0 - Default, "double bid/ask" method will be used for OTC stocks
-           #          and US options orders, "last" method will be used all others.
+           #      0 - Default, "double bid/ask" for OTC/US options, "last" otherswise.
            #      1 - "double bid/ask" method, stop orders are triggered based on
            #          two consecutive bid or ask prices.
            #      2 - "last" method, stops are triggered based on the last price.
@@ -148,7 +119,6 @@ module IB
            :fa_group, :fa_profile, :fa_method, :fa_percentage,
 
            # Institutional orders only!
-           :open_close, #      String: O=Open, C=Close
            :origin, #          0=Customer, 1=Firm
            :order_ref, #       String: Order reference. Customer defined order ID tag.
            :short_sale_slot, # 1 - you hold the shares,
@@ -169,7 +139,6 @@ module IB
            :discretionary_amount, # double: The amount off the limit price
            #                        allowed for discretionary orders.
            :nbbo_price_cap, #  double: Maximum Smart order distance from the NBBO.
-           :opt_out_smart_routing, # Australian exchange only, default false
 
            # BOX or VOL ORDERS ONLY
            :auction_strategy, # For BOX exchange only. Valid values:
@@ -188,6 +157,7 @@ module IB
            #                               underlying stock price range.
 
            # VOLATILITY ORDERS ONLY:
+           # http://www.interactivebrokers.com/en/general/education/pdfnotes/PDF-VolTrader.php
            :volatility, #  double: What the price is, computed via TWSs Options
            #               Analytics. For VOL orders, the limit price sent to an
            #               exchange is not editable, as it is the output of a
@@ -205,6 +175,7 @@ module IB
            :delta_neutral_order_type, # String: Enter an order type to instruct TWS
            #    to submit a delta neutral trade on full or partial execution of the
            #    VOL order. For no hedge delta order to be sent, specify NONE.
+           #    Valid values - LMT, MKT, MTL, REL, MOC
            :delta_neutral_aux_price, #  double: Use this field to enter a value if
            #           the value in the deltaNeutralOrderType field is an order
            #           type that requires an Aux price, such as a REL order.
@@ -248,10 +219,10 @@ module IB
            :scale_price_adjust_value,
            :scale_price_adjust_interval,
            :scale_profit_offset,
-           :scale_auto_reset,
            :scale_init_position,
            :scale_init_fill_qty,
-           :scale_random_percent
+           :scale_auto_reset => :bool,
+           :scale_random_percent => :bool
 
       # Some Order properties (received back from IB) are separated into
       # OrderState object. Here, they are lumped into Order proper: see OrderState.java
@@ -293,12 +264,7 @@ module IB
            :equity_with_loan # Float: The impact the order would have on your equity
 
       # Properties with complex processing logics
-      prop :tif, #  String: Time to Market:
-           #          DAY
-           #          GAT      Good-after-Time/Date
-           #          GTD      Good-till-Date/Time
-           #          GTC      Good-till-Canceled
-           #          IOC      Immediate-or-Cancel
+      prop :tif, #  String: Time in Force (time to market): DAY/GAT/GTD/GTC/IOC
            :what_if => :bool, # Only return pre-trade commissions and margin info, do not place
            :not_held => :bool, # Not Held
            :outside_rth => :bool, # Order may trigger or fill outside of regular hours. (WAS: ignore_rth)
@@ -313,7 +279,11 @@ module IB
            :all_or_none => :bool, #     AON
            :etrade_only => :bool, #     Trade with electronic quotes.
            :firm_quote_only => :bool, # Trade with firm quotes.
-           [:side, :action] => PROPS[:side] # String: Identifies the side: BUY/SELL/SSHORT
+           :opt_out_smart_routing => :bool, # Australian exchange only, default false
+           [:side, :action] => PROPS[:side], # String: Action/side: BUY/SELL/SSHORT/SSHORTX
+           :open_close => PROPS[:open_close] # Originally String: O=Open, C=Close ()
+      # for ComboLeg compatibility: SAME = 0; OPEN = 1; CLOSE = 2; UNKNOWN = 3;
+
 
       # Order is not valid without correct :order_id
       validates_numericality_of :order_id
@@ -324,28 +294,25 @@ module IB
       alias order_combo_legs leg_prices
       alias smart_combo_routing_params combo_params
 
-      DEFAULT_PROPS = {:aux_price => 0.0,
+      DEFAULT_PROPS = {:status => 'New', # Starting new Orders with this status
+                       :aux_price => 0.0,
                        :parent_id => 0,
-                       :tif => 'DAY',
-                       :order_type => 'LMT',
-                       :outside_rth => false,
-                       :open_close => 'O',
-                       :origin => Origin_Customer,
-                       :transmit => true,
+                       :tif => :day,
+                       :order_type => :limit,
+                       :open_close => :open,
+                       :origin => :customer,
+                       :short_sale_slot => :default,
                        :designated_location => '',
                        :exempt_code => -1,
-                       :delta_neutral_order_type => '',
                        :delta_neutral_con_id => 0,
-                       :delta_neutral_settling_firm => '',
-                       :delta_neutral_clearing_account => '',
-                       :delta_neutral_clearing_intent => '',
                        :algo_strategy => '',
+                       :transmit => true,
                        :what_if => false,
                        :not_held => false,
+                       :outside_rth => false,
                        :scale_auto_reset => false,
                        :scale_random_percent => false,
                        :opt_out_smart_routing => false,
-                       :status => 'New' # Starting new Orders with this statu
       }
 
       def initialize opts = {}
@@ -360,23 +327,30 @@ module IB
       def serialize_with server, contract
         [contract.serialize_long(:con_id, :sec_id),
          # main order fields
-         side == :short ? 'SSHORT' : side,
+         case side
+           when :short
+             'SSHORT'
+           when :short_exempt
+             'SSHORTX'
+           else
+             side.to_s.upcase
+         end,
          total_quantity,
-         order_type,
+         self[:order_type], # Internal code, 'LMT' instead of :limit
          limit_price,
          aux_price,
-         tif, # extended order fields
+         self[:tif],
          oca_group,
          account,
-         open_close,
-         origin,
+         open_close.to_s.upcase[0..0],
+         self[:origin],
          order_ref,
          transmit,
          parent_id,
          block_order,
          sweep_to_fill,
          display_size,
-         trigger_method,
+         self[:trigger_method],
          outside_rth, # was: ignore_rth
          hidden,
          contract.serialize_legs(:extended),
@@ -389,7 +363,7 @@ module IB
          end,
 
          # Support for combo routing params in Order
-         if server[:server_version] >= 57 && contract.sec_type == 'BAG'
+         if server[:server_version] >= 57 && contract.bag?
            combo_params.empty? ? 0 : [combo_params.size] + combo_params.to_a
          else
            []
@@ -403,10 +377,10 @@ module IB
          fa_method,
          fa_percentage,
          fa_profile,
-         short_sale_slot, #     0 only for retail, 1 or 2 for institution  (Institutional)
+         self[:short_sale_slot], # 0 only for retail, 1 or 2 for institution  (Institutional)
          designated_location, # only populate when short_sale_slot == 2    (Institutional)
          exempt_code,
-         oca_type,
+         self[:oca_type],
          rule_80a,
          settling_firm,
          all_or_none,
@@ -415,23 +389,66 @@ module IB
          etrade_only,
          firm_quote_only,
          nbbo_price_cap,
-         auction_strategy,
+         self[:auction_strategy],
          starting_price,
          stock_ref_price,
          delta,
          stock_range_lower,
          stock_range_upper,
          override_percentage_constraints,
-         volatility, #               Volatility orders
-         volatility_type, #          Volatility orders
-         delta_neutral_order_type, # Volatility orders
-         delta_neutral_aux_price, #  Volatility orders
-         continuous_update, #        Volatility orders
-         reference_price_type, #     Volatility orders
+         volatility, #                      Volatility orders
+         self[:volatility_type], #
+         self[:delta_neutral_order_type],
+         delta_neutral_aux_price, #
+
+         # Support for delta neutral orders with parameters
+         if server[:server_version] >= 58 && delta_neutral_order_type
+           [delta_neutral_con_id,
+            delta_neutral_settling_firm,
+            delta_neutral_clearing_account,
+            self[:delta_neutral_clearing_intent]
+           ]
+         else
+           []
+         end,
+
+         continuous_update, #               Volatility orders
+         self[:reference_price_type], #     Volatility orders
+
          trail_stop_price, #         TRAIL_STOP_LIMIT stop price
+
+         # Support for trailing percent
+         server[:server_version] >= 62 ? trailing_percent : [],
+
          scale_init_level_size, #    Scale Orders
          scale_subs_level_size, #    Scale Orders
          scale_price_increment, #    Scale Orders
+
+         # Support extended scale orders parameters
+         if server[:server_version] >= 60 &&
+             scale_price_increment && scale_price_increment > 0
+           [scale_price_adjust_value,
+            scale_price_adjust_interval,
+            scale_profit_offset,
+            scale_auto_reset,
+            scale_init_position,
+            scale_init_fill_qty,
+            scale_random_percent
+           ]
+         else
+           []
+         end,
+
+         # TODO: Need to add support for hedgeType, not working ATM - beta only
+         #if (m_serverVersion >= MIN_SERVER_VER_HEDGE_ORDERS) {
+         #    send (order.m_hedgeType);
+         #    if (!IsEmpty(order.m_hedgeType)) send (order.m_hedgeParam);
+         #}
+         #
+         #if (m_serverVersion >= MIN_SERVER_VER_OPT_OUT_SMART_ROUTING) {
+         #    send (order.m_optOutSmartRouting);
+         #}
+
          clearing_account,
          clearing_intent,
          not_held,
@@ -483,9 +500,10 @@ module IB
       end
 
       def to_human
-        "<Order: #{order_type} #{tif} #{action} #{total_quantity} #{status} #{limit_price}" +
+        "<Order: #{self[:order_type]} #{self[:tif]} #{side} #{total_quantity} " +
+            "#{status} " + (limit_price ? limit_price.to_s : '') +
             " id: #{order_id}/#{perm_id} from: #{client_id}/#{account}" +
-            (commission ? " fee: #{commission}" : "") + ">"
+            (commission ? " fee: #{commission}" : '') + ">"
       end
     end # class Order
   end # module Models
