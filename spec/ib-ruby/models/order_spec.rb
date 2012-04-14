@@ -28,7 +28,7 @@ describe IB::Models::Order do
   end
 
   let(:human) do
-    "<Order: MIT GTC buy 100 PreSubmitted 0.01 id: 23/173276893 from: 1111/>"
+    "<Order: MIT GTC buy 100 PreSubmitted 0.01 id 23/173276893 from 1111/>"
   end
 
   let(:defaults) do

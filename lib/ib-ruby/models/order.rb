@@ -17,46 +17,14 @@ module IB
            :perm_id, #   int: TWS permanent id, remains the same over TWS sessions.
            :total_quantity, # int: The order quantity.
 
-           :order_type, #  String: Identifies the order type. Valid values are:
-           #     Limit Risk:
-           #          MTL          Market-to-Limit
-           #          MKT PRT      Market with Protection
-           #          QUOTE        Request for Quote
-           #          STP          Stop
-           #          STP LMT      Stop Limit
-           #          TRAIL        Trailing Stop
-           #          TRAIL LIMIT  Trailing Stop Limit
-           #          TRAIL LIT    Trailing Limit if Touched
-           #          TRAIL MIT    Trailing Market If Touched
-           #     Speed of Execution:
-           #          MKT          Market
-           #          MIT          Market-if-Touched
-           #          MOC          Market-on-Close    MKTCLSL ?
-           #          MOO          Market-on-Open
-           #          PEG MKT      Pegged-to-Market
-           #          REL          Relative
-           #     Price Improvement:
-           #          BOX TOP      Box Top
-           #          LOC          Limit-on-Close       LMTCLS ?
-           #          LOO          Limit-on-Open
-           #          LIT          Limit if Touched
-           #          PEG MID      Pegged-to-Midpoint
-           #          VWAP         VWAP-Guaranteed
-           #     Advanced Trading:
-           #          OCA          One-Cancels-All
-           #          VOL          Volatility
-           #          SCALE        Scale
-           #     Other (no abbreviation):
-           #          Bracket
-           #          At Auction
-           #          Discretionary
-           #          Sweep-to-Fill
-           #          Price Improvement Auction
-           #          Block
-           #          Hidden
-           #          Iceberg/Reserve
-           #          All-or-None
-           #          Fill-or-Kill
+           :order_type, #  String: Order type.
+           # Limit Risk: MTL / MKT PRT / QUOTE / STP / STP LMT / TRAIL / TRAIL LIMIT /  TRAIL LIT / TRAIL MIT
+           # Speed of Execution: MKT / MIT / MOC / MOO / PEG MKT / REL
+           # Price Improvement: BOX TOP / LOC / LOO / LIT / PEG MID / VWAP
+           # Advanced Trading: OCA / VOL / SCALE
+           # Other (no abbreviation): Bracket, Auction, Discretionary, Sweep-to-Fill,
+           # Price Improvement Auction,  Block, Hidden, Iceberg/Reserve, All-or-None, Fill-or-Kill
+           # See 'ib-ruby/constants.rb' ORDER_TYPES for a complete list of valid values.
 
            :limit_price, # double: LIMIT price, used for limit, stop-limit and relative
            #               orders. In all other cases specify zero. For relative
@@ -228,36 +196,35 @@ module IB
       # OrderState object. Here, they are lumped into Order proper: see OrderState.java
       # TODO: Extract OrderState object, for better record keeping
       prop :status, # String: Displays the order status.Possible values include:
-           # � PendingSubmit - indicates that you have transmitted the order, but
+           # - PendingSubmit - indicates that you have transmitted the order, but
            #   have not yet received confirmation that it has been accepted by the
            #   order destination. NOTE: This order status is NOT sent back by TWS
            #   and should be explicitly set by YOU when an order is submitted.
-           # � PendingCancel - indicates that you have sent a request to cancel
+           # - PendingCancel - indicates that you have sent a request to cancel
            #   the order but have not yet received cancel confirmation from the
            #   order destination. At this point, your order cancel is not confirmed.
            #   You may still receive an execution while your cancellation request
            #   is pending. NOTE: This order status is not sent back by TWS and
            #   should be explicitly set by YOU when an order is canceled.
-           # � PreSubmitted - indicates that a simulated order type has been
+           # - PreSubmitted - indicates that a simulated order type has been
            #   accepted by the IB system and that this order has yet to be elected.
            #   The order is held in the IB system until the election criteria are
            #   met. At that time the order is transmitted to the order destination
            #   as specified.
-           # � Submitted - indicates that your order has been accepted at the order
+           # - Submitted - indicates that your order has been accepted at the order
            #   destination and is working.
-           # � Cancelled - indicates that the balance of your order has been
+           # - Cancelled - indicates that the balance of your order has been
            #   confirmed canceled by the IB system. This could occur unexpectedly
            #   when IB or the destination has rejected your order.
-           # � ApiCancelled - canceled via API
-           # � Filled - indicates that the order has been completely filled.
-           # � Inactive - indicates that the order has been accepted by the system
+           # - ApiCancelled - canceled via API
+           # - Filled - indicates that the order has been completely filled.
+           # - Inactive - indicates that the order has been accepted by the system
            #   (simulated orders) or an exchange (native orders) but that currently
            #   the order is inactive due to system, exchange or other issues.
            :commission, # double: Shows the commission amount on the order.
            :commission_currency, # String: Shows the currency of the commission.
-           #The possible range of the actual order commission:
-           :min_commission,
-           :max_commission,
+           :min_commission, # The possible min range of the actual order commission.
+           :max_commission, # The possible max range of the actual order commission.
            :warning_text, # String: Displays a warning message if warranted.
            :init_margin, # Float: The impact the order would have on your initial margin.
            :maint_margin, # Float: The impact the order would have on your maintenance margin.
@@ -333,7 +300,7 @@ module IB
            when :short_exempt
              'SSHORTX'
            else
-             side.to_s.upcase
+             side.to_sup
          end,
          total_quantity,
          self[:order_type], # Internal code, 'LMT' instead of :limit
@@ -502,8 +469,9 @@ module IB
       def to_human
         "<Order: #{self[:order_type]} #{self[:tif]} #{side} #{total_quantity} " +
             "#{status} " + (limit_price ? limit_price.to_s : '') +
-            " id: #{order_id}/#{perm_id} from: #{client_id}/#{account}" +
-            (commission ? " fee: #{commission}" : '') + ">"
+            ((aux_price && aux_price != 0) ? "/#{aux_price}" : '') +
+            " id #{order_id}/#{perm_id} from #{client_id}/#{account}" +
+            (commission ? " fee #{commission}" : '') + ">"
       end
     end # class Order
   end # module Models

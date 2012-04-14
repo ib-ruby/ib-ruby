@@ -92,7 +92,7 @@ module IB
       end
       if connected?
         socket.close
-        server = Hash.new
+        @server = Hash.new
         @connected = false
       end
     end
@@ -291,6 +291,7 @@ module IB
     # Place Order (convenience wrapper for send_message :PlaceOrder).
     # Assigns client_id and order_id fields to placed order. Returns assigned order_id.
     def place_order order, contract
+      error "Unable to place order, next_order_id not known" unless @next_order_id
       order.client_id = server[:client_id]
       order.order_id = @next_order_id
       @next_order_id += 1

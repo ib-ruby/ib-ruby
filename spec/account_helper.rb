@@ -15,7 +15,8 @@ def verify_account
 
   @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
 
-  @ib.wait_for :ManagedAccounts
+  @ib.wait_for :ManagedAccounts, 5
+  puts @ib.received.map { |type, msg| [" #{type}:", msg.map(&:to_human)] }
   raise "Unable to verify IB PAPER ACCOUNT" unless @ib.received?(:ManagedAccounts)
 
   received = @ib.received[:ManagedAccounts].first.accounts_list
