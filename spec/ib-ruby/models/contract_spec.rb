@@ -1,4 +1,5 @@
 require 'model_helper'
+require 'combo_helper'
 
 describe IB::Models::Contracts::Contract do # AKA IB::Contract
 
@@ -70,6 +71,56 @@ describe IB::Models::Contracts::Contract do # AKA IB::Contract
   it_behaves_like 'Model'
   it_behaves_like 'Self-equal Model'
 
+  context 'testing for Contract type (sec_type)' do
+
+    it 'correctly defines Contract type (sec_type) for Option contract' do
+      [IB::Contract.new(:sec_type => :option),
+       IB::Contract.new(:sec_type => 'OPT'),
+       IB::Option.new
+      ].each do |contract|
+        contract.should_not be_bag
+        contract.should_not be_bond
+        contract.should_not be_stock
+        contract.should be_option
+      end
+    end
+
+    it 'correctly defines Contract type for Bag Contracts' do
+      [IB::Contract.new(:sec_type => :bag),
+       IB::Contract.new(:sec_type => 'BAG'),
+       IB::Bag.new
+      ].each do |contract|
+        contract.should be_bag
+        contract.should_not be_bond
+        contract.should_not be_stock
+        contract.should_not be_option
+      end
+    end
+
+    it 'correctly defines Contract type for Bag Contracts' do
+      [IB::Contract.new(:sec_type => :stock),
+       IB::Contract.new(:sec_type => 'STK'),
+      ].each do |contract|
+        contract.should_not be_bag
+        contract.should_not be_bond
+        contract.should be_stock
+        contract.should_not be_option
+      end
+    end
+
+    it 'correctly defines Contract type for Bond Contracts' do
+      [IB::Contract.new(:sec_type => :bond),
+       IB::Contract.new(:sec_type => 'BOND'),
+      ].each do |contract|
+        contract.should_not be_bag
+        contract.should be_bond
+        contract.should_not be_stock
+        contract.should_not be_option
+      end
+    end
+
+  end
+
   context 'using shorter class name without properties' do
     subject { IB::Models::Contract.new }
     it_behaves_like 'Model instantiated empty'
@@ -85,6 +136,17 @@ describe IB::Models::Contracts::Contract do # AKA IB::Contract
   end
 
   context "serialization" do
+    before(:all) do
+      @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
+      @ib.wait_for :ManagedAccounts
+      @combo = butterfly 'GOOG', '201301', 'CALL', 500, 510, 520
+    end
+
+    after(:all) { close_connection }
+
+    before(:all) do
+    end
+
     subject { IB::Contract.new props }
 
     it "serializes long" do
@@ -96,6 +158,25 @@ describe IB::Models::Contracts::Contract do # AKA IB::Contract
       subject.serialize_short.should ==
           ["AAPL", "OPT", "201301", 600, "PUT", 10, "SMART", "USD", "AAPL  130119C00500000"]
     end
+
+    it "serializes combo (BAG) contracts for Order placement" do
+      @combo.serialize_long(:con_id, :sec_id).should ==
+          [0, "GOOG", "BAG", nil, 0, "NONE", nil, "SMART", nil, "USD", nil, nil, nil]
+    end
+
+    it 'also serializes attached combo legs' do
+      subject.serialize_legs.should == []
+      subject.serialize_legs(:extended).should == []
+
+      @combo.serialize_legs.should ==
+          [3, 81032967, 1, "BUY", "SMART", 81032968, 2, "SELL", "SMART", 81032973, 1, "BUY", "SMART"]
+
+      @combo.serialize_legs(:extended).should ==
+          [3, 81032967, 1, "BUY", "SMART", 0, 0, "", -1,
+           81032968, 2, "SELL", "SMART", 0, 0, "", -1,
+           81032973, 1, "BUY", "SMART", 0, 0, "", -1]
+    end
   end #serialization
+
 
 end # describe IB::Contract

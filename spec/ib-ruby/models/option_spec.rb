@@ -85,7 +85,18 @@ describe IB::Models::Contracts::Option do # AKA IB::Option
       subject.local_symbol = :bar
       subject.osi.should == :bar
     end
+  end
 
+  it 'correctly defines Contract type (sec_type) for Option contract' do
+    [IB::Contract.new(:sec_type => :option),
+     IB::Contract.new(:sec_type => 'OPT'),
+     IB::Option.new
+    ].each do |contract|
+      contract.should_not be_bag
+      contract.should_not be_bond
+      contract.should_not be_stock
+      contract.should be_option
+    end
   end
 
   context '.from_osi class builder' do

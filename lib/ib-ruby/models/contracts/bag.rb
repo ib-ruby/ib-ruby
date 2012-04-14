@@ -11,11 +11,11 @@ module IB
         # General Notes:
         # 1. :exchange for the leg definition must match that of the combination order.
         # The exception is for a STK legs, which must specify the SMART exchange.
-        # 2. :symbol => "USD" For combo Contract, this is an arbitrary value (like “USD”)
+        # 2. :symbol => "USD" For combo Contract, this is an arbitrary value (like "USD")
 
         def initialize opts = {}
           @legs = Array.new
-          self[:sec_type] = IB::SECURITY_TYPES[:bag]
+          self.sec_type = :bag
           super opts
         end
 
@@ -34,11 +34,6 @@ module IB
         # IB-equivalent leg description.
         def legs_description
           self[:legs_description] || legs.map { |leg| "#{leg.con_id}|#{leg.weight}" }.join(',')
-        end
-
-        def serialize_legs *fields
-          return [0] if legs.empty?
-          [legs.size, legs.map { |leg| leg.serialize *fields }]
         end
 
         # Check if two Contracts have same legs (maybe in different order)

@@ -10,7 +10,7 @@ describe IB::Models::ComboLeg do
      :open_close => :open,
      :short_sale_slot => :broker,
      :designated_location => nil,
-     :exempt_code => 12}
+     :exempt_code => -1}
   end
 
   let(:human) do
@@ -52,5 +52,18 @@ describe IB::Models::ComboLeg do
   end
 
   it_behaves_like 'Model'
+
+  context "serialization" do
+    subject { IB::ComboLeg.new props }
+
+    it "serializes short" do
+      subject.serialize.should == [81032967, 2, "BUY", "CBOE"]
+    end
+
+    it "serializes extended" do
+      subject.serialize(:extended).should ==
+          [81032967, 2, "BUY", "CBOE", 1, 1, nil, -1]
+    end
+  end #serialization
 
 end # describe IB::Models::Contract::ComboLeg

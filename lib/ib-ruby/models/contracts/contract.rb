@@ -206,7 +206,14 @@ module IB
 
         # Redefined in BAG subclass
         def serialize_legs *fields
-          []
+          case
+            when !bag?
+              []
+            when legs.empty?
+              [0]
+            else
+              [legs.size, legs.map { |leg| leg.serialize *fields }].flatten
+          end
         end
 
         # This produces a string uniquely identifying this contract, in the format used
@@ -274,7 +281,15 @@ module IB
         end
 
         def to_human
-          "<Contract: " + [symbol, sec_type, expiry, right, strike, exchange, currency].join(" ") + ">"
+          "<Contract: " +
+              [symbol,
+               sec_type,
+               (expiry == '' ? nil : expiry),
+               (right == :none ? nil : right),
+               (strike == 0 ? nil : strike),
+               exchange,
+               currency
+              ].compact.join(" ") + ">"
         end
 
         def to_short

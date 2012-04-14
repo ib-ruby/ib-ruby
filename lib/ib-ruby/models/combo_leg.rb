@@ -63,7 +63,7 @@ module IB
       def serialize *fields
         [con_id,
          ratio,
-         side,
+         side.to_sup,
          exchange,
          (fields.include?(:extended) ?
              [self[:open_close],

@@ -29,17 +29,19 @@ class String
   def to_bool
     case self.chomp.upcase
       when 'TRUE', 'T'
-       true
+        true
       when 'FALSE', 'F', ''
-       false
+        false
       else
         error "Unable to convert #{self} to bool"
     end
   end
 end
 
-def to_sup
-  to_s.upcase
+class Object
+  def to_sup
+    self.to_s.upcase
+  end
 end
 
 ### Patching Object#error in ib-ruby/errors

@@ -52,7 +52,7 @@ module IB
 
         def initialize opts = {}
           super opts
-          self[:sec_type] = 'OPT'
+          self.sec_type = 'OPT'
           self[:description] ||= osi ? osi : "#{symbol} #{strike} #{right} #{expiry}"
         end
 
