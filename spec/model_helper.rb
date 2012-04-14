@@ -71,14 +71,31 @@ shared_examples_for 'Model properties' do
 
   it 'sets values to properties as directed by its setters' do
     defined?(assigns) && assigns.each do |props, cases|
+      # For each given property ...
       [props].flatten.each do |prop|
-        (cases.is_a?(Array) ? cases.map { |e| [e, e] } : cases).
-            each do |values, result|
+
+        # For all test cases given as an Array [res1, res2] or Hash {val => res} ...
+        (cases.is_a?(Array) ? cases.map { |e| [e, e] } : cases).each do |values, result|
+
+          # For all values in this test case ...
           [values].flatten.each do |value|
-            expect {
-              subject.send "#{prop}=", value
-            }.to_not raise_error
-            subject.send("#{prop}").should == result
+            #p value, result
+
+            # Assigning this value to property results in ...
+            case result
+              when Exception # ... Exception
+                expect { subject.send "#{prop}=", value }.
+                    to raise_error result
+
+              when Regexp # ... Non-exceptional error, making model invalid
+                expect { subject.send "#{prop}=", value }.to_not raise_error
+                subject.should be_invalid
+                subject.errors.messages[prop].first.should =~ result
+
+              else # ... correct uniform assignment to result
+                expect { subject.send "#{prop}=", value }.to_not raise_error
+                subject.send("#{prop}").should == result
+            end
           end
         end
       end
@@ -89,6 +106,7 @@ end
 
 shared_examples_for 'Valid Model' do
   it 'validates' do
+    #pp subject.errors.messages
     subject.should be_valid
     subject.errors.should be_empty
   end
