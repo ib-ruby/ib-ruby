@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 111) do
+ActiveRecord::Schema.define(:version => 121) do
 
   create_table "bars", :force => true do |t|
     t.string  "time",     :limit => 18
@@ -39,6 +39,27 @@ ActiveRecord::Schema.define(:version => 111) do
     t.integer "cumulative_quantity"
     t.boolean "liquidation",         :limit => 1
     t.string  "side",                :limit => 1
+  end
+
+  create_table "order_states", :force => true do |t|
+    t.integer "order_id"
+    t.integer "perm_id"
+    t.integer "client_id"
+    t.integer "parent_id"
+    t.integer "filled"
+    t.integer "remaining"
+    t.float   "average_fill_price"
+    t.float   "last_fill_price"
+    t.string  "why_held"
+    t.float   "init_margin"
+    t.float   "maint_margin"
+    t.float   "equity_with_loan"
+    t.float   "commission"
+    t.float   "min_commission"
+    t.float   "max_commission"
+    t.string  "commission_currency"
+    t.string  "warning_text"
+    t.string  "status"
   end
 
 end

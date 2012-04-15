@@ -9,7 +9,7 @@ module IB
       def self.for subclass
         if DB
           case subclass
-            when :execution, :bar
+            when :execution, :bar, :order_state
               # Just a couple of AR models introduced for now...
               ActiveRecord::Base
             else

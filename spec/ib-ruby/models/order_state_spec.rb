@@ -13,9 +13,9 @@ describe IB::Models::OrderState do
      :average_fill_price => 0.55,
      :why_held => 'child',
 
-     :init_margin => 500,
-     :maint_margin => 500,
-     :equity_with_loan => 750,
+     :init_margin => 500.0,
+     :maint_margin => 500.0,
+     :equity_with_loan => 750.0,
      :commission_currency => 'USD',
      :commission => 1.2,
      :min_commission => 1,
@@ -27,7 +27,7 @@ describe IB::Models::OrderState do
 
   # TODO: :presents => { Object => "Formatted"}
   let(:human) do
-    "<OrderState: PreSubmitted #23/173276893 from 1111 filled 3/2 at 0.5/0.55 margin 500/500 equity 750 fee 1.2 why_held child warning Oh noes!>"
+    "<OrderState: PreSubmitted #23/173276893 from 1111 filled 3/2 at 0.5/0.55 margin 500.0/500.0 equity 750.0 fee 1.2 why_held child warning Oh noes!>"
   end
 
   let(:defaults) do

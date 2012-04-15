@@ -8,18 +8,6 @@ module IB
 
       # has_one :order
 
-      # Properties arriving via OrderStatus message
-      prop :order_id, #  int: Order id associated with client (volatile).
-           :perm_id, #   int: TWS permanent id, remains the same over TWS sessions.
-           :client_id, # int: The id of the client that placed this order.
-           :parent_id, # int: The order ID of the parent (original) order, used
-
-           :filled,
-           :remaining,
-           :average_fill_price, #  double
-           :last_fill_price, #     double
-           :why_held # String: comma-separated list of reasons for order to be held.
-
       # Properties arriving via OpenOrder message
       prop :init_margin, # Float: The impact the order would have on your initial margin.
            :maint_margin, # Float: The impact the order would have on your maintenance margin.
@@ -30,8 +18,19 @@ module IB
            :commission_currency, # String: Shows the currency of the commission.
            :warning_text # String: Displays a warning message if warranted.
 
+      # Properties arriving via OrderStatus message
+      prop :order_id, #  int: Order id associated with client (volatile).
+           :perm_id, #   int: TWS permanent id, remains the same over TWS sessions.
+           :client_id, # int: The id of the client that placed this order.
+           :parent_id, # int: The order ID of the parent (original) order, used
+           :filled, #    int
+           :remaining, # int
+           :average_fill_price, # double
+           :last_fill_price, #    double
+           :why_held # String: comma-separated list of reasons for order to be held.
+
       # Arrives in both messages:
-      prop :status # String: Displays the order status.Possible values include:
+      prop :status # String: Displays the order status. Possible values include:
       # - PendingSubmit - indicates that you have transmitted the order, but
       #   have not yet received confirmation that it has been accepted by the
       #   order destination. NOTE: This order status is NOT sent back by TWS
