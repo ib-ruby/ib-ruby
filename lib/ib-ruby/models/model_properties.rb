@@ -10,6 +10,15 @@ module IB
 
       DEFAULT_PROPS = {}
 
+      ### Instance methods
+
+      attr_accessor :created_at
+
+      def initialize opts={}
+        @created_at = Time.now
+        super self.class::DEFAULT_PROPS.merge(opts)
+      end
+
       included do
 
         ### Class macros
@@ -88,30 +97,18 @@ module IB
           end
         end
 
-        ### Instance methods
-
-        attr_reader :created_at
-
-        def initialize opts={}
-          @created_at = Time.now
-          super self.class::DEFAULT_PROPS.merge(opts)
-        end
-
         # Extending lighweight (not DB-backed) Model class to mimic AR::Base
         unless ancestors.include? ActiveModel::Validations
-          class_eval do
-            include ActiveModel::Validations
+          include ActiveModel::Validations
 
-            def save
-              false
-            end
+          def save
+            false
+          end
 
-            alias save! save
+          alias save! save
 
-            def self.find *args
-              []
-            end
-
+          def self.find *args
+            []
           end
         end
 

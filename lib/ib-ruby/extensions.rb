@@ -6,7 +6,7 @@ class Time
   end
 end # Time
 
-class Fixnum
+class Numeric
   # Conversion 0/1 into true/false
   def to_bool
     self == 0 ? false : true
@@ -35,6 +35,18 @@ class String
       else
         error "Unable to convert #{self} to bool"
     end
+  end
+end
+
+class NilClass
+  def to_bool
+    false
+  end
+end
+
+class Symbol
+  def to_f
+    0
   end
 end
 
