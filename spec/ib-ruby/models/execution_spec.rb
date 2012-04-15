@@ -30,7 +30,9 @@ describe IB::Models::Execution do # AKA IB::Execution
      :perm_id => 0,
      :shares=> 0,
      :price => 0,
-     :liquidation => false}
+     :liquidation => false,
+     :created_at => Time,
+    }
   end
 
   let(:errors) do

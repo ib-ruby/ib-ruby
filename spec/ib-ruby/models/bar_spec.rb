@@ -11,7 +11,12 @@ describe IB::Models::Bar do # AKA IB::Bar
      :volume => 20000,
      :has_gaps => true,
      :trades => 50,
-     :time => "20120312  15:41:09"
+     :time => "20120312  15:41:09",
+    }
+  end
+
+  let(:defaults) do
+    {:created_at => Time,
     }
   end
 

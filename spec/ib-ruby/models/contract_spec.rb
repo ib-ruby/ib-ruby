@@ -28,7 +28,9 @@ describe IB::Models::Contracts::Contract do # AKA IB::Contract
      :puttable => false,
      :convertible => false,
      :next_option_partial => false,
-     :include_expired => false}
+     :include_expired => false,
+     :created_at => Time,
+    }
   end
 
   let(:errors) do

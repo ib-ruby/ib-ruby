@@ -45,7 +45,9 @@ describe IB::Models::Order do
      :exempt_code => -1,
      :what_if => false,
      :not_held => false,
-     :status => 'New'}
+     :status => 'New',
+     :created_at => Time,
+    }
   end
 
   let(:errors) do

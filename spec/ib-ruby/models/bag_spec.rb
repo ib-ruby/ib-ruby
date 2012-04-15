@@ -21,7 +21,9 @@ describe IB::Models::Contracts::Bag do # AKA IB::Bag
      :con_id => 0,
      :strike => 0,
      :min_tick => 0,
-     :include_expired => false}
+     :include_expired => false,
+     :created_at => Time,
+    }
   end
 
   let(:errors) do
