@@ -1,52 +1,27 @@
 require 'active_model'
-#require 'active_model/validations'
+require 'active_support/concern'
 
 module IB
   module Models
 
     # Module adds prop Macro and
     module ModelProperties
+      extend ActiveSupport::Concern
 
       DEFAULT_PROPS = {}
 
-      def self.included base
-        base.extend Macros
+      included do
 
-        # Extending lighweight (not DB-backed) Model class to mimic AR::Base
-        unless base.ancestors.include? ActiveModel::Validations
-          base.class_eval do
-            include ActiveModel::Validations
+        ### Class macros
 
-            def save
-              false
-            end
-
-            alias save! save
-
-            def self.find *args
-              []
-            end
-
-          end
-        end
-      end
-
-      attr_reader :created_at
-
-      def initialize opts={}
-        @created_at = Time.now
-        super self.class::DEFAULT_PROPS.merge(opts)
-      end
-
-      module Macros
-        def prop *properties
+        def self.prop *properties
           prop_hash = properties.last.is_a?(Hash) ? properties.pop : {}
 
           properties.each { |names| define_property names, '' }
           prop_hash.each { |names, type| define_property names, type }
         end
 
-        def define_property names, body
+        def self.define_property names, body
           aliases = [names].flatten
           name = aliases.shift
           instance_eval do
@@ -60,7 +35,7 @@ module IB
           end
         end
 
-        def define_property_methods name, body={}
+        def self.define_property_methods name, body={}
           #p name, body
           case body
             when '' # default getter and setter
@@ -112,9 +87,35 @@ module IB
               define_property_methods name, :set => body
           end
         end
-      end # module Macros
 
+        ### Instance methods
+
+        attr_reader :created_at
+
+        def initialize opts={}
+          @created_at = Time.now
+          super self.class::DEFAULT_PROPS.merge(opts)
+        end
+
+        # Extending lighweight (not DB-backed) Model class to mimic AR::Base
+        unless ancestors.include? ActiveModel::Validations
+          class_eval do
+            include ActiveModel::Validations
+
+            def save
+              false
+            end
+
+            alias save! save
+
+            def self.find *args
+              []
+            end
+
+          end
+        end
+
+      end # included
     end # module ModelProperties
-  end
+  end # module Models
 end
-

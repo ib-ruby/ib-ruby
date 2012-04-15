@@ -253,7 +253,7 @@ module IB
 
 
       # Order is not valid without correct :order_id
-      validates_numericality_of :order_id
+      validates_numericality_of :order_id, :only_integer => true
 
       # Returned in OpenOrder for Bag Contracts
       # public Vector<OrderComboLeg> m_orderComboLegs
@@ -294,14 +294,10 @@ module IB
                        :scale_random_percent => false,
                        :opt_out_smart_routing => false,
                        :override_percentage_constraints => false,
+                       :leg_prices => [],
+                       :algo_params => {},
+                       :combo_params => {},
       }
-
-      def initialize opts = {}
-        @leg_prices = []
-        @algo_params = {}
-        @combo_params = {}
-        super opts
-      end
 
       # This returns an Array of data from the given order,
       # mixed with data from associated contract. Ugly mix, indeed.
