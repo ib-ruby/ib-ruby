@@ -78,6 +78,19 @@ module IB
         "<ComboLeg: #{side} #{ratio} con_id #{con_id} at #{exchange}>"
       end
 
+      # Order comparison
+      def == other
+        other && other.is_a?(ComboLeg) &&
+            con_id == other.con_id &&
+            ratio == other.ratio &&
+            open_close == other.open_close &&
+            short_sale_slot == other.short_sale_slot&&
+            exempt_code == other.exempt_code &&
+            side == other.side &&
+            exchange == other.exchange &&
+            designated_location == other.designated_location
+      end
+
     end # ComboLeg
   end # module Models
 end # module IB

@@ -52,6 +52,7 @@ describe IB::Models::ComboLeg do
   end
 
   it_behaves_like 'Model'
+  it_behaves_like 'Self-equal Model'
 
   context "serialization" do
     subject { IB::ComboLeg.new props }
