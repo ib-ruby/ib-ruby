@@ -4,6 +4,7 @@ describe IB::Models::Order do
 
   let(:props) do
     {:order_id => 23,
+     :order_ref => 'Test',
      :client_id => 1111,
      :perm_id => 173276893,
      :parent_id => 0,
@@ -27,8 +28,9 @@ describe IB::Models::Order do
      :not_held => true}
   end
 
+  # TODO: :presents => { Object => "Formatted"}
   let(:human) do
-    "<Order: MIT GTC buy 100 PreSubmitted 0.01 id 23/173276893 from 1111/>"
+    "<Order: Test MIT GTC buy 100 PreSubmitted 0.01 id 23/173276893 from 1111>"
   end
 
   let(:defaults) do

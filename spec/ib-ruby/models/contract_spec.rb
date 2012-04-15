@@ -140,28 +140,24 @@ describe IB::Models::Contracts::Contract do # AKA IB::Contract
       @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
       @ib.wait_for :ManagedAccounts
       @combo = butterfly 'GOOG', '201301', 'CALL', 500, 510, 520
-    end
-
-    after(:all) { close_connection }
-
-    before(:all) do
+      close_connection
     end
 
     subject { IB::Contract.new props }
 
     it "serializes long" do
       subject.serialize_long.should ==
-          ["AAPL", "OPT", "201301", 600, "PUT", 10, "SMART", nil, "USD", "AAPL  130119C00500000"]
+          ["AAPL", "OPT", "201301", 600, "P", 10, "SMART", nil, "USD", "AAPL  130119C00500000"]
     end
 
     it "serializes short" do
       subject.serialize_short.should ==
-          ["AAPL", "OPT", "201301", 600, "PUT", 10, "SMART", "USD", "AAPL  130119C00500000"]
+          ["AAPL", "OPT", "201301", 600, "P", 10, "SMART", "USD", "AAPL  130119C00500000"]
     end
 
     it "serializes combo (BAG) contracts for Order placement" do
       @combo.serialize_long(:con_id, :sec_id).should ==
-          [0, "GOOG", "BAG", nil, 0, "NONE", nil, "SMART", nil, "USD", nil, nil, nil]
+          [0, "GOOG", "BAG", nil, 0.0, "", nil, "SMART", nil, "USD", nil, nil, nil]
     end
 
     it 'also serializes attached combo legs' do

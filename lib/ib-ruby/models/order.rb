@@ -263,23 +263,37 @@ module IB
 
       DEFAULT_PROPS = {:status => 'New', # Starting new Orders with this status
                        :aux_price => 0.0,
+                       :discretionary_amount => 0.0,
                        :parent_id => 0,
                        :tif => :day,
                        :order_type => :limit,
                        :open_close => :open,
                        :origin => :customer,
                        :short_sale_slot => :default,
+                       :trigger_method => :default,
+                       :oca_type => :none,
+                       :auction_strategy => :none,
                        :designated_location => '',
                        :exempt_code => -1,
+                       :display_size => 0,
+                       :continuous_update => 0,
                        :delta_neutral_con_id => 0,
                        :algo_strategy => '',
+                       # TODO: Add simple defaults to prop ?
                        :transmit => true,
                        :what_if => false,
+                       :hidden => false,
+                       :etrade_only => false,
+                       :firm_quote_only => false,
+                       :block_order => false,
+                       :all_or_none => false,
+                       :sweep_to_fill => false,
                        :not_held => false,
                        :outside_rth => false,
                        :scale_auto_reset => false,
                        :scale_random_percent => false,
                        :opt_out_smart_routing => false,
+                       :override_percentage_constraints => false,
       }
 
       def initialize opts = {}
@@ -309,7 +323,7 @@ module IB
          self[:tif],
          oca_group,
          account,
-         open_close.to_s.upcase[0..0],
+         open_close.to_sup[0..0],
          self[:origin],
          order_ref,
          transmit,
@@ -322,19 +336,22 @@ module IB
          hidden,
          contract.serialize_legs(:extended),
 
-         # Support for per-leg prices in Order
-         if server[:server_version] >= 61
-           leg_prices.empty? ? 0 : [leg_prices.size] + leg_prices
-         else
-           []
-         end,
-
-         # Support for combo routing params in Order
-         if server[:server_version] >= 57 && contract.bag?
-           combo_params.empty? ? 0 : [combo_params.size] + combo_params.to_a
-         else
-           []
-         end,
+         # This is specific to PlaceOrder v.38, NOT supported by API yet!
+         #
+         ## Support for per-leg prices in Order
+         #if server[:server_version] >= 61 && contract.bag?
+         #  leg_prices.empty? ? 0 : [leg_prices.size] + leg_prices
+         #else
+         #  []
+         #end,
+         #
+         ## Support for combo routing params in Order
+         #if server[:server_version] >= 57 && contract.bag?
+         #  p 'Here!'
+         #  combo_params.empty? ? 0 : [combo_params.size] + combo_params.to_a
+         #else
+         #  []
+         #end,
 
          '', # deprecated shares_allocation field
          discretionary_amount,
@@ -467,10 +484,12 @@ module IB
       end
 
       def to_human
-        "<Order: #{self[:order_type]} #{self[:tif]} #{side} #{total_quantity} " +
+        "<Order: " + (order_ref ? "#{order_ref} " : '') +
+            "#{self[:order_type]} #{self[:tif]} #{side} #{total_quantity} " +
             "#{status} " + (limit_price ? limit_price.to_s : '') +
             ((aux_price && aux_price != 0) ? "/#{aux_price}" : '') +
-            " id #{order_id}/#{perm_id} from #{client_id}/#{account}" +
+            " id #{order_id}/#{perm_id} from #{client_id}" +
+            (account ? "/#{account}" : '') +
             (commission ? " fee #{commission}" : '') + ">"
       end
     end # class Order

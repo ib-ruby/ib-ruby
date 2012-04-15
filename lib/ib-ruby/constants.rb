@@ -206,12 +206,14 @@ module IB
            2 => :third_party}, # Shares will be delivered from elsewhere, institutions
 
       :oca_type =>
-          {1 => :cancel_with_block, # Cancel all remaining orders with block
+          {0 => :none, # Not a member of OCA group
+           1 => :cancel_with_block, # Cancel all remaining orders with block
            2 => :reduce_with_block, # Remaining orders are reduced in size with block
            3 => :reduce_no_block}, # Remaining orders are reduced in size with no block
 
       :auction_strategy =>
-          {1 => :match,
+          {0 => :none, # Not a BOX order
+           1 => :match,
            2 => :improvement,
            3 => :transparent},
 

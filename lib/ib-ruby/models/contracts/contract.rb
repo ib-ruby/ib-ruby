@@ -6,7 +6,7 @@ module IB
 
         # This returns a Contract initialized from the serialize_ib_ruby format string.
         def self.build opts = {}
-          Contracts::TYPES[opts[:sec_type]].new opts
+          Contracts::TYPES[VALUES[:sec_type][opts[:sec_type]]].new opts
         end
 
         # This returns a Contract initialized from the serialize_ib_ruby format string.
@@ -145,7 +145,7 @@ module IB
                             :message => "should not be SMART"
 
         DEFAULT_PROPS = {:con_id => 0,
-                         :strike => 0,
+                         :strike => 0.0,
                          :right => :none, # Not an option
                          :exchange => 'SMART',
                          :under_con_id => 0,
@@ -172,7 +172,7 @@ module IB
            (fields.include?(:option) ?
                [expiry,
                 strike,
-                right.to_s.upcase,
+                self[:right],
                 multiplier] : []),
            exchange,
            (fields.include?(:primary_exchange) ? [primary_exchange] : []),
@@ -204,7 +204,7 @@ module IB
           end
         end
 
-        # Redefined in BAG subclass
+        # Defined in Contract, not BAG subclass to keep code DRY
         def serialize_legs *fields
           case
             when !bag?

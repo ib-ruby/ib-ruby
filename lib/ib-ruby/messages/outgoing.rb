@@ -316,7 +316,7 @@ module IB
       # Data format is { :id => int: order_id,
       #                  :contract => Contract,
       #                  :order => Order }
-      PlaceOrder = def_message [3, 31] # 38 Need to set up Classes Hash properly
+      PlaceOrder = def_message [3, 31] # v.38 is NOT properly supported by API yet
 
       class PlaceOrder
         def encode server
