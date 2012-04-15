@@ -3,5 +3,5 @@ puts '$ rspec -rv spec'
 
 OPTS ||= {
     :verbose => true, #false, #true, # Verbosity of test outputs
-    :brokertron => false, # Use mock (Brokertron) instead of paper account
+    :brokertron => false, # Do not use mock service (Brokertron)
 }

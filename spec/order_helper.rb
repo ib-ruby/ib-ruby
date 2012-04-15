@@ -17,6 +17,14 @@ shared_examples_for 'Placed Order' do
     it 'receives confirmation of Order submission' do
       order_should_be /Submit/ # ()Pre)Submitted
       status_should_be /Submit/
+
+      if @attached_order
+        if contract_type == :butterfly && @attached_order.tif == :good_till_cancelled
+          pending 'API Bug: Attached GTC orders not working for butterflies!'
+        else
+          order_should_be /Submit/, @attached_order
+        end
+      end
     end
   end # Placing
 
@@ -43,8 +51,8 @@ shared_examples_for 'Placed Order' do
       status_should_be /Submitted/
 
       if @attached_order
-        if contract_type == :butterfly && @attached_order.tif == 'GTC'
-          pending 'API Bug: Attached DAY orders not working for butterflies!'
+        if contract_type == :butterfly && @attached_order.tif == :good_till_cancelled
+          pending 'API Bug: Attached GTC orders not working for butterflies!'
         else
           order_should_be /Submit/, @attached_order
         end
@@ -54,21 +62,18 @@ shared_examples_for 'Placed Order' do
 
   context "Modifying Order" do
     before(:all) do
-      if defined?(contract_type) && contract_type == :butterfly
-        pending 'API Bug: Order modification not working for butterflies!'
-      else
-        # Modification only works for non-attached, non-combo orders
-        @order.total_quantity = 200
-        @order.limit_price += 0.05
-        @order.transmit = true
-        @ib.modify_order @order, @contract
+      # Modification only works for non-attached orders
+      @order.total_quantity *= 2
+      @order.limit_price += 0.05
+      @order.transmit = true
+      @order.tif = 'GTC'
+      @ib.modify_order @order, @contract
 
-        if @attached_order
-          # Modify attached order, if any
-          @attached_order.limit_price *= 1.5
-          @attached_order.tif = 'GTC'
-          @ib.modify_order @attached_order, @contract
-        end
+      if @attached_order
+        # Modify attached order, if any
+        @attached_order.limit_price *= 1.5
+        @attached_order.tif = 'GTC'
+        @ib.modify_order @attached_order, @contract
       end
       @ib.send_message :RequestOpenOrders
       @ib.wait_for :OpenOrderEnd, 6 #sec
@@ -92,8 +97,8 @@ shared_examples_for 'Placed Order' do
       status_should_be /Submit/
 
       if @attached_order
-        if contract_type == :butterfly && @attached_order.tif == 'GTC'
-          pending 'API Bug: Attached DAY orders not working for butterflies!'
+        if contract_type == :butterfly && @attached_order.tif == :good_till_cancelled
+          pending 'API Bug: Attached GTC orders not working for butterflies!'
         else
           order_should_be /Submit/, @attached_order
         end
@@ -127,8 +132,8 @@ shared_examples_for 'Placed Order' do
     it 'receives cancellation Order Status' do
       status_should_be /Cancel/ # Cancelled / PendingCancel
       if @attached_order
-        if contract_type == :butterfly && @attached_order.tif == 'GTC'
-          pending 'API Bug: Attached DAY orders not working for butterflies!'
+        if contract_type == :butterfly && @attached_order.tif == :good_till_cancelled
+          pending 'API Bug: Attached GTC orders not working for butterflies!'
         else
           status_should_be /Cancel/, @attached_order
         end
