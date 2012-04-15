@@ -21,12 +21,10 @@ module IB
         # Fields are Strings unless noted otherwise
         prop :con_id, # int: The unique contract identifier.
              :sec_type,
-             :symbol, # This is the symbol of the underlying asset.
              :strike, # double: The strike price.
              :currency, # Only needed if there is an ambiguity, e.g. when SMART exchange
              #            and IBM is being requested (IBM can trade in GBP or USD).
 
-             :local_symbol, # Local exchange symbol of the underlying asset
              :include_expired, # When true, contract details requests and historical
              #         data queries can be performed pertaining to expired contracts.
              #         Note: Historical data queries on expired contracts are
@@ -43,8 +41,11 @@ module IB
              #                  identifying suffix. Ex: AAPL.O for Apple on NASDAQ.)
              :sec_id, # Unique identifier of the given secIdType.
 
-             # COMBOS
              :legs_description, # received in OpenOrder for all combos
+
+             :symbol => :s, # This is the symbol of the underlying asset.
+
+             :local_symbol => :s, # Local exchange symbol of the underlying asset
 
              # Future/option contract multiplier (only needed when multiple possibilities exist)
              :multiplier => :i,
@@ -134,9 +135,8 @@ module IB
         attr_accessor :description # NB: local to ib-ruby, not part of TWS.
 
         # Extra validations
-        validates_format_of :sec_type,
-                            :with => Regexp.new(CODES[:sec_type].keys.join('$|^')),
-                            :message => "should be valid security type"
+        validates_inclusion_of :sec_type, :in => CODES[:sec_type].keys,
+                               :message => "should be valid security type"
 
         validates_format_of :expiry, :with => /^\d{6}$|^\d{8}$|^$/,
                             :message => "should be YYYYMM or YYYYMMDD"

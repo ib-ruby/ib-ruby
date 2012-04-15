@@ -41,7 +41,7 @@ shared_examples_for 'Model instantiated empty' do
   it 'sets all properties to defaults' do
     defined?(defaults) && defaults.each do |name, value|
       case value
-        when Module
+        when Module, Class
           subject.send(name).should be_a value
         else
           subject.send(name).should == value
@@ -105,12 +105,16 @@ shared_examples_for 'Model properties' do
                 #p value, result
 
                 subject.errors.messages[prop].should_not be_nil
-                subject.errors.messages[prop].
-                    any? { |msg| msg =~ result }.should be_true
+                msg = subject.errors.messages[prop].find { |msg| msg =~ result }
+                msg.should =~ result
 
               else # ... correct uniform assignment to result
+
+                was_valid = subject.valid?
                 expect { subject.send "#{prop}=", value }.to_not raise_error
                 subject.send("#{prop}").should == result
+
+                was_valid && (subject.should be_valid) # assignment keeps validity
             end
           end
         end

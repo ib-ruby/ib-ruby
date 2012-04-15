@@ -24,6 +24,7 @@ describe IB::Models::Contracts::Option do # AKA IB::Option
 
   let(:errors) do
     {:right => ["should be put or call"],
+     :strike => ["must be greater than 0"],
     }
   end
 
@@ -51,9 +52,15 @@ describe IB::Models::Contracts::Option do # AKA IB::Option
          {[:cboe, 'cboE', 'CBOE'] => 'CBOE',
           [:SMART, 'SMART'] => /should not be SMART/},
 
+     :symbol =>
+         {['AAPL', :AAPL] => 'AAPL'},
+
      :local_symbol =>
-         {'AAPL  130119C00500000' => 'AAPL  130119C00500000',
+         {['AAPL  130119C00500000', :'AAPL  130119C00500000'] =>
+              'AAPL  130119C00500000',
           'BAR'=> /invalid OSI code/},
+
+     :strike => {[0, -30.0] => /must be greater than 0/},
 
      :multiplier => {['123', 123] => 123},
 
@@ -82,8 +89,8 @@ describe IB::Models::Contracts::Option do # AKA IB::Option
     it 'has extra osi accessor, aliasing :local_symbol' do
       subject.osi = 'FOO'
       subject.local_symbol.should == 'FOO'
-      subject.local_symbol = :bar
-      subject.osi.should == :bar
+      subject.local_symbol = 'bar'
+      subject.osi.should == 'bar'
     end
   end
 
