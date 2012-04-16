@@ -20,8 +20,8 @@ describe IB::Models::Order do
      :designated_location => "WHATEVER",
      :exempt_code => 123,
      :delta_neutral_order_type => :market,
-     :commission_currency => "USD",
-     :status => 'PreSubmitted',
+     #:commission_currency => "USD",
+     #:status => 'PreSubmitted',
      :transmit => false,
      :outside_rth => true,
      :what_if => true,
@@ -30,7 +30,7 @@ describe IB::Models::Order do
 
   # TODO: :presents => { Object => "Formatted"}
   let(:human) do
-    "<Order: Test MIT GTC buy 100 PreSubmitted 0.01 id 23/173276893 from 1111>"
+    "<Order: Test MIT GTC buy 100 New 0.01 id 23/173276893 from 1111>"
   end
 
   let(:defaults) do
@@ -80,7 +80,6 @@ describe IB::Models::Order do
 
   it_behaves_like 'Model'
   it_behaves_like 'Self-equal Model'
-
 
   context 'equality' do
     subject { IB::Order.new props }

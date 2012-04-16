@@ -110,51 +110,6 @@ module IB
 
       ### Actual message classes (short definitions):
 
-      # :status - String: Displays the order status. Possible values include:
-      # � PendingSubmit - indicates that you have transmitted the order, but
-      #   have not yet received confirmation that it has been accepted by the
-      #   order destination. NOTE: This order status is NOT sent back by TWS
-      #   and should be explicitly set by YOU when an order is submitted.
-      # � PendingCancel - indicates that you have sent a request to cancel
-      #   the order but have not yet received cancel confirmation from the
-      #   order destination. At this point, your order cancel is not confirmed.
-      #   You may still receive an execution while your cancellation request
-      #   is pending. NOTE: This order status is not sent back by TWS and
-      #   should be explicitly set by YOU when an order is canceled.
-      # � PreSubmitted - indicates that a simulated order type has been
-      #   accepted by the IB system and that this order has yet to be elected.
-      #   The order is held in the IB system until the election criteria are
-      #   met. At that time the order is transmitted to the order destination
-      #   as specified.
-      # � Submitted - indicates that your order has been accepted at the order
-      #   destination and is working.
-      # � Cancelled - indicates that the balance of your order has been
-      #   confirmed canceled by the IB system. This could occur unexpectedly
-      #   when IB or the destination has rejected your order.
-      # � Filled - indicates that the order has been completely filled.
-      # � Inactive - indicates that the order has been accepted by the system
-      #   (simulated orders) or an exchange (native orders) but that currently
-      #   the order is inactive due to system, exchange or other issues.
-      # :why_held - This property contains the comma-separated list of reasons for
-      #      order to be held. For example, when TWS is trying to locate shares for
-      #      a short sell, the value used to indicate this is 'locate'.
-      OrderStatus = def_message [3, 6], [:order_id, :int],
-                                [:status, :string],
-                                [:filled, :int],
-                                [:remaining, :int],
-                                [:average_fill_price, :decimal],
-                                [:perm_id, :int],
-                                [:parent_id, :int],
-                                [:last_fill_price, :decimal],
-                                [:client_id, :int],
-                                [:why_held, :string] do
-        "<OrderStatus: #{status} filled: #{filled}/#{remaining + filled}" +
-            " @ last/avg: #{last_fill_price}/#{average_fill_price}" +
-            (parent_id > 0 ? " parent_id: #{parent_id}" : "") +
-            (why_held != "" ? " why_held: #{why_held}" : "") +
-            " id/perm: #{order_id}/#{perm_id}>"
-      end
-
       AccountValue = def_message([6, 2], [:key, :string],
                                  [:value, :string],
                                  [:currency, :string],
@@ -518,55 +473,6 @@ module IB
         end
       end # ScannerData
 
-      # HistoricalData contains following @data:
-      # General:
-      #    :request_id - The ID of the request to which this is responding
-      #    :count - Number of Historical data points returned (size of :results).
-      #    :results - an Array of Historical Data Bars
-      #    :start_date - beginning of returned Historical data period
-      #    :end_date   - end of returned Historical data period
-      # Each returned Bar in @data[:results] Array contains this data:
-      #    :date - The date-time stamp of the start of the bar. The format is
-      #       determined by the RequestHistoricalData formatDate parameter.
-      #    :open -  The bar opening price.
-      #    :high -  The high price during the time covered by the bar.
-      #    :low -   The low price during the time covered by the bar.
-      #    :close - The bar closing price.
-      #    :volume - The volume during the time covered by the bar.
-      #    :trades - When TRADES historical data is returned, represents number of trades
-      #             that occurred during the time period the bar covers
-      #    :wap - The weighted average price during the time covered by the bar.
-      #    :has_gaps - Whether or not there are gaps in the data.
-
-      HistoricalData = def_message [17, 3],
-                                   [:request_id, :int],
-                                   [:start_date, :string],
-                                   [:end_date, :string],
-                                   [:count, :int]
-      class HistoricalData
-        attr_accessor :results
-
-        def load
-          super
-
-          @results = Array.new(@data[:count]) do |_|
-            IB::Bar.new :time => socket.read_string,
-                        :open => socket.read_decimal,
-                        :high => socket.read_decimal,
-                        :low => socket.read_decimal,
-                        :close => socket.read_decimal,
-                        :volume => socket.read_int,
-                        :wap => socket.read_decimal,
-                        :has_gaps => socket.read_string,
-                        :trades => socket.read_int
-          end
-        end
-
-        def to_human
-          "<HistoricalData: #{request_id}, #{count} items, #{start_date} to #{end_date}>"
-        end
-      end # HistoricalData
-
     end # module Incoming
   end # module Messages
 end # module IB
@@ -574,6 +480,7 @@ end # module IB
 # Require standalone message source files
 require 'ib-ruby/messages/incoming/ticks'
 require 'ib-ruby/messages/incoming/open_order'
+require 'ib-ruby/messages/incoming/order_status'
 
 __END__
     // incoming msg id's

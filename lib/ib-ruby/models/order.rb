@@ -192,44 +192,6 @@ module IB
            :scale_auto_reset => :bool,
            :scale_random_percent => :bool
 
-      # Some Order properties (received back from IB) are separated into
-      # OrderState object. Here, they are lumped into Order proper: see OrderState.java
-      # TODO: Extract OrderState object, for better record keeping
-      prop :status, # String: Displays the order status.Possible values include:
-           # - PendingSubmit - indicates that you have transmitted the order, but
-           #   have not yet received confirmation that it has been accepted by the
-           #   order destination. NOTE: This order status is NOT sent back by TWS
-           #   and should be explicitly set by YOU when an order is submitted.
-           # - PendingCancel - indicates that you have sent a request to cancel
-           #   the order but have not yet received cancel confirmation from the
-           #   order destination. At this point, your order cancel is not confirmed.
-           #   You may still receive an execution while your cancellation request
-           #   is pending. NOTE: This order status is not sent back by TWS and
-           #   should be explicitly set by YOU when an order is canceled.
-           # - PreSubmitted - indicates that a simulated order type has been
-           #   accepted by the IB system and that this order has yet to be elected.
-           #   The order is held in the IB system until the election criteria are
-           #   met. At that time the order is transmitted to the order destination
-           #   as specified.
-           # - Submitted - indicates that your order has been accepted at the order
-           #   destination and is working.
-           # - Cancelled - indicates that the balance of your order has been
-           #   confirmed canceled by the IB system. This could occur unexpectedly
-           #   when IB or the destination has rejected your order.
-           # - ApiCancelled - canceled via API
-           # - Filled - indicates that the order has been completely filled.
-           # - Inactive - indicates that the order has been accepted by the system
-           #   (simulated orders) or an exchange (native orders) but that currently
-           #   the order is inactive due to system, exchange or other issues.
-           :commission, # double: Shows the commission amount on the order.
-           :commission_currency, # String: Shows the currency of the commission.
-           :min_commission, # The possible min range of the actual order commission.
-           :max_commission, # The possible max range of the actual order commission.
-           :warning_text, # String: Displays a warning message if warranted.
-           :init_margin, # Float: The impact the order would have on your initial margin.
-           :maint_margin, # Float: The impact the order would have on your maintenance margin.
-           :equity_with_loan # Float: The impact the order would have on your equity
-
       # Properties with complex processing logics
       prop :tif, #  String: Time in Force (time to market): DAY/GAT/GTD/GTC/IOC
            :what_if => :bool, # Only return pre-trade commissions and margin info, do not place
@@ -251,18 +213,31 @@ module IB
            :open_close => PROPS[:open_close] # Originally String: O=Open, C=Close ()
       # for ComboLeg compatibility: SAME = 0; OPEN = 1; CLOSE = 2; UNKNOWN = 3;
 
+      # Some properties received from IB are separated into OrderState object,
+      # but they are still available as Order properties through delegation:
+      [:status, # String: Displays the order status.Possible values include:
+       :commission, # double: Shows the commission amount on the order.
+       :commission_currency, # String: Shows the currency of the commission.
+       :min_commission, # The possible min range of the actual order commission.
+       :max_commission, # The possible max range of the actual order commission.
+       :warning_text, # String: Displays a warning message if warranted.
+       :init_margin, # Float: The impact the order would have on your initial margin.
+       :maint_margin, # Float: The impact the order would have on your maintenance margin.
+       :equity_with_loan # Float: The impact the order would have on your equity
+      ].each do |method|
+        define_method(method) { order_state.send(method) }
+      end
+
+      # Returned in OpenOrder for Bag Contracts
+      # public Vector<OrderComboLeg> m_orderComboLegs
+      attr_accessor :leg_prices, :combo_params, :order_state
+      alias order_combo_legs leg_prices
+      alias smart_combo_routing_params combo_params
 
       # Order is not valid without correct :order_id
       validates_numericality_of :order_id, :only_integer => true
 
-      # Returned in OpenOrder for Bag Contracts
-      # public Vector<OrderComboLeg> m_orderComboLegs
-      attr_accessor :leg_prices, :combo_params
-      alias order_combo_legs leg_prices
-      alias smart_combo_routing_params combo_params
-
-      DEFAULT_PROPS = {:status => 'New', # Starting new Orders with this status
-                       :aux_price => 0.0,
+      DEFAULT_PROPS = {:aux_price => 0.0,
                        :discretionary_amount => 0.0,
                        :parent_id => 0,
                        :tif => :day,
@@ -298,6 +273,11 @@ module IB
                        :algo_params => {},
                        :combo_params => {},
       }
+
+      def initialize opts = {}
+        @order_state = IB::OrderState.new
+        super opts
+      end
 
       # This returns an Array of data from the given order,
       # mixed with data from associated contract. Ugly mix, indeed.
@@ -480,11 +460,11 @@ module IB
       end
 
       def to_human
-        "<Order: " + (order_ref ? "#{order_ref} " : '') +
+        "<Order: " + ((order_ref && order_ref != '') ? "#{order_ref} " : '') +
             "#{self[:order_type]} #{self[:tif]} #{side} #{total_quantity} " +
-            "#{status} " + (limit_price ? limit_price.to_s : '') +
+            "#{status} " + (limit_price ? "#{limit_price} " : '') +
             ((aux_price && aux_price != 0) ? "/#{aux_price}" : '') +
-            " id #{order_id}/#{perm_id} from #{client_id}" +
+            "##{order_id}/#{perm_id} from #{client_id}" +
             (account ? "/#{account}" : '') +
             (commission ? " fee #{commission}" : '') + ">"
       end

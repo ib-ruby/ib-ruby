@@ -59,16 +59,7 @@ module IB
 
       validates_numericality_of :order_id, :perm_id, :client_id, :only_integer => true
 
-      def to_human
-        "<OrderState: #{status} ##{order_id}/#{perm_id} from #{client_id}" +
-            (filled ? " filled #{filled}/#{remaining}" : '') +
-            (last_fill_price ? " at #{last_fill_price}/#{average_fill_price}" : '') +
-            (init_margin ? " margin #{init_margin}/#{maint_margin}" : '') +
-            (equity_with_loan ? " equity #{equity_with_loan}" : '') +
-            (commission && commission > 0 ? " fee #{commission}" : "") +
-            (why_held ? " why_held #{why_held}" : '') +
-            ((warning_text && warning_text != '') ? " warning #{warning_text}" : '') + ">"
-      end
+      DEFAULT_PROPS = {:status => 'New'} # Starting new Orders with this status
 
       # Comparison
       def == other
@@ -88,6 +79,18 @@ module IB
             commission == other.commission
       end
 
+      def to_human
+        "<OrderState: #{status} ##{order_id}/#{perm_id} from #{client_id}" +
+            (filled ? " filled #{filled}/#{remaining}" : '') +
+            (last_fill_price ? " at #{last_fill_price}/#{average_fill_price}" : '') +
+            (init_margin ? " margin #{init_margin}/#{maint_margin}" : '') +
+            (equity_with_loan ? " equity #{equity_with_loan}" : '') +
+            (commission && commission > 0 ? " fee #{commission}" : "") +
+            (why_held ? " why_held #{why_held}" : '') +
+            ((warning_text && warning_text != '') ? " warning #{warning_text}" : '') + ">"
+      end
+
+      alias to_s to_human
     end # class Order
   end # module Models
 end # module IB

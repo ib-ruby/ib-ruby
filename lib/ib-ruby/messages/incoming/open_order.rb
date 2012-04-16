@@ -1,8 +1,8 @@
-# OpenOrder is the longest message with complex processing logics, it is isolated here
 module IB
   module Messages
     module Incoming
 
+      # OpenOrder is the longest message with complex processing logics
       OpenOrder =
           def_message [5, [23, 28]],
                       [:order, :order_id, :int],
@@ -73,13 +73,32 @@ module IB
 
       class OpenOrder
 
+
         # Accessors to make OpenOrder API-compatible with OrderStatus message
+
+        def order
+          @order ||= IB::Order.new @data[:order].merge(:order_state => order_state)
+        end
+
+        def order_state
+          @order_state ||= IB::OrderState.new(
+              @data[:order_state].merge(
+                  :order_id => @data[:order][:order_id],
+                  :perm_id => @data[:order][:perm_id],
+                  :parent_id => @data[:order][:parent_id],
+                  :client_id => @data[:order][:client_id]))
+        end
+
+        def contract
+          @contract ||= IB::Contract.build @data[:contract]
+        end
+
         def order_id
-          order && order.order_id
+          order.order_id
         end
 
         def status
-          order && order.status
+          order.status
         end
 
         def load
@@ -166,20 +185,17 @@ module IB
                    ],
 
                    [:order, :what_if, :boolean],
-                   [:order, :status, :string],
 
+                   [:order_state, :status, :string],
                    # IB uses weird String with Java Double.MAX_VALUE to indicate no value here
-                   [:order, :init_margin, :decimal_max], # :string],
-                   [:order, :maint_margin, :decimal_max], # :string],
-                   [:order, :equity_with_loan, :decimal_max], # :string],
-                   [:order, :commission, :decimal_max], # May be nil!
-                   [:order, :min_commission, :decimal_max], # May be nil!
-                   [:order, :max_commission, :decimal_max], # May be nil!
-                   [:order, :commission_currency, :string],
-                   [:order, :warning_text, :string]
-
-          @order = IB::Order.new @data[:order]
-          @contract = IB::Contract.build @data[:contract]
+                   [:order_state, :init_margin, :decimal_max], # :string],
+                   [:order_state, :maint_margin, :decimal_max], # :string],
+                   [:order_state, :equity_with_loan, :decimal_max], # :string],
+                   [:order_state, :commission, :decimal_max], # May be nil!
+                   [:order_state, :min_commission, :decimal_max], # May be nil!
+                   [:order_state, :max_commission, :decimal_max], # May be nil!
+                   [:order_state, :commission_currency, :string],
+                   [:order_state, :warning_text, :string]
         end
 
         # Check if given value was set by TWS to something vaguely "positive"
@@ -195,7 +211,7 @@ module IB
         end
 
         def to_human
-          "<OpenOrder: #{@contract.to_human} #{@order.to_human}>"
+          "<OpenOrder: #{contract.to_human} #{order.to_human}>"
         end
 
       end # class OpenOrder
