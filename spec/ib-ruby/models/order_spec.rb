@@ -30,7 +30,7 @@ describe IB::Models::Order do
 
   # TODO: :presents => { Object => "Formatted"}
   let(:human) do
-    "<Order: Test MIT GTC buy 100 New 0.01 id 23/173276893 from 1111>"
+    "<Order: Test MIT GTC buy 100 New 0.01 #23/173276893 from 1111>"
   end
 
   let(:defaults) do

@@ -19,18 +19,18 @@ module IB
            :warning_text # String: Displays a warning message if warranted.
 
       # Properties arriving via OrderStatus message
-      prop :order_id, #  int: Order id associated with client (volatile).
-           :perm_id, #   int: TWS permanent id, remains the same over TWS sessions.
-           :client_id, # int: The id of the client that placed this order.
-           :parent_id, # int: The order ID of the parent (original) order, used
-           :filled, #    int
+      prop :filled, #    int
            :remaining, # int
            :average_fill_price, # double
            :last_fill_price, #    double
            :why_held # String: comma-separated list of reasons for order to be held.
 
-      # Arrives in both messages:
-      prop :status # String: Displays the order status. Possible values include:
+      # Properties arriving in both messages:
+      prop :order_id, #  int: Order id associated with client (volatile).
+           :perm_id, #   int: TWS permanent id, remains the same over TWS sessions.
+           :client_id, # int: The id of the client that placed this order.
+           :parent_id, # int: The order ID of the parent (original) order, used
+           :status # String: Displays the order status. Possible values include:
       # - PendingSubmit - indicates that you have transmitted the order, but
       #   have not yet received confirmation that it has been accepted by the
       #   order destination. NOTE: This order status is NOT sent back by TWS

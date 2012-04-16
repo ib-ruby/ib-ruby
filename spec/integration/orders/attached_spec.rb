@@ -22,9 +22,9 @@ describe 'Attached Orders', :connected => true, :integration => true do
       [:stock, 100, 'DAY', 'LMT', 9.13, 20.0], # Parent + takeprofit target
       #[:stock, 100, 'DAY', 'STP', 9.13, 0.0, 8.0], # Parent + stoploss
       #[:stock, 100, 'GTC', 'LMT', 9.13, 20.0], # GTC Parent + target
-      #[:butterfly, 10, 'DAY', 'LMT', 0.05, 1.0], # Combo Parent + target
-      [:butterfly, 10, 'GTC', 'LMT', 0.05, 1.0], # GTC Combo Parent + target
-      #[:butterfly, 100, 'GTC', 'STPLMT', 0.05, 0.05, 1.0], # GTC Combo Parent + stoplimit target
+      [:butterfly, 10, 'DAY', 'LMT', 0.05, 1.0], # Combo Parent + target
+                                                 #[:butterfly, 10, 'GTC', 'LMT', 0.05, 1.0], # GTC Combo Parent + target
+                                                 #[:butterfly, 100, 'GTC', 'STPLMT', 0.05, 0.05, 1.0], # GTC Combo Parent + stoplimit target
 
   ].each do |(contract, qty, tif, attach_type, limit_price, attach_price, aux_price)|
     context "#{tif} BUY (#{contract}) limit order with attached #{attach_type} SELL" do
@@ -55,9 +55,9 @@ describe 'Attached Orders', :connected => true, :integration => true do
 
       context "Attaching #{attach_type} order" do
         before(:all) do
-          @attached_order = IB::Order.new :total_quantity => qty,
-                                          :limit_price => attach_price,
+          @attached_order = IB::Order.new :limit_price => attach_price,
                                           :aux_price => aux_price || 0,
+                                          :total_quantity => qty,
                                           :side => :sell,
                                           :tif => tif,
                                           :order_type => attach_type,

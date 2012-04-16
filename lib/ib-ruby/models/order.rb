@@ -209,9 +209,9 @@ module IB
            :etrade_only => :bool, #     Trade with electronic quotes.
            :firm_quote_only => :bool, # Trade with firm quotes.
            :opt_out_smart_routing => :bool, # Australian exchange only, default false
-           [:side, :action] => PROPS[:side], # String: Action/side: BUY/SELL/SSHORT/SSHORTX
-           :open_close => PROPS[:open_close] # Originally String: O=Open, C=Close ()
-      # for ComboLeg compatibility: SAME = 0; OPEN = 1; CLOSE = 2; UNKNOWN = 3;
+           :open_close => PROPS[:open_close], # Originally String: O=Open, C=Close ()
+           # for ComboLeg compatibility: SAME = 0; OPEN = 1; CLOSE = 2; UNKNOWN = 3;
+           [:side, :action] => PROPS[:side] # String: Action/side: BUY/SELL/SSHORT/SSHORTX
 
       # Some properties received from IB are separated into OrderState object,
       # but they are still available as Order properties through delegation:
@@ -224,15 +224,15 @@ module IB
        :init_margin, # Float: The impact the order would have on your initial margin.
        :maint_margin, # Float: The impact the order would have on your maintenance margin.
        :equity_with_loan # Float: The impact the order would have on your equity
-      ].each do |method|
-        define_method(method) { order_state.send(method) }
-      end
+      ].each { |method| define_method(method) { order_state.send(method) } }
 
       # Returned in OpenOrder for Bag Contracts
       # public Vector<OrderComboLeg> m_orderComboLegs
       attr_accessor :leg_prices, :combo_params, :order_state
       alias order_combo_legs leg_prices
       alias smart_combo_routing_params combo_params
+
+      # TODO: :created_at, :placed_at, :modified_at accessors
 
       # Order is not valid without correct :order_id
       validates_numericality_of :order_id, :only_integer => true
