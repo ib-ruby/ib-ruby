@@ -59,6 +59,7 @@ describe IB::Messages::Incoming::OrderStatus do
       verify_account
       @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
       @ib.wait_for :NextValidId
+      clean_connection
       place_order IB::Symbols::Stocks[:wfc]
       @ib.wait_for :OrderStatus, 6
     end

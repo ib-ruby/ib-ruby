@@ -55,6 +55,6 @@ module IB
         end
 
       end # AbstractMessage
-    end # module Incoming
+    end # module Outgoing
   end # module Messages
 end # module IB

@@ -5,31 +5,31 @@ module IB
 
   # Enumeration of bar size types for convenience.
   # Bar sizes less than 30 seconds do not work for some securities.
-  BAR_SIZES = {:sec1 => '1 sec',
-               :sec5 => '5 secs',
-               :sec15 => '15 secs',
-               :sec30 => '30 secs',
-               :min1 => '1 min',
-               :min2 => '2 mins',
-               :min3 => '3 mins',
-               :min5 => '5 mins',
-               :min15 => '15 mins',
-               :min30 => '30 mins',
-               :hour1 => '1 hour',
-               :day1 => '1 day'
+  BAR_SIZES = {'1 sec' => :sec1,
+               '5 secs' => :sec5,
+               '15 secs' =>:sec15,
+               '30 secs' =>:sec30,
+               '1 min' => :min1,
+               '2 mins' => :min2,
+               '3 mins' => :min3,
+               '5 mins' => :min5,
+               '15 mins' =>:min15,
+               '30 mins' =>:min30,
+               '1 hour' =>:hour1,
+               '1 day' => :day1
   }.freeze
 
   # Enumeration of data types.
   # Determines the nature of data being extracted. Valid values:
-  DATA_TYPES = {:trades => 'TRADES',
-                :midpoint => 'MIDPOINT',
-                :bid => 'BID',
-                :ask => 'ASK',
-                :bid_ask => 'BID_ASK',
-                :historical_volatility => 'HISTORICAL_VOLATILITY',
-                :option_implied_volatility => 'OPTION_IMPLIED_VOLATILITY',
-                :option_volume => 'OPTION_VOLUME',
-                :option_open_interest => 'OPTION_OPEN_INTEREST',
+  DATA_TYPES = {'TRADES' => :trades,
+                'MIDPOINT' => :midpoint,
+                'BID' => :bid,
+                'ASK' => :ask,
+                'BID_ASK' => :bid_ask,
+                'HISTORICAL_VOLATILITY' => :historical_volatility,
+                'OPTION_IMPLIED_VOLATILITY' => :option_implied_volatility,
+                'OPTION_VOLUME' => :option_volume,
+                'OPTION_OPEN_INTEREST' => :option_open_interest
   }.freeze
 
   ### These values are typically received from TWS in incoming messages

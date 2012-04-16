@@ -7,7 +7,7 @@ describe 'Request Historic Data', :connected => true, :integration => true do
                   :end_date_time => Time.now.to_ib,
                   :duration => '1 D',
                   :bar_size => '15 mins',
-                  :what_to_show => :trades,
+                  :data_type => :trades,
                   :format_date => 1}
   before(:all) do
     verify_account
@@ -26,10 +26,10 @@ describe 'Request Historic Data', :connected => true, :integration => true do
       end.to raise_error /bar_size must be one of/
     end
 
-    it 'raises if incorrect what_to_show' do
+    it 'raises if incorrect data_type' do
       expect do
-        @ib.send_message :RequestHistoricalData, CORRECT_OPTS.merge(:what_to_show => :nonsense)
-      end.to raise_error /:what_to_show must be one of/
+        @ib.send_message :RequestHistoricalData, CORRECT_OPTS.merge(:data_type => :nonsense)
+      end.to raise_error /:data_type must be one of/
     end
   end
 
