@@ -67,10 +67,6 @@ module IB
       # data = { :fa_data_type => int, :xml => String }
       ReplaceFA = def_message 19, :fa_data_type, :xml
       # data = { :market_data_type => int }
-      # The API can now receive frozen market data from Trader Workstation. Frozen
-      # market data is the last data recorded in our system. Use this method with
-      # :market_data_type = 1 for real-time streaming, 2 for frozen market data
-      RequestMarketDataType = def_message 59, :market_data_type
 
       # @data = { :subscribe => boolean,
       #           :account_code => Advisor accounts only. Empty ('') for a standard account. }
@@ -162,6 +158,17 @@ module IB
                         tick_list.is_a?(Array) ? tick_list.join(',') : (tick_list || '')
                       end, []],
                       [:snapshot, false])
+
+      # The API can receive frozen market data from Trader Workstation. Frozen market
+      # data is the last data recorded in our system. During normal trading hours,
+      # the API receives real-time market data. If you use this function, you are
+      # telling TWS to automatically switch to frozen market data AFTER the close.
+      # Then, before the opening of the next trading day, market data will automatically
+      # switch back to real-time market data.
+      # :market_data_type = 1 for real-time streaming, 2 for frozen market data
+      RequestMarketDataType =
+          def_message 59, [:market_data_type,
+                           lambda { |type| MARKET_DATA_TYPES.invert[type] || type }, []]
 
       # Send this message to receive Reuters global fundamental data. There must be
       # a subscription to Reuters Fundamental set up in Account Management before

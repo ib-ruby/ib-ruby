@@ -113,6 +113,13 @@ module IB
       2 => :profiles,
       3 => :aliases}.freeze
 
+  # Received in new MarketDataType (58 incoming) message
+  MARKET_DATA_TYPES = {
+      0 => :unknown,
+      1 => :real_time,
+      2 => :frozen,
+  }
+
   # Market depth messages contain these "operation" codes to tell you what to do with the data.
   # See also http://www.interactivebrokers.com/php/apiUsersGuide/apiguide/java/updatemktdepth.htm
   MARKET_DEPTH_OPERATIONS = {
