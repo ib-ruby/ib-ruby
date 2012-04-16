@@ -153,3 +153,7 @@
 == 0.7.4 / 2012-04-04
 
 * Order equality bug fixed
+
+== 0.7.5 / 2012-04-16
+
+* Optional DB backend for Models /ActiveRecord/
