@@ -6,6 +6,7 @@ module IB
     class OrderState < Model.for(:order_state)
       include ModelProperties
 
+      #p column_names
       # has_one :order
 
       # Properties arriving via OpenOrder message
@@ -18,7 +19,7 @@ module IB
            :commission_currency, # String: Shows the currency of the commission.
            :warning_text # String: Displays a warning message if warranted.
 
-      # Properties arriving via OrderStatus message
+      # Properties arriving via OrderStatus message:
       prop :filled, #    int
            :remaining, # int
            :average_fill_price, # double
@@ -56,6 +57,8 @@ module IB
       # - Inactive - indicates that the order has been accepted by the system
       #   (simulated orders) or an exchange (native orders) but that currently
       #   the order is inactive due to system, exchange or other issues.
+
+      prop :tester
 
       validates_numericality_of :order_id, :perm_id, :client_id, :only_integer => true
 

@@ -42,7 +42,8 @@ describe IB::Models::OrderState do
   end
 
   let(:assigns) do
-    {[:order_id, :perm_id, :client_id] =>
+    {   :tester => {1 => 1},
+        [:order_id, :perm_id, :client_id] =>
          {[:foo, 'bar'] => /is not a number/,
           [5.0, 2006.17] => /must be an integer/, }
     }

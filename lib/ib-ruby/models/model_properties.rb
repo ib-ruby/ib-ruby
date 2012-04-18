@@ -92,6 +92,8 @@ module IB
                 end
               end
 
+            # TODO define self[:name] accessors for :virtual and :flag properties
+
             else # setter given
               define_property_methods name, :set => body
           end

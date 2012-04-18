@@ -1,0 +1,42 @@
+#!/usr/bin/env ruby
+#
+# This script downloads Fundamental data for specific symbols from IB
+# This only works IF you have Reuters data subscription!
+
+require 'rubygems'
+require 'bundler/setup'
+$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
+
+require 'ib-ruby'
+require 'xmlsimple'
+require 'pp'
+
+
+ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS
+
+ib.subscribe(:Alert) { |msg| puts msg.to_human }
+
+# Fundamental Data will arrive as XML. Need to parse it
+ib.subscribe(:FundamentalData) do |msg|
+  puts 'Got fundamental data.'
+  @xml = XmlSimple.xml_in(msg.data)
+  pp @xml
+  @parsing_finished = true
+end
+
+ibm = IB::Contract.new :symbol => 'IBM',
+                       :exchange => 'NYSE',
+                       :currency => 'USD',
+                       :sec_type => 'STK'
+
+# Request Fundamental Data for IBM. Possible report types:
+#     'estimates' - Estimates
+#     'finstat'   - Financial statements
+#     'snapshot' - Summary
+ib.send_message :RequestFundamentalData,
+                :id => 10,
+                :contract => ibm,
+                :report_type => 'snapshot'
+
+# Needs some time to receive, parse and print XML. Standard timeout of 1 sec is too low.
+ib.wait_for(40) { @parsing_finished }

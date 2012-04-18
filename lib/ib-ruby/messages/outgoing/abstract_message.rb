@@ -25,6 +25,7 @@ module IB
         #
         def send_to server
           self.encode(server).flatten.each do |datum|
+            #p datum
             server[:socket].write_data datum
           end
         end

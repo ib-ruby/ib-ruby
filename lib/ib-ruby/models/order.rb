@@ -214,17 +214,25 @@ module IB
            [:side, :action] => PROPS[:side] # String: Action/side: BUY/SELL/SSHORT/SSHORTX
 
       # Some properties received from IB are separated into OrderState object,
-      # but they are still available as Order properties through delegation:
-      [:status, # String: Displays the order status.Possible values include:
-       :commission, # double: Shows the commission amount on the order.
+      # but they are still readable as Order properties through delegation.
+      #
+      # Properties arriving via OpenOrder message:
+      [:commission, # double: Shows the commission amount on the order.
        :commission_currency, # String: Shows the currency of the commission.
        :min_commission, # The possible min range of the actual order commission.
        :max_commission, # The possible max range of the actual order commission.
        :warning_text, # String: Displays a warning message if warranted.
        :init_margin, # Float: The impact the order would have on your initial margin.
        :maint_margin, # Float: The impact the order would have on your maintenance margin.
-       :equity_with_loan # Float: The impact the order would have on your equity
-      ].each { |method| define_method(method) { order_state.send(method) } }
+       :equity_with_loan, # Float: The impact the order would have on your equity
+       :status, # String: Displays the order status. See OrderState for values
+       # Properties arriving via OrderStatus message:
+       :filled, #    int
+       :remaining, # int
+       :average_fill_price, # double
+       :last_fill_price, #    double
+       :why_held # String: comma-separated list of reasons for order to be held.
+      ].each { |property| define_method(property) { order_state.send(property) } }
 
       # Returned in OpenOrder for Bag Contracts
       # public Vector<OrderComboLeg> m_orderComboLegs
@@ -269,12 +277,12 @@ module IB
                        :scale_random_percent => false,
                        :opt_out_smart_routing => false,
                        :override_percentage_constraints => false,
-                       :leg_prices => [],
-                       :algo_params => {},
-                       :combo_params => {},
       }
 
       def initialize opts = {}
+        @leg_prices = []
+        @algo_params = {}
+        @combo_params = {}
         @order_state = IB::OrderState.new
         super opts
       end

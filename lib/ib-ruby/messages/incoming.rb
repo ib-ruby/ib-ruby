@@ -59,7 +59,7 @@ module IB
 
       # Receive Reuters global fundamental market data. There must be a subscription to
       # Reuters Fundamental set up in Account Management before you can receive this data.
-      FundamentalData = def_message 50, [:request_id, :int], [:data, :string]
+      FundamentalData = def_message 51, [:request_id, :int], [:data, :string]
 
       ContractDataEnd = def_message 52, [:request_id, :int]
 

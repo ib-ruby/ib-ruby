@@ -176,7 +176,9 @@ module IB
       # data = { :id => int: :request_id,
       #          :contract => Contract,
       #          :report_type => String: one of the following:
-      #                          'Estimates', 'Financial Statements', 'Summary'   }
+      #                   'estimates' - Estimates
+      #                   'finstat'   - Financial statements
+      #                    'snapshot' - Summary   }
       RequestFundamentalData =
           def_message(52,
                       [:contract, :serialize, [:primary_exchange]],

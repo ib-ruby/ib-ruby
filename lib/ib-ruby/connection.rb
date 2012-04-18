@@ -253,6 +253,7 @@ module IB
       # Create new instance of the appropriate message type,
       # and have it read the message from server.
       # NB: Failure here usually means unsupported message type received
+      error "Got unsupported message #{msg_id}" unless Messages::Incoming::Classes[msg_id]
       msg = Messages::Incoming::Classes[msg_id].new(server)
 
       # Deliver message to all registered subscribers, alert if no subscribers
