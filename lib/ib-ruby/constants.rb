@@ -5,41 +5,32 @@ module IB
 
   # Enumeration of bar size types for convenience.
   # Bar sizes less than 30 seconds do not work for some securities.
-  BAR_SIZES = {:sec1 => '1 sec',
-               :sec5 => '5 secs',
-               :sec15 => '15 secs',
-               :sec30 => '30 secs',
-               :min1 => '1 min',
-               :min2 => '2 mins',
-               :min3 => '3 mins',
-               :min5 => '5 mins',
-               :min15 => '15 mins',
-               :min30 => '30 mins',
-               :hour1 => '1 hour',
-               :day1 => '1 day'}
+  BAR_SIZES = {'1 sec' => :sec1,
+               '5 secs' => :sec5,
+               '15 secs' =>:sec15,
+               '30 secs' =>:sec30,
+               '1 min' => :min1,
+               '2 mins' => :min2,
+               '3 mins' => :min3,
+               '5 mins' => :min5,
+               '15 mins' =>:min15,
+               '30 mins' =>:min30,
+               '1 hour' =>:hour1,
+               '1 day' => :day1
+  }.freeze
 
   # Enumeration of data types.
   # Determines the nature of data being extracted. Valid values:
-  DATA_TYPES = {:trades => 'TRADES',
-                :midpoint => 'MIDPOINT',
-                :bid => 'BID',
-                :ask => 'ASK',
-                :bid_ask => 'BID_ASK',
-                :historical_volatility => 'HISTORICAL_VOLATILITY',
-                :option_implied_volatility => 'OPTION_IMPLIED_VOLATILITY',
-                :option_volume => 'OPTION_VOLUME',
-                :option_open_interest => 'OPTION_OPEN_INTEREST',
-  }
-
-  # Valid security types (sec_type attribute of IB::Contract)
-  SECURITY_TYPES = {:stock => "STK",
-                    :option => "OPT",
-                    :future => "FUT",
-                    :index => "IND",
-                    :futures_option => "FOP",
-                    :forex => "CASH",
-                    :bond => "BOND",
-                    :bag => "BAG"}
+  DATA_TYPES = {'TRADES' => :trades,
+                'MIDPOINT' => :midpoint,
+                'BID' => :bid,
+                'ASK' => :ask,
+                'BID_ASK' => :bid_ask,
+                'HISTORICAL_VOLATILITY' => :historical_volatility,
+                'OPTION_IMPLIED_VOLATILITY' => :option_implied_volatility,
+                'OPTION_VOLUME' => :option_volume,
+                'OPTION_OPEN_INTEREST' => :option_open_interest
+  }.freeze
 
   ### These values are typically received from TWS in incoming messages
 
@@ -117,9 +108,17 @@ module IB
   }
 
   # Financial Advisor types (FaMsgTypeName)
-  FA_TYPES = {1 => 'GROUPS',
-              2 => 'PROFILES',
-              3 =>'ALIASES'}
+  FA_TYPES = {
+      1 => :groups,
+      2 => :profiles,
+      3 => :aliases}.freeze
+
+  # Received in new MarketDataType (58 incoming) message
+  MARKET_DATA_TYPES = {
+      0 => :unknown,
+      1 => :real_time,
+      2 => :frozen,
+  }
 
   # Market depth messages contain these "operation" codes to tell you what to do with the data.
   # See also http://www.interactivebrokers.com/php/apiUsersGuide/apiguide/java/updatemktdepth.htm
@@ -127,10 +126,206 @@ module IB
       0 => :insert, # New order, insert into the row identified by :position
       1 => :update, # Update the existing order at the row identified by :position
       2 => :delete # Delete the existing order at the row identified by :position
-  }
+  }.freeze
 
   MARKET_DEPTH_SIDES = {
       0 => :ask,
       1 => :bid
-  }
+  }.freeze
+
+  ORDER_TYPES =
+      {'LMT' => :limit, #                  Limit Order
+       'LIT' => :limit_if_touched, #       Limit if Touched
+       'LOC' => :limit_on_close, #         Limit-on-Close      LMTCLS ?
+       'LOO' => :limit_on_open, #          Limit-on-Open
+       'MKT' => :market, #                 Market
+       'MIT' => :market_if_touched, #      Market-if-Touched
+       'MOC' => :market_on_close, #        Market-on-Close     MKTCLSL ?
+       'MOO' => :market_on_open, #         Market-on-Open
+       'MTL' => :market_to_limit, #        Market-to-Limit
+       'MKTPRT' => :market_protected, #   Market with Protection
+       'QUOTE' => :request_for_quote, #    Request for Quote
+       'STP' => :stop, #                   Stop
+       'STPLMT' => :stop_limit, #         Stop Limit
+       'TRAIL' => :trailing_stop, #        Trailing Stop
+       'TRAIL LIMIT' => :trailing_limit, # Trailing Stop Limit
+       'TRAIL LIT' => :trailing_limit_if_touched, #  Trailing Limit if Touched
+       'TRAIL MIT' => :trailing_market_if_touched, # Trailing Market If Touched
+       'PEG MKT' => :pegged_to_market, #   Pegged-to-Market
+       'REL' => :relative, #               Relative
+       'BOX TOP' => :box_top, #            Box Top
+       'PEG MID' => :pegged_to_midpoint, # Pegged-to-Midpoint
+       'VWAP' => :vwap, #                  VWAP-Guaranteed
+       'OCA' => :one_cancels_all, #        One-Cancels-All
+       'VOL' => :volatility, #             Volatility
+       'SCALE' => :scale, #                Scale
+       'NONE' => :no_order # Used to indicate no hedge in :delta_neutral_order_type
+      }.freeze
+
+  # Valid security types (sec_type attribute of IB::Contract)
+  SECURITY_TYPES =
+      {'STK' => :stock,
+       'OPT' => :option,
+       'FUT' => :future,
+       'IND' => :index,
+       'FOP' => :futures_option,
+       'CASH' => :forex,
+       'BOND' => :bond,
+       'BAG' => :bag}.freeze
+
+  # Obtain symbolic value from given property code:
+  # VALUES[:side]['B'] -> :buy
+  VALUES = {
+      :sec_type => SECURITY_TYPES,
+      :order_type => ORDER_TYPES,
+      :delta_neutral_order_type => ORDER_TYPES,
+
+      :origin => {0 => :customer, 1 => :firm},
+      :volatility_type => {1 => :daily, 2 => :annual},
+      :reference_price_type => {1 => :average, 2 => :bid_or_ask},
+
+      # This property encodes differently for ComboLeg and Order objects,
+      # we use ComboLeg codes and transcode for Order codes as needed
+      :open_close =>
+          {0 => :same, # Default for Legs, same as the parent (combo) security.
+           1 => :open, #  Open. For Legs, this value is only used by institutions.
+           2 => :close, # Close. For Legs, this value is only used by institutions.
+           3 => :unknown}, # WTF
+
+      :right =>
+          {'' => :none, # Not an option
+           'P' => :put,
+           'C' => :call},
+
+      :side => # AKA action
+          {'B' => :buy, # or BOT
+           'S' => :sell, # or SLD
+           'T' => :short, # short
+           'X' => :short_exempt # Short Sale Exempt action. This allows some orders
+           # to be exempt from the SEC recent changes to Regulation SHO, which
+           # eliminated the old uptick rule and replaced it with a new "circuit breaker"
+           # rule, and allows some orders to be exempt from the new rule.
+          },
+
+      :short_sale_slot =>
+          {0 => :default, #      The only valid option for retail customers
+           1 => :broker, #       Shares are at your clearing broker, institutions
+           2 => :third_party}, # Shares will be delivered from elsewhere, institutions
+
+      :oca_type =>
+          {0 => :none, # Not a member of OCA group
+           1 => :cancel_with_block, # Cancel all remaining orders with block
+           2 => :reduce_with_block, # Remaining orders are reduced in size with block
+           3 => :reduce_no_block}, # Remaining orders are reduced in size with no block
+
+      :auction_strategy =>
+          {0 => :none, # Not a BOX order
+           1 => :match,
+           2 => :improvement,
+           3 => :transparent},
+
+      :trigger_method =>
+          {0 => :default, # "double bid/ask" used for OTC/US options, "last" otherswise.
+           1 => :double_bid_ask, # stops are triggered by 2 consecutive bid or ask prices.
+           2 => :last, # stops are triggered based on the last price.
+           3 => :double_last,
+           4 => :bid_ask, # bid >= trigger price for buy orders, ask <= trigger for sell orders
+           7 => :last_or_bid_ask, # bid OR last price >= trigger price for buy orders
+           8 => :mid_point}, # midpoint >= trigger price for buy orders and the
+      #      spread between the bid and ask must be less than 0.1% of the midpoint
+
+      :hedge_type =>
+          {'D' => :delta, # parent order is an option and the child order is a stock
+           'B' => :beta, # offset market risk by entering into a position with
+           #               another contract based on the system or user-defined beta
+           'F' => :forex, # offset risk with currency different from your base currency
+           'P' => :pair}, # trade a mis-valued pair of contracts and provide the
+      #                     ratio between the parent and hedging child order
+
+      :clearing_intent =>
+          {'' => :none,
+           'IB' => :ib,
+           'AWAY' => :away,
+           'PTA' => :post_trade_allocation},
+
+      :delta_neutral_clearing_intent =>
+          {'' => :none,
+           'IB' => :ib,
+           'AWAY' => :away,
+           'PTA' => :post_trade_allocation},
+
+      :tif =>
+          {'DAY' => :day,
+           'GAT' => :good_after_time,
+           'GTD' => :good_till_date,
+           'GTC' => :good_till_cancelled,
+           'IOC' => :immediate_or_cancel},
+
+      :rule_80a =>
+          {'I' => :individual,
+           'A' => :agency,
+           'W' => :agent_other_member,
+           'J' => :individual_ptia,
+           'U' => :agency_ptia,
+           'M' => :agent_other_member_ptia,
+           'K' => :individual_pt,
+           'Y' => :agency_pt,
+           'N' => :agent_other_member_pt},
+
+      :opt? => # TODO: unknown Order property, like OPT_BROKER_DEALER... in Order.java
+          {'?' => :unknown,
+           'b' => :broker_dealer,
+           'c' => :customer,
+           'f' => :firm,
+           'm' => :isemm,
+           'n' => :farmm,
+           'y' => :specialist},
+
+  }.freeze
+
+  # Obtain property code from given symbolic value:
+  # CODES[:side][:buy] -> 'B'
+  CODES = Hash[VALUES.map { |property, hash| [property, hash.invert] }]
+
+  # Most common property processors
+  PROPS = {:side =>
+               {:set => proc { |val| # BUY(BOT)/SELL(SLD)/SSHORT/SSHORTX
+                 self[:side] = case val.to_s.upcase
+                                 when /SHORT.*X|^X$/
+                                   'X'
+                                 when /SHORT|^T$/
+                                   'T'
+                                 when /^B/
+                                   'B'
+                                 when /^S/
+                                   'S'
+                               end },
+                :validate =>
+                    {:format =>
+                         {:with => /^buy$|^sell$|^short$|^short_exempt$/,
+                          :message => "should be buy/sell/short"}
+                    }
+               },
+
+           :open_close =>
+               {:set => proc { |val|
+                 self[:open_close] = case val.to_s.upcase[0..0]
+                                       when 'S', '0' # SAME
+                                         0
+                                       when 'O', '1' # OPEN
+                                         1
+                                       when 'C', '2' # CLOSE
+                                         2
+                                       when 'U', '3' # Unknown
+                                         3
+                                     end
+               },
+                :validate =>
+                    {:format =>
+                         {:with => /^same$|^open$|^close$|^unknown$/,
+                          :message => "should be same/open/close/unknown"}
+                    },
+               }
+  }.freeze
+
 end # module IB

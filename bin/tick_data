@@ -3,14 +3,14 @@
 # This script reproduces https://github.com/ib-ruby/ib-ruby/issues/12
 
 require 'rubygems'
-require 'pathname'
 require 'bundler/setup'
+$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
 
 contract = IB::Contract.new :symbol=> 'AAPL',
                             :exchange=> "Smart",
                             :currency=> "USD",
-                            :sec_type=> IB::SECURITY_TYPES[:stock],
+                            :sec_type=> :stock,
                             :description=> "Some stock"
 
 # First, connect to IB TWS. Arbitrary :client_id is used to identify your script

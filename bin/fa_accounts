@@ -3,8 +3,8 @@
 # This script receives Financial Adviser and Managed Accounts info
 
 require 'rubygems'
-require 'pathname'
 require 'bundler/setup'
+$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
 
 # First, connect to IB TWS.

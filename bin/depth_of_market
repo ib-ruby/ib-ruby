@@ -4,8 +4,8 @@
 # specific symbols
 
 require 'rubygems'
-require 'pathname'
 require 'bundler/setup'
+$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
 
 # Definition of what we want L2 data for.  We have to keep track of what ticker id

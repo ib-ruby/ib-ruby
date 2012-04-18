@@ -1,4 +1,4 @@
-require 'ib-ruby/messages/abstract_message'
+require 'ib-ruby/messages/outgoing/abstract_message'
 
 # TODO: Don't instantiate messages, use their classes as just namespace for .encode/decode
 
@@ -8,57 +8,6 @@ module IB
     # Outgoing IB messages (sent to TWS/Gateway)
     module Outgoing
       extend Messages # def_message macros
-
-      # Container for specific message classes, keyed by their message_ids
-      Classes = {}
-
-      class AbstractMessage < IB::Messages::AbstractMessage
-
-        def initialize data={}
-          @data = data
-          @created_at = Time.now
-        end
-
-        # This causes the message to send itself over the server socket in server[:socket].
-        # "server" is the @server instance variable from the IB object.
-        # You can also use this to e.g. get the server version number.
-        #
-        # Subclasses can either override this method for precise control over how
-        # stuff gets sent to the server, or else define a method encode() that returns
-        # an Array of elements that ought to be sent to the server by calling to_s on
-        # each one and postpending a '\0'.
-        #
-        def send_to server
-          self.encode(server).flatten.each do |datum|
-            server[:socket].write_data datum
-          end
-        end
-
-        # At minimum, Outgoing message contains message_id and version.
-        # Most messages also contain (ticker, request or order) :id.
-        # Then, content of @data Hash is encoded per instructions in data_map.
-        def encode server
-          [self.class.message_id,
-           self.class.version,
-           @data[:id] || @data[:ticker_id] || @data[:request_id]|| @data[:order_id] || [],
-           self.class.data_map.map do |(field, default_method, args)|
-             case
-               when default_method.nil?
-                 @data[field]
-
-               when default_method.is_a?(Symbol) # method name with args
-                 @data[field].send default_method, *args
-
-               when default_method.respond_to?(:call) # callable with args
-                 default_method.call @data[field], *args
-
-               else # default
-                 @data[field].nil? ? default_method : @data[field] # may be false still
-             end
-           end
-          ].flatten
-        end
-      end # AbstractMessage
 
       ### Defining (short) Outgoing Message classes for IB:
 
@@ -118,10 +67,6 @@ module IB
       # data = { :fa_data_type => int, :xml => String }
       ReplaceFA = def_message 19, :fa_data_type, :xml
       # data = { :market_data_type => int }
-      # The API can now receive frozen market data from Trader Workstation. Frozen
-      # market data is the last data recorded in our system. Use this method with
-      # :market_data_type = 1 for real-time streaming, 2 for frozen market data
-      RequestMarketDataType = def_message 59, :market_data_type
 
       # @data = { :subscribe => boolean,
       #           :account_code => Advisor accounts only. Empty ('') for a standard account. }
@@ -174,8 +119,8 @@ module IB
       #                       have override set to "yes" the natural action would be
       #                       overridden and the out-of-the money option would be
       #                       exercised. Values are:
-      #                              • 0 = do not override
-      #                              • 1 = override
+      #                              - 0 = do not override
+      #                              - 1 = override
       ExerciseOptions = def_message(21,
                                     [:contract, :serialize_short],
                                     :exercise_action,
@@ -214,13 +159,26 @@ module IB
                       end, []],
                       [:snapshot, false])
 
+      # The API can receive frozen market data from Trader Workstation. Frozen market
+      # data is the last data recorded in our system. During normal trading hours,
+      # the API receives real-time market data. If you use this function, you are
+      # telling TWS to automatically switch to frozen market data AFTER the close.
+      # Then, before the opening of the next trading day, market data will automatically
+      # switch back to real-time market data.
+      # :market_data_type = 1 for real-time streaming, 2 for frozen market data
+      RequestMarketDataType =
+          def_message 59, [:market_data_type,
+                           lambda { |type| MARKET_DATA_TYPES.invert[type] || type }, []]
+
       # Send this message to receive Reuters global fundamental data. There must be
       # a subscription to Reuters Fundamental set up in Account Management before
       # you can receive this data.
       # data = { :id => int: :request_id,
       #          :contract => Contract,
       #          :report_type => String: one of the following:
-      #                          'Estimates', 'Financial Statements', 'Summary'   }
+      #                   'estimates' - Estimates
+      #                   'finstat'   - Financial statements
+      #                    'snapshot' - Summary   }
       RequestFundamentalData =
           def_message(52,
                       [:contract, :serialize, [:primary_exchange]],
@@ -251,12 +209,12 @@ module IB
       #                                'STOCK.HK' - Asian stocks
       #                                'STOCK.EU' - European stocks
       #  :location_code => Legal Values include:
-      #                           • STK.US - US stocks
-      #                           • STK.US.MAJOR - US stocks (without pink sheet)
-      #                           • STK.US.MINOR - US stocks (only pink sheet)
-      #                           • STK.HK.SEHK - Hong Kong stocks
-      #                           • STK.HK.ASX - Australian Stocks
-      #                           • STK.EU - European stocks
+      #                           - STK.US - US stocks
+      #                           - STK.US.MAJOR - US stocks (without pink sheet)
+      #                           - STK.US.MINOR - US stocks (only pink sheet)
+      #                           - STK.HK.SEHK - Hong Kong stocks
+      #                           - STK.HK.ASX - Australian Stocks
+      #                           - STK.EU - European stocks
       #  :scan_code => The type of the scan, such as HIGH_OPT_VOLUME_PUT_CALL_RATIO.
       #  :above_price => double: Only contracts with a price above this value.
       #  :below_price => double: Only contracts with a price below this value.
@@ -310,164 +268,8 @@ module IB
                       :scanner_setting_pairs,
                       :stock_type_filter)
 
-      ### Even more complex Outgoing Message classes, overriding #encode method:
-
-
-      # Data format is { :id => int: order_id,
-      #                  :contract => Contract,
-      #                  :order => Order }
-      PlaceOrder = def_message [3, 31] # 38 Need to set up Classes Hash properly
-
-      class PlaceOrder
-        def encode server
-
-          # Old server version supports no enhancements
-          @version = 31 if server[:server_version] <= 60
-
-          [super,
-           @data[:order].serialize_with(server, @data[:contract])].flatten
-        end
-      end # PlaceOrder
-
-      # Messages that request bar data have special processing of @data
-      class BarRequestMessage < AbstractMessage
-        # Preprocessor for some data fields
-        def parse data
-          data_type = DATA_TYPES[data[:what_to_show]] || data[:what_to_show]
-          unless  DATA_TYPES.values.include?(data_type)
-            error ":what_to_show must be one of #{DATA_TYPES.inspect}", :args
-          end
-
-          bar_size = BAR_SIZES[data[:bar_size]] || data[:bar_size]
-          unless  BAR_SIZES.values.include?(bar_size)
-            error ":bar_size must be one of #{BAR_SIZES.inspect}", :args
-          end
-
-          contract = data[:contract].is_a?(IB::Contract) ?
-              data[:contract] : IB::Contract.from_ib_ruby(data[:contract])
-
-          [data_type, bar_size, contract]
-        end
-      end
-
-      #  data = { :id => ticker_id (int),
-      #           :contract => Contract ,
-      #           :bar_size => int/Symbol? Currently only 5 second bars are supported,
-      #                        if any other value is used, an exception will be thrown.,
-      #          :what_to_show => Symbol: Determines the nature of data being extracted.
-      #                           Valid values:
-      #                             :trades, :midpoint, :bid, :ask, :bid_ask,
-      #                             :historical_volatility, :option_implied_volatility,
-      #                             :option_volume, :option_open_interest
-      #                              - converts to "TRADES," "MIDPOINT," "BID," etc...
-      #          :use_rth => int: 0 - all data available during the time span requested
-      #                     is returned, even data bars covering time intervals where the
-      #                     market in question was illiquid. 1 - only data within the
-      #                     "Regular Trading Hours" of the product in question is returned,
-      #                     even if the time span requested falls partially or completely
-      #                     outside of them.
-      RequestRealTimeBars = def_message 50, BarRequestMessage
-
-      class RequestRealTimeBars
-        def encode server
-          data_type, bar_size, contract = parse @data
-
-          [super,
-           contract.serialize_long,
-           bar_size,
-           data_type.to_s.upcase,
-           @data[:use_rth]].flatten
-        end
-      end # RequestRealTimeBars
-
-      # data = { :id => int: Ticker id, needs to be different than the reqMktData ticker
-      #                 id. If you use the same ticker ID you used for the symbol when
-      #                 you did ReqMktData, nothing comes back for the historical data call
-      #          :contract => Contract: requested ticker description
-      #          :end_date_time => String: "yyyymmdd HH:mm:ss", with optional time zone
-      #                            allowed after a space: "20050701 18:26:44 GMT"
-      #          :duration => String, time span the request will cover, and is specified
-      #                  using the format: <integer> <unit>, eg: '1 D', valid units are:
-      #                        '1 S' (seconds, default if no unit is specified)
-      #                        '1 D' (days)
-      #                        '1 W' (weeks)
-      #                        '1 M' (months)
-      #                        '1 Y' (years, currently limited to one)
-      #          :bar_size => String: Specifies the size of the bars that will be returned
-      #                       (within IB/TWS limits). Valid values include:
-      #                             '1 sec'
-      #                             '5 secs'
-      #                             '15 secs'
-      #                             '30 secs'
-      #                             '1 min'
-      #                             '2 mins'
-      #                             '3 mins'
-      #                             '5 mins'
-      #                             '15 mins'
-      #                             '30 min'
-      #                             '1 hour'
-      #                             '1 day'
-      #          :what_to_show => Symbol: Determines the nature of data being extracted.
-      #                           Valid values:
-      #                             :trades, :midpoint, :bid, :ask, :bid_ask,
-      #                             :historical_volatility, :option_implied_volatility,
-      #                             :option_volume, :option_open_interest
-      #                              - converts to "TRADES," "MIDPOINT," "BID," etc...
-      #          :use_rth => int: 0 - all data available during the time span requested
-      #                     is returned, even data bars covering time intervals where the
-      #                     market in question was illiquid. 1 - only data within the
-      #                     "Regular Trading Hours" of the product in question is returned,
-      #                     even if the time span requested falls partially or completely
-      #                     outside of them.
-      #          :format_date => int: 1 - text format, like "20050307 11:32:16".
-      #                               2 - offset in seconds from the beginning of 1970,
-      #                                   which is the same format as the UNIX epoch time.
-      #         }
-      #
-      # Note that as of 4/07 there is no historical data available for forex spot.
-      #
-      # data[:contract] may either be a Contract object or a String. A String should be
-      # in serialize_ib_ruby format; that is, it should be a colon-delimited string in
-      # the format (e.g. for Globex British pound futures contract expiring in Sep-2008):
-      #
-      #    symbol:security_type:expiry:strike:right:multiplier:exchange:primary_exchange:currency:local_symbol
-      #    GBP:FUT:200809:::62500:GLOBEX::USD:
-      #
-      # Fields not needed for a particular security should be left blank (e.g. strike
-      # and right are only relevant for options.)
-      #
-      # A Contract object will be automatically serialized into the required format.
-      #
-      # See also http://chuckcaplan.com/twsapi/index.php/void%20reqIntradayData%28%29
-      # for general information about how TWS handles historic data requests, whence
-      # the following has been adapted:
-      #
-      # The server providing historical prices appears to not always be
-      # available outside of market hours. If you call it outside of its
-      # supported time period, or if there is otherwise a problem with
-      # it, you will receive error #162 "Historical Market Data Service
-      # query failed.:HMDS query returned no data."
-      #
-      # For backfill on futures data, you may need to leave the Primary
-      # Exchange field of the Contract structure blank; see
-      # http://www.interactivebrokers.com/discus/messages/2/28477.html?1114646754
-      RequestHistoricalData = def_message [20, 4], BarRequestMessage
-
-      class RequestHistoricalData
-        def encode server
-          data_type, bar_size, contract = parse @data
-
-          [super,
-           contract.serialize_long(:include_expired),
-           @data[:end_date_time],
-           bar_size,
-           @data[:duration],
-           @data[:use_rth],
-           data_type.to_s.upcase,
-           @data[:format_date],
-           contract.serialize_legs].flatten
-        end
-      end # RequestHistoricalData
+      require 'ib-ruby/messages/outgoing/place_order'
+      require 'ib-ruby/messages/outgoing/bar_requests'
 
     end # module Outgoing
   end # module Messages

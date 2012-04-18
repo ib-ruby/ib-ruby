@@ -1,6 +1,8 @@
 Plan:
 
-1. Detailed message documentation
+0. Extract OrderState/UnderComp objects, for better record keeping
+
+1. Add ActiveRecord backend to all Models
 
 2. Make ActiveModel-like attributes Hash for easy attributes updating
 
@@ -14,9 +16,10 @@ http://finance.groups.yahoo.com/group/TWSAPI/message/25413
 
 6. @received_at timestamp in messages
 
-7. Create integration tests for more use cases (spec/README)
+7. Detailed message documentation
 
 8. Move Float values to Decimal (roundoff errors showed in spec!)
+
 
 Done:
 
@@ -37,4 +40,6 @@ Ideas for future:
 (potentially adding other broker adapters)
 
 2. Tweak IB::Message API for speed (use class methods)
+
+3. Create integration tests for more use cases (spec/README)
 

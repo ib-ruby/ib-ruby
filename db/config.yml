@@ -1,0 +1,18 @@
+# DB configuration file
+
+# Test stand configurations
+test: &test
+  :adapter:     sqlite3
+  :database:    db/test.sqlite3
+  :pool:        5
+  :timeout:     5000
+
+test-jruby:
+  <<: *test
+  :adapter:     jdbcsqlite3
+
+# Battle configurations
+prod:
+  <<: *test
+  :database:      db/prod.sqlite3
+

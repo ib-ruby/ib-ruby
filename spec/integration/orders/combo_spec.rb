@@ -1,8 +1,6 @@
 require 'order_helper'
 require 'combo_helper'
 
-#OPTS[:silent] = false
-
 describe "Combo Order", :connected => true, :integration => true, :slow => true do
 
   let(:contract_type) { :butterfly }
@@ -17,6 +15,7 @@ describe "Combo Order", :connected => true, :integration => true, :slow => true 
       @contract = butterfly 'GOOG', '201301', 'CALL', 500, 510, 520
 
       place_order @contract,
+                  :order_ref => 'What_if',
                   :limit_price => 0.01,
                   :total_quantity => 10,
                   :what_if => true
@@ -70,6 +69,7 @@ describe "Combo Order", :connected => true, :integration => true, :slow => true 
       @contract = butterfly 'GOOG', '201301', 'CALL', 500, 510, 520
 
       place_order @contract,
+                  :order_ref => 'Original',
                   :limit_price => 0.01,
                   :total_quantity => 10
 

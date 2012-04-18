@@ -5,8 +5,8 @@
 # robot goes crazy and opens gazillions of wrong limit orders.
 
 require 'rubygems'
-require 'pathname'
 require 'bundler/setup'
+$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
 
 # First, connect to IB TWS.

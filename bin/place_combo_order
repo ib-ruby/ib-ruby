@@ -3,8 +3,8 @@
 # This script places GOOG option butterfly combo order
 
 require 'rubygems'
-require 'pathname'
 require 'bundler/setup'
+$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
 
 # Utility method that helps us build multi-legged (BAG) Orders

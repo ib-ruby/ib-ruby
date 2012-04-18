@@ -1,4 +1,4 @@
-require 'ib-ruby/messages/abstract_message'
+require 'ib-ruby/messages/incoming/abstract_message'
 
 # EClientSocket.java uses sendMax() rather than send() for a number of these.
 # It sends an EOL rather than a number if the value == Integer.MAX_VALUE (or Double.MAX_VALUE).
@@ -15,144 +15,7 @@ module IB
     module Incoming
       extend Messages # def_message macros
 
-      # Container for specific message classes, keyed by their message_ids
-      Classes = {}
-
-      class AbstractMessage < IB::Messages::AbstractMessage
-
-        def version # Per message, received messages may have the different versions
-          @data[:version]
-        end
-
-        def check_version actual, expected
-          unless actual == expected || expected.is_a?(Array) && expected.include?(actual)
-            error "Unsupported version #{actual} received, expected #{expected}"
-          end
-        end
-
-        # Create incoming message from a given source (IB server or data Hash)
-        def initialize source
-          @created_at = Time.now
-          if source[:socket] # Source is a server
-            @server = source
-            @data = Hash.new
-            begin
-              self.load
-            rescue => e
-              error "Reading #{self.class}: #{e.class}: #{e.message}", :load, e.backtrace
-            ensure
-              @server = nil
-            end
-          else # Source is a @data Hash
-            @data = source
-          end
-        end
-
-        def socket
-          @server[:socket]
-        end
-
-        # Every message loads received message version first
-        # Override the load method in your subclass to do actual reading into @data.
-        def load
-          @data[:version] = socket.read_int
-
-          check_version @data[:version], self.class.version
-
-          load_map *self.class.data_map
-        end
-
-        # Load @data from the socket according to the given data map.
-        #
-        # map is a series of Arrays in the format of
-        #   [ :name, :type ], [  :group, :name, :type]
-        # type identifiers must have a corresponding read_type method on socket (read_int, etc.).
-        # group is used to lump together aggregates, such as Contract or Order fields
-        def load_map(*map)
-          map.each do |instruction|
-            # We determine the function of the first element
-            head = instruction.first
-            case head
-              when Integer # >= Version condition: [ min_version, [map]]
-                load_map *instruction.drop(1) if version >= head
-
-              when Proc # Callable condition: [ condition, [map]]
-                load_map *instruction.drop(1) if head.call
-
-              when true # Pre-condition already succeeded!
-                load_map *instruction.drop(1)
-
-              when nil, false # Pre-condition already failed! Do nothing...
-
-              when Symbol # Normal map
-                group, name, type, block =
-                    if  instruction[2].nil? || instruction[2].is_a?(Proc)
-                      [nil] + instruction # No group, [ :name, :type, (:block) ]
-                    else
-                      instruction # [ :group, :name, :type, (:block)]
-                    end
-
-                data = socket.__send__("read_#{type}", &block)
-                if group
-                  @data[group] ||= {}
-                  @data[group][name] = data
-                else
-                  @data[name] = data
-                end
-              else
-                error "Unrecognized instruction #{instruction}"
-            end
-          end
-        end
-      end
-
-      # class AbstractMessage
-
-      ### Actual message classes (short definitions):
-
-      # :status - String: Displays the order status. Possible values include:
-      # • PendingSubmit - indicates that you have transmitted the order, but
-      #   have not yet received confirmation that it has been accepted by the
-      #   order destination. NOTE: This order status is NOT sent back by TWS
-      #   and should be explicitly set by YOU when an order is submitted.
-      # • PendingCancel - indicates that you have sent a request to cancel
-      #   the order but have not yet received cancel confirmation from the
-      #   order destination. At this point, your order cancel is not confirmed.
-      #   You may still receive an execution while your cancellation request
-      #   is pending. NOTE: This order status is not sent back by TWS and
-      #   should be explicitly set by YOU when an order is canceled.
-      # • PreSubmitted - indicates that a simulated order type has been
-      #   accepted by the IB system and that this order has yet to be elected.
-      #   The order is held in the IB system until the election criteria are
-      #   met. At that time the order is transmitted to the order destination
-      #   as specified.
-      # • Submitted - indicates that your order has been accepted at the order
-      #   destination and is working.
-      # • Cancelled - indicates that the balance of your order has been
-      #   confirmed canceled by the IB system. This could occur unexpectedly
-      #   when IB or the destination has rejected your order.
-      # • Filled - indicates that the order has been completely filled.
-      # • Inactive - indicates that the order has been accepted by the system
-      #   (simulated orders) or an exchange (native orders) but that currently
-      #   the order is inactive due to system, exchange or other issues.
-      # :why_held - This field is used to identify an order held when TWS is trying to
-      #      locate shares for a short sell. The value used to indicate this is 'locate'.
-      OrderStatus = def_message [3, 6], [:order_id, :int],
-                                [:status, :string],
-                                [:filled, :int],
-                                [:remaining, :int],
-                                [:average_fill_price, :decimal],
-                                [:perm_id, :int],
-                                [:parent_id, :int],
-                                [:last_fill_price, :decimal],
-                                [:client_id, :int],
-                                [:why_held, :string] do
-        "<OrderStatus: #{status} filled: #{filled}/#{remaining + filled}" +
-            " @ last/avg: #{last_fill_price}/#{average_fill_price}" +
-            (parent_id > 0 ? " parent_id: #{parent_id}" : "") +
-            (why_held != "" ? " why_held: #{why_held}" : "") +
-            " id/perm: #{order_id}/#{perm_id}>"
-      end
+      ### Define short message classes in-line:
 
       AccountValue = def_message([6, 2], [:key, :string],
                                  [:value, :string],
@@ -184,9 +47,7 @@ module IB
       ReceiveFA =
           def_message 16, [:type, :int], # type of Financial Advisor configuration data
                       #                    being received from TWS. Valid values include:
-                      #                      1 = GROUPS
-                      #                      2 = PROFILE
-                      #                      3 = ACCOUNT ALIASES
+                      #                    1 = GROUPS, 2 = PROFILE, 3 = ACCOUNT ALIASES
                       [:xml, :string] # XML string with requested FA configuration information.
 
       # Receives an XML document that describes the valid parameters that a scanner
@@ -198,7 +59,7 @@ module IB
 
       # Receive Reuters global fundamental market data. There must be a subscription to
       # Reuters Fundamental set up in Account Management before you can receive this data.
-      FundamentalData = def_message 50, [:request_id, :int], [:data, :string]
+      FundamentalData = def_message 51, [:request_id, :int], [:data, :string]
 
       ContractDataEnd = def_message 52, [:request_id, :int]
 
@@ -218,361 +79,25 @@ module IB
                       [:yield, :decimal],
                       [:yield_redemption_date, :int]
 
-      MarketDepth =
-          def_message 12, [:request_id, :int],
-                      [:position, :int], # The row Id of this market depth entry.
-                      [:operation, :int], # How it should be applied to the market depth:
-                      #   0 = insert this new order into the row identified by :position
-                      #   1 = update the existing order in the row identified by :position
-                      #   2 = delete the existing order at the row identified by :position
-                      [:side, :int], # side of the book: 0 = ask, 1 = bid
-                      [:price, :decimal],
-                      [:size, :int]
-      class MarketDepth
-        def side
-          @data[:side] == 0 ? :ask : :bid
-        end
+      ### Require standalone source files for more complex message classes:
 
-        def operation
-          @data[:operation] == 0 ? :insert : @data[:operation] == 1 ? :update : :delete
-        end
-
-        def to_human
-          "<#{self.message_type}: #{operation} #{side} @ "+
-              "#{position} = #{price} x #{size}>"
-        end
-      end
-
-      MarketDepthL2 =
-          def_message 13, MarketDepth, # Fields descriptions - see above
-                      [:request_id, :int],
-                      [:position, :int],
-                      [:market_maker, :string], # The exchange hosting this order.
-                      [:operation, :int],
-                      [:side, :int],
-                      [:price, :decimal],
-                      [:size, :int]
-
-      # Called Error in Java code, but in fact this type of messages also
-      # deliver system alerts and additional (non-error) info from TWS.
-      ErrorMessage = Error = Alert = def_message([4, 2],
-                                                 [:error_id, :int],
-                                                 [:code, :int],
-                                                 [:message, :string])
-      class Alert
-        # Is it an Error message?
-        def error?
-          code < 1000
-        end
-
-        # Is it a System message?
-        def system?
-          code > 1000 && code < 2000
-        end
-
-        # Is it a Warning message?
-        def warning?
-          code > 2000
-        end
-
-        def to_human
-          "TWS #{ error? ? 'Error' : system? ? 'System' : 'Warning'} #{code}: #{message}"
-        end
-      end # class Alert
-
-      PortfolioValue = def_message [7, 7],
-                                   [:contract, :con_id, :int],
-                                   [:contract, :symbol, :string],
-                                   [:contract, :sec_type, :string],
-                                   [:contract, :expiry, :string],
-                                   [:contract, :strike, :decimal],
-                                   [:contract, :right, :string],
-                                   [:contract, :multiplier, :string],
-                                   [:contract, :primary_exchange, :string],
-                                   [:contract, :currency, :string],
-                                   [:contract, :local_symbol, :string],
-                                   [:position, :int],
-                                   [:market_price, :decimal],
-                                   [:market_value, :decimal],
-                                   [:average_cost, :decimal],
-                                   [:unrealized_pnl, :decimal_max], # May be nil!
-                                   [:realized_pnl, :decimal_max], #   May be nil!
-                                   [:account_name, :string]
-      class PortfolioValue
-
-        def load
-          super
-          @contract = IB::Contract.build @data[:contract]
-        end
-
-        def to_human
-          "<PortfolioValue: #{contract.to_human} (#{position}): Market #{market_price}" +
-              " price #{market_value} value; PnL: #{unrealized_pnl} unrealized," +
-              " #{realized_pnl} realized; account #{account_name}>"
-        end
-      end # PortfolioValue
-
-      ContractDetails = ContractData =
-          def_message([10, 6],
-                      [:request_id, :int], # request id
-                      [:contract, :symbol, :string],
-                      [:contract, :sec_type, :string],
-                      [:contract, :expiry, :string],
-                      [:contract, :strike, :decimal],
-                      [:contract, :right, :string],
-                      [:contract, :exchange, :string],
-                      [:contract, :currency, :string],
-                      [:contract, :local_symbol, :string],
-
-                      [:contract, :market_name, :string], # extended
-                      [:contract, :trading_class, :string],
-                      [:contract, :con_id, :int],
-                      [:contract, :min_tick, :decimal],
-                      [:contract, :multiplier, :string],
-                      [:contract, :order_types, :string],
-                      [:contract, :valid_exchanges, :string],
-                      [:contract, :price_magnifier, :int],
-                      [:contract, :under_con_id, :int],
-                      [:contract, :long_name, :string],
-                      [:contract, :primary_exchange, :string],
-                      [:contract, :contract_month, :string],
-                      [:contract, :industry, :string],
-                      [:contract, :category, :string],
-                      [:contract, :subcategory, :string],
-                      [:contract, :time_zone, :string],
-                      [:contract, :trading_hours, :string],
-                      [:contract, :liquid_hours, :string])
-
-      class ContractData
-        def load
-          super
-          @contract = IB::Contract.build @data[:contract]
-        end
-      end # ContractData
-
-      ExecutionData =
-          def_message [11, 8],
-                      # The reqID that was specified previously in the call to reqExecution()
-                      [:request_id, :int],
-                      [:execution, :order_id, :int],
-                      [:contract, :con_id, :int],
-                      [:contract, :symbol, :string],
-                      [:contract, :sec_type, :string],
-                      [:contract, :expiry, :string],
-                      [:contract, :strike, :decimal],
-                      [:contract, :right, :string],
-                      [:contract, :exchange, :string],
-                      [:contract, :currency, :string],
-                      [:contract, :local_symbol, :string],
-
-                      [:execution, :exec_id, :string], # Weird format
-                      [:execution, :time, :string],
-                      [:execution, :account_name, :string],
-                      [:execution, :exchange, :string],
-                      [:execution, :side, :string],
-                      [:execution, :shares, :int],
-                      [:execution, :price, :decimal],
-                      [:execution, :perm_id, :int],
-                      [:execution, :client_id, :int],
-                      [:execution, :liquidation, :int],
-                      [:execution, :cumulative_quantity, :int],
-                      [:execution, :average_price, :decimal]
-
-      class ExecutionData
-        def load
-          super
-
-          # As of client v.53, we can receive orderRef in ExecutionData
-          load_map [proc { | | @server[:client_version] >= 53 },
-                    [:execution, :order_ref, :string]
-                   ]
-          @contract = IB::Contract.build @data[:contract]
-          @execution = IB::Execution.new @data[:execution]
-        end
-
-        def to_human
-          "<ExecutionData #{request_id}: #{contract.to_human}, #{execution}>"
-        end
-
-      end # ExecutionData
-
-      BondContractData =
-          def_message [18, 4],
-                      [:request_id, :int],
-                      [:contract, :symbol, :string],
-                      [:contract, :sec_type, :string],
-                      [:contract, :cusip, :string],
-                      [:contract, :coupon, :decimal],
-                      [:contract, :maturity, :string],
-                      [:contract, :issue_date, :string],
-                      [:contract, :ratings, :string],
-                      [:contract, :bond_type, :string],
-                      [:contract, :coupon_type, :string],
-                      [:contract, :convertible, :boolean],
-                      [:contract, :callable, :boolean],
-                      [:contract, :puttable, :boolean],
-                      [:contract, :desc_append, :string],
-                      [:contract, :exchange, :string],
-                      [:contract, :currency, :string],
-                      [:contract, :market_name, :string], # extended
-                      [:contract, :trading_class, :string],
-                      [:contract, :con_id, :int],
-                      [:contract, :min_tick, :decimal],
-                      [:contract, :order_types, :string],
-                      [:contract, :valid_exchanges, :string],
-                      [:contract, :valid_next_option_date, :string],
-                      [:contract, :valid_next_option_type, :string],
-                      [:contract, :valid_next_option_partial, :string],
-                      [:contract, :notes, :string],
-                      [:contract, :long_name, :string]
-
-      class BondContractData
-        def load
-          super
-          @contract = IB::Contract.build @data[:contract]
-        end
-      end # BondContractData
-
-      # The server sends this message upon accepting a Delta-Neutral DN RFQ
-      # - see API Reference p. 26
-      DeltaNeutralValidation = def_message 56,
-                                           [:request_id, :int],
-                                           [:contract, :under_con_id, :int],
-                                           [:contract, :under_delta, :decimal],
-                                           [:contract, :under_price, :decimal]
-      class DeltaNeutralValidation
-        def load
-          super
-          @contract = IB::Contract.build @data[:contract].merge(:under_comp => true)
-        end
-      end # DeltaNeutralValidation
-
-      # RealTimeBar contains following @data:
-      #    :request_id - The ID of the *request* to which this is responding
-      #    :time - The date-time stamp of the start of the bar. The format is offset in
-      #            seconds from the beginning of 1970, same format as the UNIX epoch time
-      #    :bar - received RT Bar
-      RealTimeBar = def_message 50,
-                                [:request_id, :int],
-                                [:bar, :time, :int],
-                                [:bar, :open, :decimal],
-                                [:bar, :high, :decimal],
-                                [:bar, :low, :decimal],
-                                [:bar, :close, :decimal],
-                                [:bar, :volume, :int],
-                                [:bar, :wap, :decimal],
-                                [:bar, :trades, :int]
-      class RealTimeBar
-        def load
-          super
-          @bar = IB::Bar.new @data[:bar]
-        end
-
-        def to_human
-          "<RealTimeBar: #{request_id} #{time}, #{bar}>"
-        end
-      end # RealTimeBar
-
-      ### Messages with really complicated message loading logics (cycles, conditions)
-
-      # This method receives the requested market scanner data results.
-      # ScannerData contains following @data:
-      # :request_id - The ID of the request to which this row is responding
-      # :count - Number of data points returned (size of :results).
-      # :results - an Array of Hashes, each hash contains a set of
-      #            data about one scanned Contract:
-      #            :contract - a full description of the contract (details).
-      #            :distance - Varies based on query.
-      #            :benchmark - Varies based on query.
-      #            :projection - Varies based on query.
-      #            :legs - Describes combo legs when scan is returning EFP.
-      ScannerData = def_message [20, 3],
-                                [:request_id, :int], # request id
-                                [:count, :int]
-      class ScannerData
-        attr_accessor :results
-
-        def load
-          super
-
-          @results = Array.new(@data[:count]) do |_|
-            {:rank => socket.read_int,
-             :contract => Contract.build(:con_id => socket.read_int,
-                                         :symbol => socket.read_str,
-                                         :sec_type => socket.read_str,
-                                         :expiry => socket.read_str,
-                                         :strike => socket.read_decimal,
-                                         :right => socket.read_str,
-                                         :exchange => socket.read_str,
-                                         :currency => socket.read_str,
-                                         :local_symbol => socket.read_str,
-                                         :market_name => socket.read_str,
-                                         :trading_class => socket.read_str),
-             :distance => socket.read_str,
-             :benchmark => socket.read_str,
-             :projection => socket.read_str,
-             :legs => socket.read_str,
-            }
-          end
-        end
-      end # ScannerData
-
-      # HistoricalData contains following @data:
-      # General:
-      #    :request_id - The ID of the request to which this is responding
-      #    :count - Number of Historical data points returned (size of :results).
-      #    :results - an Array of Historical Data Bars
-      #    :start_date - beginning of returned Historical data period
-      #    :end_date   - end of returned Historical data period
-      # Each returned Bar in @data[:results] Array contains this data:
-      #    :date - The date-time stamp of the start of the bar. The format is
-      #       determined by the RequestHistoricalData formatDate parameter.
-      #    :open -  The bar opening price.
-      #    :high -  The high price during the time covered by the bar.
-      #    :low -   The low price during the time covered by the bar.
-      #    :close - The bar closing price.
-      #    :volume - The volume during the time covered by the bar.
-      #    :trades - When TRADES historical data is returned, represents number of trades
-      #             that occurred during the time period the bar covers
-      #    :wap - The weighted average price during the time covered by the bar.
-      #    :has_gaps - Whether or not there are gaps in the data.
-
-      HistoricalData = def_message [17, 3],
-                                   [:request_id, :int],
-                                   [:start_date, :string],
-                                   [:end_date, :string],
-                                   [:count, :int]
-      class HistoricalData
-        attr_accessor :results
-
-        def load
-          super
-
-          @results = Array.new(@data[:count]) do |_|
-            IB::Bar.new :time => socket.read_string,
-                        :open => socket.read_decimal,
-                        :high => socket.read_decimal,
-                        :low => socket.read_decimal,
-                        :close => socket.read_decimal,
-                        :volume => socket.read_int,
-                        :wap => socket.read_decimal,
-                        :has_gaps => socket.read_string,
-                        :trades => socket.read_int
-          end
-        end
-
-        def to_human
-          "<HistoricalData: #{request_id}, #{count} items, #{start_date} to #{end_date}>"
-        end
-      end # HistoricalData
+      require 'ib-ruby/messages/incoming/alert'
+      require 'ib-ruby/messages/incoming/contract_data'
+      require 'ib-ruby/messages/incoming/delta_neutral_validation'
+      require 'ib-ruby/messages/incoming/execution_data'
+      require 'ib-ruby/messages/incoming/historical_data'
+      require 'ib-ruby/messages/incoming/market_depths'
+      require 'ib-ruby/messages/incoming/open_order'
+      require 'ib-ruby/messages/incoming/order_status'
+      require 'ib-ruby/messages/incoming/portfolio_value'
+      require 'ib-ruby/messages/incoming/real_time_bar'
+      require 'ib-ruby/messages/incoming/scanner_data'
+      require 'ib-ruby/messages/incoming/ticks'
 
     end # module Incoming
   end # module Messages
 end # module IB
 
-# Require standalone message source files
-require 'ib-ruby/messages/incoming/ticks'
-require 'ib-ruby/messages/incoming/open_order'
 
 __END__
     // incoming msg id's

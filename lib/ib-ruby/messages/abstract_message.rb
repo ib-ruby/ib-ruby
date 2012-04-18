@@ -1,11 +1,3 @@
-# EClientSocket.java uses sendMax() rather than send() for a number of these.
-# It sends an EOL rather than a number if the value == Integer.MAX_VALUE (or Double.MAX_VALUE).
-# These fields are initialized to this MAX_VALUE.
-# This has been implemented with nils in Ruby to represent the case where an EOL should be sent.
-
-# TODO: Don't instantiate messages, use their classes as just namespace for .encode/decode
-# TODO: realize Message#fire method that raises EWrapper events
-
 module IB
   module Messages
 

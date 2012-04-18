@@ -5,6 +5,14 @@ module IB
     module Contracts
       class Option < Contract
 
+        validates_numericality_of :strike, :greater_than => 0
+        validates_format_of :sec_type, :with => /^option$/,
+                            :message => "should be an option"
+        validates_format_of :local_symbol, :with => /^\w+\s*\d{15}$|^$/,
+                            :message => "invalid OSI code"
+        validates_format_of :right, :with => /^put$|^call$/,
+                            :message => "should be put or call"
+
         # For Options, this is contract's OSI (Option Symbology Initiative) name/code
         alias osi local_symbol
 
@@ -16,8 +24,8 @@ module IB
         # Make valid IB Contract definition from OSI (Option Symbology Initiative) code.
         # NB: Simply making a new Contract with *local_symbol* (osi) property set to a
         # valid OSI code works just as well, just do NOT set *expiry*, *right* or
-        # *strike* properties at the same time.
-        # This class method provided as a backup, to show how to analyse OSI codes.
+        # *strike* properties in this case.
+        # This class method provided as a backup and shows how to analyse OSI codes.
         def self.from_osi osi
 
           # Parse contract's OSI (OCC Option Symbology Initiative) code
@@ -32,25 +40,26 @@ module IB
 
           # Set correct expiry date - IB expiry date differs from OSI if expiry date
           # falls on Saturday (see https://github.com/arvicco/option_mower/issues/4)
-          expiry_date = Time.new(year, month, day)
-          expiry_date = Time.new(year, month, day-1) if expiry_date.saturday?
+          expiry_date = Time.utc(year, month, day)
+          expiry_date = Time.utc(year, month, day-1) if expiry_date.wday == 6
 
           new :symbol => symbol,
               :exchange => "SMART",
-              :expiry => expiry_date.to_ib,
+              :expiry => expiry_date.to_ib[2..7], # YYMMDD
               :right => right,
               :strike => strike
         end
 
         def initialize opts = {}
           super opts
-          self[:sec_type] = IB::SECURITY_TYPES[:option]
+          self.sec_type = 'OPT'
           self[:description] ||= osi ? osi : "#{symbol} #{strike} #{right} #{expiry}"
         end
 
         def to_human
-          "<Option: " + [symbol, expiry, right, strike, exchange, currency].join("-") + ">"
+          "<Option: " + [symbol, expiry, right, strike, exchange, currency].join(" ") + ">"
         end
+
       end # class Option
     end # class Contract
   end # module Models

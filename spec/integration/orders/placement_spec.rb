@@ -1,7 +1,5 @@
 require 'order_helper'
 
-#OPTS[:silent] = false
-
 describe 'Orders', :connected => true, :integration => true do
   let(:contract_type) { :stock }
 
@@ -89,7 +87,7 @@ describe 'Orders', :connected => true, :integration => true do
       @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
       @ib.wait_for :NextValidId
       place_order IB::Symbols::Stocks[:wfc], :limit_price => 9.13 # Acceptable price
-      @ib.wait_for [:OpenOrder, 3], [:OrderStatus, 2], 10
+      @ib.wait_for [:OpenOrder, 3], [:OrderStatus, 2], 6
     end
 
     after(:all) { close_connection }

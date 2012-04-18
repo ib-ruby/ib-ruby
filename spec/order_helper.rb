@@ -17,6 +17,14 @@ shared_examples_for 'Placed Order' do
     it 'receives confirmation of Order submission' do
       order_should_be /Submit/ # ()Pre)Submitted
       status_should_be /Submit/
+
+      if @attached_order
+        if contract_type == :butterfly && @attached_order.tif == :good_till_cancelled
+          pending 'API Bug: Attached GTC orders not working for butterflies!'
+        else
+          order_should_be /Submit/, @attached_order
+        end
+      end
     end
   end # Placing
 
@@ -43,8 +51,8 @@ shared_examples_for 'Placed Order' do
       status_should_be /Submitted/
 
       if @attached_order
-        if contract_type == :butterfly && @attached_order.tif == 'GTC'
-          pending 'API Bug: Attached DAY orders not working for butterflies!'
+        if contract_type == :butterfly && @attached_order.tif == :good_till_cancelled
+          pending 'API Bug: Attached GTC orders not working for butterflies!'
         else
           order_should_be /Submit/, @attached_order
         end
@@ -54,21 +62,19 @@ shared_examples_for 'Placed Order' do
 
   context "Modifying Order" do
     before(:all) do
-      if defined?(contract_type) && contract_type == :butterfly
-        pending 'API Bug: Order modification not working for butterflies!'
-      else
-        # Modification only works for non-attached, non-combo orders
-        @order.total_quantity = 200
-        @order.limit_price += 0.05
-        @order.transmit = true
-        @ib.modify_order @order, @contract
+      # Modification only works for non-attached orders
+      @order.total_quantity *= 2
+      @order.limit_price += 0.05
+      @order.transmit = true
+      @order.tif = 'GTC'
+      @ib.modify_order @order, @contract
 
-        if @attached_order
-          # Modify attached order, if any
-          @attached_order.limit_price *= 1.5
-          @attached_order.tif = 'GTC'
-          @ib.modify_order @attached_order, @contract
-        end
+      if @attached_order
+        # Modify attached order, if any
+        @attached_order.limit_price += 0.05
+        @attached_order.total_quantity *= 2
+        @attached_order.tif = 'GTC'
+        @ib.modify_order @attached_order, @contract
       end
       @ib.send_message :RequestOpenOrders
       @ib.wait_for :OpenOrderEnd, 6 #sec
@@ -92,8 +98,8 @@ shared_examples_for 'Placed Order' do
       status_should_be /Submit/
 
       if @attached_order
-        if contract_type == :butterfly && @attached_order.tif == 'GTC'
-          pending 'API Bug: Attached DAY orders not working for butterflies!'
+        if contract_type == :butterfly && @attached_order.tif == :good_till_cancelled
+          pending 'API Bug: Attached GTC orders not working for butterflies!'
         else
           order_should_be /Submit/, @attached_order
         end
@@ -127,8 +133,8 @@ shared_examples_for 'Placed Order' do
     it 'receives cancellation Order Status' do
       status_should_be /Cancel/ # Cancelled / PendingCancel
       if @attached_order
-        if contract_type == :butterfly && @attached_order.tif == 'GTC'
-          pending 'API Bug: Attached DAY orders not working for butterflies!'
+        if contract_type == :butterfly && @attached_order.tif == :good_till_cancelled
+          pending 'API Bug: Attached GTC orders not working for butterflies!'
         else
           status_should_be /Cancel/, @attached_order
         end
@@ -145,7 +151,7 @@ end
 
 ### Helpers for placing and verifying orders
 
-def place_order contract, opts
+def place_order contract, opts = {}
   @contract = contract
   @order = IB::Order.new({:total_quantity => 100,
                           :limit_price => 9.13,
@@ -163,24 +169,25 @@ def status_should_be status, order=@order
   end
   msg.should_not be_nil
   msg.should be_an IB::Messages::Incoming::OrderStatus
-  msg.order_id.should == order.order_id
-  msg.perm_id.should be_an Integer
-  msg.client_id.should == OPTS[:connection][:client_id]
-  msg.parent_id.should == 0 unless @attached_order
-  msg.why_held.should == ''
+  order_state = msg.order_state
+  order_state.order_id.should == order.order_id
+  order_state.perm_id.should be_an Integer
+  order_state.client_id.should == OPTS[:connection][:client_id]
+  order_state.parent_id.should == 0 unless @attached_order
+  order_state.why_held.should == ''
 
   if @contract == IB::Symbols::Forex[:eurusd]
     # We know that this order filled for sure
-    msg.filled.should == 20000
-    msg.remaining.should == 0
-    msg.average_fill_price.should be > 1
-    msg.average_fill_price.should be < 2
-    msg.last_fill_price.should == msg.average_fill_price
+    order_state.filled.should == 20000
+    order_state.remaining.should == 0
+    order_state.average_fill_price.should be > 1
+    order_state.average_fill_price.should be < 2
+    order_state.last_fill_price.should == order_state.average_fill_price
   else
-    msg.filled.should == 0
-    msg.remaining.should == @order.total_quantity
-    msg.average_fill_price.should == 0
-    msg.last_fill_price.should == 0
+    order_state.filled.should == 0
+    order_state.remaining.should == order.total_quantity
+    order_state.average_fill_price.should == 0
+    order_state.last_fill_price.should == 0
   end
 end
 
@@ -216,5 +223,5 @@ def execution_should_be side, opts={}
   exec.price.should be > 1
   exec.price.should be < 2
   exec.price.should == exec.average_price
-  exec.liquidation.should == 0
+  exec.liquidation.should == false
 end

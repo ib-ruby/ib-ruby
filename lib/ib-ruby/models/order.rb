@@ -1,94 +1,30 @@
-require 'ib-ruby/models/model'
-
-# TODO: Implement equals() according to the criteria in IB's Java client.
-
 module IB
   module Models
-    class Order < Model
+    class Order < Model.for(:order)
+      include ModelProperties
 
       # General Notes:
       # 1. Placing Orders by con_id - When you place an order by con_id, you must
       # provide the con_id AND the exchange. If you provide extra fields when placing
       # an order by conid, the order may not work.
 
-      # 2. Order IDs - Each order you place must have a unique Order ID. We recommend
-      # that you increment your own Order IDs to avoid conflicts between orders placed
-      # from your API application.
-
-      # Constants used in Order objects. Drawn from Order.java
-      Origin_Customer = 0
-      Origin_Firm = 1
-
-      Opt_Unknown = '?'
-      Opt_Broker_Dealer = 'b'
-      Opt_Customer = 'c'
-      Opt_Firm = 'f'
-      Opt_Isemm = 'm'
-      Opt_Farmm = 'n'
-      Opt_Specialist = 'y'
-
-      OCA_Cancel_with_block = 1
-      OCA_Reduce_with_block = 2
-      OCA_Reduce_non_block = 3
-
-      # Box orders consts:
-      Box_Auction_Match = 1
-      Box_Auction_Improvement = 2
-      Box_Auction_Transparent = 3
-
-      # Volatility orders consts:
-      Volatility_Type_Daily = 1
-      Volatility_Type_Annual = 2
-      Volatility_Ref_Price_Average = 1
-      Volatility_Ref_Price_BidOrAsk = 2
+      # 2. Order IDs - Each order you place must have a unique Order ID. Increment
+      # your own Order IDs to avoid conflicts between orders placed from your API application.
 
       # Main order fields
       prop :order_id, #  int: Order id associated with client (volatile).
            :client_id, # int: The id of the client that placed this order.
            :perm_id, #   int: TWS permanent id, remains the same over TWS sessions.
-           :action, #    String: Identifies the side: BUY/SELL/SSHORT
            :total_quantity, # int: The order quantity.
 
-           :order_type, #  String: Identifies the order type. Valid values are:
-           #     Limit Risk:
-           #          MTL          Market-to-Limit
-           #          MKT PRT      Market with Protection
-           #          QUOTE        Request for Quote
-           #          STP          Stop
-           #          STP LMT      Stop Limit
-           #          TRAIL        Trailing Stop
-           #          TRAIL LIMIT  Trailing Stop Limit
-           #          TRAIL LIT    Trailing Limit if Touched
-           #          TRAIL MIT    Trailing Market If Touched
-           #     Speed of Execution:
-           #          MKT          Market
-           #          MIT          Market-if-Touched
-           #          MOC          Market-on-Close    MKTCLSL ?
-           #          MOO          Market-on-Open
-           #          PEG MKT      Pegged-to-Market
-           #          REL          Relative
-           #     Price Improvement:
-           #          BOX TOP      Box Top
-           #          LOC          Limit-on-Close       LMTCLS ?
-           #          LOO          Limit-on-Open
-           #          LIT          Limit if Touched
-           #          PEG MID      Pegged-to-Midpoint
-           #          VWAP         VWAP-Guaranteed
-           #     Advanced Trading:
-           #          OCA          One-Cancels-All
-           #          VOL          Volatility
-           #          SCALE        Scale
-           #     Other (no abbreviation):
-           #          Bracket
-           #          At Auction
-           #          Discretionary
-           #          Sweep-to-Fill
-           #          Price Improvement Auction
-           #          Block
-           #          Hidden
-           #          Iceberg/Reserve
-           #          All-or-None
-           #          Fill-or-Kill
+           :order_type, #  String: Order type.
+           # Limit Risk: MTL / MKT PRT / QUOTE / STP / STP LMT / TRAIL / TRAIL LIMIT /  TRAIL LIT / TRAIL MIT
+           # Speed of Execution: MKT / MIT / MOC / MOO / PEG MKT / REL
+           # Price Improvement: BOX TOP / LOC / LOO / LIT / PEG MID / VWAP
+           # Advanced Trading: OCA / VOL / SCALE
+           # Other (no abbreviation): Bracket, Auction, Discretionary, Sweep-to-Fill,
+           # Price Improvement Auction,  Block, Hidden, Iceberg/Reserve, All-or-None, Fill-or-Kill
+           # See 'ib-ruby/constants.rb' ORDER_TYPES for a complete list of valid values.
 
            :limit_price, # double: LIMIT price, used for limit, stop-limit and relative
            #               orders. In all other cases specify zero. For relative
@@ -97,12 +33,6 @@ module IB
            :aux_price, #   double: STOP price for stop-limit orders, and the OFFSET amount
            #               for relative orders. In all other cases, specify zero.
 
-           :tif, #         String: Time to Market:
-           #          DAY
-           #          GAT          Good-after-Time/Date
-           #          GTD          Good-till-Date/Time
-           #          GTC          Good-till-Canceled
-           #          IOC          Immediate-or-Cancel
            :oca_group, #   String: Identifies a member of a one-cancels-all group.
            :oca_type, # int: Tells how to handle remaining orders in an OCA group
            #            when one order or part of an order executes. Valid values:
@@ -113,17 +43,13 @@ module IB
            #             overfill protection. This means that only one order in
            #             the group will be routed at a time to remove the
            #             possibility of an overfill.
-           :transmit, #  bool:if false, order will be created but not transmitted.
            :parent_id, # int: The order ID of the parent (original) order, used
            #             for bracket (STP) and auto trailing stop (TRAIL) orders.
-           :block_order, #    bool: the order is an ISE Block order.
-           :sweep_to_fill, #  bool: the order is a Sweep-to-Fill order.
            :display_size, #   int: publicly disclosed order size for Iceberg orders.
 
            :trigger_method, # Specifies how Simulated Stop, Stop-Limit and Trailing
            #                  Stop orders are triggered. Valid values are:
-           #      0 - Default, "double bid/ask" method will be used for OTC stocks
-           #          and US options orders, "last" method will be used all others.
+           #      0 - Default, "double bid/ask" for OTC/US options, "last" otherswise.
            #      1 - "double bid/ask" method, stop orders are triggered based on
            #          two consecutive bid or ask prices.
            #      2 - "last" method, stops are triggered based on the last price.
@@ -141,29 +67,16 @@ module IB
            #          and the spread between the bid and ask must be less than
            #          0.1% of the midpoint
 
-           :what_if, # bool: Use to request pre-trade commissions and margin
-           # information. If set to true, margin and commissions data is received
-           # back via the OrderState() object for the openOrder() callback.
-           :not_held, # public boolean  m_notHeld; // Not Held
-           :outside_rth, # bool: allows orders to also trigger or fill outside
-           #               of regular trading hours. (WAS: ignore_rth)
-           :hidden, #      bool: the order will not be visible when viewing
-           #               the market depth. Only for ISLAND exchange.
            :good_after_time, # Indicates that the trade should be submitted after the
            #        time and date set, format YYYYMMDD HH:MM:SS (seconds are optional).
            :good_till_date, # Indicates that the trade should remain working until the
            #        time and date set, format YYYYMMDD HH:MM:SS (seconds are optional).
            #        You must set the :tif to GTD when using this string.
            #        Use an empty String if not applicable.
-           :override_percentage_constraints, # bool: Precautionary constraints defined on
-           # the TWS Presets page ensure that your price and size order values are reasonable.
-           # Orders sent from the API are also validated against these safety constraints,
-           # unless this parameter is set to True.
 
            :rule_80a, # Individual = 'I', Agency = 'A', AgentOtherMember = 'W',
            #            IndividualPTIA = 'J', AgencyPTIA = 'U', AgentOtherMemberPTIA = 'M',
            #            IndividualPT = 'K', AgencyPT = 'Y', AgentOtherMemberPT = 'N'
-           :all_or_none, #      bool: yes=1, no=0
            :min_quantity, #     int: Identifies a minimum quantity order type.
            :percent_offset, #   double: percent offset amount for relative (REL)orders only
            :trail_stop_price, # double: for TRAILLIMIT orders only
@@ -174,7 +87,6 @@ module IB
            :fa_group, :fa_profile, :fa_method, :fa_percentage,
 
            # Institutional orders only!
-           :open_close, #      String: O=Open, C=Close
            :origin, #          0=Customer, 1=Firm
            :order_ref, #       String: Order reference. Customer defined order ID tag.
            :short_sale_slot, # 1 - you hold the shares,
@@ -194,10 +106,7 @@ module IB
            # SMART routing only
            :discretionary_amount, # double: The amount off the limit price
            #                        allowed for discretionary orders.
-           :etrade_only, #     bool: Trade with electronic quotes.
-           :firm_quote_only, # bool: Trade with firm quotes.
            :nbbo_price_cap, #  double: Maximum Smart order distance from the NBBO.
-           :opt_out_smart_routing, # Australian exchange only, default false
 
            # BOX or VOL ORDERS ONLY
            :auction_strategy, # For BOX exchange only. Valid values:
@@ -216,6 +125,7 @@ module IB
            #                               underlying stock price range.
 
            # VOLATILITY ORDERS ONLY:
+           # http://www.interactivebrokers.com/en/general/education/pdfnotes/PDF-VolTrader.php
            :volatility, #  double: What the price is, computed via TWSs Options
            #               Analytics. For VOL orders, the limit price sent to an
            #               exchange is not editable, as it is the output of a
@@ -233,6 +143,7 @@ module IB
            :delta_neutral_order_type, # String: Enter an order type to instruct TWS
            #    to submit a delta neutral trade on full or partial execution of the
            #    VOL order. For no hedge delta order to be sent, specify NONE.
+           #    Valid values - LMT, MKT, MTL, REL, MOC
            :delta_neutral_aux_price, #  double: Use this field to enter a value if
            #           the value in the deltaNeutralOrderType field is an order
            #           type that requires an Aux price, such as a REL order.
@@ -276,83 +187,103 @@ module IB
            :scale_price_adjust_value,
            :scale_price_adjust_interval,
            :scale_profit_offset,
-           :scale_auto_reset,
            :scale_init_position,
            :scale_init_fill_qty,
-           :scale_random_percent
+           :scale_auto_reset => :bool,
+           :scale_random_percent => :bool
 
-      # Some Order properties (received back from IB) are separated into
-      # OrderState object. Here, they are lumped into Order proper: see OrderState.java
-      # TODO: Extract OrderState object, for better record keeping
-      prop :status, # String: Displays the order status.Possible values include:
-           # • PendingSubmit - indicates that you have transmitted the order, but
-           #   have not yet received confirmation that it has been accepted by the
-           #   order destination. NOTE: This order status is NOT sent back by TWS
-           #   and should be explicitly set by YOU when an order is submitted.
-           # • PendingCancel - indicates that you have sent a request to cancel
-           #   the order but have not yet received cancel confirmation from the
-           #   order destination. At this point, your order cancel is not confirmed.
-           #   You may still receive an execution while your cancellation request
-           #   is pending. NOTE: This order status is not sent back by TWS and
-           #   should be explicitly set by YOU when an order is canceled.
-           # • PreSubmitted - indicates that a simulated order type has been
-           #   accepted by the IB system and that this order has yet to be elected.
-           #   The order is held in the IB system until the election criteria are
-           #   met. At that time the order is transmitted to the order destination
-           #   as specified.
-           # • Submitted - indicates that your order has been accepted at the order
-           #   destination and is working.
-           # • Cancelled - indicates that the balance of your order has been
-           #   confirmed canceled by the IB system. This could occur unexpectedly
-           #   when IB or the destination has rejected your order.
-           # • ApiCancelled - canceled via API
-           # • Filled - indicates that the order has been completely filled.
-           # • Inactive - indicates that the order has been accepted by the system
-           #   (simulated orders) or an exchange (native orders) but that currently
-           #   the order is inactive due to system, exchange or other issues.
-           :commission, # double: Shows the commission amount on the order.
-           :commission_currency, # String: Shows the currency of the commission.
-           #The possible range of the actual order commission:
-           :min_commission,
-           :max_commission,
-           :warning_text, # String: Displays a warning message if warranted.
-           :init_margin, # Float: The impact the order would have on your initial margin.
-           :maint_margin, # Float: The impact the order would have on your maintenance margin.
-           :equity_with_loan # Float: The impact the order would have on your equity
+      # Properties with complex processing logics
+      prop :tif, #  String: Time in Force (time to market): DAY/GAT/GTD/GTC/IOC
+           :what_if => :bool, # Only return pre-trade commissions and margin info, do not place
+           :not_held => :bool, # Not Held
+           :outside_rth => :bool, # Order may trigger or fill outside of regular hours. (WAS: ignore_rth)
+           :hidden => :bool, # Order will not be visible in market depth. ISLAND only.
+           :transmit => :bool, #  If false, order will be created but not transmitted.
+           :block_order => :bool, #   This is an ISE Block order.
+           :sweep_to_fill => :bool, # This is a Sweep-to-Fill order.
+           :override_percentage_constraints => :bool,
+           # TWS Presets page constraints ensure that your price and size order values
+           # are reasonable. Orders sent from the API are also validated against these
+           # safety constraints, unless this parameter is set to True.
+           :all_or_none => :bool, #     AON
+           :etrade_only => :bool, #     Trade with electronic quotes.
+           :firm_quote_only => :bool, # Trade with firm quotes.
+           :opt_out_smart_routing => :bool, # Australian exchange only, default false
+           :open_close => PROPS[:open_close], # Originally String: O=Open, C=Close ()
+           # for ComboLeg compatibility: SAME = 0; OPEN = 1; CLOSE = 2; UNKNOWN = 3;
+           [:side, :action] => PROPS[:side] # String: Action/side: BUY/SELL/SSHORT/SSHORTX
+
+      # Some properties received from IB are separated into OrderState object,
+      # but they are still readable as Order properties through delegation.
+      #
+      # Properties arriving via OpenOrder message:
+      [:commission, # double: Shows the commission amount on the order.
+       :commission_currency, # String: Shows the currency of the commission.
+       :min_commission, # The possible min range of the actual order commission.
+       :max_commission, # The possible max range of the actual order commission.
+       :warning_text, # String: Displays a warning message if warranted.
+       :init_margin, # Float: The impact the order would have on your initial margin.
+       :maint_margin, # Float: The impact the order would have on your maintenance margin.
+       :equity_with_loan, # Float: The impact the order would have on your equity
+       :status, # String: Displays the order status. See OrderState for values
+       # Properties arriving via OrderStatus message:
+       :filled, #    int
+       :remaining, # int
+       :average_fill_price, # double
+       :last_fill_price, #    double
+       :why_held # String: comma-separated list of reasons for order to be held.
+      ].each { |property| define_method(property) { order_state.send(property) } }
 
       # Returned in OpenOrder for Bag Contracts
       # public Vector<OrderComboLeg> m_orderComboLegs
-      attr_accessor :leg_prices, :combo_params
+      attr_accessor :leg_prices, :combo_params, :order_state
       alias order_combo_legs leg_prices
       alias smart_combo_routing_params combo_params
 
+      # TODO: :created_at, :placed_at, :modified_at accessors
+
+      # Order is not valid without correct :order_id
+      validates_numericality_of :order_id, :only_integer => true
+
       DEFAULT_PROPS = {:aux_price => 0.0,
+                       :discretionary_amount => 0.0,
                        :parent_id => 0,
-                       :tif => 'DAY',
-                       :outside_rth => false,
-                       :open_close => 'O',
-                       :origin => Origin_Customer,
-                       :transmit => true,
+                       :tif => :day,
+                       :order_type => :limit,
+                       :open_close => :open,
+                       :origin => :customer,
+                       :short_sale_slot => :default,
+                       :trigger_method => :default,
+                       :oca_type => :none,
+                       :auction_strategy => :none,
                        :designated_location => '',
                        :exempt_code => -1,
-                       :delta_neutral_order_type => '',
+                       :display_size => 0,
+                       :continuous_update => 0,
                        :delta_neutral_con_id => 0,
-                       :delta_neutral_settling_firm => '',
-                       :delta_neutral_clearing_account => '',
-                       :delta_neutral_clearing_intent => '',
                        :algo_strategy => '',
+                       # TODO: Add simple defaults to prop ?
+                       :transmit => true,
                        :what_if => false,
+                       :hidden => false,
+                       :etrade_only => false,
+                       :firm_quote_only => false,
+                       :block_order => false,
+                       :all_or_none => false,
+                       :sweep_to_fill => false,
                        :not_held => false,
+                       :outside_rth => false,
                        :scale_auto_reset => false,
                        :scale_random_percent => false,
                        :opt_out_smart_routing => false,
-                       :status => 'New' # Starting new Orders with this statu
+                       :override_percentage_constraints => false,
       }
 
       def initialize opts = {}
         @leg_prices = []
         @algo_params = {}
         @combo_params = {}
+        @order_state = IB::OrderState.new
         super opts
       end
 
@@ -360,40 +291,51 @@ module IB
       # mixed with data from associated contract. Ugly mix, indeed.
       def serialize_with server, contract
         [contract.serialize_long(:con_id, :sec_id),
-         action, # main order fields
+         # main order fields
+         case side
+           when :short
+             'SSHORT'
+           when :short_exempt
+             'SSHORTX'
+           else
+             side.to_sup
+         end,
          total_quantity,
-         order_type,
+         self[:order_type], # Internal code, 'LMT' instead of :limit
          limit_price,
          aux_price,
-         tif, # extended order fields
+         self[:tif],
          oca_group,
          account,
-         open_close,
-         origin,
+         open_close.to_sup[0..0],
+         self[:origin],
          order_ref,
          transmit,
          parent_id,
          block_order,
          sweep_to_fill,
          display_size,
-         trigger_method,
+         self[:trigger_method],
          outside_rth, # was: ignore_rth
          hidden,
          contract.serialize_legs(:extended),
 
-         # Support for per-leg prices in Order
-         if server[:server_version] >= 61
-           leg_prices.empty? ? 0 : [leg_prices.size] + leg_prices
-         else
-           []
-         end,
-
-         # Support for combo routing params in Order
-         if server[:server_version] >= 57 && contract.sec_type == 'BAG'
-           combo_params.empty? ? 0 : [combo_params.size] + combo_params.to_a
-         else
-           []
-         end,
+         # This is specific to PlaceOrder v.38, NOT supported by API yet!
+         #
+         ## Support for per-leg prices in Order
+         #if server[:server_version] >= 61 && contract.bag?
+         #  leg_prices.empty? ? 0 : [leg_prices.size] + leg_prices
+         #else
+         #  []
+         #end,
+         #
+         ## Support for combo routing params in Order
+         #if server[:server_version] >= 57 && contract.bag?
+         #  p 'Here!'
+         #  combo_params.empty? ? 0 : [combo_params.size] + combo_params.to_a
+         #else
+         #  []
+         #end,
 
          '', # deprecated shares_allocation field
          discretionary_amount,
@@ -403,10 +345,10 @@ module IB
          fa_method,
          fa_percentage,
          fa_profile,
-         short_sale_slot, #     0 only for retail, 1 or 2 for institution  (Institutional)
+         self[:short_sale_slot], # 0 only for retail, 1 or 2 for institution  (Institutional)
          designated_location, # only populate when short_sale_slot == 2    (Institutional)
          exempt_code,
-         oca_type,
+         self[:oca_type],
          rule_80a,
          settling_firm,
          all_or_none,
@@ -415,23 +357,66 @@ module IB
          etrade_only,
          firm_quote_only,
          nbbo_price_cap,
-         auction_strategy,
+         self[:auction_strategy],
          starting_price,
          stock_ref_price,
          delta,
          stock_range_lower,
          stock_range_upper,
          override_percentage_constraints,
-         volatility, #               Volatility orders
-         volatility_type, #          Volatility orders
-         delta_neutral_order_type, # Volatility orders
-         delta_neutral_aux_price, #  Volatility orders
-         continuous_update, #        Volatility orders
-         reference_price_type, #     Volatility orders
+         volatility, #                      Volatility orders
+         self[:volatility_type], #
+         self[:delta_neutral_order_type],
+         delta_neutral_aux_price, #
+
+         # Support for delta neutral orders with parameters
+         if server[:server_version] >= 58 && delta_neutral_order_type
+           [delta_neutral_con_id,
+            delta_neutral_settling_firm,
+            delta_neutral_clearing_account,
+            self[:delta_neutral_clearing_intent]
+           ]
+         else
+           []
+         end,
+
+         continuous_update, #               Volatility orders
+         self[:reference_price_type], #     Volatility orders
+
          trail_stop_price, #         TRAIL_STOP_LIMIT stop price
+
+         # Support for trailing percent
+         server[:server_version] >= 62 ? trailing_percent : [],
+
          scale_init_level_size, #    Scale Orders
          scale_subs_level_size, #    Scale Orders
          scale_price_increment, #    Scale Orders
+
+         # Support extended scale orders parameters
+         if server[:server_version] >= 60 &&
+             scale_price_increment && scale_price_increment > 0
+           [scale_price_adjust_value,
+            scale_price_adjust_interval,
+            scale_profit_offset,
+            scale_auto_reset,
+            scale_init_position,
+            scale_init_fill_qty,
+            scale_random_percent
+           ]
+         else
+           []
+         end,
+
+         # TODO: Need to add support for hedgeType, not working ATM - beta only
+         #if (m_serverVersion >= MIN_SERVER_VER_HEDGE_ORDERS) {
+         #    send (order.m_hedgeType);
+         #    if (!IsEmpty(order.m_hedgeType)) send (order.m_hedgeParam);
+         #}
+         #
+         #if (m_serverVersion >= MIN_SERVER_VER_OPT_OUT_SMART_ROUTING) {
+         #    send (order.m_optOutSmartRouting);
+         #}
+
          clearing_account,
          clearing_intent,
          not_held,
@@ -483,9 +468,13 @@ module IB
       end
 
       def to_human
-        "<Order: #{order_type} #{tif} #{action} #{total_quantity} #{status} #{limit_price}" +
-            " id: #{order_id}/#{perm_id} from: #{client_id}/#{account}" +
-            (commission ? " fee: #{commission}" : "") + ">"
+        "<Order: " + ((order_ref && order_ref != '') ? "#{order_ref} " : '') +
+            "#{self[:order_type]} #{self[:tif]} #{side} #{total_quantity} " +
+            "#{status} " + (limit_price ? "#{limit_price} " : '') +
+            ((aux_price && aux_price != 0) ? "/#{aux_price}" : '') +
+            "##{order_id}/#{perm_id} from #{client_id}" +
+            (account ? "/#{account}" : '') +
+            (commission ? " fee #{commission}" : '') + ">"
       end
     end # class Order
   end # module Models
