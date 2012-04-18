@@ -1,13 +1,12 @@
-require 'ib-ruby/models/model'
-
 module IB
   module Models
     module Contracts
-      class Contract < Model
+      class Contract < Model.for(:contract)
+        include ModelProperties
 
         # This returns a Contract initialized from the serialize_ib_ruby format string.
         def self.build opts = {}
-          Contracts::TYPES[opts[:sec_type]].new opts
+          Contracts::TYPES[VALUES[:sec_type][opts[:sec_type]]].new opts
         end
 
         # This returns a Contract initialized from the serialize_ib_ruby format string.
@@ -21,14 +20,11 @@ module IB
 
         # Fields are Strings unless noted otherwise
         prop :con_id, # int: The unique contract identifier.
-             :symbol, # This is the symbol of the underlying asset.
-             :sec_type, # Security type. Valid values are: SECURITY_TYPES
+             :sec_type,
              :strike, # double: The strike price.
-             :exchange, # The order destination, such as Smart.
              :currency, # Only needed if there is an ambiguity, e.g. when SMART exchange
              #            and IBM is being requested (IBM can trade in GBP or USD).
 
-             :local_symbol, # Local exchange symbol of the underlying asset
              :include_expired, # When true, contract details requests and historical
              #         data queries can be performed pertaining to expired contracts.
              #         Note: Historical data queries on expired contracts are
@@ -45,56 +41,38 @@ module IB
              #                  identifying suffix. Ex: AAPL.O for Apple on NASDAQ.)
              :sec_id, # Unique identifier of the given secIdType.
 
-             # COMBOS
              :legs_description, # received in OpenOrder for all combos
 
-             :multiplier => :i,
+             :symbol => :s, # This is the symbol of the underlying asset.
+
+             :local_symbol => :s, # Local exchange symbol of the underlying asset
+
              # Future/option contract multiplier (only needed when multiple possibilities exist)
+             :multiplier => :i,
 
-             :primary_exchange =>
-                 # non-aggregate (ie not the SMART) exchange that the contract trades on.
-                 proc { |val|
-                   val.upcase! if val.is_a?(String)
-                   error "Don't set primary_exchange to smart", :args if val == 'SMART'
-                   self[:primary_exchange] = val
-                 },
+             :expiry => :s, # The expiration date. Use the format YYYYMM or YYYYMMDD
+             :exchange => :sup, # The order destination, such as Smart.
+             :primary_exchange => :sup, # Non-SMART exchange where the contract trades.
 
-             :right => # Specifies a Put or Call. Valid input values are: P, PUT, C, CALL
-                 proc { |val|
+             # Specifies a Put or Call. Valid input values are: P, PUT, C, CALL
+             :right =>
+                 {:set => proc { |val|
                    self[:right] =
                        case val.to_s.upcase
-                         when '', '0', '?'
-                           nil
+                         when 'NONE', '', '0', '?'
+                           ''
                          when 'PUT', 'P'
-                           'PUT'
+                           'P'
                          when 'CALL', 'C'
-                           'CALL'
+                           'C'
                          else
-                           error "Right must be one of PUT, CALL, P, C - not '#{val}'", :args
-                       end
-                 },
-
-             :expiry => # The expiration date. Use the format YYYYMM.
-                 proc { |val|
-                   self[:expiry] =
-                       case val.to_s
-                         when /\d{6,8}/
-                           val.to_s
-                         when nil, ''
-                           nil
-                         else
-                           error "Invalid expiry '#{val}' (must be in format YYYYMM or YYYYMMDD)", :args
-                       end
-                 },
-
-             :sec_type => # Security type. Valid values are: SECURITY_TYPES
-                 proc { |val|
-                   val = nil if !val.nil? && val.empty?
-                   unless val.nil? || SECURITY_TYPES.values.include?(val)
-                     error "Invalid security type '#{val}' (must be one of #{SECURITY_TYPES.values}", :args
-                   end
-                   self[:sec_type] = val
+                           val
+                       end },
+                  :validate => {:format => {:with => /^put$|^call$|^none$/,
+                                            :message => "should be put, call or none"}}
                  }
+
+        # Security type. Valid values are: SECURITY_TYPES
 
         # ContractDetails fields are bundled into Contract proper, as it should be
         # All fields Strings, unless specified otherwise:
@@ -128,17 +106,17 @@ module IB
              :desc_append, # Additional descriptive information about the bond.
              :bond_type, #   The type of bond, such as "CORP."
              :coupon_type, # The type of bond coupon.
-             :callable, # bool: Can be called by the issuer under certain conditions.
-             :puttable, # bool: Can be sold back to the issuer under certain conditions
              :coupon, # double: The interest rate used to calculate the amount you
              #          will receive in interest payments over the year. default 0
-             :convertible, # bool: Can be converted to stock under certain conditions.
              :maturity, # The date on which the issuer must repay bond face value
              :issue_date, # The date the bond was issued.
              :next_option_date, # only if bond has embedded options.
              :next_option_type, # only if bond has embedded options.
-             :next_option_partial, # bool: # only if bond has embedded options.
-             :notes # Additional notes, if populated for the bond in IB's database
+             :notes, # Additional notes, if populated for the bond in IB's database
+             :callable => :bool, # Can be called by the issuer under certain conditions.
+             :puttable => :bool, # Can be sold back to the issuer under certain conditions
+             :convertible => :bool, # Can be converted to stock under certain conditions.
+             :next_option_partial => :bool # # only if bond has embedded options.
 
         # Used for Delta-Neutral Combo contracts only!
         # UnderComp fields are bundled into Contract proper, as it should be.
@@ -156,18 +134,27 @@ module IB
 
         attr_accessor :description # NB: local to ib-ruby, not part of TWS.
 
-        DEFAULT_PROPS = {:con_id => 0,
-                         :strike => 0,
-                         :exchange => 'SMART',
-                         :include_expired => false,
+        # Extra validations
+        validates_inclusion_of :sec_type, :in => CODES[:sec_type].keys,
+                               :message => "should be valid security type"
 
-                         # These properties are from ContractDetails
+        validates_format_of :expiry, :with => /^\d{6}$|^\d{8}$|^$/,
+                            :message => "should be YYYYMM or YYYYMMDD"
+
+        validates_format_of :primary_exchange, :without => /SMART/,
+                            :message => "should not be SMART"
+
+        DEFAULT_PROPS = {:con_id => 0,
+                         :strike => 0.0,
+                         :right => :none, # Not an option
+                         :exchange => 'SMART',
                          :under_con_id => 0,
                          :min_tick => 0,
+                         :coupon => 0,
                          :callable => false,
                          :puttable => false,
-                         :coupon => 0,
                          :convertible => false,
+                         :include_expired => false,
                          :next_option_partial => false, }
 
         # NB: ContractDetails reference - to self!
@@ -181,8 +168,12 @@ module IB
         def serialize *fields
           [(fields.include?(:con_id) ? [con_id] : []),
            symbol,
-           sec_type,
-           (fields.include?(:option) ? [expiry, strike, right, multiplier] : []),
+           self[:sec_type],
+           (fields.include?(:option) ?
+               [expiry,
+                strike,
+                self[:right],
+                multiplier] : []),
            exchange,
            (fields.include?(:primary_exchange) ? [primary_exchange] : []),
            currency,
@@ -213,9 +204,16 @@ module IB
           end
         end
 
-        # Redefined in BAG subclass
+        # Defined in Contract, not BAG subclass to keep code DRY
         def serialize_legs *fields
-          []
+          case
+            when !bag?
+              []
+            when legs.empty?
+              [0]
+            else
+              [legs.size, legs.map { |leg| leg.serialize *fields }].flatten
+          end
         end
 
         # This produces a string uniquely identifying this contract, in the format used
@@ -263,12 +261,12 @@ module IB
               exchange && other.exchange && exchange != other.exchange
 
           # Comparison for Bonds and Options
-          if sec_type == SECURITY_TYPES[:bond] || sec_type == SECURITY_TYPES[:option]
+          if bond? || option?
             return false if right != other.right || strike != other.strike
             return false if multiplier && other.multiplier && multiplier != other.multiplier
-            return false if expiry[0..5] != other.expiry[0..5]
-            return false unless expiry[6..7] == other.expiry[6..7] ||
-                expiry[6..7].empty? || other.expiry[6..7].empty?
+            return false if expiry && expiry[0..5] != other.expiry[0..5]
+            return false unless expiry && (expiry[6..7] == other.expiry[6..7] ||
+                expiry[6..7].empty? || other.expiry[6..7].empty?)
           end
 
           # All else being equal...
@@ -283,11 +281,37 @@ module IB
         end
 
         def to_human
-          "<Contract: " + [symbol, sec_type, expiry, strike, right, exchange, currency].join("-") + ">"
+          "<Contract: " +
+              [symbol,
+               sec_type,
+               (expiry == '' ? nil : expiry),
+               (right == :none ? nil : right),
+               (strike == 0 ? nil : strike),
+               exchange,
+               currency
+              ].compact.join(" ") + ">"
         end
 
         def to_short
           "#{symbol}#{expiry}#{strike}#{right}#{exchange}#{currency}"
+        end
+
+        # Testing for type of contract:
+
+        def bag?
+          self[:sec_type] == 'BAG'
+        end
+
+        def bond?
+          self[:sec_type] == 'BOND'
+        end
+
+        def stock?
+          self[:sec_type] == 'STK'
+        end
+
+        def option?
+          self[:sec_type] == 'OPT'
         end
 
       end # class Contract

@@ -66,14 +66,14 @@ module IB
                                 :expiry => next_expiry,
                                 :exchange => "ECBOT",
                                 :currency => "USD",
-                                :sec_type => SECURITY_TYPES[:future],
+                                :sec_type => :future,
                                 :description => "Mini Dow Jones Industrial"),
 
         :es => IB::Contract.new(:symbol => "ES",
                                 :expiry => next_expiry,
                                 :exchange => "GLOBEX",
                                 :currency => "USD",
-                                :sec_type => SECURITY_TYPES[:future],
+                                :sec_type => :future,
                                 :multiplier => 50,
                                 :description => "E-Mini S&P 500"),
 
@@ -81,7 +81,7 @@ module IB
                                  :expiry => next_expiry,
                                  :exchange => "GLOBEX",
                                  :currency => "USD",
-                                 :sec_type => SECURITY_TYPES[:future],
+                                 :sec_type => :future,
                                  :multiplier => 62500,
                                  :description => "British Pounds"),
 
@@ -89,7 +89,7 @@ module IB
                                  :expiry => next_expiry,
                                  :exchange => "GLOBEX",
                                  :currency => "USD",
-                                 :sec_type => SECURITY_TYPES[:future],
+                                 :sec_type => :future,
                                  :multiplier => 12500,
                                  :description => "Euro FX"),
 
@@ -97,7 +97,7 @@ module IB
                                  :expiry => next_expiry,
                                  :exchange => "GLOBEX",
                                  :currency => "USD",
-                                 :sec_type => SECURITY_TYPES[:future],
+                                 :sec_type => :future,
                                  :multiplier => 12500000,
                                  :description => "Japanese Yen"),
 
@@ -105,7 +105,7 @@ module IB
                                  :expiry => next_expiry,
                                  :exchange => "HKFE",
                                  :currency => "HKD",
-                                 :sec_type => SECURITY_TYPES[:future],
+                                 :sec_type => :future,
                                  :multiplier => 50,
                                  :description => "Hang Seng Index")
     }

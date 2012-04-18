@@ -15,8 +15,8 @@ module IB
     module Contracts
       # Specialized Contract subclasses representing different security types
       TYPES = Hash.new(Contract)
-      TYPES[IB::SECURITY_TYPES[:bag]] = Bag
-      TYPES[IB::SECURITY_TYPES[:option]] = Option
+      TYPES[:bag] = Bag
+      TYPES[:option] = Option
 
       # Returns concrete subclass for this sec_type, or default Contract
       def [] sec_type

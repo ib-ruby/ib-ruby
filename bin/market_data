@@ -3,8 +3,8 @@
 # This script connects to IB API and subscribes to market data for specific symbols
 
 require 'rubygems'
-require 'pathname'
 require 'bundler/setup'
+$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
 
 # Definition of what we want market data for.  We have to keep track of what ticker id

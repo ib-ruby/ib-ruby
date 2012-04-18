@@ -93,9 +93,9 @@ lines of code - and without sacrificing code readability or flexibility.
     ib.subscribe(:OpenOrder) { |msg| puts "Placed: #{msg.order}!" }
     ib.subscribe(:ExecutionData) { |msg| puts "Filled: #{msg.execution}!" }
     contract = IB::Contract.new :symbol => 'WFC', :exchange => 'NYSE',
-                                :currency => 'USD', :sec_type => 'STK'
+                                :currency => 'USD', :sec_type => :stock
     buy_order = IB::Order.new :total_quantity => 100, :limit_price => 21.00,
-                                :action => 'BUY', :order_type => 'LMT'
+                                :action => :buy, :order_type => :limit
     ib.place_order buy_order, contract
     ib.wait_for :ExecutionData
 

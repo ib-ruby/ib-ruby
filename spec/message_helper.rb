@@ -35,7 +35,7 @@ end
 
 # Clear logs and message collector. Output may be silenced.
 def clean_connection
-  unless OPTS[:silent]
+  if OPTS[:verbose]
     #puts @received.map { |type, msg| [" #{type}:", msg.map(&:to_human)] } if @received
     puts @ib.received.map { |type, msg| [" #{type}:", msg.map(&:to_human)] }
     puts " Logs:", log_entries if @stdout

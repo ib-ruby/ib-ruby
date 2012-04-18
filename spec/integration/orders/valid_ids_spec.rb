@@ -1,6 +1,5 @@
 require 'order_helper'
 
-#OPTS[:silent] = false
 shared_examples_for 'Received single id' do
   subject { @ib.received[:NextValidId].first }
 
@@ -52,7 +51,7 @@ describe 'Ids valid for Order placement', :connected => true, :integration => tr
 
     it_behaves_like 'Received single id'
 
-    it 'receives also :OpenOrderEnd message', :pending => 'not in GW 924.2e' do
+    it 'receives also :OpenOrderEnd message', :pending => 'not in GW 924.3a' do
       @ib.received[:OpenOrderEnd].should have_exactly(1).message
       @ib.received[:OpenOrderEnd].first.should be_an IB::Messages::Incoming::OpenOrderEnd
     end

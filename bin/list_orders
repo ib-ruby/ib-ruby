@@ -2,10 +2,9 @@
 #
 # This script retrieves list of all Orders from TWS
 
-require 'pathname'
 require 'rubygems'
 require 'bundler/setup'
-require 'pp'
+$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
 
 # Connect to IB as 0 (TWS) to retrieve all Orders, including TWS-generated ones

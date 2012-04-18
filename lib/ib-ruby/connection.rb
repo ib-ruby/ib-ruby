@@ -33,6 +33,10 @@ module IB
     def initialize opts = {}
       @options = DEFAULT_OPTIONS.merge(opts)
 
+      # A couple of locks to avoid race conditions in JRuby
+      @subscribe_lock = Mutex.new
+      @receive_lock = Mutex.new
+
       self.default_logger = options[:logger] if options[:logger]
       @connected = false
       @next_order_id = nil
@@ -88,7 +92,7 @@ module IB
       end
       if connected?
         socket.close
-        server = Hash.new
+        @server = Hash.new
         @connected = false
       end
     end
@@ -109,40 +113,44 @@ module IB
     # Listener will be called later with received message instance as its argument.
     # Returns subscriber id to allow unsubscribing
     def subscribe *args, &block
-      subscriber = args.last.respond_to?(:call) ? args.pop : block
-      id = random_id
+      @subscribe_lock.synchronize do
+        subscriber = args.last.respond_to?(:call) ? args.pop : block
+        id = random_id
 
-      error "Need subscriber proc or block", :args unless subscriber.is_a? Proc
+        error "Need subscriber proc or block", :args unless subscriber.is_a? Proc
 
-      args.each do |what|
-        message_classes =
-            case
-              when what.is_a?(Class) && what < Messages::Incoming::AbstractMessage
-                [what]
-              when what.is_a?(Symbol)
-                [Messages::Incoming.const_get(what)]
-              when what.is_a?(Regexp)
-                Messages::Incoming::Classes.values.find_all { |klass| klass.to_s =~ what }
-              else
-                error "#{what} must represent incoming IB message class", :args
-            end
-        message_classes.flatten.each do |message_class|
-          # TODO: Fix: RuntimeError: can't add a new key into hash during iteration
-          subscribers[message_class][id] = subscriber
+        args.each do |what|
+          message_classes =
+              case
+                when what.is_a?(Class) && what < Messages::Incoming::AbstractMessage
+                  [what]
+                when what.is_a?(Symbol)
+                  [Messages::Incoming.const_get(what)]
+                when what.is_a?(Regexp)
+                  Messages::Incoming::Classes.values.find_all { |klass| klass.to_s =~ what }
+                else
+                  error "#{what} must represent incoming IB message class", :args
+              end
+          message_classes.flatten.each do |message_class|
+            # TODO: Fix: RuntimeError: can't add a new key into hash during iteration
+            subscribers[message_class][id] = subscriber
+          end
         end
+        id
       end
-      id
     end
 
     # Remove all subscribers with specific subscriber id (TODO: multiple ids)
     def unsubscribe *ids
-      removed = []
-      ids.each do |id|
-        removed_at_id = subscribers.map { |_, subscribers| subscribers.delete id }.compact
-        error "No subscribers with id #{id}" if removed_at_id.empty?
-        removed << removed_at_id
+      @subscribe_lock.synchronize do
+        removed = []
+        ids.each do |id|
+          removed_at_id = subscribers.map { |_, subscribers| subscribers.delete id }.compact
+          error "No subscribers with id #{id}" if removed_at_id.empty?
+          removed << removed_at_id
+        end
+        removed.flatten
       end
-      removed.flatten
     end
 
     # Message subscribers. Key is the message class to listen for.
@@ -157,10 +165,12 @@ module IB
 
     # Clear received messages Hash
     def clear_received *message_types
-      if message_types.empty?
-        received.each { |message_type, container| container.clear }
-      else
-        message_types.each { |message_type| received[message_type].clear }
+      @receive_lock.synchronize do
+        if message_types.empty?
+          received.each { |message_type, container| container.clear }
+        else
+          message_types.each { |message_type| received[message_type].clear }
+        end
       end
     end
 
@@ -243,14 +253,19 @@ module IB
       # Create new instance of the appropriate message type,
       # and have it read the message from server.
       # NB: Failure here usually means unsupported message type received
+      error "Got unsupported message #{msg_id}" unless Messages::Incoming::Classes[msg_id]
       msg = Messages::Incoming::Classes[msg_id].new(server)
 
       # Deliver message to all registered subscribers, alert if no subscribers
-      subscribers[msg.class].each { |_, subscriber| subscriber.call(msg) }
+      @subscribe_lock.synchronize do
+        subscribers[msg.class].each { |_, subscriber| subscriber.call(msg) }
+      end
       log.warn "No subscribers for message #{msg.class}!" if subscribers[msg.class].empty?
 
       # Collect all received messages into a @received Hash
-      received[msg.message_type] << msg if options[:received]
+      @receive_lock.synchronize do
+        received[msg.message_type] << msg if options[:received]
+      end
     end
 
     ### Sending Outgoing messages to IB
@@ -277,6 +292,7 @@ module IB
     # Place Order (convenience wrapper for send_message :PlaceOrder).
     # Assigns client_id and order_id fields to placed order. Returns assigned order_id.
     def place_order order, contract
+      error "Unable to place order, next_order_id not known" unless @next_order_id
       order.client_id = server[:client_id]
       order.order_id = @next_order_id
       @next_order_id += 1

@@ -3,8 +3,8 @@
 # This script gets details for specific contract from IB
 
 require 'rubygems'
-require 'pathname'
 require 'bundler/setup'
+$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
 
 # Definition of what we want market data for.  We have to keep track of what ticker id

@@ -23,3 +23,18 @@ CLASS_NAME = IB
 Dir['tasks/*.rake'].sort.each { |file| load file }
 
 # Project-specific tasks
+
+## Migrations
+
+# rake db:new_migration name=FooBarMigration
+# rake db:migrate
+# rake db:migrate VERSION=20081220234130
+# rake db:migrate:up VERSION=20081220234130
+# rake db:migrate DB=osx-test
+# rake db:rollback
+# rake db:rollback STEP=3
+begin
+  require 'tasks/standalone_migrations'
+rescue LoadError => e
+  puts "gem install standalone_migrations to get db:migrate:* tasks! (Error: #{e})"
+end
