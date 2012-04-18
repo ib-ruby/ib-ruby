@@ -16,13 +16,8 @@ ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS
 
 ib.subscribe(:Alert) { |msg| puts msg.to_human }
 
-# Fundamental Data will arrive as XML. Need to parse it
-ib.subscribe(:FundamentalData) do |msg|
-  puts 'Got fundamental data.'
-  @xml = XmlSimple.xml_in(msg.data)
-  pp @xml
-  @parsing_finished = true
-end
+# Fundamental Data will arrive as XML, parse it
+ib.subscribe(:FundamentalData) { |msg| @xml = XmlSimple.xml_in(msg.data) }
 
 ibm = IB::Contract.new :symbol => 'IBM',
                        :exchange => 'NYSE',
@@ -38,5 +33,7 @@ ib.send_message :RequestFundamentalData,
                 :contract => ibm,
                 :report_type => 'snapshot'
 
-# Needs some time to receive, parse and print XML. Standard timeout of 1 sec is too low.
-ib.wait_for(40) { @parsing_finished }
+# Needs some time to receive and parse XML. Standard timeout of 1 sec is just too low.
+ib.wait_for(30) { @xml}
+
+pp @xml
