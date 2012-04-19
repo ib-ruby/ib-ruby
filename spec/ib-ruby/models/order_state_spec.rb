@@ -37,15 +37,14 @@ describe IB::Models::OrderState do
   end
 
   let(:errors) do
-    {:local_id => ["is not a number"],
-     :client_id => ["is not a number"],
-     :perm_id => ["is not a number"], }
+    {:status => ["must not be empty"],
+    }
   end
 
   let(:assigns) do
-    {[:local_id, :perm_id, :client_id] =>
-         {[:foo, 'bar'] => /is not a number/,
-          [5.0, 2006.17] => /must be an integer/, }
+    {[:status] =>
+         {[nil, ''] => /must not be empty/,
+          ['Zorro', :Zorro] => 'Zorro' }
     }
   end
 

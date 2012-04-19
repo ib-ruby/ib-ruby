@@ -152,7 +152,6 @@ module IB
                          [:order, :scale_profit_offset, :decimal_max],
                          [:order, :scale_auto_reset, :boolean],
                          [:order, :scale_init_position, :int_max],
-                         [:order, :scale_init_position, :int_max],
                          [:order, :scale_init_fill_qty, :decimal_max],
                          [:order, :scale_random_percent, :boolean]]
                    ],

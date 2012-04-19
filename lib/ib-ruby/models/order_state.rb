@@ -7,8 +7,7 @@ module IB
       include ModelProperties
 
       #p column_names
-      #belongs_to :order
-      has_one :execution # TODO not really
+      belongs_to :order
 
       # Properties arriving via OpenOrder message
       prop :init_margin, # Float: The impact the order would have on your initial margin.
@@ -23,8 +22,8 @@ module IB
       # Properties arriving via OrderStatus message:
       prop :filled, #    int
            :remaining, # int
-           :average_fill_price, # double
-           :last_fill_price, #    double
+           [:price, :last_fill_price,], #    double
+           [:average_price, :average_fill_price], # double
            :why_held # String: comma-separated list of reasons for order to be held.
 
       # Properties arriving in both messages:
@@ -32,7 +31,7 @@ module IB
            :perm_id, #   int: TWS permanent id, remains the same over TWS sessions.
            :client_id, # int: The id of the client that placed this order.
            :parent_id, # int: The order ID of the parent (original) order, used
-           :status # String: Displays the order status. Possible values include:
+           :status => :s # String: Displays the order status. Possible values include:
       # - PendingSubmit - indicates that you have transmitted the order, but
       #   have not yet received confirmation that it has been accepted by the
       #   order destination. NOTE: This order status is NOT sent back by TWS
@@ -59,9 +58,9 @@ module IB
       #   (simulated orders) or an exchange (native orders) but that currently
       #   the order is inactive due to system, exchange or other issues.
 
-      validates_numericality_of :local_id, :perm_id, :client_id, :only_integer => true
+      validates_format_of :status, :without => /^$/, :message => 'must not be empty'
 
-      DEFAULT_PROPS = {:status => 'New'} # Starting new Orders with this status
+      #DEFAULT_PROPS = {:status => 'New'} # Starting new Orders with this status
 
       # Comparison
       def == other

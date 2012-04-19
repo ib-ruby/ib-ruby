@@ -152,6 +152,8 @@ shared_examples_for 'Valid Model' do
     it 'loads back in the same valid state as saved' do
       model = described_class.find(:first)
       model.object_id.should_not == subject.object_id
+      #model.valid?
+      #p model.errors
       model.should be_valid
       model.should == subject
     end

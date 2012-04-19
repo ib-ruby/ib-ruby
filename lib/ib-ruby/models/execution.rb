@@ -5,7 +5,7 @@ module IB
     class Execution < Model.for(:execution)
       include ModelProperties
 
-      belongs_to :order_state # TODO: :order, of course
+      belongs_to :order
 
       prop [:local_id, :order_id], #     int: order id. TWS orders have a fixed order id of 0.
            :client_id, #    int: client id. TWS orders have a fixed client id of 0.

@@ -15,7 +15,7 @@ module IB
       prop [:local_id, :order_id], #  int: Order id associated with client (volatile).
            :client_id, # int: The id of the client that placed this order.
            :perm_id, #   int: TWS permanent id, remains the same over TWS sessions.
-           :total_quantity, # int: The order quantity.
+           [:quantity, :total_quantity], # int: The order quantity.
 
            :order_type, #  String: Order type.
            # Limit Risk: MTL / MKT PRT / QUOTE / STP / STP LMT / TRAIL / TRAIL LIMIT /  TRAIL LIT / TRAIL MIT
@@ -215,9 +215,37 @@ module IB
 
       prop :placed_at, :modified_at
 
-      # Some properties received from IB are separated into OrderState object,
-      # but they are still readable as Order properties through delegation.
+      ## Returned in OpenOrder for Bag Contracts
+      ## public Vector<OrderComboLeg> m_orderComboLegs
+      #prop :algo_params, :leg_prices, :combo_params
       #
+      #alias order_combo_legs leg_prices
+      #alias smart_combo_routing_params combo_params
+      #
+      ##serialize :algo_params
+      ##serialize :leg_prices
+      ##serialize :combo_params
+
+      has_many :executions
+
+      # Order has a collection of OrderStates, last one is always current
+      has_many :order_states
+
+      def order_state
+        order_states.last
+      end
+
+      def order_state= state
+        self.order_states.push case state
+                                 when IB::OrderState
+                                   state
+                                 when Symbol, String
+                                   IB::OrderState.new :status => state
+                               end
+      end
+
+      # Some properties received from IB are separated into OrderState object,
+      # but they are still readable as Order properties through delegation:
       # Properties arriving via OpenOrder message:
       [:commission, # double: Shows the commission amount on the order.
        :commission_currency, # String: Shows the currency of the commission.
@@ -231,18 +259,12 @@ module IB
        # Properties arriving via OrderStatus message:
        :filled, #    int
        :remaining, # int
-       :average_fill_price, # double
+       :price, #    double
        :last_fill_price, #    double
+       :average_price, # double
+       :average_fill_price, # double
        :why_held # String: comma-separated list of reasons for order to be held.
       ].each { |property| define_method(property) { order_state.send(property) } }
-
-      # Returned in OpenOrder for Bag Contracts
-      # public Vector<OrderComboLeg> m_orderComboLegs
-      attr_accessor :leg_prices, :combo_params, :order_state
-      alias order_combo_legs leg_prices
-      alias smart_combo_routing_params combo_params
-
-      # TODO: :created_at, :placed_at, :modified_at accessors
 
       # Order is not valid without correct :local_id (:order_id)
       validates_numericality_of :local_id, :only_integer => true
@@ -269,12 +291,11 @@ module IB
                        # TODO: Add simple defaults to prop ?
       }
 
-      def initialize opts = {}
-        @leg_prices = []
-        @algo_params = {}
-        @combo_params = {}
-        @order_state = IB::OrderState.new
-        super opts
+      after_initialize do #opts = {}
+                          #self.leg_prices = []
+                          #self.algo_params = {}
+                          #self.combo_params = {}
+        self.order_state ||= IB::OrderState.new :status => 'New'
       end
 
       # This returns an Array of data from the given order,
@@ -290,7 +311,7 @@ module IB
            else
              side.to_sup
          end,
-         total_quantity,
+         quantity,
          self[:order_type], # Internal code, 'LMT' instead of :limit
          limit_price,
          aux_price,
@@ -452,7 +473,7 @@ module IB
                 tif == other.tif &&
                 action == other.action &&
                 order_type == other.order_type &&
-                total_quantity == other.total_quantity &&
+                quantity == other.quantity &&
                 (limit_price == other.limit_price || # TODO Floats should be Decimals!
                     (limit_price - other.limit_price).abs < 0.00001) &&
                 aux_price == other.aux_price &&
@@ -475,7 +496,7 @@ module IB
 
       def to_human
         "<Order: " + ((order_ref && order_ref != '') ? "#{order_ref} " : '') +
-            "#{self[:order_type]} #{self[:tif]} #{side} #{total_quantity} " +
+            "#{self[:order_type]} #{self[:tif]} #{side} #{quantity} " +
             "#{status} " + (limit_price ? "#{limit_price} " : '') +
             ((aux_price && aux_price != 0) ? "/#{aux_price}" : '') +
             "##{local_id}/#{perm_id} from #{client_id}" +

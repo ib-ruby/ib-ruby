@@ -11,7 +11,7 @@ describe IB::Models::Order do
      :side => :buy,
      :order_type => :market_if_touched,
      :limit_price => 0.01,
-     :total_quantity => 100,
+     :quantity => 100,
      :tif => :good_till_cancelled,
      :open_close => :close,
      :oca_group => '',
@@ -54,11 +54,12 @@ describe IB::Models::Order do
   let(:assigns) do
     {[:order_type, :delta_neutral_order_type] => codes_and_values_for(:order_type),
      :open_close =>
-         {['SAME', 'same', 'S', 's', :same, 0, '0'] => :same,
+         {[42, nil, 'Foo', :bar] => /should be same.open.close.unknown/,
+          ['SAME', 'same', 'S', 's', :same, 0, '0'] => :same,
           ['OPEN', 'open', 'O', 'o', :open, 1, '1'] => :open,
           ['CLOSE', 'close', 'C', 'c', :close, 2, '2'] => :close,
           ['UNKNOWN', 'unknown', 'U', 'u', :unknown, 3, '3'] => :unknown,
-          [42, nil, 'Foo', :bar] => /should be same.open.close.unknown/},
+         },
 
      :side =>
          {['BOT', 'BUY', 'Buy', 'buy', :BUY, :BOT, :Buy, :buy, 'B', :b] => :buy,
@@ -77,13 +78,64 @@ describe IB::Models::Order do
   it_behaves_like 'Model'
   it_behaves_like 'Self-equal Model'
 
+  context 'associations' do
+    subject { IB::Order.new props }
+
+    it 'has order_states collection with at least one extra accessors to OrderState properties' do
+      subject.order_states.should_not be_nil
+      subject.order_states.should be_an Array # lies, it's more like association proxy
+    end
+
+    it 'has at least one (initial, New) OrderState' do
+      subject.order_states.should have_exactly(1).state
+      subject.order_states.last.should be_an IB::OrderState
+      subject.order_states.last.status.should == 'New'
+    end
+
+    it 'ahas at least one (initial, New) OrderState' do
+      subject.order_states.should have_exactly(1).state
+      subject.order_states.last.should be_an IB::OrderState
+      subject.order_states.last.status.should == 'New'
+    end
+
+    it 'has abbreviated accessor to last (current) OrderState' do
+      subject.order_state.should == subject.order_states.last
+    end
+
+    it 'has extra accessors to OrderState properties' do
+      subject.order_state.should_not be_nil
+      subject.status.should == 'New'
+      subject.save
+    end
+
+    context 'update Order state by ' do
+
+      it 'either adding new State to order_states ' do
+        subject.order_states << IB::OrderState.new(:status => :Foo)
+        subject.order_states.push IB::OrderState.new :status => :Bar
+
+        subject.status.should == 'Bar'
+        subject.order_states.should have_exactly(3).states
+      end
+
+      it 'or simply assigning to order_state accessor' do
+        subject.order_state = :Foo
+        subject.order_state = IB::OrderState.new :status => :Bar
+
+        subject.status.should == 'Bar'
+        subject.order_states.should have_exactly(3).states
+      end
+    end
+
+  end
+
   context 'equality' do
     subject { IB::Order.new props }
 
     it_behaves_like 'Self-equal Model'
 
     it 'is not equal for Orders with different limit price' do
-      order1 = IB::Order.new :total_quantity => 100,
+      order1 = IB::Order.new :quantity => 100,
                              :limit_price => 1,
                              :action => 'BUY'
 
@@ -95,7 +147,7 @@ describe IB::Models::Order do
     end
 
     it 'is not equal for Orders with different total_quantity' do
-      order1 = IB::Order.new :total_quantity => 20000,
+      order1 = IB::Order.new :quantity => 20000,
                              :limit_price => 1,
                              :action => 'BUY'
 
@@ -107,11 +159,11 @@ describe IB::Models::Order do
     end
 
     it 'is not equal for Orders with different action/side' do
-      order1 = IB::Order.new :total_quantity => 100,
+      order1 = IB::Order.new :quantity => 100,
                              :limit_price => 1,
                              :action => 'SELL'
 
-      order2 = IB::Order.new :total_quantity => 100,
+      order2 = IB::Order.new :quantity => 100,
                              :action => 'BUY',
                              :limit_price => 1
       order1.should_not == order2
@@ -119,12 +171,12 @@ describe IB::Models::Order do
     end
 
     it 'is not equal for Orders with different order_type' do
-      order1 = IB::Order.new :total_quantity => 100,
+      order1 = IB::Order.new :quantity => 100,
                              :limit_price => 1,
                              :action => 'BUY',
                              :order_type => 'LMT'
 
-      order2 = IB::Order.new :total_quantity => 100,
+      order2 = IB::Order.new :quantity => 100,
                              :action => 'BUY',
                              :limit_price => 1,
                              :order_type => 'MKT'
