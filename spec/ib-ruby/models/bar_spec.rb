@@ -16,7 +16,7 @@ describe IB::Models::Bar do # AKA IB::Bar
   end
 
   let(:defaults) do
-    {:created_at => Time,
+    {
     }
   end
 

@@ -23,7 +23,7 @@ describe IB::Models::ComboLeg do
      :designated_location => '',
      :exempt_code => -1,
      :exchange => 'SMART', # Unless SMART, Order modification fails
-     :created_at => Time,
+     #:created_at => Time,   # Does not work in DB mode
  }
   end
 

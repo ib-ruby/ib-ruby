@@ -22,7 +22,7 @@ describe IB::Models::Contracts::Bag do # AKA IB::Bag
      :strike => 0,
      :min_tick => 0,
      :include_expired => false,
-     :created_at => Time,
+     #:created_at => Time,   # Does not work in DB mode
     }
   end
 

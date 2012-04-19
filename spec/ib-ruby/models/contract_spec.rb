@@ -29,7 +29,7 @@ describe IB::Models::Contracts::Contract do # AKA IB::Contract
      :convertible => false,
      :next_option_partial => false,
      :include_expired => false,
-     :created_at => Time,
+     #:created_at => Time,   # Does not work in DB mode
     }
   end
 
