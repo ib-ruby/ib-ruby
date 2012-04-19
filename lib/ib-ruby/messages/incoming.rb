@@ -26,11 +26,6 @@ module IB
 
       AccountUpdateTime = def_message 8, [:time_stamp, :string]
 
-      # This message is always sent by TWS automatically at connect.
-      # The IB::Connection class subscribes to it automatically and stores
-      # the order id in its @next_order_id attribute.
-      NextValidID = NextValidId = def_message(9, [:order_id, :int])
-
       NewsBulletins =
           def_message 14, [:request_id, :int], # unique incrementing bulletin ID.
                       [:type, :int], # Type of bulletin. Valid values include:
@@ -87,6 +82,7 @@ module IB
       require 'ib-ruby/messages/incoming/execution_data'
       require 'ib-ruby/messages/incoming/historical_data'
       require 'ib-ruby/messages/incoming/market_depths'
+      require 'ib-ruby/messages/incoming/next_valid_id'
       require 'ib-ruby/messages/incoming/open_order'
       require 'ib-ruby/messages/incoming/order_status'
       require 'ib-ruby/messages/incoming/portfolio_value'
