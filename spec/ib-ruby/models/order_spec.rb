@@ -3,7 +3,7 @@ require 'model_helper'
 describe IB::Models::Order do
 
   let(:props) do
-    {:order_id => 23,
+    {:local_id => 23,
      :order_ref => 'Test',
      :client_id => 1111,
      :perm_id => 173276893,
@@ -20,8 +20,6 @@ describe IB::Models::Order do
      :designated_location => "WHATEVER",
      :exempt_code => 123,
      :delta_neutral_order_type => :market,
-     #:commission_currency => "USD",
-     #:status => 'PreSubmitted',
      :transmit => false,
      :outside_rth => true,
      :what_if => true,
@@ -34,8 +32,7 @@ describe IB::Models::Order do
   end
 
   let(:defaults) do
-    {:outside_rth => false,
-     :open_close => :open,
+    {:open_close => :open,
      :short_sale_slot => :default,
      :tif => :day,
      :order_type => :limit,
@@ -44,15 +41,14 @@ describe IB::Models::Order do
      :designated_location => '',
      :exempt_code => -1,
      :what_if => false,
-     :not_held => false,
      :status => 'New',
-     :created_at => Time,
+     #:created_at => Time,   # Does not work in DB mode
     }
   end
 
   let(:errors) do
     {:side =>["should be buy/sell/short"],
-     :order_id => ["is not a number"], }
+     :local_id => ["is not a number"], }
   end
 
   let(:assigns) do

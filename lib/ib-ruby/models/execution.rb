@@ -5,7 +5,9 @@ module IB
     class Execution < Model.for(:execution)
       include ModelProperties
 
-      prop :order_id, #     int: order id. TWS orders have a fixed order id of 0.
+      belongs_to :order_state # TODO: :order, of course
+
+      prop [:local_id, :order_id], #     int: order id. TWS orders have a fixed order id of 0.
            :client_id, #    int: client id. TWS orders have a fixed client id of 0.
            :perm_id, #      int: TWS id used to identify orders over TWS sessions
            :exec_id, #      String: Unique order execution id over TWS sessions.
@@ -25,8 +27,9 @@ module IB
 
       # Extra validations
       validates_numericality_of :shares, :cumulative_quantity, :price, :average_price
+      validates_numericality_of :local_id, :client_id, :perm_id, :only_integer => true
 
-      DEFAULT_PROPS = {:order_id => 0,
+      DEFAULT_PROPS = {:local_id => 0,
                        :client_id => 0,
                        :shares => 0,
                        :price => 0,
@@ -35,7 +38,7 @@ module IB
       # Comparison
       def == other
         perm_id == other.perm_id &&
-            order_id == other.order_id && # ((p __LINE__)||true) &&
+            local_id == other.local_id && # ((p __LINE__)||true) &&
             client_id == other.client_id &&
             exec_id == other.exec_id &&
             time == other.time &&
@@ -48,7 +51,7 @@ module IB
       def to_human
         "<Execution: #{time} #{side} #{shares} at #{price} on #{exchange}, " +
             "cumulative #{cumulative_quantity} at #{average_price}, " +
-            "ids #{order_id}/#{perm_id}/#{exec_id}>"
+            "ids #{local_id}/#{perm_id}/#{exec_id}>"
       end
 
       alias to_s to_human

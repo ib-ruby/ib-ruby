@@ -5,7 +5,7 @@ module IB
       # OpenOrder is the longest message with complex processing logics
       OpenOrder =
           def_message [5, [23, 28]],
-                      [:order, :order_id, :int],
+                      [:order, :local_id, :int],
 
                       [:contract, :con_id, :int],
                       [:contract, :symbol, :string],
@@ -70,11 +70,19 @@ module IB
                       [:order, :delta_neutral_order_type, :string],
                       [:order, :delta_neutral_aux_price, :decimal_max]
 
-
       class OpenOrder
 
-
         # Accessors to make OpenOrder API-compatible with OrderStatus message
+
+        def local_id
+          order.local_id
+        end
+
+        alias order_id local_id
+
+        def status
+          order.status
+        end
 
         def order
           @order ||= IB::Order.new @data[:order].merge(:order_state => order_state)
@@ -83,7 +91,7 @@ module IB
         def order_state
           @order_state ||= IB::OrderState.new(
               @data[:order_state].merge(
-                  :order_id => @data[:order][:order_id],
+                  :local_id => @data[:order][:local_id],
                   :perm_id => @data[:order][:perm_id],
                   :parent_id => @data[:order][:parent_id],
                   :client_id => @data[:order][:client_id]))
@@ -91,14 +99,6 @@ module IB
 
         def contract
           @contract ||= IB::Contract.build @data[:contract]
-        end
-
-        def order_id
-          order.order_id
-        end
-
-        def status
-          order.status
         end
 
         def load

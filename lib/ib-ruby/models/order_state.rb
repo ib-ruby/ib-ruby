@@ -7,7 +7,8 @@ module IB
       include ModelProperties
 
       #p column_names
-      # has_one :order
+      #belongs_to :order
+      has_one :execution # TODO not really
 
       # Properties arriving via OpenOrder message
       prop :init_margin, # Float: The impact the order would have on your initial margin.
@@ -27,7 +28,7 @@ module IB
            :why_held # String: comma-separated list of reasons for order to be held.
 
       # Properties arriving in both messages:
-      prop :order_id, #  int: Order id associated with client (volatile).
+      prop [:local_id, :order_id], #  int: Order id associated with client (volatile).
            :perm_id, #   int: TWS permanent id, remains the same over TWS sessions.
            :client_id, # int: The id of the client that placed this order.
            :parent_id, # int: The order ID of the parent (original) order, used
@@ -58,9 +59,7 @@ module IB
       #   (simulated orders) or an exchange (native orders) but that currently
       #   the order is inactive due to system, exchange or other issues.
 
-      prop :tester
-
-      validates_numericality_of :order_id, :perm_id, :client_id, :only_integer => true
+      validates_numericality_of :local_id, :perm_id, :client_id, :only_integer => true
 
       DEFAULT_PROPS = {:status => 'New'} # Starting new Orders with this status
 
@@ -68,7 +67,7 @@ module IB
       def == other
         other && other.is_a?(OrderState) &&
             status == other.status &&
-            order_id == other.order_id &&
+            local_id == other.local_id &&
             perm_id == other.perm_id &&
             client_id == other.client_id &&
             filled == other.filled &&
@@ -83,7 +82,7 @@ module IB
       end
 
       def to_human
-        "<OrderState: #{status} ##{order_id}/#{perm_id} from #{client_id}" +
+        "<OrderState: #{status} ##{local_id}/#{perm_id} from #{client_id}" +
             (filled ? " filled #{filled}/#{remaining}" : '') +
             (last_fill_price ? " at #{last_fill_price}/#{average_fill_price}" : '') +
             (init_margin ? " margin #{init_margin}/#{maint_margin}" : '') +

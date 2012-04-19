@@ -2,7 +2,7 @@ module IB
   module Messages
     module Outgoing
 
-      # Data format is { :id => int: order_id,
+      # Data format is { :id => int: local_id,
       #                  :contract => Contract,
       #                  :order => Order }
       PlaceOrder = def_message [3, 31] # v.38 is NOT properly supported by API yet

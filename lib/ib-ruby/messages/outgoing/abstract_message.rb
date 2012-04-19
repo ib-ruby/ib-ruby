@@ -36,7 +36,8 @@ module IB
         def encode server
           [self.class.message_id,
            self.class.version,
-           @data[:id] || @data[:ticker_id] || @data[:request_id]|| @data[:order_id] || [],
+           @data[:id] || @data[:ticker_id] || @data[:request_id] ||
+               @data[:local_id] || @data[:order_id] || [],
            self.class.data_map.map do |(field, default_method, args)|
              case
                when default_method.nil?

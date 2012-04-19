@@ -53,7 +53,7 @@ module IB
 
       # TWS always sends NextValidId message at connect - save this id
       self.subscribe(:NextValidId) do |msg|
-        @next_order_id = msg.order_id
+        @next_order_id = msg.local_id
         log.info "Got next valid order id: #{next_order_id}."
       end
 
@@ -296,7 +296,7 @@ module IB
     def place_order order, contract
       error "Unable to place order, next_order_id not known" unless @next_order_id
       order.client_id = server[:client_id]
-      order.order_id = @next_order_id
+      order.local_id = @next_order_id
       @next_order_id += 1
       modify_order order, contract
     end
@@ -306,14 +306,14 @@ module IB
       send_message :PlaceOrder,
                    :order => order,
                    :contract => contract,
-                   :order_id => order.order_id
-      order.order_id
+                   :local_id => order.local_id
+      order.local_id
     end
 
-    # Cancel Orders by their ids (convenience wrapper for send_message :CancelOrder).
-    def cancel_order *order_ids
-      order_ids.each do |order_id|
-        send_message :CancelOrder, :order_id => order_id.to_i
+    # Cancel Orders by their local ids (convenience wrapper for send_message :CancelOrder).
+    def cancel_order *local_ids
+      local_ids.each do |local_id|
+        send_message :CancelOrder, :local_id => local_id.to_i
       end
     end
 

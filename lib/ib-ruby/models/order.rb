@@ -12,7 +12,7 @@ module IB
       # your own Order IDs to avoid conflicts between orders placed from your API application.
 
       # Main order fields
-      prop :order_id, #  int: Order id associated with client (volatile).
+      prop [:local_id, :order_id], #  int: Order id associated with client (volatile).
            :client_id, # int: The id of the client that placed this order.
            :perm_id, #   int: TWS permanent id, remains the same over TWS sessions.
            :total_quantity, # int: The order quantity.
@@ -242,8 +242,8 @@ module IB
 
       # TODO: :created_at, :placed_at, :modified_at accessors
 
-      # Order is not valid without correct :order_id
-      validates_numericality_of :order_id, :only_integer => true
+      # Order is not valid without correct :local_id (:order_id)
+      validates_numericality_of :local_id, :only_integer => true
 
       DEFAULT_PROPS = {:aux_price => 0.0,
                        :discretionary_amount => 0.0,
@@ -262,21 +262,9 @@ module IB
                        :continuous_update => 0,
                        :delta_neutral_con_id => 0,
                        :algo_strategy => '',
-                       # TODO: Add simple defaults to prop ?
                        :transmit => true,
-                       :what_if => false,
-                       :hidden => false,
-                       :etrade_only => false,
-                       :firm_quote_only => false,
-                       :block_order => false,
-                       :all_or_none => false,
-                       :sweep_to_fill => false,
-                       :not_held => false,
-                       :outside_rth => false,
-                       :scale_auto_reset => false,
-                       :scale_random_percent => false,
-                       :opt_out_smart_routing => false,
-                       :override_percentage_constraints => false,
+                       :what_if => false
+                       # TODO: Add simple defaults to prop ?
       }
 
       def initialize opts = {}
@@ -312,12 +300,12 @@ module IB
          order_ref,
          transmit,
          parent_id,
-         block_order,
-         sweep_to_fill,
+         block_order || false,
+         sweep_to_fill || false,
          display_size,
          self[:trigger_method],
-         outside_rth, # was: ignore_rth
-         hidden,
+         outside_rth || false, # was: ignore_rth
+         hidden || false,
          contract.serialize_legs(:extended),
 
          # This is specific to PlaceOrder v.38, NOT supported by API yet!
@@ -351,11 +339,11 @@ module IB
          self[:oca_type],
          rule_80a,
          settling_firm,
-         all_or_none,
+         all_or_none || false,
          min_quantity,
          percent_offset,
-         etrade_only,
-         firm_quote_only,
+         etrade_only || false,
+         firm_quote_only || false,
          nbbo_price_cap,
          self[:auction_strategy],
          starting_price,
@@ -363,7 +351,7 @@ module IB
          delta,
          stock_range_lower,
          stock_range_upper,
-         override_percentage_constraints,
+         override_percentage_constraints || false,
          volatility, #                      Volatility orders
          self[:volatility_type], #
          self[:delta_neutral_order_type],
@@ -398,28 +386,26 @@ module IB
            [scale_price_adjust_value,
             scale_price_adjust_interval,
             scale_profit_offset,
-            scale_auto_reset,
+            scale_auto_reset || false,
             scale_init_position,
             scale_init_fill_qty,
-            scale_random_percent
+            scale_random_percent || false
            ]
          else
            []
          end,
 
          # TODO: Need to add support for hedgeType, not working ATM - beta only
-         #if (m_serverVersion >= MIN_SERVER_VER_HEDGE_ORDERS) {
+         # if (m_serverVersion >= MIN_SERVER_VER_HEDGE_ORDERS) {
          #    send (order.m_hedgeType);
-         #    if (!IsEmpty(order.m_hedgeType)) send (order.m_hedgeParam);
-         #}
+         #    if (!IsEmpty(order.m_hedgeType)) send (order.m_hedgeParam); }
          #
-         #if (m_serverVersion >= MIN_SERVER_VER_OPT_OUT_SMART_ROUTING) {
-         #    send (order.m_optOutSmartRouting);
-         #}
+         # if (m_serverVersion >= MIN_SERVER_VER_OPT_OUT_SMART_ROUTING) {
+         #    send (order.m_optOutSmartRouting) ; || false }
 
          clearing_account,
          clearing_intent,
-         not_held,
+         not_held || false,
          contract.serialize_under_comp,
          serialize_algo(),
          what_if]
@@ -438,7 +424,7 @@ module IB
       # Order comparison
       def == other
         perm_id && other.perm_id && perm_id == other.perm_id ||
-            order_id == other.order_id && # ((p __LINE__)||true) &&
+            local_id == other.local_id && # ((p __LINE__)||true) &&
                 (client_id == other.client_id || client_id == 0 || other.client_id == 0) &&
                 parent_id == other.parent_id &&
                 tif == other.tif &&
@@ -448,12 +434,10 @@ module IB
                 (limit_price == other.limit_price || # TODO Floats should be Decimals!
                     (limit_price - other.limit_price).abs < 0.00001) &&
                 aux_price == other.aux_price &&
-                outside_rth == other.outside_rth &&
                 origin == other.origin &&
                 designated_location == other.designated_location &&
                 exempt_code == other.exempt_code &&
                 what_if == other.what_if &&
-                not_held == other.not_held &&
                 algo_strategy == other.algo_strategy &&
                 algo_params == other.algo_params
 
@@ -472,7 +456,7 @@ module IB
             "#{self[:order_type]} #{self[:tif]} #{side} #{total_quantity} " +
             "#{status} " + (limit_price ? "#{limit_price} " : '') +
             ((aux_price && aux_price != 0) ? "/#{aux_price}" : '') +
-            "##{order_id}/#{perm_id} from #{client_id}" +
+            "##{local_id}/#{perm_id} from #{client_id}" +
             (account ? "/#{account}" : '') +
             (commission ? " fee #{commission}" : '') + ">"
       end

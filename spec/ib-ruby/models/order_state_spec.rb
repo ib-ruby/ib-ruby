@@ -3,7 +3,7 @@ require 'model_helper'
 describe IB::Models::OrderState do
 
   let(:props) do
-    {:order_id => 23,
+    {:local_id => 23,
      :perm_id => 173276893,
      :client_id => 1111,
      :parent_id => 0,
@@ -31,19 +31,19 @@ describe IB::Models::OrderState do
   end
 
   let(:defaults) do
-    {:created_at => Time,
+    {
+        #:created_at => Time,   # Does not work in DB mode
     }
   end
 
   let(:errors) do
-    {:order_id => ["is not a number"],
+    {:local_id => ["is not a number"],
      :client_id => ["is not a number"],
      :perm_id => ["is not a number"], }
   end
 
   let(:assigns) do
-    {   :tester => {1 => 1},
-        [:order_id, :perm_id, :client_id] =>
+    {[:local_id, :perm_id, :client_id] =>
          {[:foo, 'bar'] => /is not a number/,
           [5.0, 2006.17] => /must be an integer/, }
     }
