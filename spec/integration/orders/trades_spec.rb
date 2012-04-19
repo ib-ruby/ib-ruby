@@ -21,10 +21,6 @@ describe "Trades", :connected => true, :integration => true, :slow => true do
                     :total_quantity => 20000,
                     :limit_price => 2,
                     :action => 'BUY'
-                    #:all_or_none => 1,
-                    #:fa_profile => 2,
-                    #:percent_offset => 3,
-                    #:clearing_account => 'z',
                     #:what_if => true
 
         @ib.wait_for(5, :ExecutionData, :OpenOrder) do
