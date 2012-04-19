@@ -4,7 +4,7 @@ class AddOrderStates < ActiveRecord::Migration
     # OrderState represents dynamic (changeable) info about a single Order
     create_table(:order_states) do |t|
       # t.references :order
-      t.integer :order_id #  int: Order id associated with client (volatile).
+      t.integer :local_id #  int: Order id associated with client (volatile).
       t.integer :perm_id #   int: TWS permanent id, remains the same over TWS sessions.
       t.integer :client_id # int: The id of the client that placed this order.
       t.integer :parent_id # int: The order ID of the parent (original) order, used
@@ -22,6 +22,11 @@ class AddOrderStates < ActiveRecord::Migration
       t.string :why_held # String: comma-separated list of reasons for order to be held.
       t.string :warning_text # String: Displays a warning message if warranted.
       t.string :status # String: Displays the order status.Possible values include:
+      t.timestamps
+
+      ## TODO: reference order
+      #t.references :order
+
     end
   end
 end

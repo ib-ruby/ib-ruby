@@ -13,53 +13,61 @@
 ActiveRecord::Schema.define(:version => 121) do
 
   create_table "bars", :force => true do |t|
-    t.string  "time",     :limit => 18
-    t.float   "open"
-    t.float   "high"
-    t.float   "low"
-    t.float   "close"
-    t.float   "wap"
-    t.integer "volume"
-    t.integer "trades"
-    t.boolean "has_gaps", :limit => 1
+    t.string   "time",       :limit => 18
+    t.float    "open"
+    t.float    "high"
+    t.float    "low"
+    t.float    "close"
+    t.float    "wap"
+    t.integer  "volume"
+    t.integer  "trades"
+    t.boolean  "has_gaps",   :limit => 1
+    t.datetime "created_at",               :null => false
+    t.datetime "updated_at",               :null => false
   end
 
   create_table "executions", :force => true do |t|
-    t.integer "order_id"
-    t.integer "client_id"
-    t.integer "perm_id"
-    t.string  "exec_id"
-    t.string  "time",                :limit => 18
-    t.string  "exchange"
-    t.string  "order_ref"
-    t.string  "account_name"
-    t.float   "price"
-    t.float   "average_price"
-    t.integer "shares"
-    t.integer "cumulative_quantity"
-    t.boolean "liquidation",         :limit => 1
-    t.string  "side",                :limit => 1
+    t.integer  "order_id"
+    t.integer  "client_id"
+    t.integer  "perm_id"
+    t.string   "exec_id"
+    t.string   "time",                :limit => 18
+    t.string   "exchange"
+    t.string   "order_ref"
+    t.string   "account_name"
+    t.float    "price"
+    t.float    "average_price"
+    t.integer  "shares"
+    t.integer  "cumulative_quantity"
+    t.boolean  "liquidation",         :limit => 1
+    t.string   "side",                :limit => 1
+    t.datetime "created_at",                        :null => false
+    t.datetime "updated_at",                        :null => false
+    t.integer  "local_id"
+    t.integer  "bar_id"
   end
 
   create_table "order_states", :force => true do |t|
-    t.integer "order_id"
-    t.integer "perm_id"
-    t.integer "client_id"
-    t.integer "parent_id"
-    t.integer "filled"
-    t.integer "remaining"
-    t.float   "average_fill_price"
-    t.float   "last_fill_price"
-    t.string  "why_held"
-    t.float   "init_margin"
-    t.float   "maint_margin"
-    t.float   "equity_with_loan"
-    t.float   "commission"
-    t.float   "min_commission"
-    t.float   "max_commission"
-    t.string  "commission_currency"
-    t.string  "warning_text"
-    t.string  "status"
+    t.integer  "order_id"
+    t.integer  "perm_id"
+    t.integer  "client_id"
+    t.integer  "parent_id"
+    t.integer  "filled"
+    t.integer  "remaining"
+    t.float    "average_fill_price"
+    t.float    "last_fill_price"
+    t.float    "init_margin"
+    t.float    "maint_margin"
+    t.float    "equity_with_loan"
+    t.float    "commission"
+    t.float    "min_commission"
+    t.float    "max_commission"
+    t.string   "commission_currency", :limit => 4
+    t.string   "why_held"
+    t.string   "warning_text"
+    t.string   "status"
+    t.datetime "created_at",                       :null => false
+    t.datetime "updated_at",                       :null => false
   end
 
 end
