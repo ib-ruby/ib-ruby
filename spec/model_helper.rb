@@ -40,6 +40,7 @@ shared_examples_for 'Model instantiated empty' do
 
   it 'sets all properties to defaults' do
     defined?(defaults) && defaults.each do |name, value|
+      #p name, value
       case value
         when Module, Class
           subject.send(name).should be_a value
@@ -65,9 +66,6 @@ shared_examples_for 'Model instantiated with properties' do
 end
 
 shared_examples_for 'Model properties' do
-  context 'essential properties are still set, even if not given explicitely' do
-    its(:created_at) { should be_a Time }
-  end
 
   it 'allows setting properties' do
     expect {
@@ -125,9 +123,8 @@ shared_examples_for 'Model properties' do
 end
 
 shared_examples_for 'Valid Model' do
+
   it 'validates' do
-    #subject.valid?
-    #pp subject.errors.messages
     subject.should be_valid
     subject.errors.should be_empty
   end
@@ -139,19 +136,45 @@ shared_examples_for 'Valid Model' do
 
     it 'is saved' do
       subject.save.should be_true
+      @saved = subject
     end
 
-    it 'is loaded just right' do
-      models = described_class.find(:all)
-      model = models.first
-      #pp model
-      models.should have_exactly(1).model
-      model.should == subject
+    it 'does not set created and updated properties to SAVED model' do
+      subject.created_at.should be_nil
+      subject.updated_at.should be_nil
+    end
+
+    it 'saves a single model' do
+      all_models = described_class.find(:all)
+      all_models.should have_exactly(1).model
+    end
+
+    it 'loads back in the same valid state as saved' do
+      model = described_class.find(:first)
+      model.object_id.should_not == subject.object_id
       model.should be_valid
+      model.should == subject
+    end
+
+    it 'and with the same properties' do
+      model = described_class.find(:first)
       props.each do |name, value|
         model.send(name).should == value
       end
     end
+
+    it 'adds created and updated properties to loaded model' do
+      model = described_class.find(:first)
+      model.created_at.should be_a Time
+      model.updated_at.should be_a Time
+    end
+
+    it 'is saved with associations, if any' do
+      if defined? association
+        p association
+      end
+    end
+
   end # DB
 end
 

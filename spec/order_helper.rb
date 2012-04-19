@@ -50,6 +50,8 @@ shared_examples_for 'Placed Order' do
       order_should_be /Submitted/
       status_should_be /Submitted/
 
+      #pp @ib.received[:OpenOrder].first
+      #
       if @attached_order
         if contract_type == :butterfly && @attached_order.tif == :good_till_cancelled
           pending 'API Bug: Attached GTC orders not working for butterflies!'

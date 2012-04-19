@@ -17,7 +17,7 @@ describe 'Request Fundamental Data',
                      :contract => @contract,
                      :report_type => 'snapshot' # 'estimates', 'finstat'
 
-    @ib.wait_for :FundamentalData, 6 # sec
+    @ib.wait_for :FundamentalData, 10 # sec
   end
 
   after(:all) do
@@ -32,7 +32,7 @@ describe 'Request Fundamental Data',
   its(:request_id) { should == 456 }
   its(:data) { should be_a String }
 
-  it 'responds with XML with relevand data' do
+  it 'responds with XML with relevant data' do
     require 'xmlsimple'
     data_xml = XmlSimple.xml_in(subject.data, 'ForceArray' => false) #, 'ContentKey' => 'content')
     name = data_xml["CoIDs"]["CoID"].find {|tag| tag['Type'] == 'CompanyName'}['content']

@@ -1,3 +1,5 @@
+require 'message_helper'
+
 # Make sure integration tests are only run against the pre-configured PAPER ACCOUNT
 def verify_account
   return OPTS[:account_verified] if OPTS[:account_verified]
@@ -16,7 +18,6 @@ def verify_account
   @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
 
   @ib.wait_for :ManagedAccounts, 5
-  puts @ib.received.map { |type, msg| [" #{type}:", msg.map(&:to_human)] }
   raise "Unable to verify IB PAPER ACCOUNT" unless @ib.received?(:ManagedAccounts)
 
   received = @ib.received[:ManagedAccounts].first.accounts_list
