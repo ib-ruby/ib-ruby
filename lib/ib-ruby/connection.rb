@@ -181,7 +181,9 @@ module IB
 
     # Check if messages of given type were received at_least n times
     def received? message_type, times=1
-      received[message_type].size >= times
+      @receive_lock.synchronize do
+        received[message_type].size >= times
+      end
     end
 
     # Check if all given conditions are satisfied
