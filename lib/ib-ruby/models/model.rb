@@ -26,16 +26,19 @@ module IB
         error "Argument must be a Hash", :args unless opts.is_a?(Hash)
 
         props = self.class::DEFAULT_PROPS.merge(opts)
+
         props.keys.each { |key| self.send("#{key}=", props[key]) }
       end
 
       # ActiveModel-style attribute accessors
       def [] key
-        instance_variable_get "@#{key}".to_sym
+        #instance_variable_get "@#{key}".to_sym
+        attributes[key.to_sym]
       end
 
       def []= key, val
-        instance_variable_set "@#{key}".to_sym, val
+        #instance_variable_set "@#{key}".to_sym, val
+        attributes[key.to_sym] = val
       end
 
     end # Model

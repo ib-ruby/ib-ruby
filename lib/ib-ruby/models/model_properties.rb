@@ -12,13 +12,6 @@ module IB
 
       ### Instance methods
 
-      attr_accessor :created_at
-
-      def initialize opts={}
-        @created_at = Time.now
-        super self.class::DEFAULT_PROPS.merge(opts)
-      end
-
       included do
 
         ### Class macros
@@ -100,18 +93,70 @@ module IB
         end
 
         # Extending lighweight (not DB-backed) Model class to mimic AR::Base
-        unless ancestors.include? ActiveModel::Validations
+        if ancestors.include? ActiveModel::Validations
+
+          def initialize opts={}
+            super self.class::DEFAULT_PROPS.merge(opts)
+          end
+
+        else
+          extend ActiveModel::Naming
           include ActiveModel::Validations
+          include ActiveModel::Serialization
+          include ActiveModel::Serializers::Xml
+          include ActiveModel::Serializers::JSON
+
+          attr_accessor :created_at, :updated_at, :attributes
+
+          def initialize opts={}
+            self.created_at = Time.now
+            self.updated_at = Time.now
+            super self.class::DEFAULT_PROPS.merge(opts)
+          end
+
+          # ActiveModel API (for serialization)
+
+          def attributes
+            @attributes ||= {}
+          end
+
+          def to_model
+            self
+          end
+
+          def new_record?
+            true
+          end
 
           def save
-            false
+            valid?
           end
 
           alias save! save
 
+          # ActiveRecord API mocks
+
+
+          def self.belongs_to model, *args
+            attr_accessor model
+          end
+
+          def self.has_one model, *args
+            attr_accessor model
+          end
+
+          def self.has_many models, *args
+            attr_accessor models
+
+            define_method(models) do
+              # TODO: Need something like @models ||= []
+            end
+          end
+
           def self.find *args
             []
           end
+
         end
 
       end # included
