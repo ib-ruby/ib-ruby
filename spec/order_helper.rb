@@ -4,9 +4,17 @@ shared_examples_for 'Placed Order' do
   context "Placing" do
     after(:all) { clean_connection } # Clear logs and message collector
 
-    it 'changes client`s next_order_id' do
-      @order_id_placed.should == @order_id_before
-      @ib.next_order_id.should be >= @order_id_before
+    it 'sets placement-related properties' do
+      @order.placed_at.should be_a Time
+      @order.modified_at.should be_a Time
+      @order.placed_at.should == @order.modified_at
+      @order.local_id.should be_an Integer
+      @order.local_id.should == @local_id_before
+    end
+
+    it 'changes client`s next_local_id' do
+      @local_id_placed.should == @local_id_before
+      @ib.next_local_id.should be >= @local_id_before
     end
 
     it 'receives all appropriate response messages' do
@@ -25,6 +33,7 @@ shared_examples_for 'Placed Order' do
           order_should_be /Submit/, @attached_order
         end
       end
+
     end
   end # Placing
 
@@ -36,8 +45,8 @@ shared_examples_for 'Placed Order' do
 
     after(:all) { clean_connection } # Clear logs and message collector
 
-    it 'does not increase client`s next_order_id further' do
-      @ib.next_order_id.should == @order_id_after
+    it 'does not increase client`s next_local_id further' do
+      @ib.next_local_id.should == @local_id_after
     end
 
     it 'receives all appropriate response messages' do
@@ -84,8 +93,14 @@ shared_examples_for 'Placed Order' do
 
     after(:all) { clean_connection } # Clear logs and message collector
 
-    it 'does not increase client`s next_order_id further' do
-      @ib.next_order_id.should == @order_id_after
+    it 'sets placement-related properties' do
+      @order.modified_at.should be_a Time
+      @order.placed_at.should_not == @order.modified_at
+    end
+
+    it 'does not increase client`s or order`s local_id any more' do
+      @order.local_id.should == @local_id_before
+      @ib.next_local_id.should == @local_id_after
     end
 
     it 'receives all appropriate response messages' do
@@ -111,14 +126,14 @@ shared_examples_for 'Placed Order' do
 
   context "Cancelling placed order" do
     before(:all) do
-      @ib.cancel_order @order_id_placed
+      @ib.cancel_order @local_id_placed
       @ib.wait_for [:OrderStatus, 3], :Alert
     end
 
     after(:all) { clean_connection } # Clear logs and message collector
 
-    it 'does not increase client`s next_order_id further' do
-      @ib.next_order_id.should == @order_id_after
+    it 'does not increase client`s next_local_id further' do
+      @ib.next_local_id.should == @local_id_after
     end
 
     it 'only receives OpenOrder message with PendingCancel' do
@@ -159,20 +174,20 @@ def place_order contract, opts = {}
                           :limit_price => 9.13,
                           :action => 'BUY',
                           :order_type => 'LMT'}.merge(opts))
-  @order_id_before = @ib.next_order_id
-  @order_id_placed = @ib.place_order @order, @contract
-  @order_id_after = @ib.next_order_id
+  @local_id_before = @ib.next_local_id
+  @local_id_placed = @ib.place_order @order, @contract
+  @local_id_after = @ib.next_local_id
 end
 
 def status_should_be status, order=@order
   msg = @ib.received[:OrderStatus].find do |msg|
-    msg.order_id == order.order_id &&
+    msg.local_id == order.local_id &&
         status.is_a?(Regexp) ? msg.status =~ status : msg.status == status
   end
   msg.should_not be_nil
   msg.should be_an IB::Messages::Incoming::OrderStatus
   order_state = msg.order_state
-  order_state.order_id.should == order.order_id
+  order_state.local_id.should == order.local_id
   order_state.perm_id.should be_an Integer
   order_state.client_id.should == OPTS[:connection][:client_id]
   order_state.parent_id.should == 0 unless @attached_order
@@ -195,7 +210,7 @@ end
 
 def order_should_be status, order=@order
   msg = @ib.received[:OpenOrder].find do |msg|
-    msg.order_id == order.order_id &&
+    msg.local_id == order.local_id &&
         status.is_a?(Regexp) ? msg.status =~ status : msg.status == status
   end
   msg.should_not be_nil
@@ -213,8 +228,8 @@ def execution_should_be side, opts={}
   exec.perm_id.should be_an Integer
   exec.perm_id.should == @ib.received[:OpenOrder].last.order.perm_id if @ib.received?(:OpenOrder)
   exec.client_id.should == OPTS[:connection][:client_id]
-  exec.order_id.should be_an Integer
-  exec.order_id.should == @order.order_id if @order
+  exec.local_id.should be_an Integer
+  exec.local_id.should == @order.local_id if @order
   exec.exec_id.should be_a String
   exec.time.should =~ /\d\d:\d\d:\d\d/
   exec.account_name.should == OPTS[:connection][:account_name]

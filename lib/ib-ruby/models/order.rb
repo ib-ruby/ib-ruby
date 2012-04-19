@@ -213,6 +213,8 @@ module IB
            # for ComboLeg compatibility: SAME = 0; OPEN = 1; CLOSE = 2; UNKNOWN = 3;
            [:side, :action] => PROPS[:side] # String: Action/side: BUY/SELL/SSHORT/SSHORTX
 
+      prop :placed_at, :modified_at
+
       # Some properties received from IB are separated into OrderState object,
       # but they are still readable as Order properties through delegation.
       #
@@ -419,6 +421,26 @@ module IB
            algo_params.size,
            algo_params.to_a]
         end
+      end
+
+      # Placement
+      def place contract, connection
+        error "Unable to place order, next_local_id not known" unless connection.next_local_id
+        self.client_id = connection.server[:client_id]
+        self.local_id = connection.next_local_id
+        connection.next_local_id += 1
+        self.placed_at = Time.now
+        modify contract, connection, self.placed_at
+      end
+
+      # Modify Order (convenience wrapper for send_message :PlaceOrder). Returns order_id.
+      def modify contract, connection, time=Time.now
+        self.modified_at = time
+        connection.send_message :PlaceOrder,
+                                :order => self,
+                                :contract => contract,
+                                :local_id => local_id
+        local_id
       end
 
       # Order comparison
