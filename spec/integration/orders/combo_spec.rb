@@ -25,9 +25,9 @@ describe "Combo Order", :connected => true, :integration => true, :slow => true 
 
     after(:all) { close_connection }
 
-    it 'changes client`s next_order_id' do
-      @order_id_placed.should == @order_id_before
-      @ib.next_order_id.should == @order_id_before + 1
+    it 'changes client`s next_local_id' do
+      @local_id_placed.should == @local_id_before
+      @ib.next_local_id.should == @local_id_before + 1
     end
 
     it { @ib.received[:OpenOrder].should have_at_least(1).open_order_message }

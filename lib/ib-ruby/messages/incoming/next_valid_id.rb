@@ -4,7 +4,7 @@ module IB
 
       # This message is always sent by TWS automatically at connect.
       # The IB::Connection class subscribes to it automatically and stores
-      # the order id in its @next_order_id attribute.
+      # the order id in its @next_local_id attribute.
       NextValidID = NextValidId = def_message(9, [:local_id, :int])
 
       class NextValidId

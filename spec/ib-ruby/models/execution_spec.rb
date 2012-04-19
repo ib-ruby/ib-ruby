@@ -59,7 +59,7 @@ describe IB::Models::Execution do # AKA IB::Execution
 
   it_behaves_like 'Model'
 
-  it 'has legacy :order_id accessor, aliasing :local_id' do
+  it 'has legacy :local_id accessor, aliasing :local_id' do
     subject.order_id = 131313
     subject.local_id.should == 131313
     subject.local_id = 111111
@@ -87,7 +87,6 @@ describe IB::Models::Execution do # AKA IB::Execution
     before(:all) { DatabaseCleaner.clean if IB::DB }
 
     it 'saves associated bar' do
-
       os = association
 
       #p bar.save
@@ -106,9 +105,12 @@ describe IB::Models::Execution do # AKA IB::Execution
       p subject.as_json
 
       p IB::Execution.new.from_json subject.to_json # TODO: Strings for keys!
+
+      pending 'Still need to test associations properly'
     end
 
     it 'loads associated execution' do
+      pending 'Still need to test associations properly'
 
       #s1 = IB::Execution.first
       #p s1

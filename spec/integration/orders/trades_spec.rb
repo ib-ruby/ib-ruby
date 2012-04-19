@@ -31,12 +31,12 @@ describe "Trades", :connected => true, :integration => true, :slow => true do
 
       after(:all) do
         clean_connection # Clear logs and message collector
-        @ib.cancel_order @order_id_placed # Just in case...
+        @ib.cancel_order @local_id_placed # Just in case...
       end
 
-      it 'changes client`s next_order_id' do
-        @order_id_placed = @order_id_before
-        @ib.next_order_id.should == @order_id_before + 1
+      it 'changes client`s next_local_id' do
+        @local_id_placed = @local_id_before
+        @ib.next_local_id.should == @local_id_before + 1
       end
 
       it { @ib.received[:OpenOrder].should have_at_least(1).open_order_message }
@@ -74,12 +74,12 @@ describe "Trades", :connected => true, :integration => true, :slow => true do
 
       after(:all) do
         clean_connection # Clear logs and message collector
-        @ib.cancel_order @order_id_placed # Just in case...
+        @ib.cancel_order @local_id_placed # Just in case...
       end
 
-      it 'changes client`s next_order_id' do
-        @order_id_placed = @order_id_before
-        @ib.next_order_id.should == @order_id_before + 1
+      it 'changes client`s next_local_id' do
+        @local_id_placed = @local_id_before
+        @ib.next_local_id.should == @local_id_before + 1
       end
 
       it { @ib.received[:OpenOrder].should have_at_least(1).open_order_message }

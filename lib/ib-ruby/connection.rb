@@ -30,6 +30,9 @@ module IB
                   :options, #  Connection options
                   :next_local_id # Next valid order id
 
+    alias next_order_id next_local_id
+    alias next_order_id= next_local_id=
+
     def initialize opts = {}
       @options = DEFAULT_OPTIONS.merge(opts)
 
