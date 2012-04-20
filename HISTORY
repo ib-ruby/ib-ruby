@@ -161,3 +161,7 @@
 == 0.7.6 / 2012-04-18
 
 * Bugfix for FundamentalData
+
+== 0.7.7 / 2012-04-20
+
+* Model validations and DB backend
