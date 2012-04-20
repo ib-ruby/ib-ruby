@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'db_helper'
 
 def codes_and_values_for property
   Hash[IB::VALUES[property].map { |code, value| [[code, value], value] }]
@@ -129,58 +130,11 @@ shared_examples_for 'Valid Model' do
     subject.errors.should be_empty
   end
 
-  context 'with DB backend', :db => true do
-    after(:all) do
-      #DatabaseCleaner.clean
-    end
-
-    it 'is saved' do
-      subject.save.should be_true
-      @saved = subject
-    end
-
-    it 'does not set created and updated properties to SAVED model' do
-      subject.created_at.should be_nil
-      subject.updated_at.should be_nil
-    end
-
-    it 'saves a single model' do
-      all_models = described_class.find(:all)
-      all_models.should have_exactly(1).model
-    end
-
-    it 'loads back in the same valid state as saved' do
-      model = described_class.find(:first)
-      model.object_id.should_not == subject.object_id
-      #model.valid?
-      #p model.errors
-      model.should be_valid
-      model.should == subject
-    end
-
-    it 'and with the same properties' do
-      model = described_class.find(:first)
-      props.each do |name, value|
-        model.send(name).should == value
-      end
-    end
-
-    it 'adds created and updated properties to loaded model' do
-      model = described_class.find(:first)
-      model.created_at.should be_a Time
-      model.updated_at.should be_a Time
-    end
-
-    it 'is saved with associations, if any' do
-      if defined? association
-        p association
-      end
-    end
-
-  end # DB
+  it_behaves_like 'Valid DB-backed Model'
 end
 
 shared_examples_for 'Invalid Model' do
+
   it 'does not validate' do
     subject.should_not be_valid
     subject.should be_invalid
@@ -188,20 +142,7 @@ shared_examples_for 'Invalid Model' do
     subject.errors.messages.should == errors if defined? errors
   end
 
-  context 'with DB backend', :db => true do
-    after(:all) do
-      #DatabaseCleaner.clean
-    end
-
-    it 'is not saved' do
-      subject.save.should be_false
-    end
-
-    it 'is not loaded' do
-      models = described_class.find(:all)
-      models.should have_exactly(0).model
-    end
-  end # DB
+  it_behaves_like 'Invalid DB-backed Model'
 end
 
 shared_examples_for 'Contract' do
