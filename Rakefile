@@ -38,3 +38,11 @@ begin
 rescue LoadError => e
   puts "gem install standalone_migrations to get db:migrate:* tasks! (Error: #{e})"
 end
+
+# rake db:redo DB=test"
+namespace :db do
+  desc "Remake db from scratch: $ rake db:redo DB=test"
+  task :redo => [:drop, :create, :migrate] do
+    puts "Redo Finished!"
+  end
+end
