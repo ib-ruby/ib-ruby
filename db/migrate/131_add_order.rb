@@ -10,7 +10,7 @@ class AddOrder < ActiveRecord::Migration
       t.integer :perm_id #   int: TWS permanent id, remains the same over TWS sessions.
       t.integer :parent_id # int: Order ID of the parent (original) order
       t.string :order_ref #       String: Order reference. Customer defined order ID tag.
-      t.string :order_type #      Order type.
+      t.string :order_type, :limit => 20 #  Order type.
       t.string :tif, :limit => 3 #  Time in Force (time to market): DAY/GAT/GTD/GTC/IOC
       t.string :side, :limit => 1 # Action/side: BUY/SELL/SSHORT/SSHORTX
       t.integer :quantity # int: The order quantity.

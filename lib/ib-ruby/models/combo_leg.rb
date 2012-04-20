@@ -7,7 +7,7 @@ module IB
     class ComboLeg < Model.for(:combo_leg)
       include ModelProperties
 
-      #belongs_to :contract
+      belongs_to :contract
 
       # General Notes:
       # 1. The exchange for the leg definition must match that of the combination order.

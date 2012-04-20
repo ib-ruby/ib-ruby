@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 131) do
+ActiveRecord::Schema.define(:version => 141) do
 
   create_table "bars", :force => true do |t|
     t.float    "open"
@@ -24,6 +24,20 @@ ActiveRecord::Schema.define(:version => 131) do
     t.string   "time",       :limit => 18
     t.datetime "created_at",               :null => false
     t.datetime "updated_at",               :null => false
+  end
+
+  create_table "combo_legs", :force => true do |t|
+    t.integer  "contract_id"
+    t.integer  "con_id"
+    t.integer  "ratio"
+    t.string   "exchange"
+    t.string   "side",                :limit => 1
+    t.integer  "exempt_code"
+    t.integer  "short_sale_slot"
+    t.string   "designated_location"
+    t.integer  "open_close"
+    t.datetime "created_at",                       :null => false
+    t.datetime "updated_at",                       :null => false
   end
 
   create_table "executions", :force => true do |t|
@@ -76,7 +90,7 @@ ActiveRecord::Schema.define(:version => 131) do
     t.integer  "perm_id"
     t.integer  "parent_id"
     t.string   "order_ref"
-    t.string   "order_type"
+    t.string   "order_type",                      :limit => 20
     t.string   "tif",                             :limit => 3
     t.string   "side",                            :limit => 1
     t.integer  "quantity"
@@ -153,8 +167,8 @@ ActiveRecord::Schema.define(:version => 131) do
     t.boolean  "scale_random_percent"
     t.datetime "placed_at"
     t.datetime "modified_at"
-    t.datetime "created_at",                                   :null => false
-    t.datetime "updated_at",                                   :null => false
+    t.datetime "created_at",                                    :null => false
+    t.datetime "updated_at",                                    :null => false
   end
 
 end
