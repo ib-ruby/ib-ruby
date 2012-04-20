@@ -22,7 +22,7 @@ module IB
                       [:execution, :account_name, :string],
                       [:execution, :exchange, :string],
                       [:execution, :side, :string],
-                      [:execution, :shares, :int],
+                      [:execution, :quantity, :int],
                       [:execution, :price, :decimal],
                       [:execution, :perm_id, :int],
                       [:execution, :client_id, :int],

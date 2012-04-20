@@ -19,19 +19,19 @@ module IB
            :price, #        double: The order execution price.
            :average_price, # double: Average price. Used in regular trades, combo
            #                         trades and legs of the combo.
-           :shares, #       int: The number of shares filled.
+           [:quantity, :shares], #       int: The number of shares filled.
            :cumulative_quantity, # int: Cumulative quantity. Used in regular
            #                            trades, combo trades and legs of the combo
            :liquidation => :bool, #  int: This position is liquidated last should the need arise.
            [:side, :action] => PROPS[:side] # String: Was the transaction a buy or a sale: BOT|SLD
 
       # Extra validations
-      validates_numericality_of :shares, :cumulative_quantity, :price, :average_price
+      validates_numericality_of :quantity, :cumulative_quantity, :price, :average_price
       validates_numericality_of :local_id, :client_id, :perm_id, :only_integer => true
 
       DEFAULT_PROPS = {:local_id => 0,
                        :client_id => 0,
-                       :shares => 0,
+                       :quantity => 0,
                        :price => 0,
                        :perm_id => 0,
                        :liquidation => 0, }
@@ -49,7 +49,7 @@ module IB
       end
 
       def to_human
-        "<Execution: #{time} #{side} #{shares} at #{price} on #{exchange}, " +
+        "<Execution: #{time} #{side} #{quantity} at #{price} on #{exchange}, " +
             "cumulative #{cumulative_quantity} at #{average_price}, " +
             "ids #{local_id}/#{perm_id}/#{exec_id}>"
       end

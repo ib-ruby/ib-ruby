@@ -41,22 +41,30 @@ describe IB::Models::Execution do # AKA IB::Execution
      :average_price=>["is not a number"]}
   end
 
+  NUMERIC_PROPERTY =
+      {1313 => 1313,
+       [:foo, 'BAR', nil] => /is not a number/}
+
+  BOOLEAN_PROPERTY = {[1, true] => true, [0, false] => false}
+
   let(:assigns) do
     {:side =>
          {['BOT', 'BUY', 'Buy', 'buy', :BUY, :BOT, :Buy, :buy, 'B', :b] => :buy,
           ['SELL', 'SLD', 'Sel', 'sell', :SELL, :SLD, :Sell, :sell, 'S', :S] => :sell},
 
-     [:local_id, :perm_id, :client_id] =>
-         {1313 => 1313,
-          [:foo, 'BAR', nil] => /is not a number/},
+     [:local_id, :perm_id, :client_id] => NUMERIC_PROPERTY,
 
-     [:shares, :cumulative_quantity, :price, :average_price] =>
-         {[:foo, 'BAR', nil] => /is not a number/},
+     [:quantity, :cumulative_quantity, :price, :average_price] => NUMERIC_PROPERTY,
 
-     :liquidation => {[1, true] => true, [0, false] => false},
+     :liquidation => BOOLEAN_PROPERTY,
     }
   end
 
+  let(:aliases) do
+    {[:local_id, :order_id] => NUMERIC_PROPERTY,
+     [:quantity, :shares] => NUMERIC_PROPERTY,
+    }
+  end
   it_behaves_like 'Model'
 
   it 'has legacy :local_id accessor, aliasing :local_id' do

@@ -34,7 +34,7 @@ ActiveRecord::Schema.define(:version => 131) do
     t.string   "order_ref"
     t.string   "exec_id"
     t.string   "side",                :limit => 1
-    t.integer  "shares"
+    t.integer  "quantity"
     t.integer  "cumulative_quantity"
     t.float    "price"
     t.float    "average_price"
@@ -74,8 +74,8 @@ ActiveRecord::Schema.define(:version => 131) do
     t.integer  "local_id"
     t.integer  "client_id"
     t.integer  "perm_id"
-    t.string   "order_ref"
     t.integer  "parent_id"
+    t.string   "order_ref"
     t.string   "order_type"
     t.string   "tif",                             :limit => 3
     t.string   "side",                            :limit => 1

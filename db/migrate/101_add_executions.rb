@@ -10,7 +10,7 @@ class AddExecutions < ActiveRecord::Migration
       t.string :order_ref #    Order reference
       t.string :exec_id #      Unique order execution id
       t.string :side, :limit => 1 # Was the transaction a buy or a sale: BOT|SLD
-      t.integer :shares #              The number of shares filled
+      t.integer :quantity #              The number of shares filled
       t.integer :cumulative_quantity # Cumulative quantity
       t.float :price #         double: The order execution price
       t.float :average_price # double: Average price (for all executions?)

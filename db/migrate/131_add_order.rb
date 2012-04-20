@@ -8,8 +8,8 @@ class AddOrder < ActiveRecord::Migration
       t.integer :local_id #  int: Order id associated with client (volatile).
       t.integer :client_id # int: The id of the client that placed this order.
       t.integer :perm_id #   int: TWS permanent id, remains the same over TWS sessions.
-      t.string :order_ref #       String: Order reference. Customer defined order ID tag.
       t.integer :parent_id # int: Order ID of the parent (original) order
+      t.string :order_ref #       String: Order reference. Customer defined order ID tag.
       t.string :order_type #      Order type.
       t.string :tif, :limit => 3 #  Time in Force (time to market): DAY/GAT/GTD/GTC/IOC
       t.string :side, :limit => 1 # Action/side: BUY/SELL/SSHORT/SSHORTX
@@ -82,9 +82,9 @@ class AddOrder < ActiveRecord::Migration
       t.float :basis_points #      double: EFP orders only
       t.float :basis_points_type # double: EFP orders only
       t.string :algo_strategy # String
-      #t.string :algo_params # public Vector<TagValue> m_algoParams; ?!
-      #t.string :leg_prices # Vector<OrderComboLeg> m_orderComboLegs
-      #t.string :combo_params # not used yet
+                          #t.string :algo_params # public Vector<TagValue> m_algoParams; ?!
+                          #t.string :leg_prices # Vector<OrderComboLeg> m_orderComboLegs
+                          #t.string :combo_params # not used yet
 
       t.integer :scale_init_level_size # int: Size of the first (initial) order component.
       t.integer :scale_subs_level_size # int: Order size of the subsequent scale order
