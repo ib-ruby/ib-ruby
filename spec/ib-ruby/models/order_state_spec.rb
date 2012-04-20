@@ -48,6 +48,13 @@ describe IB::Models::OrderState do
     }
   end
 
+  let(:aliases) do
+    {[:local_id, :order_id] => numeric_or_nil_assigns,
+     [:price, :last_fill_price] => float_or_nil_assigns,
+     [:average_price, :average_fill_price] => float_or_nil_assigns,
+    }
+  end
+
   it_behaves_like 'Model'
   it_behaves_like 'Self-equal Model'
 

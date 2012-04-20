@@ -41,72 +41,51 @@ describe IB::Models::Execution do # AKA IB::Execution
      :average_price=>["is not a number"]}
   end
 
-  NUMERIC_PROPERTY =
-      {1313 => 1313,
-       [:foo, 'BAR', nil] => /is not a number/}
-
-  BOOLEAN_PROPERTY = {[1, true] => true, [0, false] => false}
-
   let(:assigns) do
-    {:side =>
-         {['BOT', 'BUY', 'Buy', 'buy', :BUY, :BOT, :Buy, :buy, 'B', :b] => :buy,
-          ['SELL', 'SLD', 'Sel', 'sell', :SELL, :SLD, :Sell, :sell, 'S', :S] => :sell},
-
-     [:local_id, :perm_id, :client_id] => NUMERIC_PROPERTY,
-
-     [:quantity, :cumulative_quantity, :price, :average_price] => NUMERIC_PROPERTY,
-
-     :liquidation => BOOLEAN_PROPERTY,
+    {[:perm_id, :client_id, :cumulative_quantity, :price, :average_price] => numeric_assigns,
+     :liquidation => boolean_assigns,
     }
   end
 
   let(:aliases) do
-    {[:local_id, :order_id] => NUMERIC_PROPERTY,
-     [:quantity, :shares] => NUMERIC_PROPERTY,
+    {[:side, :action] => buy_sell_assigns,
+     [:local_id, :order_id] => numeric_assigns,
+     [:quantity, :shares] => numeric_assigns,
+     [:account_name, :account_number]=> string_assigns,
     }
   end
+
+  let(:associations) do
+    {:order => IB::Order.new(:local_id => 23,
+                             :perm_id => 173276893,
+                             :client_id => 1111,
+                             :parent_id => 0,
+                             :quantity => 100,
+                             :order_type => :market)
+    }
+  end
+
   it_behaves_like 'Model'
 
-  it 'has legacy :local_id accessor, aliasing :local_id' do
-    subject.order_id = 131313
-    subject.local_id.should == 131313
-    subject.local_id = 111111
-    subject.order_id.should == 111111
-  end
-
   ## TODO: Playing with associations!
-
-  let(:association) do
-    IB::OrderState.new :local_id => 23,
-                       :perm_id => 173276893,
-                       :client_id => 1111,
-                       :parent_id => 0,
-                       :filled => 3,
-                       :remaining => 2,
-                       :last_fill_price => 0.5,
-                       :average_fill_price => 0.55,
-                       :why_held => 'child'
-
-  end
-
   context 'associations' do
     subject { IB::Execution.new props }
 
     before(:all) { DatabaseCleaner.clean if IB::DB }
 
-    it 'saves associated bar' do
-      os = association
+    it 'saves associated order' do
+      order = associations[:order]
 
-      #p bar.save
+      #p order.save
 
-      subject.order_state = os
+      subject.order = order
 
       p subject.save
       p subject.errors.messages
 
 
-      p subject.order_state
-      p subject.order_state.execution
+      p subject.order
+      p subject.order.executions
       p subject.to_xml
       p subject.serializable_hash
       p subject.to_json
@@ -122,12 +101,12 @@ describe IB::Models::Execution do # AKA IB::Execution
 
       #s1 = IB::Execution.first
       #p s1
-      #p s1.bar.execution
+      #p s1.order.executions
 
-      #p b1 = IB::Bar.find(:first)
-      #p b1.execution
+      #p o1 = IB::Order.find(:first)
+      #p o1.execution
       #
-      #p b1.execution.bar_id
+      #p o1.execution.order_id
     end
 
   end

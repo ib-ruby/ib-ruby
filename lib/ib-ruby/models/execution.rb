@@ -15,15 +15,15 @@ module IB
            #                String: The order execution time.
            :exchange, #     String: Exchange that executed the order.
            :order_ref, #  int: Same order_ref as in corresponding Order
-           [:account_name, :account_number], # String: The customer account number.
            :price, #        double: The order execution price.
            :average_price, # double: Average price. Used in regular trades, combo
            #                         trades and legs of the combo.
            [:quantity, :shares], #       int: The number of shares filled.
            :cumulative_quantity, # int: Cumulative quantity. Used in regular
            #                            trades, combo trades and legs of the combo
-           :liquidation => :bool, #  int: This position is liquidated last should the need arise.
-           [:side, :action] => PROPS[:side] # String: Was the transaction a buy or a sale: BOT|SLD
+           :liquidation => :bool, # This position is liquidated last should the need arise.
+           [:account_name, :account_number] => :s, # The customer account number.
+           [:side, :action] => PROPS[:side] # Was the transaction a buy or a sale: BOT|SLD
 
       # Extra validations
       validates_numericality_of :quantity, :cumulative_quantity, :price, :average_price
