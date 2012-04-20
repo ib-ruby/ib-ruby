@@ -215,6 +215,7 @@ module IB
 
       prop :placed_at, :modified_at
 
+      # TODO: restore!
       ## Returned in OpenOrder for Bag Contracts
       ## public Vector<OrderComboLeg> m_orderComboLegs
       #prop :algo_params, :leg_prices, :combo_params
@@ -267,7 +268,12 @@ module IB
       ].each { |property| define_method(property) { order_state.send(property) } }
 
       # Order is not valid without correct :local_id (:order_id)
-      validates_numericality_of :local_id, :only_integer => true
+      validates_numericality_of :local_id, :perm_id, :client_id, :parent_id,
+                                :quantity, :min_quantity, :display_size,
+                                :only_integer => true, :allow_nil => true
+
+      validates_numericality_of :limit_price, :aux_price, :allow_nil => true
+
 
       DEFAULT_PROPS = {:aux_price => 0.0,
                        :discretionary_amount => 0.0,

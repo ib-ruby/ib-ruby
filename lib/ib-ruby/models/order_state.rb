@@ -59,6 +59,9 @@ module IB
       #   the order is inactive due to system, exchange or other issues.
 
       validates_format_of :status, :without => /^$/, :message => 'must not be empty'
+      validates_numericality_of :price, :average_price, :allow_nil => true
+      validates_numericality_of :local_id, :perm_id, :client_id, :parent_id, :filled,
+                                :remaining, :only_integer => true, :allow_nil => true
 
       #DEFAULT_PROPS = {:status => 'New'} # Starting new Orders with this status
 
