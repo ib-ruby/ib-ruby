@@ -18,6 +18,13 @@ module IB
 
       included do
 
+        # Extending AR-backed Model class with attribute defaults
+        if defined?(ActiveRecord::Base) && ancestors.include?(ActiveRecord::Base)
+          def initialize opts={}
+            super default_attributes.merge(opts)
+          end
+        end
+
         ### Class macros
 
         def self.prop *properties
@@ -97,84 +104,6 @@ module IB
           else # setter given
             define_property_methods name, :set => body
           end
-        end
-
-        # Extending lighweight (not DB-backed) Model class to mimic AR::Base
-        if ancestors.include? ActiveModel::Validations
-
-          def initialize opts={}
-            super default_attributes.merge(opts)
-          end
-
-        else
-          extend ActiveModel::Naming
-          extend ActiveModel::Callbacks
-          include ActiveModel::Validations
-          include ActiveModel::Serialization
-          include ActiveModel::Serializers::Xml
-          include ActiveModel::Serializers::JSON
-
-          attr_accessor :created_at, :updated_at, :attributes
-
-          def initialize opts={}
-            run_callbacks :initialize do
-              super default_attributes.merge(opts)
-            end
-          end
-
-          # ActiveModel API (for serialization)
-
-          def attributes
-            @attributes ||= {}
-          end
-
-          def to_model
-            self
-          end
-
-          def new_record?
-            true
-          end
-
-          def save
-            valid?
-          end
-
-          alias save! save
-
-          ### ActiveRecord::Base association API mocks
-
-          def self.belongs_to model, *args
-            attr_accessor model
-          end
-
-          def self.has_one model, *args
-            attr_accessor model
-          end
-
-          def self.has_many models, *args
-            attr_accessor models
-
-            define_method(models) do
-              # TODO: Need something like @models ||= []
-              self.instance_variable_get("@#{models}") ||
-                  self.instance_variable_set("@#{models}", [])
-            end
-          end
-
-          def self.find *args
-            []
-          end
-
-          ### ActiveRecord::Base callback API mocks
-
-          define_model_callbacks :initialize, :only => :after
-
-          ### ActiveRecord::Base misc
-
-          def self.serialize *properties
-          end
-
         end
 
       end # included
