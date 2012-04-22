@@ -15,6 +15,11 @@ def numeric_or_nil_assigns
   numeric_assigns.merge(nil => nil)
 end
 
+def to_i_assigns
+  {[1313, '1313'] => 1313,
+   ['foo', 'BAR', nil, '', 0] => 0, }  # Symbols NOT coerced! They DO have int equivalent
+end
+
 def float_assigns
   {13.13 => 13.13,
    13 => 13.0,
@@ -34,6 +39,12 @@ end
 def string_assigns
   {[:Bar, 'Bar'] => 'Bar',
    [:foo, 'foo'] => 'foo'}
+end
+
+def string_upcase_assigns
+  {[:cboe, :Cboe, 'cboE', 'CBOE'] => 'CBOE',
+   [:bar, 'Bar'] => 'BAR',
+   [:foo, 'foo'] => 'FOO'}
 end
 
 def open_close_assigns
@@ -66,6 +77,7 @@ def test_assigns cases, prop, name
 
     # For all values in this test case ...
     [values].flatten.each do |value|
+      #p prop, name, value, result
 
       # Assigning this value to a property results in ...
       case result
@@ -78,7 +90,6 @@ def test_assigns cases, prop, name
         subject.valid? # just triggers validation
 
         #pp subject.errors.messages
-        #p prop, name, value, result
 
         subject.errors.messages.should have_key name
         subject.should be_invalid

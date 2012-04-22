@@ -55,9 +55,6 @@ describe IB::Models::Option do # AKA IB::Option
      :strike => {[0, -30.0] => /must be greater than 0/},
 
      :multiplier => {['123', 123] => 123},
-
-     [:under_con_id, :min_tick, :coupon] => {123 => 123}
-
     }
   end
 

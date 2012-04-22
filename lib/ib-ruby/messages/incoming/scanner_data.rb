@@ -24,17 +24,21 @@ module IB
 
           @results = Array.new(@data[:count]) do |_|
             {:rank => socket.read_int,
-             :contract => Contract.build(:con_id => socket.read_int,
-                                         :symbol => socket.read_str,
-                                         :sec_type => socket.read_str,
-                                         :expiry => socket.read_str,
-                                         :strike => socket.read_decimal,
-                                         :right => socket.read_str,
-                                         :exchange => socket.read_str,
-                                         :currency => socket.read_str,
-                                         :local_symbol => socket.read_str,
-                                         :market_name => socket.read_str,
-                                         :trading_class => socket.read_str),
+             :contract =>
+                 Contract.build(
+                     :con_id => socket.read_int,
+                     :symbol => socket.read_str,
+                     :sec_type => socket.read_str,
+                     :expiry => socket.read_str,
+                     :strike => socket.read_decimal,
+                     :right => socket.read_str,
+                     :exchange => socket.read_str,
+                     :currency => socket.read_str,
+                     :local_symbol => socket.read_str,
+                     :contract_detail =>
+                         IB::ContractDetail.new(
+                             :market_name => socket.read_str,
+                             :trading_class => socket.read_str)),
              :distance => socket.read_str,
              :benchmark => socket.read_str,
              :projection => socket.read_str,

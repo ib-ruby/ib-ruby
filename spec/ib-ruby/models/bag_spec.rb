@@ -29,7 +29,7 @@ describe IB::Models::Bag do # AKA IB::Bag
 
      :sec_type =>
          {['BAG', :bag] => :bag,
-          IB::CODES[:sec_type].reject { |k, v,| k == :bag }.to_a =>
+          IB::CODES[:sec_type].reject { |k, _| k == :bag }.to_a =>
               /should be a bag/},
 
      :right =>
@@ -48,9 +48,7 @@ describe IB::Models::Bag do # AKA IB::Bag
      [:symbol, :local_symbol] =>
          {['AAPL', :AAPL] => 'AAPL'},
 
-     :multiplier => {['123', 123] => 123},
-
-     [:under_con_id, :min_tick, :coupon] => {123 => 123}
+     :multiplier => {['123', 123] => 123}
     }
   end
 

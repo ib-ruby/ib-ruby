@@ -39,20 +39,15 @@ describe IB::Models::Contract do # AKA IB::Contract
           ['', '0', '?', :none] => :none,
           [:foo, 'BAR', 42] => /should be put, call or none/},
 
-     :exchange =>
-         {[:cboe, 'cboE', 'CBOE'] => 'CBOE',
-          [:smart, 'SMART', 'smArt'] => 'SMART'},
+     :exchange => string_upcase_assigns.merge(
+         [:smart, 'SMART', 'smArt'] => 'SMART'),
 
-     :primary_exchange =>
-         {[:cboe, 'cboE', 'CBOE'] => 'CBOE',
-          [:SMART, 'SMART'] => /should not be SMART/},
+     :primary_exchange =>string_upcase_assigns.merge(
+         [:SMART, 'SMART'] => /should not be SMART/),
 
-     :multiplier => {['123', 123] => 123},
+     :multiplier => to_i_assigns,
 
-     [:under_con_id, :min_tick, :coupon] => {123 => 123},
-
-     [:callable, :puttable, :convertible, :next_option_partial] =>
-         {[1, true] => true, [0, false] => false},
+     :include_expired => boolean_assigns,
     }
   end
 
