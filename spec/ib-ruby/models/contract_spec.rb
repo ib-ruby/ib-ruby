@@ -19,20 +19,6 @@ describe IB::Models::Contracts::Contract do # AKA IB::Contract
     "<Contract: AAPL option 201301 put 600 SMART USD>"
   end
 
-  let(:defaults) do
-    {:con_id => 0,
-     :strike => 0,
-     :min_tick => 0,
-     :coupon => 0,
-     :callable => false,
-     :puttable => false,
-     :convertible => false,
-     :next_option_partial => false,
-     :include_expired => false,
-     #:created_at => Time,   # Does not work in DB mode
-    }
-  end
-
   let(:errors) do
     {:sec_type => ["should be valid security type"],
     }

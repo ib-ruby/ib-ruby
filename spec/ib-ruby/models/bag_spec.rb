@@ -16,16 +16,6 @@ describe IB::Models::Contracts::Bag do # AKA IB::Bag
     "<Bag: GOOG SMART USD legs: 81032967|1,81032968|-2,81032973|1 >"
   end
 
-  let(:defaults) do
-    {:sec_type => :bag,
-     :con_id => 0,
-     :strike => 0,
-     :min_tick => 0,
-     :include_expired => false,
-     #:created_at => Time,   # Does not work in DB mode
-    }
-  end
-
   let(:errors) do
     {:legs => ["legs cannot be empty"],
     }

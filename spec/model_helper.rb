@@ -150,11 +150,11 @@ shared_examples_for 'Model instantiated empty' do
   it { should_not be_nil }
 
   it 'sets all properties to defaults' do
-    defined?(defaults) && defaults.each do |name, value|
+    subject.default_attributes.each do |name, value|
       #p name, value
       case value
-      when Module, Class
-        subject.send(name).should be_a value
+      when Time
+        subject.send(name).should be_a Time
       else
         subject.send(name).should == value
       end

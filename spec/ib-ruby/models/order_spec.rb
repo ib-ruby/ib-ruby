@@ -31,21 +31,6 @@ describe IB::Models::Order do
     "<Order: Test MIT GTC buy 100 New 0.1 #23/173276893 from 1111>"
   end
 
-  let(:defaults) do
-    {:open_close => :open,
-     :short_sale_slot => :default,
-     :tif => :day,
-     :order_type => :limit,
-     :origin => :customer,
-     :transmit => true,
-     :designated_location => '',
-     :exempt_code => -1,
-     :what_if => false,
-     :status => 'New',
-     #:created_at => Time,   # Does not work in DB mode
-    }
-  end
-
   let(:errors) do
     {:side =>["should be buy/sell/short"]}
   end

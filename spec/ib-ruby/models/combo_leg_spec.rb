@@ -17,16 +17,6 @@ describe IB::Models::ComboLeg do
     "<ComboLeg: buy 2 con_id 81032967 at CBOE>"
   end
 
-  let(:defaults) do
-    {:con_id => 0,
-     :open_close => :same,
-     :designated_location => '',
-     :exempt_code => -1,
-     :exchange => 'SMART', # Unless SMART, Order modification fails
-     #:created_at => Time,   # Does not work in DB mode
-    }
-  end
-
   let(:errors) do
     {:ratio => ["is not a number"],
      :side => ["should be buy/sell/short"]}

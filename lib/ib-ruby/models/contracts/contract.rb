@@ -59,14 +59,14 @@ module IB
                  {:set => proc { |val|
                    self[:right] =
                        case val.to_s.upcase
-                         when 'NONE', '', '0', '?'
-                           ''
-                         when 'PUT', 'P'
-                           'P'
-                         when 'CALL', 'C'
-                           'C'
-                         else
-                           val
+                       when 'NONE', '', '0', '?'
+                         ''
+                       when 'PUT', 'P'
+                         'P'
+                       when 'CALL', 'C'
+                         'C'
+                       else
+                         val
                        end },
                   :validate => {:format => {:with => /^put$|^call$|^none$/,
                                             :message => "should be put, call or none"}}
@@ -144,18 +144,20 @@ module IB
         validates_format_of :primary_exchange, :without => /SMART/,
                             :message => "should not be SMART"
 
-        DEFAULT_PROPS = {:con_id => 0,
-                         :strike => 0.0,
-                         :right => :none, # Not an option
-                         :exchange => 'SMART',
-                         :under_con_id => 0,
-                         :min_tick => 0,
-                         :coupon => 0,
-                         :callable => false,
-                         :puttable => false,
-                         :convertible => false,
-                         :include_expired => false,
-                         :next_option_partial => false, }
+        def default_attributes
+          {:con_id => 0,
+           :strike => 0.0,
+           :right => :none, # Not an option
+           :exchange => 'SMART',
+           :under_con_id => 0,
+           :min_tick => 0,
+           :coupon => 0,
+           :callable => false,
+           :puttable => false,
+           :convertible => false,
+           :include_expired => false,
+           :next_option_partial => false, }.merge super
+        end
 
         # NB: ContractDetails reference - to self!
         def summary
@@ -207,12 +209,12 @@ module IB
         # Defined in Contract, not BAG subclass to keep code DRY
         def serialize_legs *fields
           case
-            when !bag?
-              []
-            when legs.empty?
-              [0]
-            else
-              [legs.size, legs.map { |leg| leg.serialize *fields }].flatten
+          when !bag?
+            []
+          when legs.empty?
+            [0]
+          else
+            [legs.size, legs.map { |leg| leg.serialize *fields }].flatten
           end
         end
 

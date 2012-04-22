@@ -14,16 +14,6 @@ describe IB::Models::Contracts::Option do # AKA IB::Option
     "<Option: AAPL 201301 put 600 SMART >"
   end
 
-  let(:defaults) do
-    {:sec_type => :option,
-     :con_id => 0,
-     :strike => 0,
-     :min_tick => 0,
-     :include_expired => false,
-     #:created_at => Time,   # Does not work in DB mode
-    }
-  end
-
   let(:errors) do
     {:right => ["should be put or call"],
      :strike => ["must be greater than 0"],

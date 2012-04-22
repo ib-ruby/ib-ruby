@@ -22,10 +22,9 @@ module IB
           errors.add(:legs, "legs cannot be empty") if legs.empty?
         end
 
-        def initialize opts = {}
-          @legs = Array.new
-          self.sec_type = :bag
-          super opts
+        def default_attributes
+          {:legs => Array.new,
+           :sec_type => :bag}.merge super
         end
 
         def description

@@ -36,7 +36,6 @@ module IB
           day = args.shift.to_i
           right = args.shift.upcase
           strike = args.shift.to_i/1000.0
-          #p symbol, year, month, day, right, strike
 
           # Set correct expiry date - IB expiry date differs from OSI if expiry date
           # falls on Saturday (see https://github.com/arvicco/option_mower/issues/4)
@@ -50,10 +49,9 @@ module IB
               :strike => strike
         end
 
-        def initialize opts = {}
-          super opts
-          self.sec_type = 'OPT'
-          self[:description] ||= osi ? osi : "#{symbol} #{strike} #{right} #{expiry}"
+        def default_attributes
+          {:sec_type => :option}.merge super
+          #self[:description] ||= osi ? osi : "#{symbol} #{strike} #{right} #{expiry}"
         end
 
         def to_human

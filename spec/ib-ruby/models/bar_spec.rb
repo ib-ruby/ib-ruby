@@ -15,11 +15,6 @@ describe IB::Models::Bar do # AKA IB::Bar
     }
   end
 
-  let(:defaults) do
-    {
-    }
-  end
-
   let(:errors) do
     {:close => ["is not a number"],
      :high => ["is not a number"],

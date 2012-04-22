@@ -30,12 +30,6 @@ describe IB::Models::OrderState do
     "<OrderState: PreSubmitted #23/173276893 from 1111 filled 3/2 at 0.5/0.55 margin 500.0/500.0 equity 750.0 fee 1.2 why_held child warning Oh noes!>"
   end
 
-  let(:defaults) do
-    {
-        #:created_at => Time,   # Does not work in DB mode
-    }
-  end
-
   let(:errors) do
     {:status => ["must not be empty"],
     }

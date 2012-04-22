@@ -24,17 +24,6 @@ describe IB::Models::Execution do # AKA IB::Execution
         "cumulative 20000 at 1.31075, ids 373/1695693619/0001f4e8.4f5d48f1.01.01>"
   end
 
-  let(:defaults) do
-    {:local_id => 0,
-     :client_id => 0,
-     :perm_id => 0,
-     :shares=> 0,
-     :price => 0,
-     :liquidation => false,
-     #:created_at => Time,   # Does not work in DB mode
-    }
-  end
-
   let(:errors) do
     {:side=>["should be buy/sell/short"],
      :cumulative_quantity=>["is not a number"],

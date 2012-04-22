@@ -238,10 +238,10 @@ module IB
 
       def order_state= state
         self.order_states.push case state
-                                 when IB::OrderState
-                                   state
-                                 when Symbol, String
-                                   IB::OrderState.new :status => state
+                               when IB::OrderState
+                                 state
+                               when Symbol, String
+                                 IB::OrderState.new :status => state
                                end
       end
 
@@ -275,34 +275,37 @@ module IB
       validates_numericality_of :limit_price, :aux_price, :allow_nil => true
 
 
-      DEFAULT_PROPS = {:aux_price => 0.0,
-                       :discretionary_amount => 0.0,
-                       :parent_id => 0,
-                       :tif => :day,
-                       :order_type => :limit,
-                       :open_close => :open,
-                       :origin => :customer,
-                       :short_sale_slot => :default,
-                       :trigger_method => :default,
-                       :oca_type => :none,
-                       :auction_strategy => :none,
-                       :designated_location => '',
-                       :exempt_code => -1,
-                       :display_size => 0,
-                       :continuous_update => 0,
-                       :delta_neutral_con_id => 0,
-                       :algo_strategy => '',
-                       :transmit => true,
-                       :what_if => false
-                       # TODO: Add simple defaults to prop ?
-      }
-
-      after_initialize do #opts = {}
-                          #self.leg_prices = []
-                          #self.algo_params = {}
-                          #self.combo_params = {}
-        self.order_state ||= IB::OrderState.new :status => 'New'
+      def default_attributes
+        {:aux_price => 0.0,
+         :discretionary_amount => 0.0,
+         :parent_id => 0,
+         :tif => :day,
+         :order_type => :limit,
+         :open_close => :open,
+         :origin => :customer,
+         :short_sale_slot => :default,
+         :trigger_method => :default,
+         :oca_type => :none,
+         :auction_strategy => :none,
+         :designated_location => '',
+         :exempt_code => -1,
+         :display_size => 0,
+         :continuous_update => 0,
+         :delta_neutral_con_id => 0,
+         :algo_strategy => '',
+         :transmit => true,
+         :what_if => false,
+         :order_state => IB::OrderState.new(:status => 'New'),
+         # TODO: Add simple defaults to prop ?
+        }.merge super
       end
+
+      #after_initialize do #opts = {}
+      #                    #self.leg_prices = []
+      #                    #self.algo_params = {}
+      #                    #self.combo_params = {}
+      #                    #self.order_state ||= IB::OrderState.new :status => 'New'
+      #end
 
       # This returns an Array of data from the given order,
       # mixed with data from associated contract. Ugly mix, indeed.
@@ -310,12 +313,12 @@ module IB
         [contract.serialize_long(:con_id, :sec_id),
          # main order fields
          case side
-           when :short
-             'SSHORT'
-           when :short_exempt
-             'SSHORTX'
-           else
-             side.to_sup
+         when :short
+           'SSHORT'
+         when :short_exempt
+           'SSHORTX'
+         else
+           side.to_sup
          end,
          quantity,
          self[:order_type], # Internal code, 'LMT' instead of :limit

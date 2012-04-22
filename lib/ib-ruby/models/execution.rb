@@ -29,12 +29,15 @@ module IB
       validates_numericality_of :quantity, :cumulative_quantity, :price, :average_price
       validates_numericality_of :local_id, :client_id, :perm_id, :only_integer => true
 
-      DEFAULT_PROPS = {:local_id => 0,
-                       :client_id => 0,
-                       :quantity => 0,
-                       :price => 0,
-                       :perm_id => 0,
-                       :liquidation => 0, }
+      def default_attributes
+        {:local_id => 0,
+         :client_id => 0,
+         :quantity => 0,
+         :price => 0,
+         :perm_id => 0,
+         :liquidation => false, }.merge super
+      end
+
       # Comparison
       def == other
         perm_id == other.perm_id &&

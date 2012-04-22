@@ -9,11 +9,11 @@ module IB
       def self.for subclass
         if DB
           case subclass
-            when :execution, :bar, :order, :order_state, :combo_leg
-              # Just a couple of AR models introduced for now...
-              ActiveRecord::Base
-            else
-              Model
+          when :execution, :bar, :order, :order_state, :combo_leg
+            # Just a couple of AR models introduced for now...
+            ActiveRecord::Base
+          else
+            Model
           end
         else
           Model
@@ -25,7 +25,7 @@ module IB
       def initialize(opts={})
         error "Argument must be a Hash", :args unless opts.is_a?(Hash)
 
-        props = self.class::DEFAULT_PROPS.merge(opts)
+        props = default_attributes.merge(opts)
 
         props.keys.each { |key| self.send("#{key}=", props[key]) }
       end

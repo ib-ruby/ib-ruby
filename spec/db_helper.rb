@@ -15,8 +15,8 @@ shared_examples_for 'Valid DB-backed Model' do
     end
 
     it 'does not set created and updated properties to SAVED model' do
-      subject.created_at.should be_nil
-      subject.updated_at.should be_nil
+      subject.created_at.should be_a Time
+      subject.updated_at.should be_a Time
     end
 
     it 'saves a single model' do
@@ -40,10 +40,10 @@ shared_examples_for 'Valid DB-backed Model' do
       end
     end
 
-    it 'adds created and updated properties to loaded model' do
+    it 'updates timestamps when saving the model' do
       model = described_class.find(:first)
-      model.created_at.should be_a Time
-      model.updated_at.should be_a Time
+      model.created_at.usec.should_not == subject.created_at.utc.usec #be_a Time
+      model.updated_at.usec.should_not == subject.updated_at.utc.usec #be_a Time
     end
 
     it 'is loads back with associations, if any' do
