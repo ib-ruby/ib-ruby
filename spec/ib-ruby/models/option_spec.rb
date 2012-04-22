@@ -1,6 +1,6 @@
 require 'model_helper'
 
-describe IB::Models::Contracts::Option do # AKA IB::Option
+describe IB::Models::Option do # AKA IB::Option
 
   let(:props) do
     {:symbol => 'AAPL',
@@ -59,11 +59,6 @@ describe IB::Models::Contracts::Option do # AKA IB::Option
      [:under_con_id, :min_tick, :coupon] => {123 => 123}
 
     }
-  end
-
-  context 'using shorter class name without properties' do
-    subject { IB::Models::Option.new }
-    it_behaves_like 'Model instantiated empty'
   end
 
   context 'using shortest class name without properties' do

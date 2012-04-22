@@ -1,6 +1,6 @@
 require 'model_helper'
 
-describe IB::Models::Contracts::Bag do # AKA IB::Bag
+describe IB::Models::Bag do # AKA IB::Bag
 
   let(:props) do
     {:symbol => 'GOOG',

@@ -1,7 +1,7 @@
 require 'model_helper'
 require 'combo_helper'
 
-describe IB::Models::Contracts::Contract do # AKA IB::Contract
+describe IB::Models::Contract do # AKA IB::Contract
 
   let(:props) do
     {:symbol => 'AAPL',
@@ -107,13 +107,6 @@ describe IB::Models::Contracts::Contract do # AKA IB::Contract
       end
     end
 
-  end
-
-  context 'using shorter class name without properties' do
-    subject { IB::Models::Contract.new }
-    it_behaves_like 'Model instantiated empty'
-    it_behaves_like 'Self-equal Model'
-    it_behaves_like 'Contract'
   end
 
   context 'using shortest class name without properties' do

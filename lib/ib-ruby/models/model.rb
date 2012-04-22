@@ -33,6 +33,7 @@ module IB
       def initialize opts={}
         run_callbacks :initialize do
           error "Argument must be a Hash", :args unless opts.is_a?(Hash)
+
           attrs = default_attributes.merge(opts)
           attrs.keys.each { |key| self.send("#{key}=", attrs[key]) }
         end

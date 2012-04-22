@@ -97,7 +97,7 @@ describe IB::Models::Order do
 
     subject { IB::Order.new props }
 
-    it 'has order_states collection with at least one extra accessors to OrderState properties' do
+    it 'has order_states collection' do
       subject.order_states.should_not be_nil
       subject.order_states.should be_an Array # lies, it's more like association proxy
     end
@@ -107,8 +107,8 @@ describe IB::Models::Order do
       last_state = subject.order_states.last
       last_state.should be_an IB::OrderState
       last_state.status.should == 'New'
-      #subject.save
-      last_state.order.should == subject
+      subject.save
+      last_state.order.should == subject if IB::DB
     end
 
     it 'has abbreviated accessor to last (current) OrderState' do
@@ -129,7 +129,7 @@ describe IB::Models::Order do
         subject.status.should == 'Bar'
         subject.save
         subject.order_states.should have_exactly(3).states
-        subject.order_states.first.order.should == subject
+        subject.order_states.first.order.should == subject if IB::DB
       end
 
       it 'or simply assigning to order_state accessor' do
