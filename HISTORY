@@ -165,3 +165,7 @@
 == 0.7.7 / 2012-04-20
 
 * Model validations and DB backend
+
+== 0.7.8 / 2012-04-23
+
+* Models are now fully DB-backed
