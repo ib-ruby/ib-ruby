@@ -37,6 +37,11 @@ describe IB::Models::ContractDetail do # AKA IB::ContractDetail
     }
   end
 
+  let(:aliases) do
+    {[:contract, :summary] => {IB::Contract.new => IB::Contract.new}
+    }
+  end
+
   it_behaves_like 'Model'
   it_behaves_like 'Self-equal Model'
 

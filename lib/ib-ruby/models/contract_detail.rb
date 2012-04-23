@@ -4,6 +4,8 @@ module IB
       include ModelProperties
 
       belongs_to :contract
+      alias summary contract
+      alias summary= contract=
 
       # All fields Strings, unless specified otherwise:
       prop :market_name, # The market name for this contract.
@@ -61,18 +63,13 @@ module IB
          :next_option_partial => false, }.merge super
       end
 
-      # Contract comparison
+      # ContractDetails comparison
       def == other
 
         attributes.inject(true) { |res, (attr, value)| res && other.send(attr) == value } &&
             other.attributes.inject(true) { |res, (attr, value)| res && send(attr) == value }
       end
 
-      def to_human
-        "<ContractDetail: " +
-            attributes.map { |(attr, value)| "#{attr}: #{value}" }.join(' ') + ">"
-      end
-
-    end # class ContractDetails
+    end # class ContractDetail
   end # module Models
 end # module IB

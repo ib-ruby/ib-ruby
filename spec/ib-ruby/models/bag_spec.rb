@@ -37,19 +37,23 @@ describe IB::Models::Bag do # AKA IB::Bag
           ["PUT", :put, "CALL", "C", :call, :foo, 'BAR', 42] =>
               /should be none/},
 
-     :exchange =>
-         {[:cboe, 'cboE', 'CBOE'] => 'CBOE',
-          [:smart, 'SMART', 'smArt'] => 'SMART'},
+     :exchange => string_upcase_assigns.merge(
+         [:smart, 'SMART', 'smArt'] => 'SMART'),
 
-     :primary_exchange =>
-         {[:cboe, 'cboE', 'CBOE'] => 'CBOE',
-          [:SMART, 'SMART'] => /should not be SMART/},
+     :primary_exchange =>string_upcase_assigns.merge(
+         [:SMART, 'SMART'] => /should not be SMART/),
 
-     [:symbol, :local_symbol] =>
-         {['AAPL', :AAPL] => 'AAPL'},
+     [:symbol, :local_symbol] => string_assigns,
 
-     :multiplier => {['123', 123] => 123}
+     :multiplier => to_i_assigns,
     }
+  end
+
+  it 'does not allow empty legs' do
+    bag = IB::Bag.new props
+    bag.legs = []
+    bag.should be_invalid
+    bag.errors.messages[:legs].should include "legs cannot be empty"
   end
 
   context 'using shortest class name without properties' do

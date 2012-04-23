@@ -238,10 +238,6 @@ shared_examples_for 'Invalid Model' do
 end
 
 shared_examples_for 'Contract' do
-  it 'summary points to itself (ContractDetails artifact' do
-    subject.summary.should == subject
-  end
-
   it 'becomes invalid if assigned wrong :sec_type property' do
     subject.sec_type = 'FOO'
     subject.should be_invalid

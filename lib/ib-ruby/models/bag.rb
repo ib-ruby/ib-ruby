@@ -35,8 +35,8 @@ module IB
       end
 
       ### Leg-related methods
-      # TODO: Rewrite with legs and legs_description being strictly in sync...
 
+      # TODO: Rewrite with legs and legs_description being strictly in sync...
       # TODO: Find a way to serialize legs without references...
       # IB-equivalent leg description.
       def legs_description

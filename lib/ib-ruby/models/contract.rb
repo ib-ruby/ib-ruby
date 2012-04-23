@@ -6,12 +6,6 @@ module IB
     class Contract < Model.for(:contract)
       include ModelProperties
 
-      has_one :contract_detail
-
-      has_one :underlying # for Delta-Neutral Combo contracts only!
-      alias under_comp underlying
-      alias under_comp= underlying=
-
       # Fields are Strings unless noted otherwise
       prop :con_id, # int: The unique contract identifier.
            :sec_type, # Security type. Valid values are: SECURITY_TYPES
@@ -68,16 +62,24 @@ module IB
                                           :message => "should be put, call or none"}}
                }
 
-      # Legs arriving via OpenOrder message, need to define them here
-      attr_accessor :legs # leg definitions for this contract.
-      alias combo_legs legs
-      alias combo_legs= legs=
+      attr_accessor :description # NB: local to ib-ruby, not part of TWS.
+
+      ### Associations
+
+      has_one :contract_detail
+
+      has_one :underlying # for Delta-Neutral Combo contracts only!
+      alias under_comp underlying
+      alias under_comp= underlying=
+
+      has_many :combo_legs
+      alias legs combo_legs
+      alias legs= combo_legs=
       alias combo_legs_description legs_description
       alias combo_legs_description= legs_description=
 
-      attr_accessor :description # NB: local to ib-ruby, not part of TWS.
 
-      # Extra validations
+      ### Extra validations
       validates_inclusion_of :sec_type, :in => CODES[:sec_type].keys,
                              :message => "should be valid security type"
 
@@ -88,6 +90,7 @@ module IB
                           :message => "should not be SMART"
 
       validates_numericality_of :multiplier, :allow_nil => true
+
 
       def default_attributes
         {:con_id => 0,
