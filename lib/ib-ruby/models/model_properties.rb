@@ -16,6 +16,12 @@ module IB
 
       ### Instance methods
 
+      def to_human
+        "<#{self.class.to_s.demodulize}: " + attributes.map do |attr, value|
+          "#{attr}: #{value}" unless value.nil?
+        end.compact.join(' ') + ">"
+      end
+
       included do
 
         # Extending AR-backed Model class with attribute defaults
