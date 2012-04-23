@@ -1,4 +1,5 @@
 require 'ib-ruby/models/contract_detail'
+require 'ib-ruby/models/underlying'
 
 module IB
   module Models
@@ -6,6 +7,10 @@ module IB
       include ModelProperties
 
       has_one :contract_detail
+
+      has_one :underlying # for Delta-Neutral Combo contracts only!
+      alias under_comp underlying
+      alias under_comp= underlying=
 
       # Fields are Strings unless noted otherwise
       prop :con_id, # int: The unique contract identifier.
@@ -24,6 +29,8 @@ module IB
            :sec_id, # Unique identifier of the given secIdType.
 
            :legs_description, # received in OpenOrder for all combos
+
+           :under_comp, # Used for Delta-Neutral Combo contracts only!
 
            :symbol => :s, # This is the symbol of the underlying asset.
 
@@ -48,25 +55,18 @@ module IB
                {:set => proc { |val|
                  self[:right] =
                      case val.to_s.upcase
-                     when 'NONE', '', '0', '?'
-                       ''
-                     when 'PUT', 'P'
-                       'P'
-                     when 'CALL', 'C'
-                       'C'
-                     else
-                       val
+                       when 'NONE', '', '0', '?'
+                         ''
+                       when 'PUT', 'P'
+                         'P'
+                       when 'CALL', 'C'
+                         'C'
+                       else
+                         val
                      end },
                 :validate => {:format => {:with => /^put$|^call$|^none$/,
                                           :message => "should be put, call or none"}}
                }
-
-      # Used for Delta-Neutral Combo contracts only!
-      # UnderComp fields are bundled into Contract proper, as it should be.
-      prop :under_comp, # if not nil, attributes below are sent to server
-           #:under_con_id is is already defined in ContractDetails section
-           :under_delta, # double: The underlying stock or future delta.
-           :under_price #  double: The price of the underlying.
 
       # Legs arriving via OpenOrder message, need to define them here
       attr_accessor :legs # leg definitions for this contract.
@@ -95,11 +95,6 @@ module IB
          :right => :none, # Not an option
          :exchange => 'SMART',
          :include_expired => false, }.merge super
-      end
-
-      # NB: ContractDetails reference - to self!
-      def summary
-        self
       end
 
       # This returns an Array of data from the given contract.
@@ -131,28 +126,20 @@ module IB
         serialize :option, *fields
       end
 
-      # Serialize under_comp parameters
+      # Serialize under_comp parameters: EClientSocket.java, line 471
       def serialize_under_comp *args
-        # EClientSocket.java, line 471:
-        if under_comp
-          [true,
-           under_con_id,
-           under_delta,
-           under_price]
-        else
-          [false]
-        end
+        under_comp ? under_comp.serialize : [false]
       end
 
       # Defined in Contract, not BAG subclass to keep code DRY
       def serialize_legs *fields
         case
-        when !bag?
-          []
-        when legs.empty?
-          [0]
-        else
-          [legs.size, legs.map { |leg| leg.serialize *fields }].flatten
+          when !bag?
+            []
+          when legs.empty?
+            [0]
+          else
+            [legs.size, legs.map { |leg| leg.serialize *fields }].flatten
         end
       end
 
