@@ -1,9 +1,8 @@
-class AddOrder < ActiveRecord::Migration
+class AddOrders < ActiveRecord::Migration
 
   def change
     # OrderState represents dynamic (changeable) info about a single Order
     create_table(:orders) do |t|
-      # t.references :order
 
       t.integer :local_id #  int: Order id associated with client (volatile).
       t.integer :client_id # int: The id of the client that placed this order.
@@ -20,18 +19,18 @@ class AddOrder < ActiveRecord::Migration
       t.integer :oca_type # int: Tells how to handle remaining orders in an OCA group
       t.string :oca_group #   String: Identifies a member of a one-cancels-all group.
 
-      t.boolean :transmit #  If false, order will be created but not transmitted.
-      t.boolean :what_if # Only return pre-trade commissions and margin info, do not place
-      t.boolean :outside_rth # Order may trigger or fill outside of regular hours.
-      t.boolean :not_held # Not Held
-      t.boolean :hidden # Order will not be visible in market depth. ISLAND only.
-      t.boolean :block_order #   This is an ISE Block order.
-      t.boolean :sweep_to_fill # This is a Sweep-to-Fill order.
-      t.boolean :all_or_none #     AON
-      t.boolean :etrade_only #     Trade with electronic quotes.
-      t.boolean :firm_quote_only # Trade with firm quotes.
-      t.boolean :opt_out_smart_routing # Australian exchange only, default false
-      t.boolean :override_percentage_constraints
+      t.boolean :transmit, :limit => 1 #  If false, order will be created but not transmitted.
+      t.boolean :what_if, :limit => 1 # Only return pre-trade commissions and margin info, do not place
+      t.boolean :outside_rth, :limit => 1 # Order may trigger or fill outside of regular hours.
+      t.boolean :not_held, :limit => 1 # Not Held
+      t.boolean :hidden, :limit => 1 # Order will not be visible in market depth. ISLAND only.
+      t.boolean :block_order, :limit => 1 #   This is an ISE Block order.
+      t.boolean :sweep_to_fill, :limit => 1 # This is a Sweep-to-Fill order.
+      t.boolean :all_or_none, :limit => 1 #     AON
+      t.boolean :etrade_only, :limit => 1 #     Trade with electronic quotes.
+      t.boolean :firm_quote_only, :limit => 1 # Trade with firm quotes.
+      t.boolean :opt_out_smart_routing, :limit => 1 # Australian exchange only, default false
+      t.boolean :override_percentage_constraints, :limit => 1
 
       t.integer :min_quantity # int: Identifies a minimum quantity order type.
       t.integer :display_size # int: publicly disclosed order size for Iceberg orders.
@@ -81,10 +80,11 @@ class AddOrder < ActiveRecord::Migration
       t.string :hedge_param # String; value depends on the hedgeType; sent from the API
       t.float :basis_points #      double: EFP orders only
       t.float :basis_points_type # double: EFP orders only
-      t.string :algo_strategy # String
-                          #t.string :algo_params # public Vector<TagValue> m_algoParams; ?!
-                          #t.string :leg_prices # Vector<OrderComboLeg> m_orderComboLegs
-                          #t.string :combo_params # not used yet
+      t.string :algo_strategy
+
+      # t.string :algo_params # public Vector<TagValue> m_algoParams; ?!
+      # t.string :leg_prices # Vector<OrderComboLeg> m_orderComboLegs
+      # t.string :combo_params # not used yet
 
       t.integer :scale_init_level_size # int: Size of the first (initial) order component.
       t.integer :scale_subs_level_size # int: Order size of the subsequent scale order
@@ -94,8 +94,8 @@ class AddOrder < ActiveRecord::Migration
       t.float :scale_profit_offset
       t.integer :scale_init_position
       t.integer :scale_init_fill_qty
-      t.boolean :scale_auto_reset
-      t.boolean :scale_random_percent
+      t.boolean :scale_auto_reset, :limit => 1
+      t.boolean :scale_random_percent, :limit => 1
 
       t.timestamp :placed_at
       t.timestamp :modified_at

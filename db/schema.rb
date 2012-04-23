@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 141) do
+ActiveRecord::Schema.define(:version => 171) do
 
   create_table "bars", :force => true do |t|
     t.float    "open"
@@ -38,6 +38,63 @@ ActiveRecord::Schema.define(:version => 141) do
     t.integer  "open_close"
     t.datetime "created_at",                       :null => false
     t.datetime "updated_at",                       :null => false
+  end
+
+  create_table "contract_details", :force => true do |t|
+    t.integer  "contract_id"
+    t.string   "market_name"
+    t.string   "trading_class"
+    t.float    "min_tick"
+    t.integer  "price_magnifier"
+    t.string   "order_types"
+    t.string   "valid_exchanges"
+    t.integer  "under_con_id"
+    t.string   "long_name"
+    t.string   "contract_month"
+    t.string   "industry"
+    t.string   "category"
+    t.string   "subcategory"
+    t.string   "time_zone"
+    t.string   "trading_hours"
+    t.string   "liquid_hours"
+    t.string   "cusip"
+    t.string   "ratings"
+    t.string   "desc_append"
+    t.string   "bond_type"
+    t.string   "coupon_type"
+    t.float    "coupon"
+    t.string   "maturity"
+    t.string   "issue_date"
+    t.string   "next_option_date"
+    t.string   "next_option_type"
+    t.string   "notes"
+    t.boolean  "callable",            :limit => 1
+    t.boolean  "puttable",            :limit => 1
+    t.boolean  "convertible",         :limit => 1
+    t.boolean  "next_option_partial", :limit => 1
+    t.datetime "created_at",                       :null => false
+    t.datetime "updated_at",                       :null => false
+  end
+
+  create_table "contracts", :force => true do |t|
+    t.integer  "con_id"
+    t.string   "sec_type",         :limit => 5
+    t.float    "strike"
+    t.string   "currency",         :limit => 4
+    t.string   "sec_id_type",      :limit => 5
+    t.integer  "sec_id"
+    t.string   "legs_description"
+    t.string   "symbol"
+    t.string   "local_symbol"
+    t.integer  "multiplier"
+    t.string   "expiry"
+    t.string   "exchange"
+    t.string   "primary_exchange"
+    t.boolean  "include_expired",  :limit => 1
+    t.string   "right",            :limit => 1
+    t.string   "type"
+    t.datetime "created_at",                    :null => false
+    t.datetime "updated_at",                    :null => false
   end
 
   create_table "executions", :force => true do |t|
@@ -99,18 +156,18 @@ ActiveRecord::Schema.define(:version => 141) do
     t.integer  "open_close"
     t.integer  "oca_type"
     t.string   "oca_group"
-    t.boolean  "transmit"
-    t.boolean  "what_if"
-    t.boolean  "outside_rth"
-    t.boolean  "not_held"
-    t.boolean  "hidden"
-    t.boolean  "block_order"
-    t.boolean  "sweep_to_fill"
-    t.boolean  "all_or_none"
-    t.boolean  "etrade_only"
-    t.boolean  "firm_quote_only"
-    t.boolean  "opt_out_smart_routing"
-    t.boolean  "override_percentage_constraints"
+    t.boolean  "transmit",                        :limit => 1
+    t.boolean  "what_if",                         :limit => 1
+    t.boolean  "outside_rth",                     :limit => 1
+    t.boolean  "not_held",                        :limit => 1
+    t.boolean  "hidden",                          :limit => 1
+    t.boolean  "block_order",                     :limit => 1
+    t.boolean  "sweep_to_fill",                   :limit => 1
+    t.boolean  "all_or_none",                     :limit => 1
+    t.boolean  "etrade_only",                     :limit => 1
+    t.boolean  "firm_quote_only",                 :limit => 1
+    t.boolean  "opt_out_smart_routing",           :limit => 1
+    t.boolean  "override_percentage_constraints", :limit => 1
     t.integer  "min_quantity"
     t.integer  "display_size"
     t.integer  "trigger_method"
@@ -163,12 +220,21 @@ ActiveRecord::Schema.define(:version => 141) do
     t.float    "scale_profit_offset"
     t.integer  "scale_init_position"
     t.integer  "scale_init_fill_qty"
-    t.boolean  "scale_auto_reset"
-    t.boolean  "scale_random_percent"
+    t.boolean  "scale_auto_reset",                :limit => 1
+    t.boolean  "scale_random_percent",            :limit => 1
     t.datetime "placed_at"
     t.datetime "modified_at"
     t.datetime "created_at",                                    :null => false
     t.datetime "updated_at",                                    :null => false
+  end
+
+  create_table "underlyings", :force => true do |t|
+    t.integer  "contract_id"
+    t.integer  "con_id"
+    t.float    "delta"
+    t.float    "price"
+    t.datetime "created_at",  :null => false
+    t.datetime "updated_at",  :null => false
   end
 
 end

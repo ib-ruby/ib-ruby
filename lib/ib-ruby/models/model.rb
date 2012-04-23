@@ -14,13 +14,7 @@ module IB
       # require 'ib-ruby/db' # to make IB models database-backed
       def self.for subclass
         if DB
-          case subclass
-            when :execution, :bar, :order, :order_state, :combo_leg
-              # Just a couple of AR models introduced for now...
-              ActiveRecord::Base
-            else
-              Model
-          end
+          ActiveRecord::Base
         else
           Model
         end
@@ -42,7 +36,7 @@ module IB
       # ActiveModel API (for serialization)
 
       def attributes
-        @attributes ||= {}
+        @attributes ||= HashWithIndifferentAccess.new
       end
 
       # ActiveModel-style read/write_attribute accessors

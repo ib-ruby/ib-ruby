@@ -3,9 +3,7 @@ require 'spec_helper'
 shared_examples_for 'Valid DB-backed Model' do
 
   context 'with DB backend', :db => true do
-    after(:all) do
-      #DatabaseCleaner.clean
-    end
+    after(:all) { DatabaseCleaner.clean }
 
     it_behaves_like 'Model with associations'
 
@@ -35,6 +33,8 @@ shared_examples_for 'Valid DB-backed Model' do
 
     it 'and with the same properties' do
       model = described_class.find(:first)
+      #p model.attributes
+      #p model.content_attributes
       props.each do |name, value|
         model.send(name).should == value
       end
