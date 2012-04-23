@@ -171,6 +171,8 @@ module IB
        'FOP' => :futures_option,
        'CASH' => :forex,
        'BOND' => :bond,
+       'WAR' => :warrant,
+       'FUND' => :fund, # ETF?
        'BAG' => :bag}.freeze
 
   # Obtain symbolic value from given property code:
@@ -285,7 +287,7 @@ module IB
 
   # Obtain property code from given symbolic value:
   # CODES[:side][:buy] -> 'B'
-  CODES = Hash[VALUES.map { |property, hash| [property, hash.invert] }]
+  CODES = Hash[VALUES.map { |property, hash| [property, hash.invert] }].freeze
 
   # Most common property processors
   PROPS = {:side =>

@@ -7,6 +7,8 @@ module IB
     class ComboLeg < Model.for(:combo_leg)
       include ModelProperties
 
+      belongs_to :contract
+
       # General Notes:
       # 1. The exchange for the leg definition must match that of the combination order.
       # The exception is for a STK leg definition, which must specify the SMART exchange.
@@ -36,12 +38,14 @@ module IB
       validates_format_of :designated_location, :with => /^$/,
                           :message => "should be blank or orders will be rejected"
 
-      DEFAULT_PROPS = {:con_id => 0,
-                       :open_close => :same, # The only option for retail customers.
-                       :short_sale_slot => :default,
-                       :designated_location => '',
-                       :exchange => 'SMART', # Unless SMART, Order modification fails
-                       :exempt_code => -1, }
+      def default_attributes
+        {:con_id => 0,
+         :open_close => :same, # The only option for retail customers.
+         :short_sale_slot => :default,
+         :designated_location => '',
+         :exchange => 'SMART', # Unless SMART, Order modification fails
+         :exempt_code => -1, }.merge super
+      end
 
       #  Leg's weight is a combination of action and ratio
       def weight

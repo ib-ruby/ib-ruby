@@ -5,7 +5,7 @@ module IB
       # OpenOrder is the longest message with complex processing logics
       OpenOrder =
           def_message [5, [23, 28]],
-                      [:order, :order_id, :int],
+                      [:order, :local_id, :int],
 
                       [:contract, :con_id, :int],
                       [:contract, :symbol, :string],
@@ -70,11 +70,19 @@ module IB
                       [:order, :delta_neutral_order_type, :string],
                       [:order, :delta_neutral_aux_price, :decimal_max]
 
-
       class OpenOrder
 
-
         # Accessors to make OpenOrder API-compatible with OrderStatus message
+
+        def local_id
+          order.local_id
+        end
+
+        alias order_id local_id
+
+        def status
+          order.status
+        end
 
         def order
           @order ||= IB::Order.new @data[:order].merge(:order_state => order_state)
@@ -83,23 +91,23 @@ module IB
         def order_state
           @order_state ||= IB::OrderState.new(
               @data[:order_state].merge(
-                  :order_id => @data[:order][:order_id],
+                  :local_id => @data[:order][:local_id],
                   :perm_id => @data[:order][:perm_id],
                   :parent_id => @data[:order][:parent_id],
                   :client_id => @data[:order][:client_id]))
         end
 
         def contract
-          @contract ||= IB::Contract.build @data[:contract]
+          @contract ||= IB::Contract.build(
+              @data[:contract].merge(:underlying => underlying)
+          )
         end
 
-        def order_id
-          order.order_id
+        def underlying
+          @underlying = @data[:underlying_present] ? IB::Underlying.new(@data[:underlying]) : nil
         end
 
-        def status
-          order.status
-        end
+        alias under_comp underlying
 
         def load
           super
@@ -152,7 +160,6 @@ module IB
                          [:order, :scale_profit_offset, :decimal_max],
                          [:order, :scale_auto_reset, :boolean],
                          [:order, :scale_init_position, :int_max],
-                         [:order, :scale_init_position, :int_max],
                          [:order, :scale_init_fill_qty, :decimal_max],
                          [:order, :scale_random_percent, :boolean]]
                    ],
@@ -169,12 +176,12 @@ module IB
                    [:order, :clearing_account, :string],
                    [:order, :clearing_intent, :string],
                    [:order, :not_held, :boolean],
-                   [:contract, :under_comp, :boolean],
+                   [:underlying_present, :boolean],
 
-                   [proc { | | filled?(@data[:contract][:under_comp]) },
-                    [:contract, :under_con_id, :int],
-                    [:contract, :under_delta, :decimal],
-                    [:contract, :under_price, :decimal]
+                   [proc { | | filled?(@data[:underlying_present]) },
+                    [:underlying, :con_id, :int],
+                    [:underlying, :delta, :decimal],
+                    [:underlying, :price, :decimal]
                    ],
 
                    [:order, :algo_strategy, :string],

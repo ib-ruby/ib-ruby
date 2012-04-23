@@ -48,6 +48,11 @@ class Symbol
   def to_f
     0
   end
+
+  # ActiveModel serialization depends on this method
+  def <=> other
+    to_s <=> other.to_s
+  end
 end
 
 class Object

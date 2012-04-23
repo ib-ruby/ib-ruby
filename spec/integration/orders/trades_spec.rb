@@ -21,10 +21,6 @@ describe "Trades", :connected => true, :integration => true, :slow => true do
                     :total_quantity => 20000,
                     :limit_price => 2,
                     :action => 'BUY'
-                    #:all_or_none => 1,
-                    #:fa_profile => 2,
-                    #:percent_offset => 3,
-                    #:clearing_account => 'z',
                     #:what_if => true
 
         @ib.wait_for(5, :ExecutionData, :OpenOrder) do
@@ -35,12 +31,12 @@ describe "Trades", :connected => true, :integration => true, :slow => true do
 
       after(:all) do
         clean_connection # Clear logs and message collector
-        @ib.cancel_order @order_id_placed # Just in case...
+        @ib.cancel_order @local_id_placed # Just in case...
       end
 
-      it 'changes client`s next_order_id' do
-        @order_id_placed = @order_id_before
-        @ib.next_order_id.should == @order_id_before + 1
+      it 'changes client`s next_local_id' do
+        @local_id_placed = @local_id_before
+        @ib.next_local_id.should == @local_id_before + 1
       end
 
       it { @ib.received[:OpenOrder].should have_at_least(1).open_order_message }
@@ -78,12 +74,12 @@ describe "Trades", :connected => true, :integration => true, :slow => true do
 
       after(:all) do
         clean_connection # Clear logs and message collector
-        @ib.cancel_order @order_id_placed # Just in case...
+        @ib.cancel_order @local_id_placed # Just in case...
       end
 
-      it 'changes client`s next_order_id' do
-        @order_id_placed = @order_id_before
-        @ib.next_order_id.should == @order_id_before + 1
+      it 'changes client`s next_local_id' do
+        @local_id_placed = @local_id_before
+        @ib.next_local_id.should == @local_id_before + 1
       end
 
       it { @ib.received[:OpenOrder].should have_at_least(1).open_order_message }

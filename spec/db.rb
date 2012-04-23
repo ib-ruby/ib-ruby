@@ -10,7 +10,7 @@ require 'database_cleaner'
 db_file = Pathname.new(__FILE__).realpath.dirname + '../db/config.yml'
 raise "Unable to find DB config file: #{db_file}" unless db_file.exist?
 
-env = RUBY_PLATFORM =~ /java/ ? 'test-jruby' : 'test'
+env = RUBY_PLATFORM =~ /java/ ? 'test' : 'test-mri'
 db_config = YAML::load_file(db_file)[env]
 
 # Establish connection to test DB

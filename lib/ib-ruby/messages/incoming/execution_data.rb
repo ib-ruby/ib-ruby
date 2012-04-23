@@ -6,7 +6,7 @@ module IB
           def_message [11, 8],
                       # The reqID that was specified previously in the call to reqExecution()
                       [:request_id, :int],
-                      [:execution, :order_id, :int],
+                      [:execution, :local_id, :int],
                       [:contract, :con_id, :int],
                       [:contract, :symbol, :string],
                       [:contract, :sec_type, :string],
@@ -22,7 +22,7 @@ module IB
                       [:execution, :account_name, :string],
                       [:execution, :exchange, :string],
                       [:execution, :side, :string],
-                      [:execution, :shares, :int],
+                      [:execution, :quantity, :int],
                       [:execution, :price, :decimal],
                       [:execution, :perm_id, :int],
                       [:execution, :client_id, :int],
