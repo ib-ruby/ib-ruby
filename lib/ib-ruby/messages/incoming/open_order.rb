@@ -98,8 +98,16 @@ module IB
         end
 
         def contract
-          @contract ||= IB::Contract.build @data[:contract]
+          @contract ||= IB::Contract.build(
+              @data[:contract].merge(:underlying => underlying)
+          )
         end
+
+        def underlying
+          @underlying = @data[:underlying_present] ? IB::Underlying.new(@data[:underlying]) : nil
+        end
+
+        alias under_comp underlying
 
         def load
           super
@@ -168,12 +176,12 @@ module IB
                    [:order, :clearing_account, :string],
                    [:order, :clearing_intent, :string],
                    [:order, :not_held, :boolean],
-                   [:contract, :under_comp, :boolean],
+                   [:underlying_present, :boolean],
 
-                   [proc { | | filled?(@data[:contract][:under_comp]) },
-                    [:contract, :under_con_id, :int],
-                    [:contract, :under_delta, :decimal],
-                    [:contract, :under_price, :decimal]
+                   [proc { | | filled?(@data[:underlying_present]) },
+                    [:underlying, :con_id, :int],
+                    [:underlying, :delta, :decimal],
+                    [:underlying, :price, :decimal]
                    ],
 
                    [:order, :algo_strategy, :string],
