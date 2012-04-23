@@ -8,31 +8,31 @@ module IB
 
       # Fields are Strings unless noted otherwise
       prop :con_id, # int: The unique contract identifier.
-           :sec_type, # Security type. Valid values are: SECURITY_TYPES
-           :strike, # double: The strike price.
            :currency, # Only needed if there is an ambiguity, e.g. when SMART exchange
            #            and IBM is being requested (IBM can trade in GBP or USD).
 
-           :sec_id_type, # Security identifier, when querying contract details or
+           :legs_description, # received in OpenOrder for all combos
+
+           :sec_type, # Security type. Valid values are: SECURITY_TYPES
+
+           :sec_id, # Unique identifier of the given secIdType.
+
+           :sec_id_type => :sup, # Security identifier, when querying contract details or
            #               when placing orders. Supported identifiers are:
            #               -  ISIN (Example: Apple: US0378331005)
            #               -  CUSIP (Example: Apple: 037833100)
            #               -  SEDOL (6-AN + check digit. Example: BAE: 0263494)
            #               -  RIC (exchange-independent RIC Root and exchange-
            #                  identifying suffix. Ex: AAPL.O for Apple on NASDAQ.)
-           :sec_id, # Unique identifier of the given secIdType.
-
-           :legs_description, # received in OpenOrder for all combos
-
-           :under_comp, # Used for Delta-Neutral Combo contracts only!
 
            :symbol => :s, # This is the symbol of the underlying asset.
 
            :local_symbol => :s, # Local exchange symbol of the underlying asset
 
            # Future/option contract multiplier (only needed when multiple possibilities exist)
-           :multiplier => :i,
+           :multiplier => {:set => :i},
 
+           :strike => :f, # double: The strike price.
            :expiry => :s, # The expiration date. Use the format YYYYMM or YYYYMMDD
            :exchange => :sup, # The order destination, such as Smart.
            :primary_exchange => :sup, # Non-SMART exchange where the contract trades.
@@ -89,8 +89,10 @@ module IB
       validates_format_of :primary_exchange, :without => /SMART/,
                           :message => "should not be SMART"
 
-      validates_numericality_of :multiplier, :allow_nil => true
+      validates_format_of :sec_id_type, :with => /ISIN|SEDOL|CUSIP|RIC|^$/,
+                          :message => "should be valid security identifier"
 
+      validates_numericality_of :multiplier, :strike, :allow_nil => true
 
       def default_attributes
         {:con_id => 0,
@@ -103,6 +105,7 @@ module IB
       # This returns an Array of data from the given contract.
       # Different messages serialize contracts differently. Go figure.
       # Note that it does NOT include the combo legs.
+      # serialize [:option, :con_id, :include_expired, :sec_id]
       def serialize *fields
         [(fields.include?(:con_id) ? [con_id] : []),
          symbol,
@@ -172,9 +175,6 @@ module IB
         # Different sec_id
         return false if sec_id && other.sec_id && sec_id != other.sec_id
 
-        # Different under_comp
-        return false if under_comp && other.under_comp && under_comp != other.under_comp
-
         # Different symbols
         return false if symbol && other.symbol && symbol != other.symbol
 
@@ -193,7 +193,8 @@ module IB
         # Comparison for Bonds and Options
         if bond? || option?
           return false if right != other.right || strike != other.strike
-          return false if multiplier && other.multiplier && multiplier != other.multiplier
+          return false if multiplier && other.multiplier &&
+              multiplier != other.multiplier
           return false if expiry && expiry[0..5] != other.expiry[0..5]
           return false unless expiry && (expiry[6..7] == other.expiry[6..7] ||
               expiry[6..7].empty? || other.expiry[6..7].empty?)
@@ -247,7 +248,7 @@ module IB
     end # class Contract
 
 
-    ## Now let's deal with Contract subclasses
+    ### Now let's deal with Contract subclasses
 
     require 'ib-ruby/models/option'
     require 'ib-ruby/models/bag'
@@ -260,7 +261,8 @@ module IB
 
       # This returns a Contract initialized from the serialize_ib_ruby format string.
       def self.build opts = {}
-        Contract::Subclasses[VALUES[:sec_type][opts[:sec_type]]].new opts
+        subclass = VALUES[:sec_type][opts[:sec_type]] || opts[:sec_type].to_sym
+        Contract::Subclasses[subclass].new opts
       end
 
       # This returns a Contract initialized from the serialize_ib_ruby format string.

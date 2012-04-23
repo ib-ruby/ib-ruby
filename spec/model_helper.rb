@@ -17,7 +17,7 @@ end
 
 def to_i_assigns
   {[1313, '1313'] => 1313,
-   ['foo', 'BAR', nil, '', 0] => 0, }  # Symbols NOT coerced! They DO have int equivalent
+   ['foo', 'BAR', nil, '', 0] => 0, } # Symbols NOT coerced! They DO have int equivalent
 end
 
 def float_assigns
@@ -27,13 +27,19 @@ def float_assigns
    [:foo, 'BAR'] => /is not a number/}
 end
 
+def to_f_assigns
+  {13.13 => 13.13,
+   13 => 13.0,
+   [:foo, 'BAR', '', nil, 0] => 0.0}
+end
+
 def float_or_nil_assigns
   float_assigns.merge(nil => nil)
 end
 
 def boolean_assigns
-  {[1, true] => true,
-   [0, false] => false}
+  {[1, true, 't'] => true,
+   [0, false, 'f'] => false}
 end
 
 def string_assigns
@@ -81,46 +87,46 @@ def test_assigns cases, prop, name
 
       # Assigning this value to a property results in ...
       case result
-      when Exception # ... Exception
-        expect { subject.send "#{prop}=", value }.
-            to raise_error result
+        when Exception # ... Exception
+          expect { subject.send "#{prop}=", value }.
+              to raise_error result
 
-      when Regexp # ... Non-exceptional error, making model invalid
-        expect { subject.send "#{prop}=", value }.to_not raise_error
-        subject.valid? # just triggers validation
+        when Regexp # ... Non-exceptional error, making model invalid
+          expect { subject.send "#{prop}=", value }.to_not raise_error
+          subject.valid? # just triggers validation
 
-        #pp subject.errors.messages
+          #pp subject.errors.messages
 
-        subject.errors.messages.should have_key name
-        subject.should be_invalid
-        msg = subject.errors.messages[name].find { |msg| msg =~ result }
-        msg.should =~ result
+          subject.errors.messages.should have_key name
+          subject.should be_invalid
+          msg = subject.errors.messages[name].find { |msg| msg =~ result }
+          msg.should =~ result
 
-      else # ... correct uniform assignment to result
+        else # ... correct uniform assignment to result
 
-        was_valid = subject.valid?
-        expect { subject.send "#{prop}=", value }.to_not raise_error
-        subject.send("#{prop}").should == result
-        if was_valid
-          # Assignment keeps validity
-          subject.errors.messages.should_not have_key name
-          subject.should be_valid
-        end
-
-        if name != prop # additional asserts for aliases
-
-          # Assignment to alias changes property as well
-          subject.send("#{name}").should == result
-
-          # Unsetting alias unsets property as well
-          subject.send "#{prop}=", nil # unset alias
-          subject.send("#{prop}").should be_blank #== nil
-          subject.send("#{name}").should be_blank #== nil
-
-          # Assignment to original property changes alias as well
-          subject.send "#{name}=", value
+          was_valid = subject.valid?
+          expect { subject.send "#{prop}=", value }.to_not raise_error
           subject.send("#{prop}").should == result
-        end
+          if was_valid
+            # Assignment keeps validity
+            subject.errors.messages.should_not have_key name
+            subject.should be_valid
+          end
+
+          if name != prop # additional asserts for aliases
+
+            # Assignment to alias changes property as well
+            subject.send("#{name}").should == result
+
+            # Unsetting alias unsets property as well
+            subject.send "#{prop}=", nil # unset alias
+            subject.send("#{prop}").should be_blank #== nil
+            subject.send("#{name}").should be_blank #== nil
+
+            # Assignment to original property changes alias as well
+            subject.send "#{name}=", value
+            subject.send("#{prop}").should == result
+          end
       end
     end
   end
@@ -140,7 +146,12 @@ shared_examples_for 'Model' do
 
 
     it 'has correct human-readeable format' do
-      subject.to_human.should == human
+      case human
+        when Regexp
+          subject.to_human.should =~ human
+        else
+          subject.to_human.should == human
+      end
     end
   end
 end
@@ -164,10 +175,10 @@ shared_examples_for 'Model instantiated empty' do
     subject.default_attributes.each do |name, value|
       #p name, value
       case value
-      when Time
-        subject.send(name).should be_a Time
-      else
-        subject.send(name).should == value
+        when Time
+          subject.send(name).should be_a Time
+        else
+          subject.send(name).should == value
       end
     end
   end

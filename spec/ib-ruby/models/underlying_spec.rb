@@ -10,7 +10,7 @@ describe IB::Models::Underlying do # AKA IB::Underlying
   end
 
   let(:human) do
-    "<Underlying: con_id: 234567 delta: 0.55 price: 20.5>"
+    /<Underlying: con_id: 234567 .*delta: 0.55 price: 20.5.*>/
   end
 
   let(:errors) do

@@ -7,7 +7,7 @@ describe IB::Models::Contract do # AKA IB::Contract
     {:symbol => 'AAPL',
      :sec_type => :option,
      :expiry => '201301',
-     :strike => 600,
+     :strike => 600.5,
      :right => :put,
      :multiplier => 10,
      :exchange => 'SMART',
@@ -16,7 +16,7 @@ describe IB::Models::Contract do # AKA IB::Contract
   end
 
   let(:human) do
-    "<Contract: AAPL option 201301 put 600 SMART USD>"
+    "<Contract: AAPL option 201301 put 600.5 SMART USD>"
   end
 
   let(:errors) do
@@ -33,6 +33,14 @@ describe IB::Models::Contract do # AKA IB::Contract
      :sec_type => codes_and_values_for(:sec_type).
          merge([:foo, 'BAR', 42] => /should be valid security type/),
 
+     :sec_id_type =>
+         {[:isin, 'ISIN', 'iSin'] => 'ISIN',
+          [:sedol, :SEDOL, 'sEDoL', 'SEDOL'] => 'SEDOL',
+          [:cusip, :CUSIP, 'Cusip', 'CUSIP'] => 'CUSIP',
+          [:ric, :RIC, 'rIC', 'RIC'] => 'RIC',
+          [nil, ''] => '',
+          [:foo, 'BAR', 'baz'] => /should be valid security identifier/},
+
      :right =>
          {["PUT", "put", "P", "p", :put] => :put,
           ["CALL", "call", "C", "c", :call] => :call,
@@ -46,6 +54,8 @@ describe IB::Models::Contract do # AKA IB::Contract
          [:SMART, 'SMART'] => /should not be SMART/),
 
      :multiplier => to_i_assigns,
+
+     :strike => to_f_assigns,
 
      :include_expired => boolean_assigns,
     }
@@ -123,17 +133,17 @@ describe IB::Models::Contract do # AKA IB::Contract
 
     it "serializes long" do
       subject.serialize_long.should ==
-          ["AAPL", "OPT", "201301", 600, "P", 10, "SMART", nil, "USD", "AAPL  130119C00500000"]
+          ["AAPL", "OPT", "201301", 600.5, "P", 10, "SMART", "", "USD", "AAPL  130119C00500000"]
     end
 
     it "serializes short" do
       subject.serialize_short.should ==
-          ["AAPL", "OPT", "201301", 600, "P", 10, "SMART", "USD", "AAPL  130119C00500000"]
+          ["AAPL", "OPT", "201301", 600.5, "P", 10, "SMART", "USD", "AAPL  130119C00500000"]
     end
 
     it "serializes combo (BAG) contracts for Order placement" do
       @combo.serialize_long(:con_id, :sec_id).should ==
-          [0, "GOOG", "BAG", nil, 0.0, "", nil, "SMART", nil, "USD", nil, nil, nil]
+          [0, "GOOG", "BAG", "", 0.0, "", nil, "SMART", "", "USD", "", "", nil]
     end
 
     it 'also serializes attached combo legs' do
@@ -152,3 +162,7 @@ describe IB::Models::Contract do # AKA IB::Contract
 
 
 end # describe IB::Contract
+
+__END__
+IB::Models::ContractDetail id: nil, contract_id: nil, market_name: "AAPL", trading_class: "AAPL", min_tick: 0.01, price_magnifier: 1, order_types: "ACTIVETIM,ADJUST,ALERT,ALGO,ALLOC,AON,AVGCOST,BASKE...", valid_exchanges: "SMART,AMEX,BATS,BOX,CBOE,CBOE2,IBSX,ISE,MIBSX,NASDA...", under_con_id: 265598, long_name: "APPLE INC", contract_month: "201301", industry: "Technology", category: "Computers", subcategory: "Computers", time_zone: "EST", trading_hours: "20120422:0930-1600;20120423:0930-1600", liquid_hours: "20120422:0930-1600;20120423:0930-1600", cusip: nil, ratings: nil, desc_append: nil, bond_type: nil, coupon_type: nil, coupon: 0.0, maturity: nil, issue_date: nil, next_option_date: nil, next_option_type: nil, notes: nil, callable: false, puttable: false, convertible: false, next_option_partial: false, created_at: "2012-04-23 13:58:05", updated_at: "2012-04-23 13:58:05"
+IB::Models::ContractDetail id: nil, contract_id: nil, market_name: "AAPL", trading_class: "AAPL", min_tick: 0.01, price_magnifier: 1, order_types: "ACTIVETIM,ADJUST,ALERT,ALGO,ALLOC,AON,AVGCOST,BASKE...", valid_exchanges: "SMART,AMEX,BATS,BOX,CBOE,CBOE2,IBSX,ISE,MIBSX,NASDA...", under_con_id: 265598, long_name: "APPLE INC", contract_month: "201301", industry: "Technology", category: "Computers", subcategory: "Computers", time_zone: "EST", trading_hours: "20120422:0930-1600;20120423:0930-1600", liquid_hours: "20120422:0930-1600;20120423:0930-1600", cusip: nil, ratings: nil, desc_append: nil, bond_type: nil, coupon_type: nil, coupon: 0.0, maturity: nil, issue_date: nil, next_option_date: nil, next_option_type: nil, notes: nil, callable: false, puttable: false, convertible: false, next_option_partial: false, created_at: "2012-04-23 13:58:04", updated_at: "2012-04-23 13:58:04">

@@ -2,6 +2,8 @@ require 'ib-ruby/models/contract_detail'
 
 module IB
   module Models
+
+    # Calculated characteristics of underlying Contract (volatile)
     class Underlying < Model.for(:underlying)
       include ModelProperties
 

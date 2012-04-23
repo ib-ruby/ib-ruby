@@ -5,13 +5,13 @@ describe IB::Models::Option do # AKA IB::Option
   let(:props) do
     {:symbol => 'AAPL',
      :expiry => '201301',
-     :strike => 600,
+     :strike => 600.5,
      :right => :put,
     }
   end
 
   let(:human) do
-    "<Option: AAPL 201301 put 600 SMART >"
+    "<Option: AAPL 201301 put 600.5 SMART >"
   end
 
   let(:errors) do

@@ -16,6 +16,8 @@ describe "Request Contract Info", :connected => true, :integration => true do
       @contract = IB::Contract.new :symbol => 'AAPL', :sec_type => :stock
       @ib.send_message :RequestContractData, :id => 111, :contract => @contract
       @ib.wait_for :ContractDataEnd, 3 # sec
+      # java: 15:33:16:159 <- 9-6-111-0-AAPL-STK--0.0---     ---0-- -
+      # ruby: 15:36:15:736 <- 9-6-111-0-AAPL-STK--0.0---SMART--- --0-
     end
 
     after(:all) { clean_connection } # Clear logs and message collector
@@ -62,9 +64,9 @@ describe "Request Contract Info", :connected => true, :integration => true do
 
     before(:all) do
       @contract = IB::Option.new :symbol => "AAPL", :expiry => "201301",
-                                 :right => "CALL", :strike => 500
+                                 :right => :call, :strike => 500
       @ib.send_message :RequestContractData, :id => 123, :contract => @contract
-      @ib.wait_for :ContractDataEnd, 3 # sec
+      @ib.wait_for :ContractDataEnd, 5 # sec
     end
 
     after(:all) { clean_connection } # Clear logs and message collector

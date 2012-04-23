@@ -1,5 +1,7 @@
 module IB
   module Models
+
+    # Additional Contract properties (volatile, therefore extracted)
     class ContractDetail < Model.for(:contract_detail)
       include ModelProperties
 
@@ -54,20 +56,13 @@ module IB
       validates_format_of :time_zone, :with => /^\w{3}$/, :message => 'should be XXX'
 
       def default_attributes
-        {:coupon => 0,
+        {:coupon => 0.0,
          :under_con_id => 0,
          :min_tick => 0,
          :callable => false,
          :puttable => false,
          :convertible => false,
          :next_option_partial => false, }.merge super
-      end
-
-      # ContractDetails comparison
-      def == other
-
-        attributes.inject(true) { |res, (attr, value)| res && other.send(attr) == value } &&
-            other.attributes.inject(true) { |res, (attr, value)| res && send(attr) == value }
       end
 
     end # class ContractDetail

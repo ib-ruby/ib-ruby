@@ -1,7 +1,7 @@
 module IB
   module Models
 
-    # Base IB data Model class, in future it will be developed into ActiveModel
+    # Base class for tableless IB data Models extends ActiveModel API
     class Model
       extend ActiveModel::Naming
       extend ActiveModel::Callbacks
@@ -11,9 +11,10 @@ module IB
       include ActiveModel::Serializers::JSON
 
       # IB Models can be either database-backed, or not
-      # require 'ib-ruby/db' # to make IB models database-backed
+      # require 'ib-ruby/db' # to make all IB models database-backed
+      # If you plan to persist only specific Models, select those subclasses here:
       def self.for subclass
-        if DB
+        if DB # && [:contract, :order, :order_state].include? subclass
           ActiveRecord::Base
         else
           Model
@@ -76,7 +77,6 @@ module IB
         attr_accessor models
 
         define_method(models) do
-          # TODO: Need something like @models ||= []
           self.instance_variable_get("@#{models}") ||
               self.instance_variable_set("@#{models}", [])
         end
