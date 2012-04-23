@@ -28,7 +28,10 @@ module IB
 
     attr_accessor :server, #   Info about IB server and server connection state
                   :options, #  Connection options
-                  :next_order_id # Next valid order id
+                  :next_local_id # Next valid order id
+
+    alias next_order_id next_local_id
+    alias next_order_id= next_local_id=
 
     def initialize opts = {}
       @options = DEFAULT_OPTIONS.merge(opts)
@@ -39,7 +42,7 @@ module IB
 
       self.default_logger = options[:logger] if options[:logger]
       @connected = false
-      @next_order_id = nil
+      self.next_local_id = nil
       @server = Hash.new
 
       connect if options[:connect]
@@ -53,8 +56,8 @@ module IB
 
       # TWS always sends NextValidId message at connect - save this id
       self.subscribe(:NextValidId) do |msg|
-        @next_order_id = msg.order_id
-        log.info "Got next valid order id: #{next_order_id}."
+        self.next_local_id = msg.local_id
+        log.info "Got next valid order id: #{next_local_id}."
       end
 
       server[:socket] = IBSocket.open(options[:host], options[:port])
@@ -181,7 +184,9 @@ module IB
 
     # Check if messages of given type were received at_least n times
     def received? message_type, times=1
-      received[message_type].size >= times
+      @receive_lock.synchronize do
+        received[message_type].size >= times
+      end
     end
 
     # Check if all given conditions are satisfied
@@ -292,26 +297,18 @@ module IB
     # Place Order (convenience wrapper for send_message :PlaceOrder).
     # Assigns client_id and order_id fields to placed order. Returns assigned order_id.
     def place_order order, contract
-      error "Unable to place order, next_order_id not known" unless @next_order_id
-      order.client_id = server[:client_id]
-      order.order_id = @next_order_id
-      @next_order_id += 1
-      modify_order order, contract
+      order.place contract, self
     end
 
     # Modify Order (convenience wrapper for send_message :PlaceOrder). Returns order_id.
     def modify_order order, contract
-      send_message :PlaceOrder,
-                   :order => order,
-                   :contract => contract,
-                   :order_id => order.order_id
-      order.order_id
+      order.modify contract, self
     end
 
-    # Cancel Orders by their ids (convenience wrapper for send_message :CancelOrder).
-    def cancel_order *order_ids
-      order_ids.each do |order_id|
-        send_message :CancelOrder, :order_id => order_id.to_i
+    # Cancel Orders by their local ids (convenience wrapper for send_message :CancelOrder).
+    def cancel_order *local_ids
+      local_ids.each do |local_id|
+        send_message :CancelOrder, :local_id => local_id.to_i
       end
     end
 

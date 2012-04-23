@@ -20,7 +20,7 @@ Gem::Specification.new do |gem|
   gem.require_paths = ['lib']
 
   # Dependencies
-  gem.add_dependency 'bundler', '>= 1.0.20'
+  gem.add_dependency 'bundler', '>= 1.1.3'
   gem.add_dependency 'activerecord', '>= 0.0.1'
   gem.add_dependency 'activerecord-jdbcsqlite3-adapter', '>= 1.2.2'
   gem.add_dependency 'jdbc-sqlite3', '>= 3.7.2'
@@ -29,6 +29,6 @@ Gem::Specification.new do |gem|
 
   gem.add_development_dependency 'standalone_migrations'
   gem.add_development_dependency 'database_cleaner', '>= 2.8.0'
-  gem.add_development_dependency 'rspec', '>= 2.8.0'
+  gem.add_development_dependency 'rspec', '>= 2.9.0'
   gem.add_development_dependency 'my_scripts'
 end

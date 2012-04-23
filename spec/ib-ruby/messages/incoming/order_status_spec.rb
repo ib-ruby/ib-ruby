@@ -6,14 +6,14 @@ shared_examples_for 'OrderStatus message' do
   its(:message_id) { should == 3 }
   its(:version) { should == 6 }
   its(:data) { should_not be_empty }
-  its(:order_id) { should be_an Integer }
+  its(:local_id) { should be_an Integer }
   its(:status) { should =~ /Submit/ }
   its(:to_human) { should =~
       /<OrderStatus: <OrderState: .*Submit.* #\d+\/\d+ from 1111 filled 0\/100/ }
 
   it 'has proper order_state accessor' do
     os = subject.order_state
-    os.order_id.should be_an Integer
+    os.local_id.should be_an Integer
     os.perm_id.should be_an Integer
     os.client_id.should == 1111
     os.parent_id.should == 0
@@ -39,7 +39,7 @@ describe IB::Messages::Incoming::OrderStatus do
     subject do
       IB::Messages::Incoming::OrderStatus.new :version => 6,
                                               :order_state =>
-                                                  {:order_id => 1313,
+                                                  {:local_id => 1313,
                                                    :perm_id => 172323928,
                                                    :client_id => 1111,
                                                    :parent_id => 0,

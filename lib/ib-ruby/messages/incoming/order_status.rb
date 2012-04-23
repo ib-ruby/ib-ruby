@@ -32,7 +32,7 @@ module IB
       #      order to be held. For example, when TWS is trying to locate shares for
       #      a short sell, the value used to indicate this is 'locate'.
       OrderStatus = def_message [3, 6],
-                                [:order_state, :order_id, :int],
+                                [:order_state, :local_id, :int],
                                 [:order_state, :status, :string],
                                 [:order_state, :filled, :int],
                                 [:order_state, :remaining, :int],
@@ -49,9 +49,11 @@ module IB
         end
 
         # Accessors to make OpenOrder and OrderStatus messages API-compatible
-        def order_id
-          order_state.order_id
+        def local_id
+          order_state.local_id
         end
+
+        alias order_id local_id
 
         def status
           order_state.status

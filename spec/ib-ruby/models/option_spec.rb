@@ -1,27 +1,17 @@
 require 'model_helper'
 
-describe IB::Models::Contracts::Option do # AKA IB::Option
+describe IB::Models::Option do # AKA IB::Option
 
   let(:props) do
     {:symbol => 'AAPL',
      :expiry => '201301',
-     :strike => 600,
+     :strike => 600.5,
      :right => :put,
     }
   end
 
   let(:human) do
-    "<Option: AAPL 201301 put 600 SMART >"
-  end
-
-  let(:defaults) do
-    {:sec_type => :option,
-     :con_id => 0,
-     :strike => 0,
-     :min_tick => 0,
-     :include_expired => false,
-     :created_at => Time,
-    }
+    "<Option: AAPL 201301 put 600.5 SMART >"
   end
 
   let(:errors) do
@@ -38,7 +28,7 @@ describe IB::Models::Contracts::Option do # AKA IB::Option
 
      :sec_type =>
          {['OPT', :option] => :option,
-          IB::CODES[:sec_type].reject { |k, v,| k == :option }.to_a =>
+          IB::CODES[:sec_type].reject { |k, _| k == :option }.to_a =>
               /should be an option/},
 
      :right =>
@@ -46,34 +36,22 @@ describe IB::Models::Contracts::Option do # AKA IB::Option
           ["CALL", "call", "C", "c", :call] => :call,
           ['', '0', '?', :none, :foo, 'BAR', 42] => /should be put or call/},
 
-     :exchange =>
-         {[:cboe, 'cboE', 'CBOE'] => 'CBOE',
-          [:smart, 'SMART', 'smArt'] => 'SMART'},
+     :exchange => string_upcase_assigns.merge(
+         [:smart, 'SMART', 'smArt'] => 'SMART'),
 
-     :primary_exchange =>
-         {[:cboe, 'cboE', 'CBOE'] => 'CBOE',
-          [:SMART, 'SMART'] => /should not be SMART/},
+     :primary_exchange =>string_upcase_assigns.merge(
+         [:SMART, 'SMART'] => /should not be SMART/),
 
-     :symbol =>
-         {['AAPL', :AAPL] => 'AAPL'},
+     :multiplier => to_i_assigns,
+
+     :symbol => string_assigns,
 
      :local_symbol =>
-         {['AAPL  130119C00500000', :'AAPL  130119C00500000'] =>
-              'AAPL  130119C00500000',
+         {['AAPL  130119C00500000', :'AAPL  130119C00500000'] => 'AAPL  130119C00500000',
           'BAR'=> /invalid OSI code/},
 
      :strike => {[0, -30.0] => /must be greater than 0/},
-
-     :multiplier => {['123', 123] => 123},
-
-     [:under_con_id, :min_tick, :coupon] => {123 => 123}
-
     }
-  end
-
-  context 'using shorter class name without properties' do
-    subject { IB::Models::Option.new }
-    it_behaves_like 'Model instantiated empty'
   end
 
   context 'using shortest class name without properties' do

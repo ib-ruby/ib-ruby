@@ -21,7 +21,7 @@ shared_examples_for 'Connected Connection without receiver' do
   its(:server) { should be_a Hash }
   its(:server) { should have_key :reader }
   its(:subscribers) { should have_at_least(1).item } # :NextValidId and empty Hashes
-  its(:next_order_id) { should be_a Fixnum } # Not before :NextValidId arrives
+  its(:next_local_id) { should be_a Fixnum } # Not before :NextValidId arrives
 end
 
 # Need top level method to access instance var (@received) in nested context
@@ -192,7 +192,7 @@ describe IB::Connection do
     its(:server) { should_not have_key :reader }
     its(:received) { should be_empty }
     its(:subscribers) { should be_empty }
-    its(:next_order_id) { should be_nil }
+    its(:next_local_id) { should be_nil }
 
     describe 'connecting idle conection' do
       before(:all) do
@@ -219,7 +219,7 @@ describe IB::Connection do
     its(:server) { should_not have_key :reader }
     its(:received) { should be_empty }
     its(:subscribers) { should be_empty }
-    its(:next_order_id) { should be_nil }
+    its(:next_local_id) { should be_nil }
 
     describe 'connecting idle conection' do
       before(:all) do

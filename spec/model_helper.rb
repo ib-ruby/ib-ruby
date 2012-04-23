@@ -1,7 +1,135 @@
 require 'spec_helper'
+require 'db_helper'
 
 def codes_and_values_for property
   Hash[IB::VALUES[property].map { |code, value| [[code, value], value] }]
+end
+
+def numeric_assigns
+  {1313 => 1313,
+   [:foo, 'BAR'] => /is not a number/,
+   nil => /is not a number/}
+end
+
+def numeric_or_nil_assigns
+  numeric_assigns.merge(nil => nil)
+end
+
+def to_i_assigns
+  {[1313, '1313'] => 1313,
+   ['foo', 'BAR', nil, '', 0] => 0, } # Symbols NOT coerced! They DO have int equivalent
+end
+
+def float_assigns
+  {13.13 => 13.13,
+   13 => 13.0,
+   nil => /is not a number/,
+   [:foo, 'BAR'] => /is not a number/}
+end
+
+def to_f_assigns
+  {13.13 => 13.13,
+   13 => 13.0,
+   [:foo, 'BAR', '', nil, 0] => 0.0}
+end
+
+def float_or_nil_assigns
+  float_assigns.merge(nil => nil)
+end
+
+def boolean_assigns
+  {[1, true, 't'] => true,
+   [0, false, 'f'] => false}
+end
+
+def string_assigns
+  {[:Bar, 'Bar'] => 'Bar',
+   [:foo, 'foo'] => 'foo'}
+end
+
+def string_upcase_assigns
+  {[:cboe, :Cboe, 'cboE', 'CBOE'] => 'CBOE',
+   [:bar, 'Bar'] => 'BAR',
+   [:foo, 'foo'] => 'FOO'}
+end
+
+def open_close_assigns
+  {['SAME', 'same', 'S', 's', :same, 0, '0'] => :same,
+   ['OPEN', 'open', 'O', 'o', :open, 1, '1'] => :open,
+   ['CLOSE', 'close', 'C', 'c', :close, 2, '2'] => :close,
+   ['UNKNOWN', 'unknown', 'U', 'u', :unknown, 3, '3'] => :unknown,
+   [42, nil, 'Foo', :bar] => /should be same.open.close.unknown/}
+end
+
+def buy_sell_assigns
+  {['BOT', 'BUY', 'Buy', 'buy', :BUY, :BOT, :Buy, :buy, 'B', :b] => :buy,
+   ['SELL', 'SLD', 'Sel', 'sell', :SELL, :SLD, :Sell, :sell, 'S', :S] => :sell,
+   [1, nil, 'ASK', :foo] => /should be buy.sell/
+  }
+end
+
+def buy_sell_short_assigns
+  buy_sell_assigns.merge(
+      ['SSHORT', 'Short', 'short', :SHORT, :short, 'T', :T] => :short,
+      ['SSHORTX', 'Shortextemt', 'shortx', :short_exempt, 'X', :X] => :short_exempt,
+      [1, nil, 'ASK', :foo] => /should be buy.sell.short/)
+end
+
+def test_assigns cases, prop, name
+
+  # For all test cases given as an Array [res1, res2] or Hash {val => res} ...
+  (cases.is_a?(Array) ? cases.map { |e| [e, e] } : cases).each do |values, result|
+    #p prop, cases
+
+    # For all values in this test case ...
+    [values].flatten.each do |value|
+      #p prop, name, value, result
+
+      # Assigning this value to a property results in ...
+      case result
+        when Exception # ... Exception
+          expect { subject.send "#{prop}=", value }.
+              to raise_error result
+
+        when Regexp # ... Non-exceptional error, making model invalid
+          expect { subject.send "#{prop}=", value }.to_not raise_error
+          subject.valid? # just triggers validation
+
+          #pp subject.errors.messages
+
+          subject.errors.messages.should have_key name
+          subject.should be_invalid
+          msg = subject.errors.messages[name].find { |msg| msg =~ result }
+          msg.should =~ result
+
+        else # ... correct uniform assignment to result
+
+          was_valid = subject.valid?
+          expect { subject.send "#{prop}=", value }.to_not raise_error
+          subject.send("#{prop}").should == result
+          if was_valid
+            # Assignment keeps validity
+            subject.errors.messages.should_not have_key name
+            subject.should be_valid
+          end
+
+          if name != prop # additional asserts for aliases
+
+            # Assignment to alias changes property as well
+            subject.send("#{name}").should == result
+
+            # Unsetting alias unsets property as well
+            subject.send "#{prop}=", nil # unset alias
+            subject.send("#{prop}").should be_blank #== nil
+            subject.send("#{name}").should be_blank #== nil
+
+            # Assignment to original property changes alias as well
+            subject.send "#{name}=", value
+            subject.send("#{prop}").should == result
+          end
+      end
+    end
+  end
 end
 
 shared_examples_for 'Model' do
@@ -18,7 +146,12 @@ shared_examples_for 'Model' do
 
 
     it 'has correct human-readeable format' do
-      subject.to_human.should == human
+      case human
+        when Regexp
+          subject.to_human.should =~ human
+        else
+          subject.to_human.should == human
+      end
     end
   end
 end
@@ -39,10 +172,11 @@ shared_examples_for 'Model instantiated empty' do
   it { should_not be_nil }
 
   it 'sets all properties to defaults' do
-    defined?(defaults) && defaults.each do |name, value|
+    subject.default_attributes.each do |name, value|
+      #p name, value
       case value
-        when Module, Class
-          subject.send(name).should be_a value
+        when Time
+          subject.send(name).should be_a Time
         else
           subject.send(name).should == value
       end
@@ -65,9 +199,6 @@ shared_examples_for 'Model instantiated with properties' do
 end
 
 shared_examples_for 'Model properties' do
-  context 'essential properties are still set, even if not given explicitely' do
-    its(:created_at) { should be_a Time }
-  end
 
   it 'allows setting properties' do
     expect {
@@ -80,82 +211,33 @@ shared_examples_for 'Model properties' do
 
   it 'sets values to properties as directed by its setters' do
     defined?(assigns) && assigns.each do |props, cases|
-      #p props, cases
-
       # For each given property ...
-      [props].flatten.each do |prop|
+      [props].flatten.each { |prop| test_assigns cases, prop, prop }
 
-        # For all test cases given as an Array [res1, res2] or Hash {val => res} ...
-        (cases.is_a?(Array) ? cases.map { |e| [e, e] } : cases).each do |values, result|
-
-          # For all values in this test case ...
-          [values].flatten.each do |value|
-
-            # Assigning this value to property results in ...
-            case result
-              when Exception # ... Exception
-                expect { subject.send "#{prop}=", value }.
-                    to raise_error result
-
-              when Regexp # ... Non-exceptional error, making model invalid
-                expect { subject.send "#{prop}=", value }.to_not raise_error
-                subject.should be_invalid
-
-                #pp subject.errors.messages
-                #p value, result
-
-                subject.errors.messages[prop].should_not be_nil
-                msg = subject.errors.messages[prop].find { |msg| msg =~ result }
-                msg.should =~ result
-
-              else # ... correct uniform assignment to result
-
-                was_valid = subject.valid?
-                expect { subject.send "#{prop}=", value }.to_not raise_error
-                subject.send("#{prop}").should == result
-
-                was_valid && (subject.should be_valid) # assignment keeps validity
-            end
-          end
-        end
-      end
     end
   end
 
+  it 'sets values to to aliased properties as well' do
+    defined?(aliases) && aliases.each do |alinames, cases|
+      name, aliases = *alinames
+      # For each original property or alias...
+      [name, aliases].flatten.each { |prop| test_assigns cases, prop, name }
+    end
+  end
 end
 
 shared_examples_for 'Valid Model' do
+
   it 'validates' do
-    #subject.valid?
-    #pp subject.errors.messages
     subject.should be_valid
     subject.errors.should be_empty
   end
 
-  context 'with DB backend', :db => true do
-    after(:all) do
-      #DatabaseCleaner.clean
-    end
-
-    it 'is saved' do
-      subject.save.should be_true
-    end
-
-    it 'is loaded just right' do
-      models = described_class.find(:all)
-      model = models.first
-      #pp model
-      models.should have_exactly(1).model
-      model.should == subject
-      model.should be_valid
-      props.each do |name, value|
-        model.send(name).should == value
-      end
-    end
-  end # DB
+  it_behaves_like 'Valid DB-backed Model'
 end
 
 shared_examples_for 'Invalid Model' do
+
   it 'does not validate' do
     subject.should_not be_valid
     subject.should be_invalid
@@ -163,27 +245,10 @@ shared_examples_for 'Invalid Model' do
     subject.errors.messages.should == errors if defined? errors
   end
 
-  context 'with DB backend', :db => true do
-    after(:all) do
-      #DatabaseCleaner.clean
-    end
-
-    it 'is not saved' do
-      subject.save.should be_false
-    end
-
-    it 'is not loaded' do
-      models = described_class.find(:all)
-      models.should have_exactly(0).model
-    end
-  end # DB
+  it_behaves_like 'Invalid DB-backed Model'
 end
 
 shared_examples_for 'Contract' do
-  it 'summary points to itself (ContractDetails artifact' do
-    subject.summary.should == subject
-  end
-
   it 'becomes invalid if assigned wrong :sec_type property' do
     subject.sec_type = 'FOO'
     subject.should be_invalid

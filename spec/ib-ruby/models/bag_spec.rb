@@ -1,6 +1,6 @@
 require 'model_helper'
 
-describe IB::Models::Contracts::Bag do # AKA IB::Bag
+describe IB::Models::Bag do # AKA IB::Bag
 
   let(:props) do
     {:symbol => 'GOOG',
@@ -16,16 +16,6 @@ describe IB::Models::Contracts::Bag do # AKA IB::Bag
     "<Bag: GOOG SMART USD legs: 81032967|1,81032968|-2,81032973|1 >"
   end
 
-  let(:defaults) do
-    {:sec_type => :bag,
-     :con_id => 0,
-     :strike => 0,
-     :min_tick => 0,
-     :include_expired => false,
-     :created_at => Time,
-    }
-  end
-
   let(:errors) do
     {:legs => ["legs cannot be empty"],
     }
@@ -39,7 +29,7 @@ describe IB::Models::Contracts::Bag do # AKA IB::Bag
 
      :sec_type =>
          {['BAG', :bag] => :bag,
-          IB::CODES[:sec_type].reject { |k, v,| k == :bag }.to_a =>
+          IB::CODES[:sec_type].reject { |k, _| k == :bag }.to_a =>
               /should be a bag/},
 
      :right =>
@@ -47,21 +37,23 @@ describe IB::Models::Contracts::Bag do # AKA IB::Bag
           ["PUT", :put, "CALL", "C", :call, :foo, 'BAR', 42] =>
               /should be none/},
 
-     :exchange =>
-         {[:cboe, 'cboE', 'CBOE'] => 'CBOE',
-          [:smart, 'SMART', 'smArt'] => 'SMART'},
+     :exchange => string_upcase_assigns.merge(
+         [:smart, 'SMART', 'smArt'] => 'SMART'),
 
-     :primary_exchange =>
-         {[:cboe, 'cboE', 'CBOE'] => 'CBOE',
-          [:SMART, 'SMART'] => /should not be SMART/},
+     :primary_exchange =>string_upcase_assigns.merge(
+         [:SMART, 'SMART'] => /should not be SMART/),
 
-     [:symbol, :local_symbol] =>
-         {['AAPL', :AAPL] => 'AAPL'},
+     [:symbol, :local_symbol] => string_assigns,
 
-     :multiplier => {['123', 123] => 123},
-
-     [:under_con_id, :min_tick, :coupon] => {123 => 123}
+     :multiplier => to_i_assigns,
     }
+  end
+
+  it 'does not allow empty legs' do
+    bag = IB::Bag.new props
+    bag.legs = []
+    bag.should be_invalid
+    bag.errors.messages[:legs].should include "legs cannot be empty"
   end
 
   context 'using shortest class name without properties' do

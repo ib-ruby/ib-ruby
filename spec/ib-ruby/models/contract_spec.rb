@@ -1,13 +1,13 @@
 require 'model_helper'
 require 'combo_helper'
 
-describe IB::Models::Contracts::Contract do # AKA IB::Contract
+describe IB::Models::Contract do # AKA IB::Contract
 
   let(:props) do
     {:symbol => 'AAPL',
      :sec_type => :option,
      :expiry => '201301',
-     :strike => 600,
+     :strike => 600.5,
      :right => :put,
      :multiplier => 10,
      :exchange => 'SMART',
@@ -16,21 +16,7 @@ describe IB::Models::Contracts::Contract do # AKA IB::Contract
   end
 
   let(:human) do
-    "<Contract: AAPL option 201301 put 600 SMART USD>"
-  end
-
-  let(:defaults) do
-    {:con_id => 0,
-     :strike => 0,
-     :min_tick => 0,
-     :coupon => 0,
-     :callable => false,
-     :puttable => false,
-     :convertible => false,
-     :next_option_partial => false,
-     :include_expired => false,
-     :created_at => Time,
-    }
+    "<Contract: AAPL option 201301 put 600.5 SMART USD>"
   end
 
   let(:errors) do
@@ -47,26 +33,31 @@ describe IB::Models::Contracts::Contract do # AKA IB::Contract
      :sec_type => codes_and_values_for(:sec_type).
          merge([:foo, 'BAR', 42] => /should be valid security type/),
 
+     :sec_id_type =>
+         {[:isin, 'ISIN', 'iSin'] => 'ISIN',
+          [:sedol, :SEDOL, 'sEDoL', 'SEDOL'] => 'SEDOL',
+          [:cusip, :CUSIP, 'Cusip', 'CUSIP'] => 'CUSIP',
+          [:ric, :RIC, 'rIC', 'RIC'] => 'RIC',
+          [nil, ''] => '',
+          [:foo, 'BAR', 'baz'] => /should be valid security identifier/},
+
      :right =>
          {["PUT", "put", "P", "p", :put] => :put,
           ["CALL", "call", "C", "c", :call] => :call,
           ['', '0', '?', :none] => :none,
           [:foo, 'BAR', 42] => /should be put, call or none/},
 
-     :exchange =>
-         {[:cboe, 'cboE', 'CBOE'] => 'CBOE',
-          [:smart, 'SMART', 'smArt'] => 'SMART'},
+     :exchange => string_upcase_assigns.merge(
+         [:smart, 'SMART', 'smArt'] => 'SMART'),
 
-     :primary_exchange =>
-         {[:cboe, 'cboE', 'CBOE'] => 'CBOE',
-          [:SMART, 'SMART'] => /should not be SMART/},
+     :primary_exchange =>string_upcase_assigns.merge(
+         [:SMART, 'SMART'] => /should not be SMART/),
 
-     :multiplier => {['123', 123] => 123},
+     :multiplier => to_i_assigns,
 
-     [:under_con_id, :min_tick, :coupon] => {123 => 123},
+     :strike => to_f_assigns,
 
-     [:callable, :puttable, :convertible, :next_option_partial] =>
-         {[1, true] => true, [0, false] => false},
+     :include_expired => boolean_assigns,
     }
   end
 
@@ -123,13 +114,6 @@ describe IB::Models::Contracts::Contract do # AKA IB::Contract
 
   end
 
-  context 'using shorter class name without properties' do
-    subject { IB::Models::Contract.new }
-    it_behaves_like 'Model instantiated empty'
-    it_behaves_like 'Self-equal Model'
-    it_behaves_like 'Contract'
-  end
-
   context 'using shortest class name without properties' do
     subject { IB::Contract.new }
     it_behaves_like 'Model instantiated empty'
@@ -149,17 +133,17 @@ describe IB::Models::Contracts::Contract do # AKA IB::Contract
 
     it "serializes long" do
       subject.serialize_long.should ==
-          ["AAPL", "OPT", "201301", 600, "P", 10, "SMART", nil, "USD", "AAPL  130119C00500000"]
+          ["AAPL", "OPT", "201301", 600.5, "P", 10, "SMART", "", "USD", "AAPL  130119C00500000"]
     end
 
     it "serializes short" do
       subject.serialize_short.should ==
-          ["AAPL", "OPT", "201301", 600, "P", 10, "SMART", "USD", "AAPL  130119C00500000"]
+          ["AAPL", "OPT", "201301", 600.5, "P", 10, "SMART", "USD", "AAPL  130119C00500000"]
     end
 
     it "serializes combo (BAG) contracts for Order placement" do
       @combo.serialize_long(:con_id, :sec_id).should ==
-          [0, "GOOG", "BAG", nil, 0.0, "", nil, "SMART", nil, "USD", nil, nil, nil]
+          [0, "GOOG", "BAG", "", 0.0, "", nil, "SMART", "", "USD", "", "", nil]
     end
 
     it 'also serializes attached combo legs' do
@@ -178,3 +162,7 @@ describe IB::Models::Contracts::Contract do # AKA IB::Contract
 
 
 end # describe IB::Contract
+
+__END__
+IB::Models::ContractDetail id: nil, contract_id: nil, market_name: "AAPL", trading_class: "AAPL", min_tick: 0.01, price_magnifier: 1, order_types: "ACTIVETIM,ADJUST,ALERT,ALGO,ALLOC,AON,AVGCOST,BASKE...", valid_exchanges: "SMART,AMEX,BATS,BOX,CBOE,CBOE2,IBSX,ISE,MIBSX,NASDA...", under_con_id: 265598, long_name: "APPLE INC", contract_month: "201301", industry: "Technology", category: "Computers", subcategory: "Computers", time_zone: "EST", trading_hours: "20120422:0930-1600;20120423:0930-1600", liquid_hours: "20120422:0930-1600;20120423:0930-1600", cusip: nil, ratings: nil, desc_append: nil, bond_type: nil, coupon_type: nil, coupon: 0.0, maturity: nil, issue_date: nil, next_option_date: nil, next_option_type: nil, notes: nil, callable: false, puttable: false, convertible: false, next_option_partial: false, created_at: "2012-04-23 13:58:05", updated_at: "2012-04-23 13:58:05"
+IB::Models::ContractDetail id: nil, contract_id: nil, market_name: "AAPL", trading_class: "AAPL", min_tick: 0.01, price_magnifier: 1, order_types: "ACTIVETIM,ADJUST,ALERT,ALGO,ALLOC,AON,AVGCOST,BASKE...", valid_exchanges: "SMART,AMEX,BATS,BOX,CBOE,CBOE2,IBSX,ISE,MIBSX,NASDA...", under_con_id: 265598, long_name: "APPLE INC", contract_month: "201301", industry: "Technology", category: "Computers", subcategory: "Computers", time_zone: "EST", trading_hours: "20120422:0930-1600;20120423:0930-1600", liquid_hours: "20120422:0930-1600;20120423:0930-1600", cusip: nil, ratings: nil, desc_append: nil, bond_type: nil, coupon_type: nil, coupon: 0.0, maturity: nil, issue_date: nil, next_option_date: nil, next_option_type: nil, notes: nil, callable: false, puttable: false, convertible: false, next_option_partial: false, created_at: "2012-04-23 13:58:04", updated_at: "2012-04-23 13:58:04">

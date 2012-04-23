@@ -1,17 +1,18 @@
 # DB configuration file
 
-# Test stand configurations
+# Test stand configurations (JRuby)
 test: &test
-  :adapter:     sqlite3
+  :adapter:     jdbcsqlite3
   :database:    db/test.sqlite3
   :pool:        5
   :timeout:     5000
 
-test-jruby:
+# Test stand configurations (MRI)
+test-mri:
   <<: *test
-  :adapter:     jdbcsqlite3
+  :adapter:     sqlite3
 
-# Battle configurations
+# Battle configurations (JRuby)
 prod:
   <<: *test
   :database:      db/prod.sqlite3

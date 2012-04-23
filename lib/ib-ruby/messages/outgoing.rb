@@ -45,7 +45,7 @@ module IB
       CancelCalculateImpliedVolatility = CancelImpliedVolatility = def_message(56)
       CancelCalculateOptionPrice = CancelOptionPrice = def_message(57)
 
-      ## Data format is: @data ={ :id => order_id to cancel }
+      ## Data format is: @data ={ :id => local_id of order to cancel }
       CancelOrder = def_message 4
 
       ## These messages contain just one or two extra fields:

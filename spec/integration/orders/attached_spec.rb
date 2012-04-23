@@ -61,10 +61,10 @@ describe 'Attached Orders', :connected => true, :integration => true do
                                           :side => :sell,
                                           :tif => tif,
                                           :order_type => attach_type,
-                                          :parent_id => @order_id_placed
+                                          :parent_id => @local_id_placed
 
-          @order_id_attached = @ib.place_order @attached_order, @contract
-          @order_id_after = @ib.next_order_id
+          @local_id_attached = @ib.place_order @attached_order, @contract
+          @local_id_after = @ib.next_local_id
           @ib.wait_for [:OpenOrder, 3], [:OrderStatus, 3], 4
         end
 

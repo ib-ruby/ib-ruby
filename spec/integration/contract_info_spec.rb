@@ -16,6 +16,8 @@ describe "Request Contract Info", :connected => true, :integration => true do
       @contract = IB::Contract.new :symbol => 'AAPL', :sec_type => :stock
       @ib.send_message :RequestContractData, :id => 111, :contract => @contract
       @ib.wait_for :ContractDataEnd, 3 # sec
+      # java: 15:33:16:159 <- 9-6-111-0-AAPL-STK--0.0---     ---0-- -
+      # ruby: 15:36:15:736 <- 9-6-111-0-AAPL-STK--0.0---SMART--- --0-
     end
 
     after(:all) { clean_connection } # Clear logs and message collector
@@ -34,24 +36,26 @@ describe "Request Contract Info", :connected => true, :integration => true do
 
       @ib.received[:ContractData].each do |msg|
         contract = msg.contract
-        contract.symbol.should == 'AAPL'
+        detail = msg.contract_detail
 
+        contract.symbol.should == 'AAPL'
         contract.local_symbol.should =~ /AAPL|APC/
-        contract.market_name.should =~ /NMS|USSTARS/
-        contract.trading_class.should =~ /NMS|USSTARS/
-        contract.long_name.should == 'APPLE INC'
-        contract.industry.should == 'Technology'
-        contract.category.should == 'Computers'
-        contract.subcategory.should == 'Computers'
-        contract.exchange.should == 'SMART'
         contract.con_id.should be_an Integer
-        contract.trading_hours.should =~ /\d{8}:\d{4}-\d{4}/
-        contract.liquid_hours.should =~ /\d{8}:\d{4}-\d{4}/
-        contract.valid_exchanges.should =~ /ISLAND|IBIS/
-        contract.order_types.should be_a String
-        contract.price_magnifier.should == 1
-        contract.min_tick.should be <= 0.01
         contract.expiry.should == ''
+        contract.exchange.should == 'SMART'
+
+        detail.market_name.should =~ /NMS|USSTARS/
+        detail.trading_class.should =~ /NMS|USSTARS/
+        detail.long_name.should == 'APPLE INC'
+        detail.industry.should == 'Technology'
+        detail.category.should == 'Computers'
+        detail.subcategory.should == 'Computers'
+        detail.trading_hours.should =~ /\d{8}:\d{4}-\d{4}/
+        detail.liquid_hours.should =~ /\d{8}:\d{4}-\d{4}/
+        detail.valid_exchanges.should =~ /ISLAND|IBIS/
+        detail.order_types.should be_a String
+        detail.price_magnifier.should == 1
+        detail.min_tick.should be <= 0.01
       end
     end
   end # Stock
@@ -60,9 +64,9 @@ describe "Request Contract Info", :connected => true, :integration => true do
 
     before(:all) do
       @contract = IB::Option.new :symbol => "AAPL", :expiry => "201301",
-                                 :right => "CALL", :strike => 500
+                                 :right => :call, :strike => 500
       @ib.send_message :RequestContractData, :id => 123, :contract => @contract
-      @ib.wait_for :ContractDataEnd, 3 # sec
+      @ib.wait_for :ContractDataEnd, 5 # sec
     end
 
     after(:all) { clean_connection } # Clear logs and message collector
@@ -79,24 +83,26 @@ describe "Request Contract Info", :connected => true, :integration => true do
 
     it 'receives Contract Data with extended fields' do
       contract = subject.contract
-      contract.symbol.should == 'AAPL'
+      detail = subject.contract_detail
 
+      contract.symbol.should == 'AAPL'
       contract.local_symbol.should == 'AAPL  130119C00500000'
-      contract.market_name.should == 'AAPL'
-      contract.trading_class.should == 'AAPL'
-      contract.long_name.should == 'APPLE INC'
-      contract.industry.should == 'Technology'
-      contract.category.should == 'Computers'
-      contract.subcategory.should == 'Computers'
       contract.expiry.should == '20130118'
       contract.exchange.should == 'SMART'
       contract.con_id.should be_an Integer
-      contract.trading_hours.should =~ /\d{8}:\d{4}-\d{4}/
-      contract.liquid_hours.should =~ /\d{8}:\d{4}-\d{4}/
-      contract.valid_exchanges.should =~ /CBOE/
-      contract.order_types.should be_a String
-      contract.price_magnifier.should == 1
-      contract.min_tick.should == 0.01
+
+      detail.market_name.should == 'AAPL'
+      detail.trading_class.should == 'AAPL'
+      detail.long_name.should == 'APPLE INC'
+      detail.industry.should == 'Technology'
+      detail.category.should == 'Computers'
+      detail.subcategory.should == 'Computers'
+      detail.trading_hours.should =~ /\d{8}:\d{4}-\d{4}/
+      detail.liquid_hours.should =~ /\d{8}:\d{4}-\d{4}/
+      detail.valid_exchanges.should =~ /CBOE/
+      detail.order_types.should be_a String
+      detail.price_magnifier.should == 1
+      detail.min_tick.should == 0.01
     end
   end # Request Option data
 
@@ -125,24 +131,26 @@ describe "Request Contract Info", :connected => true, :integration => true do
 
     it 'receives Contract Data with extended fields' do
       contract = subject.contract
-      contract.symbol.should == 'EUR'
+      detail = subject.contract_detail
 
+      contract.symbol.should == 'EUR'
       contract.local_symbol.should == 'EUR.USD'
-      contract.market_name.should == 'EUR.USD'
-      contract.trading_class.should == 'EUR.USD'
-      contract.long_name.should == 'European Monetary Union euro'
-      contract.industry.should == ''
-      contract.category.should == ''
-      contract.subcategory.should == ''
       contract.expiry.should == ''
       contract.exchange.should == 'IDEALPRO'
       contract.con_id.should be_an Integer
-      contract.trading_hours.should =~ /\d{8}:\d{4}-\d{4}/
-      contract.liquid_hours.should =~ /\d{8}:\d{4}-\d{4}/
-      contract.valid_exchanges.should =~ /IDEALPRO/
-      contract.order_types.should be_a String
-      contract.price_magnifier.should == 1
-      contract.min_tick.should be <= 0.0001
+
+      detail.market_name.should == 'EUR.USD'
+      detail.trading_class.should == 'EUR.USD'
+      detail.long_name.should == 'European Monetary Union euro'
+      detail.industry.should == ''
+      detail.category.should == ''
+      detail.subcategory.should == ''
+      detail.trading_hours.should =~ /\d{8}:\d{4}-\d{4}/
+      detail.liquid_hours.should =~ /\d{8}:\d{4}-\d{4}/
+      detail.valid_exchanges.should =~ /IDEALPRO/
+      detail.order_types.should be_a String
+      detail.price_magnifier.should == 1
+      detail.min_tick.should be <= 0.0001
     end
   end # Request Forex data
 
@@ -168,24 +176,26 @@ describe "Request Contract Info", :connected => true, :integration => true do
 
     it 'receives Contract Data with extended fields' do
       contract = subject.contract
-      contract.symbol.should == 'YM'
+      detail = subject.contract_detail
 
+      contract.symbol.should == 'YM'
       contract.local_symbol.should =~ /YM/
-      contract.market_name.should == 'YM'
-      contract.trading_class.should == 'YM'
-      contract.long_name.should == 'Mini Sized Dow Jones Industrial Average $5'
-      contract.industry.should == ''
-      contract.category.should == ''
-      contract.subcategory.should == ''
       contract.expiry.should =~ Regexp.new(IB::Symbols.next_expiry)
       contract.exchange.should == 'ECBOT'
       contract.con_id.should be_an Integer
-      contract.trading_hours.should =~ /\d{8}:\d{4}-\d{4}/
-      contract.liquid_hours.should =~ /\d{8}:\d{4}-\d{4}/
-      contract.valid_exchanges.should =~ /ECBOT/
-      contract.order_types.should be_a String
-      contract.price_magnifier.should == 1
-      contract.min_tick.should == 1
+
+      detail.market_name.should == 'YM'
+      detail.trading_class.should == 'YM'
+      detail.long_name.should == 'Mini Sized Dow Jones Industrial Average $5'
+      detail.industry.should == ''
+      detail.category.should == ''
+      detail.subcategory.should == ''
+      detail.trading_hours.should =~ /\d{8}:\d{4}-\d{4}/
+      detail.liquid_hours.should =~ /\d{8}:\d{4}-\d{4}/
+      detail.valid_exchanges.should =~ /ECBOT/
+      detail.order_types.should be_a String
+      detail.price_magnifier.should == 1
+      detail.min_tick.should == 1
     end
   end # Request Forex data
 end # Contract Data

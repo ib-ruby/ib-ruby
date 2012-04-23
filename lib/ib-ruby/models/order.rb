@@ -12,10 +12,10 @@ module IB
       # your own Order IDs to avoid conflicts between orders placed from your API application.
 
       # Main order fields
-      prop :order_id, #  int: Order id associated with client (volatile).
+      prop [:local_id, :order_id], #  int: Order id associated with client (volatile).
            :client_id, # int: The id of the client that placed this order.
            :perm_id, #   int: TWS permanent id, remains the same over TWS sessions.
-           :total_quantity, # int: The order quantity.
+           [:quantity, :total_quantity], # int: The order quantity.
 
            :order_type, #  String: Order type.
            # Limit Risk: MTL / MKT PRT / QUOTE / STP / STP LMT / TRAIL / TRAIL LIMIT /  TRAIL LIT / TRAIL MIT
@@ -213,9 +213,40 @@ module IB
            # for ComboLeg compatibility: SAME = 0; OPEN = 1; CLOSE = 2; UNKNOWN = 3;
            [:side, :action] => PROPS[:side] # String: Action/side: BUY/SELL/SSHORT/SSHORTX
 
-      # Some properties received from IB are separated into OrderState object,
-      # but they are still readable as Order properties through delegation.
+      prop :placed_at, :modified_at
+
+      # TODO: restore!
+      ## Returned in OpenOrder for Bag Contracts
+      ## public Vector<OrderComboLeg> m_orderComboLegs
+      #prop :algo_params, :leg_prices, :combo_params
       #
+      #alias order_combo_legs leg_prices
+      #alias smart_combo_routing_params combo_params
+      #
+      ##serialize :algo_params
+      ##serialize :leg_prices
+      ##serialize :combo_params
+
+      has_many :executions
+
+      # Order has a collection of OrderStates, last one is always current
+      has_many :order_states
+
+      def order_state
+        order_states.last
+      end
+
+      def order_state= state
+        self.order_states.push case state
+                               when IB::OrderState
+                                 state
+                               when Symbol, String
+                                 IB::OrderState.new :status => state
+                               end
+      end
+
+      # Some properties received from IB are separated into OrderState object,
+      # but they are still readable as Order properties through delegation:
       # Properties arriving via OpenOrder message:
       [:commission, # double: Shows the commission amount on the order.
        :commission_currency, # String: Shows the currency of the commission.
@@ -229,63 +260,52 @@ module IB
        # Properties arriving via OrderStatus message:
        :filled, #    int
        :remaining, # int
-       :average_fill_price, # double
+       :price, #    double
        :last_fill_price, #    double
+       :average_price, # double
+       :average_fill_price, # double
        :why_held # String: comma-separated list of reasons for order to be held.
       ].each { |property| define_method(property) { order_state.send(property) } }
 
-      # Returned in OpenOrder for Bag Contracts
-      # public Vector<OrderComboLeg> m_orderComboLegs
-      attr_accessor :leg_prices, :combo_params, :order_state
-      alias order_combo_legs leg_prices
-      alias smart_combo_routing_params combo_params
+      # Order is not valid without correct :local_id (:order_id)
+      validates_numericality_of :local_id, :perm_id, :client_id, :parent_id,
+                                :quantity, :min_quantity, :display_size,
+                                :only_integer => true, :allow_nil => true
 
-      # TODO: :created_at, :placed_at, :modified_at accessors
+      validates_numericality_of :limit_price, :aux_price, :allow_nil => true
 
-      # Order is not valid without correct :order_id
-      validates_numericality_of :order_id, :only_integer => true
 
-      DEFAULT_PROPS = {:aux_price => 0.0,
-                       :discretionary_amount => 0.0,
-                       :parent_id => 0,
-                       :tif => :day,
-                       :order_type => :limit,
-                       :open_close => :open,
-                       :origin => :customer,
-                       :short_sale_slot => :default,
-                       :trigger_method => :default,
-                       :oca_type => :none,
-                       :auction_strategy => :none,
-                       :designated_location => '',
-                       :exempt_code => -1,
-                       :display_size => 0,
-                       :continuous_update => 0,
-                       :delta_neutral_con_id => 0,
-                       :algo_strategy => '',
-                       # TODO: Add simple defaults to prop ?
-                       :transmit => true,
-                       :what_if => false,
-                       :hidden => false,
-                       :etrade_only => false,
-                       :firm_quote_only => false,
-                       :block_order => false,
-                       :all_or_none => false,
-                       :sweep_to_fill => false,
-                       :not_held => false,
-                       :outside_rth => false,
-                       :scale_auto_reset => false,
-                       :scale_random_percent => false,
-                       :opt_out_smart_routing => false,
-                       :override_percentage_constraints => false,
-      }
-
-      def initialize opts = {}
-        @leg_prices = []
-        @algo_params = {}
-        @combo_params = {}
-        @order_state = IB::OrderState.new
-        super opts
+      def default_attributes
+        {:aux_price => 0.0,
+         :discretionary_amount => 0.0,
+         :parent_id => 0,
+         :tif => :day,
+         :order_type => :limit,
+         :open_close => :open,
+         :origin => :customer,
+         :short_sale_slot => :default,
+         :trigger_method => :default,
+         :oca_type => :none,
+         :auction_strategy => :none,
+         :designated_location => '',
+         :exempt_code => -1,
+         :display_size => 0,
+         :continuous_update => 0,
+         :delta_neutral_con_id => 0,
+         :algo_strategy => '',
+         :transmit => true,
+         :what_if => false,
+         :order_state => IB::OrderState.new(:status => 'New'),
+         # TODO: Add simple defaults to prop ?
+        }.merge super
       end
+
+      #after_initialize do #opts = {}
+      #                    #self.leg_prices = []
+      #                    #self.algo_params = {}
+      #                    #self.combo_params = {}
+      #                    #self.order_state ||= IB::OrderState.new :status => 'New'
+      #end
 
       # This returns an Array of data from the given order,
       # mixed with data from associated contract. Ugly mix, indeed.
@@ -293,14 +313,14 @@ module IB
         [contract.serialize_long(:con_id, :sec_id),
          # main order fields
          case side
-           when :short
-             'SSHORT'
-           when :short_exempt
-             'SSHORTX'
-           else
-             side.to_sup
+         when :short
+           'SSHORT'
+         when :short_exempt
+           'SSHORTX'
+         else
+           side.to_sup
          end,
-         total_quantity,
+         quantity,
          self[:order_type], # Internal code, 'LMT' instead of :limit
          limit_price,
          aux_price,
@@ -312,12 +332,12 @@ module IB
          order_ref,
          transmit,
          parent_id,
-         block_order,
-         sweep_to_fill,
+         block_order || false,
+         sweep_to_fill || false,
          display_size,
          self[:trigger_method],
-         outside_rth, # was: ignore_rth
-         hidden,
+         outside_rth || false, # was: ignore_rth
+         hidden || false,
          contract.serialize_legs(:extended),
 
          # This is specific to PlaceOrder v.38, NOT supported by API yet!
@@ -351,11 +371,11 @@ module IB
          self[:oca_type],
          rule_80a,
          settling_firm,
-         all_or_none,
+         all_or_none || false,
          min_quantity,
          percent_offset,
-         etrade_only,
-         firm_quote_only,
+         etrade_only || false,
+         firm_quote_only || false,
          nbbo_price_cap,
          self[:auction_strategy],
          starting_price,
@@ -363,7 +383,7 @@ module IB
          delta,
          stock_range_lower,
          stock_range_upper,
-         override_percentage_constraints,
+         override_percentage_constraints || false,
          volatility, #                      Volatility orders
          self[:volatility_type], #
          self[:delta_neutral_order_type],
@@ -398,28 +418,26 @@ module IB
            [scale_price_adjust_value,
             scale_price_adjust_interval,
             scale_profit_offset,
-            scale_auto_reset,
+            scale_auto_reset || false,
             scale_init_position,
             scale_init_fill_qty,
-            scale_random_percent
+            scale_random_percent || false
            ]
          else
            []
          end,
 
          # TODO: Need to add support for hedgeType, not working ATM - beta only
-         #if (m_serverVersion >= MIN_SERVER_VER_HEDGE_ORDERS) {
+         # if (m_serverVersion >= MIN_SERVER_VER_HEDGE_ORDERS) {
          #    send (order.m_hedgeType);
-         #    if (!IsEmpty(order.m_hedgeType)) send (order.m_hedgeParam);
-         #}
+         #    if (!IsEmpty(order.m_hedgeType)) send (order.m_hedgeParam); }
          #
-         #if (m_serverVersion >= MIN_SERVER_VER_OPT_OUT_SMART_ROUTING) {
-         #    send (order.m_optOutSmartRouting);
-         #}
+         # if (m_serverVersion >= MIN_SERVER_VER_OPT_OUT_SMART_ROUTING) {
+         #    send (order.m_optOutSmartRouting) ; || false }
 
          clearing_account,
          clearing_intent,
-         not_held,
+         not_held || false,
          contract.serialize_under_comp,
          serialize_algo(),
          what_if]
@@ -435,25 +453,43 @@ module IB
         end
       end
 
+      # Placement
+      def place contract, connection
+        error "Unable to place order, next_local_id not known" unless connection.next_local_id
+        self.client_id = connection.server[:client_id]
+        self.local_id = connection.next_local_id
+        connection.next_local_id += 1
+        self.placed_at = Time.now
+        modify contract, connection, self.placed_at
+      end
+
+      # Modify Order (convenience wrapper for send_message :PlaceOrder). Returns order_id.
+      def modify contract, connection, time=Time.now
+        self.modified_at = time
+        connection.send_message :PlaceOrder,
+                                :order => self,
+                                :contract => contract,
+                                :local_id => local_id
+        local_id
+      end
+
       # Order comparison
       def == other
         perm_id && other.perm_id && perm_id == other.perm_id ||
-            order_id == other.order_id && # ((p __LINE__)||true) &&
+            local_id == other.local_id && # ((p __LINE__)||true) &&
                 (client_id == other.client_id || client_id == 0 || other.client_id == 0) &&
                 parent_id == other.parent_id &&
                 tif == other.tif &&
                 action == other.action &&
                 order_type == other.order_type &&
-                total_quantity == other.total_quantity &&
+                quantity == other.quantity &&
                 (limit_price == other.limit_price || # TODO Floats should be Decimals!
                     (limit_price - other.limit_price).abs < 0.00001) &&
                 aux_price == other.aux_price &&
-                outside_rth == other.outside_rth &&
                 origin == other.origin &&
                 designated_location == other.designated_location &&
                 exempt_code == other.exempt_code &&
                 what_if == other.what_if &&
-                not_held == other.not_held &&
                 algo_strategy == other.algo_strategy &&
                 algo_params == other.algo_params
 
@@ -469,10 +505,10 @@ module IB
 
       def to_human
         "<Order: " + ((order_ref && order_ref != '') ? "#{order_ref} " : '') +
-            "#{self[:order_type]} #{self[:tif]} #{side} #{total_quantity} " +
+            "#{self[:order_type]} #{self[:tif]} #{side} #{quantity} " +
             "#{status} " + (limit_price ? "#{limit_price} " : '') +
             ((aux_price && aux_price != 0) ? "/#{aux_price}" : '') +
-            "##{order_id}/#{perm_id} from #{client_id}" +
+            "##{local_id}/#{perm_id} from #{client_id}" +
             (account ? "/#{account}" : '') +
             (commission ? " fee #{commission}" : '') + ">"
       end
