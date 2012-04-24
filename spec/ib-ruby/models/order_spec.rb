@@ -117,7 +117,30 @@ describe IB::Models::Order do
 
     it 'has extra accessors to OrderState properties' do
       subject.order_state.should_not be_nil
+
       subject.status.should == 'New'
+      subject.commission.should be_nil
+      subject.commission_currency.should be_nil
+      subject.min_commission.should be_nil
+      subject.max_commission.should be_nil
+      subject.warning_text.should be_nil
+      subject.init_margin.should be_nil
+      subject.maint_margin.should be_nil
+      subject.equity_with_loan.should be_nil
+      # Properties arriving via OrderStatus messagesubject.
+      subject.filled.should be_nil
+      subject.remaining.should be_nil
+      subject.price.should be_nil
+      subject.last_fill_price.should be_nil
+      subject.average_price.should be_nil
+      subject.average_fill_price.should be_nil
+      subject.why_held.should be_nil
+      # Testing Order statesubject.
+      subject.should be_new
+      subject.should_not be_pending
+      subject.should be_active
+      subject.should_not be_inactive
+      subject.should_not be_complete_fill
     end
 
     context 'update Order state by ' do

@@ -38,7 +38,7 @@ describe IB::Models::OrderState do
   let(:assigns) do
     {[:status] =>
          {[nil, ''] => /must not be empty/,
-          ['Zorro', :Zorro] => 'Zorro' }
+          ['Zorro', :Zorro] => 'Zorro'}
     }
   end
 
@@ -51,5 +51,65 @@ describe IB::Models::OrderState do
 
   it_behaves_like 'Model'
   it_behaves_like 'Self-equal Model'
+
+  context '#update_missing' do
+    context 'updating with Hash' do
+
+      subject { IB::OrderState.new.update_missing(props) }
+
+      it_behaves_like 'Model instantiated with properties'
+
+    end
+
+    context 'updating with Model' do
+
+      subject { IB::OrderState.new.update_missing(IB::OrderState.new(props)) }
+
+      it_behaves_like 'Model instantiated with properties'
+
+    end
+
+  end
+
+  it 'has extra test methods' do
+    empty_state = IB::OrderState.new
+    empty_state.should be_new
+    empty_state.should be_active
+    empty_state.should_not be_inactive
+    empty_state.should_not be_complete_fill
+
+    state = IB::OrderState.new(props)
+    ['PendingSubmit', 'PreSubmitted', 'Submitted'].each do |status|
+      state.status = status
+      state.should_not be_new
+      state.should be_active
+      state.should_not be_inactive
+      state.should_not be_complete_fill
+      state.should be_pending
+    end
+
+    ['PendingCancel', 'Cancelled', 'ApiCancelled', 'Inactive'].each do |status|
+      state.status = status
+      state.should_not be_new
+      state.should_not be_active
+      state.should be_inactive
+      state.should_not be_complete_fill
+      state.should_not be_pending
+    end
+
+    state.status = 'Filled'
+    state.should_not be_new
+    state.should_not be_active
+    state.should be_inactive
+    state.should_not be_complete_fill
+    state.should_not be_pending
+
+    state.remaining = 0
+    state.should_not be_new
+    state.should_not be_active
+    state.should be_inactive
+    state.should be_complete_fill
+    state.should_not be_pending
+  end
 
 end # describe IB::Order

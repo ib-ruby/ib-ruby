@@ -264,7 +264,13 @@ module IB
        :last_fill_price, #    double
        :average_price, # double
        :average_fill_price, # double
-       :why_held # String: comma-separated list of reasons for order to be held.
+       :why_held, # String: comma-separated list of reasons for order to be held.
+       # Testing Order state:
+       :new?,
+       :pending?,
+       :active?,
+       :inactive?,
+       :complete_fill?,
       ].each { |property| define_method(property) { order_state.send(property) } }
 
       # Order is not valid without correct :local_id (:order_id)

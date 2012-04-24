@@ -63,6 +63,31 @@ module IB
       validates_numericality_of :local_id, :perm_id, :client_id, :parent_id, :filled,
                                 :remaining, :only_integer => true, :allow_nil => true
 
+      ## Testing Order state:
+
+      def new?
+        status.empty? || status == 'New'
+      end
+
+      # Order is in a valid, working state on TWS side
+      def pending?
+        status == 'PendingSubmit' || status == 'PreSubmitted' || status == 'Submitted'
+      end
+
+      # Order is in invalid state
+      def active?
+        new? || pending?
+      end
+
+      # Order is in invalid state
+      def inactive?
+        !active? # status == 'Inactive'
+      end
+
+      def complete_fill?
+        status == 'Filled' && remaining == 0 # filled >= total_quantity # Manually corrected
+      end
+
       # Comparison
       def == other
         other && other.is_a?(OrderState) &&
