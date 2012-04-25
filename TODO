@@ -1,24 +1,18 @@
 Plan:
 
-0. Extract OrderState/UnderComp objects, for better record keeping
-
-1. Add ActiveRecord backend to all Models
-
-2. Make ActiveModel-like attributes Hash for easy attributes updating
-
-3. IB#send_message method should accept block, thus compressing subscribe/send_message
+1. IB#send_message method should accept block, thus compressing subscribe/send_message
 pair into a single call - to simplify DSL.
 
-4. IB Connection uses delays to prevent hitting 50 msgs/sec limit:
+2. IB Connection uses delays to prevent hitting 50 msgs/sec limit:
 http://finance.groups.yahoo.com/group/TWSAPI/message/25413
 
-5. IB Connection reconnects gracefully in case if TWS disconnects/reconnects
+3. IB Connection reconnects gracefully in case if TWS disconnects/reconnects
 
-6. @received_at timestamp in messages
+4. Messages should be Models as well (audit trail), @received_at timestamp in messages
 
-7. Detailed message documentation
+5. Detailed message documentation
 
-8. Move Float values to Decimal (roundoff errors showed in spec!)
+6. Move Float values to Decimal (roundoff errors showed in spec!)
 
 
 Done:
@@ -32,6 +26,10 @@ Done:
 4. Collect all received messages in Connection#received[:type] by default
 
 5. Flow handlers: Connection#wait_for / Connection#received?
+
+6. Add ActiveRecord backend to all Models
+
+7. Make ActiveModel-like attributes Hash and serialization for tableless Models
 
 
 Ideas for future:

@@ -3,6 +3,7 @@ class AddOrders < ActiveRecord::Migration
   def change
     # OrderState represents dynamic (changeable) info about a single Order
     create_table(:orders) do |t|
+      t.references :contract # Optional link of Order to its contract
 
       t.integer :local_id #  int: Order id associated with client (volatile).
       t.integer :client_id # int: The id of the client that placed this order.

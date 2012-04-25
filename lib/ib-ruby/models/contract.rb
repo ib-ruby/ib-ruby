@@ -66,17 +66,19 @@ module IB
 
       ### Associations
 
-      has_one :contract_detail
+      has_many :orders # Placed for this Contract
 
-      has_one :underlying # for Delta-Neutral Combo contracts only!
-      alias under_comp underlying
-      alias under_comp= underlying=
+      has_one :contract_detail # Volatile info about this Contract
 
-      has_many :combo_legs
+      has_many :combo_legs # for Combo/BAG Contracts only
       alias legs combo_legs
       alias legs= combo_legs=
       alias combo_legs_description legs_description
       alias combo_legs_description= legs_description=
+
+      has_one :underlying # for Delta-Neutral Combo Contracts only
+      alias under_comp underlying
+      alias under_comp= underlying=
 
 
       ### Extra validations

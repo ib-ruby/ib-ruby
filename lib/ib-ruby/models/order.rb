@@ -227,6 +227,10 @@ module IB
       ##serialize :leg_prices
       ##serialize :combo_params
 
+      # Order is always placed for a contract. Here, we explicitly set this link.
+      belongs_to :contract
+
+      # Order has a collection of Executions if it was filled
       has_many :executions
 
       # Order has a collection of OrderStates, last one is always current
@@ -302,7 +306,11 @@ module IB
                     :algo_strategy => '',
                     :transmit => true,
                     :what_if => false,
-                    :order_state => IB::OrderState.new(:status => 'New')
+                    :order_state => IB::OrderState.new(:status => 'New',
+                                                       :filled => 0,
+                                                       :remaining => 0,
+                                                       :price => 0,
+                                                       :average_price => 0)
       end
 
       #after_initialize do #opts = {}
