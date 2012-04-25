@@ -27,7 +27,7 @@ module IB
            :why_held # String: comma-separated list of reasons for order to be held.
 
       # Properties arriving in both messages:
-      prop [:local_id, :order_id], #  int: Order id associated with client (volatile).
+      prop :local_id, #  int: Order id associated with client (volatile).
            :perm_id, #   int: TWS permanent id, remains the same over TWS sessions.
            :client_id, # int: The id of the client that placed this order.
            :parent_id, # int: The order ID of the parent (original) order, used

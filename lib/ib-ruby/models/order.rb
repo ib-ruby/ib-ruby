@@ -12,7 +12,7 @@ module IB
       # your own Order IDs to avoid conflicts between orders placed from your API application.
 
       # Main order fields
-      prop [:local_id, :order_id], #  int: Order id associated with client (volatile).
+      prop :local_id, #  int: Order id associated with client (volatile).
            :client_id, # int: The id of the client that placed this order.
            :perm_id, #   int: TWS permanent id, remains the same over TWS sessions.
            [:quantity, :total_quantity], # int: The order quantity.
@@ -274,7 +274,7 @@ module IB
        :complete_fill?,
       ].each { |property| define_method(property) { order_state.send(property) } }
 
-      # Order is not valid without correct :local_id (:order_id)
+      # Order is not valid without correct :local_id
       validates_numericality_of :local_id, :perm_id, :client_id, :parent_id,
                                 :quantity, :min_quantity, :display_size,
                                 :only_integer => true, :allow_nil => true
@@ -468,7 +468,7 @@ module IB
         modify contract, connection, self.placed_at
       end
 
-      # Modify Order (convenience wrapper for send_message :PlaceOrder). Returns order_id.
+      # Modify Order (convenience wrapper for send_message :PlaceOrder). Returns local_id.
       def modify contract, connection, time=Time.now
         self.modified_at = time
         connection.send_message :PlaceOrder,

@@ -50,12 +50,13 @@ describe IB::Models::Order do
       :sweep_to_fill, :override_percentage_constraints, :all_or_none,
       :etrade_only, :firm_quote_only, :opt_out_smart_routing, :scale_auto_reset,
       :scale_random_percent] => boolean_assigns,
+
+     [:local_id, :perm_id, :parent_id] => numeric_or_nil_assigns,
     }
   end
 
   let(:aliases) do
     {[:side, :action] => buy_sell_short_assigns,
-     [:local_id, :order_id] => numeric_or_nil_assigns,
      [:quantity, :total_quantity] => numeric_or_nil_assigns,
     }
   end

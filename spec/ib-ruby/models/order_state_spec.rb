@@ -38,13 +38,14 @@ describe IB::Models::OrderState do
   let(:assigns) do
     {[:status] =>
          {[nil, ''] => /must not be empty/,
-          ['Zorro', :Zorro] => 'Zorro'}
+          ['Zorro', :Zorro] => 'Zorro'},
+
+     :local_id => numeric_or_nil_assigns,
     }
   end
 
   let(:aliases) do
-    {[:local_id, :order_id] => numeric_or_nil_assigns,
-     [:price, :last_fill_price] => float_or_nil_assigns,
+    {[:price, :last_fill_price] => float_or_nil_assigns,
      [:average_price, :average_fill_price] => float_or_nil_assigns,
     }
   end

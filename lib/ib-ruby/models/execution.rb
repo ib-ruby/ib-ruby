@@ -7,7 +7,7 @@ module IB
 
       belongs_to :order
 
-      prop [:local_id, :order_id], #     int: order id. TWS orders have a fixed order id of 0.
+      prop :local_id, #     int: order id. TWS orders have a fixed order id of 0.
            :client_id, #    int: client id. TWS orders have a fixed client id of 0.
            :perm_id, #      int: TWS id used to identify orders over TWS sessions
            :exec_id, #      String: Unique order execution id over TWS sessions.
