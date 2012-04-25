@@ -306,7 +306,11 @@ module IB
                     :algo_strategy => '',
                     :transmit => true,
                     :what_if => false,
-                    :order_state => IB::OrderState.new(:status => 'New')
+                    :order_state => IB::OrderState.new(:status => 'New',
+                                                       :filled => 0,
+                                                       :remaining => 0,
+                                                       :price => 0,
+                                                       :average_price => 0)
       end
 
       #after_initialize do #opts = {}
