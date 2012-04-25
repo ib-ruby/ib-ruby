@@ -16,7 +16,7 @@ module IB
       validates_numericality_of :con_id, :delta, :price #, :allow_nil => true
 
       def default_attributes
-        {:con_id => 0}.merge super
+        super.merge :con_id => 0
       end
 
       # Serialize under_comp parameters

@@ -63,6 +63,13 @@ module IB
       validates_numericality_of :local_id, :perm_id, :client_id, :parent_id, :filled,
                                 :remaining, :only_integer => true, :allow_nil => true
 
+      def default_attributes
+        super.merge :filled => 0,
+                    :remaining => 0,
+                    :price => 0.0,
+                    :average_price => 0.0
+      end
+
       ## Testing Order state:
 
       def new?
@@ -70,8 +77,13 @@ module IB
       end
 
       # Order is in a valid, working state on TWS side
+      def submitted?
+        status == 'PreSubmitted' || status == 'Submitted'
+      end
+
+      # Order is in a valid, working state on TWS side
       def pending?
-        status == 'PendingSubmit' || status == 'PreSubmitted' || status == 'Submitted'
+        submitted? || status == 'PendingSubmit'
       end
 
       # Order is in invalid state

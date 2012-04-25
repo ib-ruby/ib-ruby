@@ -21,7 +21,7 @@ module IB
         end
       end
 
-      attr_accessor :created_at, :updated_at, :attributes
+      attr_accessor :attributes
 
       # If a opts hash is given, keys are taken as attribute names, values as data.
       # The model instance fields are then set automatically from the opts Hash.

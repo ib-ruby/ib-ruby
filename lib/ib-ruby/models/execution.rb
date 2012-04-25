@@ -30,12 +30,12 @@ module IB
       validates_numericality_of :local_id, :client_id, :perm_id, :only_integer => true
 
       def default_attributes
-        {:local_id => 0,
-         :client_id => 0,
-         :quantity => 0,
-         :price => 0,
-         :perm_id => 0,
-         :liquidation => false, }.merge super
+        super.merge :local_id => 0,
+                    :client_id => 0,
+                    :quantity => 0,
+                    :price => 0,
+                    :perm_id => 0,
+                    :liquidation => false
       end
 
       # Comparison

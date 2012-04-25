@@ -238,10 +238,10 @@ module IB
 
       def order_state= state
         self.order_states.push case state
-                               when IB::OrderState
-                                 state
-                               when Symbol, String
-                                 IB::OrderState.new :status => state
+                                 when IB::OrderState
+                                   state
+                                 when Symbol, String
+                                   IB::OrderState.new :status => state
                                end
       end
 
@@ -267,6 +267,7 @@ module IB
        :why_held, # String: comma-separated list of reasons for order to be held.
        # Testing Order state:
        :new?,
+       :submitted?,
        :pending?,
        :active?,
        :inactive?,
@@ -282,28 +283,26 @@ module IB
 
 
       def default_attributes
-        {:aux_price => 0.0,
-         :discretionary_amount => 0.0,
-         :parent_id => 0,
-         :tif => :day,
-         :order_type => :limit,
-         :open_close => :open,
-         :origin => :customer,
-         :short_sale_slot => :default,
-         :trigger_method => :default,
-         :oca_type => :none,
-         :auction_strategy => :none,
-         :designated_location => '',
-         :exempt_code => -1,
-         :display_size => 0,
-         :continuous_update => 0,
-         :delta_neutral_con_id => 0,
-         :algo_strategy => '',
-         :transmit => true,
-         :what_if => false,
-         :order_state => IB::OrderState.new(:status => 'New'),
-         # TODO: Add simple defaults to prop ?
-        }.merge super
+        super.merge :aux_price => 0.0,
+                    :discretionary_amount => 0.0,
+                    :parent_id => 0,
+                    :tif => :day,
+                    :order_type => :limit,
+                    :open_close => :open,
+                    :origin => :customer,
+                    :short_sale_slot => :default,
+                    :trigger_method => :default,
+                    :oca_type => :none,
+                    :auction_strategy => :none,
+                    :designated_location => '',
+                    :exempt_code => -1,
+                    :display_size => 0,
+                    :continuous_update => 0,
+                    :delta_neutral_con_id => 0,
+                    :algo_strategy => '',
+                    :transmit => true,
+                    :what_if => false,
+                    :order_state => IB::OrderState.new(:status => 'New')
       end
 
       #after_initialize do #opts = {}
@@ -319,12 +318,12 @@ module IB
         [contract.serialize_long(:con_id, :sec_id),
          # main order fields
          case side
-         when :short
-           'SSHORT'
-         when :short_exempt
-           'SSHORTX'
-         else
-           side.to_sup
+           when :short
+             'SSHORT'
+           when :short_exempt
+             'SSHORTX'
+           else
+             side.to_sup
          end,
          quantity,
          self[:order_type], # Internal code, 'LMT' instead of :limit
