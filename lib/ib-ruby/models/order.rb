@@ -227,6 +227,10 @@ module IB
       ##serialize :leg_prices
       ##serialize :combo_params
 
+      # Order is always placed for a contract. Here, we explicitly set this link.
+      belongs_to :contract
+
+      # Order has a collection of Executions if it was filled
       has_many :executions
 
       # Order has a collection of OrderStates, last one is always current
