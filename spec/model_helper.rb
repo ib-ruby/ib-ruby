@@ -190,6 +190,7 @@ end
 shared_examples_for 'Model instantiated with properties' do
   it 'auto-assigns all properties given to initializer' do
     props.each do |name, value|
+      #p subject, name, value
       subject.send(name).should == value
     end
   end
@@ -199,6 +200,18 @@ shared_examples_for 'Model instantiated with properties' do
 end
 
 shared_examples_for 'Model properties' do
+
+  it 'leaves order_id alone, no aliasing' do
+    if subject.respond_to?(:order_id)
+      subject.order_id.should be_nil
+      if subject.respond_to?(:local_id=)
+        subject.local_id = 1313
+        subject.order_id.should be_nil
+        subject.order_id = 2222
+        subject.local_id.should == 1313
+      end
+    end
+  end
 
   it 'allows setting properties' do
     expect {

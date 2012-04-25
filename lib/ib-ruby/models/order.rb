@@ -12,7 +12,7 @@ module IB
       # your own Order IDs to avoid conflicts between orders placed from your API application.
 
       # Main order fields
-      prop [:local_id, :order_id], #  int: Order id associated with client (volatile).
+      prop :local_id, #  int: Order id associated with client (volatile).
            :client_id, # int: The id of the client that placed this order.
            :perm_id, #   int: TWS permanent id, remains the same over TWS sessions.
            [:quantity, :total_quantity], # int: The order quantity.
@@ -238,10 +238,10 @@ module IB
 
       def order_state= state
         self.order_states.push case state
-                               when IB::OrderState
-                                 state
-                               when Symbol, String
-                                 IB::OrderState.new :status => state
+                                 when IB::OrderState
+                                   state
+                                 when Symbol, String
+                                   IB::OrderState.new :status => state
                                end
       end
 
@@ -264,10 +264,17 @@ module IB
        :last_fill_price, #    double
        :average_price, # double
        :average_fill_price, # double
-       :why_held # String: comma-separated list of reasons for order to be held.
+       :why_held, # String: comma-separated list of reasons for order to be held.
+       # Testing Order state:
+       :new?,
+       :submitted?,
+       :pending?,
+       :active?,
+       :inactive?,
+       :complete_fill?,
       ].each { |property| define_method(property) { order_state.send(property) } }
 
-      # Order is not valid without correct :local_id (:order_id)
+      # Order is not valid without correct :local_id
       validates_numericality_of :local_id, :perm_id, :client_id, :parent_id,
                                 :quantity, :min_quantity, :display_size,
                                 :only_integer => true, :allow_nil => true
@@ -276,28 +283,26 @@ module IB
 
 
       def default_attributes
-        {:aux_price => 0.0,
-         :discretionary_amount => 0.0,
-         :parent_id => 0,
-         :tif => :day,
-         :order_type => :limit,
-         :open_close => :open,
-         :origin => :customer,
-         :short_sale_slot => :default,
-         :trigger_method => :default,
-         :oca_type => :none,
-         :auction_strategy => :none,
-         :designated_location => '',
-         :exempt_code => -1,
-         :display_size => 0,
-         :continuous_update => 0,
-         :delta_neutral_con_id => 0,
-         :algo_strategy => '',
-         :transmit => true,
-         :what_if => false,
-         :order_state => IB::OrderState.new(:status => 'New'),
-         # TODO: Add simple defaults to prop ?
-        }.merge super
+        super.merge :aux_price => 0.0,
+                    :discretionary_amount => 0.0,
+                    :parent_id => 0,
+                    :tif => :day,
+                    :order_type => :limit,
+                    :open_close => :open,
+                    :origin => :customer,
+                    :short_sale_slot => :default,
+                    :trigger_method => :default,
+                    :oca_type => :none,
+                    :auction_strategy => :none,
+                    :designated_location => '',
+                    :exempt_code => -1,
+                    :display_size => 0,
+                    :continuous_update => 0,
+                    :delta_neutral_con_id => 0,
+                    :algo_strategy => '',
+                    :transmit => true,
+                    :what_if => false,
+                    :order_state => IB::OrderState.new(:status => 'New')
       end
 
       #after_initialize do #opts = {}
@@ -313,12 +318,12 @@ module IB
         [contract.serialize_long(:con_id, :sec_id),
          # main order fields
          case side
-         when :short
-           'SSHORT'
-         when :short_exempt
-           'SSHORTX'
-         else
-           side.to_sup
+           when :short
+             'SSHORT'
+           when :short_exempt
+             'SSHORTX'
+           else
+             side.to_sup
          end,
          quantity,
          self[:order_type], # Internal code, 'LMT' instead of :limit
@@ -463,7 +468,7 @@ module IB
         modify contract, connection, self.placed_at
       end
 
-      # Modify Order (convenience wrapper for send_message :PlaceOrder). Returns order_id.
+      # Modify Order (convenience wrapper for send_message :PlaceOrder). Returns local_id.
       def modify contract, connection, time=Time.now
         self.modified_at = time
         connection.send_message :PlaceOrder,

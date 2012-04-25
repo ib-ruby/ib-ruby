@@ -50,17 +50,18 @@ describe IB::Models::Order do
       :sweep_to_fill, :override_percentage_constraints, :all_or_none,
       :etrade_only, :firm_quote_only, :opt_out_smart_routing, :scale_auto_reset,
       :scale_random_percent] => boolean_assigns,
+
+     [:local_id, :perm_id, :parent_id] => numeric_or_nil_assigns,
     }
   end
 
   let(:aliases) do
     {[:side, :action] => buy_sell_short_assigns,
-     [:local_id, :order_id] => numeric_or_nil_assigns,
      [:quantity, :total_quantity] => numeric_or_nil_assigns,
     }
   end
 
-  let(:associations) do
+  let(:collections) do
     {:order_states => [IB::OrderState.new(:status => :Foo),
                        IB::OrderState.new(:status => 'Bar'),],
 
@@ -117,7 +118,31 @@ describe IB::Models::Order do
 
     it 'has extra accessors to OrderState properties' do
       subject.order_state.should_not be_nil
+
       subject.status.should == 'New'
+      subject.commission.should be_nil
+      subject.commission_currency.should be_nil
+      subject.min_commission.should be_nil
+      subject.max_commission.should be_nil
+      subject.warning_text.should be_nil
+      subject.init_margin.should be_nil
+      subject.maint_margin.should be_nil
+      subject.equity_with_loan.should be_nil
+      # Properties arriving via OrderStatus message
+      subject.filled.should  == 0
+      subject.remaining.should  == 0
+      subject.price.should  == 0
+      subject.last_fill_price.should  == 0
+      subject.average_price.should  == 0
+      subject.average_fill_price.should  == 0
+      subject.why_held.should be_nil
+      # Testing Order state
+      subject.should be_new
+      subject.should_not be_submitted
+      subject.should_not be_pending
+      subject.should be_active
+      subject.should_not be_inactive
+      subject.should_not be_complete_fill
     end
 
     context 'update Order state by ' do

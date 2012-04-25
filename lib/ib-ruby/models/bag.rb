@@ -22,8 +22,8 @@ module IB
       end
 
       def default_attributes
-        {:legs => Array.new,
-         :sec_type => :bag}.merge super
+        super.merge :legs => Array.new,
+                    :sec_type => :bag
       end
 
       def description

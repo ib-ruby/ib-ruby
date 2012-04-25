@@ -13,7 +13,8 @@ Gem::Specification.new do |gem|
 
   # Files setup
   versioned = `git ls-files -z`.split("\0")
-  gem.files = Dir['{bin,lib,man,spec,features,tasks}/**/*', 'Rakefile', 'README*', 'LICENSE*',
+  gem.files = Dir['{bin,lib,man,spec,features,tasks}/**/*', 'db/migrate/**/*',
+                  'Rakefile', 'README*', 'LICENSE*',
                   'VERSION*', 'HISTORY*', 'TODO*', '.gitignore'] & versioned
   gem.executables = (Dir['bin/**/*'] & versioned).map { |file| File.basename(file) }
   gem.test_files = Dir['spec/**/*'] & versioned
@@ -25,9 +26,9 @@ Gem::Specification.new do |gem|
   gem.add_dependency 'activerecord-jdbcsqlite3-adapter', '>= 1.2.2'
   gem.add_dependency 'jdbc-sqlite3', '>= 3.7.2'
   gem.add_dependency 'xml-simple', '>= 1.1.1'
+  gem.add_dependency 'standalone_migrations'
   #gem.add_dependency 'pg', '>= 0.12.1'
 
-  gem.add_development_dependency 'standalone_migrations'
   gem.add_development_dependency 'database_cleaner', '>= 2.8.0'
   gem.add_development_dependency 'rspec', '>= 2.9.0'
   gem.add_development_dependency 'my_scripts'

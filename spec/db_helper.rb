@@ -73,29 +73,77 @@ shared_examples_for 'Invalid DB-backed Model' do
 end
 
 shared_examples_for 'Model with associations' do
+
   it 'works with associations, if any' do
     if defined? associations
-      associations.each do |assoc, items|
-        proxy = subject.association(assoc).reflection
-        #pp proxy
 
-        owner_name = described_class.to_s.demodulize.tableize.singularize
+      subject_name_plural = described_class.to_s.demodulize.tableize
+
+      associations.each do |name, item|
+        puts "Testing single association #{name}"
+        subject.association(name).reflection.should_not be_collection
+
+        # Assign item to association
+        expect { subject.send "#{name}=", item }.to_not raise_error
+
+        association = subject.send name #, :reload
+        association.should == item
+        association.should be_new_record
+
+        # Reverse association does not include subject
+        reverse_association = association.send(subject_name_plural)
+        reverse_association.should be_empty
+
+        # Now let's save subject
+        if subject.valid?
+          subject.save
+
+          association = subject.send name
+          association.should_not be_new_record
+
+          # Reverse association now DOES include subject (if reloaded!)
+          reverse_association = association.send(subject_name_plural, :reload)
+          reverse_association.should include subject
+        end
+      end
+    end
+  end
+
+  it 'works with associated collections, if any' do
+    if defined? collections
+
+      subject_name = described_class.to_s.demodulize.tableize.singularize
+
+      collections.each do |name, items|
+        puts "Testing associated collection #{name}"
+        subject.association(name).reflection.should be_collection
+
         [items].flatten.each do |item|
-          if proxy.collection?
-            association = subject.send("#{assoc}")
-            association << item
+          association = subject.send name #, :reload
 
-            p 'collection'
+          # Add item to collection
+          expect { association << item }.to_not raise_error
+          association.should include item
+
+          # Reverse association does NOT point to subject
+          reverse_association = association.first.send(subject_name)
+          #reverse_association.should be_nil # But not always!
+
+          #association.size.should == items.size # Not for Order, +1 OrderState
+        end
+
+        # Now let's save subject
+        if subject.valid?
+          subject.save
+
+          [items].flatten.each do |item|
+            association = subject.send name #, :reload
+
             association.should include item
-            #p association.first.send(owner_name)
-            #.should include item
-            #association.
-            #association.size.should == items.size # Not for Order, +1 OrderState
-          else
-            subject.send "#{assoc}=", item
-            association = subject.send("#{assoc}")
-            p 'not a collection'
-            association.should == item
+
+            # Reverse association DOES point to subject now
+            reverse_association = association.first.send(subject_name)
+            reverse_association.should == subject
           end
         end
 

@@ -39,12 +39,12 @@ module IB
                           :message => "should be blank or orders will be rejected"
 
       def default_attributes
-        {:con_id => 0,
-         :open_close => :same, # The only option for retail customers.
-         :short_sale_slot => :default,
-         :designated_location => '',
-         :exchange => 'SMART', # Unless SMART, Order modification fails
-         :exempt_code => -1, }.merge super
+        super.merge :con_id => 0,
+                    :open_close => :same, # The only option for retail customers.
+                    :short_sale_slot => :default,
+                    :designated_location => '',
+                    :exchange => 'SMART', # Unless SMART, Order modification fails
+                    :exempt_code => -1
       end
 
       #  Leg's weight is a combination of action and ratio

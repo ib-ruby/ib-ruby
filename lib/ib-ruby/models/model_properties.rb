@@ -27,9 +27,18 @@ module IB
       # Comparison support
       def content_attributes
         HashWithIndifferentAccess[attributes.reject do |(attr, _)|
-          attr.to_s =~ /(_id|_count)$/ ||
-              [:created_at, :updated_at, :type, :id].include?(attr.to_sym)
+          attr.to_s =~ /(_count)$/ ||
+              [:created_at, :updated_at, :type,
+               :id, :order_id, :contract_id].include?(attr.to_sym)
         end]
+      end
+
+      # Update nil attributes from given Hash or model
+      def update_missing attrs
+        attrs = attrs.content_attributes unless attrs.kind_of?(Hash)
+
+        attrs.each { |attr, val| send "#{attr}=", val if send(attr).blank? }
+        self # for chaining
       end
 
       # Default Model comparison
@@ -39,13 +48,6 @@ module IB
       end
 
       included do
-
-        # Extending AR-backed Model class with attribute defaults
-        if defined?(ActiveRecord::Base) && ancestors.include?(ActiveRecord::Base)
-          def initialize opts={}
-            super default_attributes.merge(opts)
-          end
-        end
 
         ### Class macros
 
@@ -126,6 +128,16 @@ module IB
             else # setter given
               define_property_methods name, :set => body, :get => body
           end
+        end
+
+        # Extending AR-backed Model class with attribute defaults
+        if defined?(ActiveRecord::Base) && ancestors.include?(ActiveRecord::Base)
+          def initialize opts={}
+            super default_attributes.merge(opts)
+          end
+        else
+          # Timestamps
+          prop :created_at, :updated_at
         end
 
       end # included
