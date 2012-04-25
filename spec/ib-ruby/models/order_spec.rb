@@ -61,7 +61,7 @@ describe IB::Models::Order do
     }
   end
 
-  let(:associations) do
+  let(:collections) do
     {:order_states => [IB::OrderState.new(:status => :Foo),
                        IB::OrderState.new(:status => 'Bar'),],
 

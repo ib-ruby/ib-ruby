@@ -21,7 +21,7 @@ module IB
         end
       end
 
-      attr_accessor :attributes
+      #attr_accessor :attributes
 
       # If a opts hash is given, keys are taken as attribute names, values as data.
       # The model instance fields are then set automatically from the opts Hash.
@@ -29,8 +29,7 @@ module IB
         run_callbacks :initialize do
           error "Argument must be a Hash", :args unless opts.is_a?(Hash)
 
-          attrs = default_attributes.merge(opts)
-          attrs.keys.each { |key| self.send("#{key}=", attrs[key]) }
+          self.attributes = default_attributes.merge(opts)
         end
       end
 
@@ -38,6 +37,10 @@ module IB
 
       def attributes
         @attributes ||= HashWithIndifferentAccess.new
+      end
+
+      def attributes= attrs
+        attrs.keys.each { |key| self.send("#{key}=", attrs[key]) }
       end
 
       # ActiveModel-style read/write_attribute accessors
