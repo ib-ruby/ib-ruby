@@ -71,7 +71,6 @@ other API implementations. The choice is yours.
     | 0.6.1       |    921-923  |    966       |
     | 0.7.1+      |      924+   |    967       |
 
-
 4. Start Interactive Broker's Trader Work Station or Gateway before your code
    attempts to connect to it. Note that TWS and Gateway listen to different ports,
    this library assumes connection to Gateway on the same machine (localhost:4001)
@@ -142,6 +141,32 @@ bulk cancelling of open orders before running tests as needed.
 You can easily create your own tests following the guide in 'spec/README'.
 Help the development! See 'spec/TODO' for the list of use cases/scenarios
 that still need to be tested.
+
+## DB BACKEND:
+
+Latest versions of the gem added (optional and experimental) support for data
+persistance (ActiveRecord ORM). In order to use this support, you have to set up
+the database (SQLite recommended for simplicity) and run migrations located at
+'db/migrate' folder.
+
+You further need to:
+
+    require 'ib-ruby/db'
+
+    IB::DB.connect :adapter => 'sqlite3',
+                   :database => 'db/test.sqlite3'
+
+    require 'ib-ruby'
+
+Only require 'ib-ruby' AFTER you connected to DB, otherwise your Models will not
+inherit from ActiveRecord::Base and won't be persistent. If you are using Rails,
+you don't need IB::DB.connect part, Rails will take care of it for you. So, just use:
+
+    require 'ib-ruby/db'
+    require 'ib-ruby'
+
+Now, all your IB Models are just ActiveRecords and you can do whatever you want with them:
+persist to DB, use in Rails applications, develop controllers and views.
 
 ## LICENSE:
 

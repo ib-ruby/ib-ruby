@@ -27,7 +27,7 @@ module IB
            :why_held # String: comma-separated list of reasons for order to be held.
 
       # Properties arriving in both messages:
-      prop [:local_id, :order_id], #  int: Order id associated with client (volatile).
+      prop :local_id, #  int: Order id associated with client (volatile).
            :perm_id, #   int: TWS permanent id, remains the same over TWS sessions.
            :client_id, # int: The id of the client that placed this order.
            :parent_id, # int: The order ID of the parent (original) order, used
@@ -62,6 +62,43 @@ module IB
       validates_numericality_of :price, :average_price, :allow_nil => true
       validates_numericality_of :local_id, :perm_id, :client_id, :parent_id, :filled,
                                 :remaining, :only_integer => true, :allow_nil => true
+
+      def default_attributes
+        super.merge :filled => 0,
+                    :remaining => 0,
+                    :price => 0.0,
+                    :average_price => 0.0
+      end
+
+      ## Testing Order state:
+
+      def new?
+        status.empty? || status == 'New'
+      end
+
+      # Order is in a valid, working state on TWS side
+      def submitted?
+        status == 'PreSubmitted' || status == 'Submitted'
+      end
+
+      # Order is in a valid, working state on TWS side
+      def pending?
+        submitted? || status == 'PendingSubmit'
+      end
+
+      # Order is in invalid state
+      def active?
+        new? || pending?
+      end
+
+      # Order is in invalid state
+      def inactive?
+        !active? # status == 'Inactive'
+      end
+
+      def complete_fill?
+        status == 'Filled' && remaining == 0 # filled >= total_quantity # Manually corrected
+      end
 
       # Comparison
       def == other

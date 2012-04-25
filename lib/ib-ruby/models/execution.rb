@@ -7,7 +7,7 @@ module IB
 
       belongs_to :order
 
-      prop [:local_id, :order_id], #     int: order id. TWS orders have a fixed order id of 0.
+      prop :local_id, #     int: order id. TWS orders have a fixed order id of 0.
            :client_id, #    int: client id. TWS orders have a fixed client id of 0.
            :perm_id, #      int: TWS id used to identify orders over TWS sessions
            :exec_id, #      String: Unique order execution id over TWS sessions.
@@ -30,12 +30,12 @@ module IB
       validates_numericality_of :local_id, :client_id, :perm_id, :only_integer => true
 
       def default_attributes
-        {:local_id => 0,
-         :client_id => 0,
-         :quantity => 0,
-         :price => 0,
-         :perm_id => 0,
-         :liquidation => false, }.merge super
+        super.merge :local_id => 0,
+                    :client_id => 0,
+                    :quantity => 0,
+                    :price => 0,
+                    :perm_id => 0,
+                    :liquidation => false
       end
 
       # Comparison

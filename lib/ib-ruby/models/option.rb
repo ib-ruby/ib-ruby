@@ -49,7 +49,7 @@ module IB
       end
 
       def default_attributes
-        {:sec_type => :option}.merge super
+        super.merge :sec_type => :option
         #self[:description] ||= osi ? osi : "#{symbol} #{strike} #{right} #{expiry}"
       end
 

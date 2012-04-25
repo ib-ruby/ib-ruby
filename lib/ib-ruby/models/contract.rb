@@ -95,11 +95,11 @@ module IB
       validates_numericality_of :multiplier, :strike, :allow_nil => true
 
       def default_attributes
-        {:con_id => 0,
-         :strike => 0.0,
-         :right => :none, # Not an option
-         :exchange => 'SMART',
-         :include_expired => false, }.merge super
+        super.merge :con_id => 0,
+                    :strike => 0.0,
+                    :right => :none, # Not an option
+                    :exchange => 'SMART',
+                    :include_expired => false
       end
 
       # This returns an Array of data from the given contract.
