@@ -190,6 +190,7 @@ end
 shared_examples_for 'Model instantiated with properties' do
   it 'auto-assigns all properties given to initializer' do
     props.each do |name, value|
+      #p subject, name, value
       subject.send(name).should == value
     end
   end

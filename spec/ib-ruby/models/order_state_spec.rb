@@ -53,9 +53,11 @@ describe IB::Models::OrderState do
   it_behaves_like 'Self-equal Model'
 
   context '#update_missing' do
+    let(:nil_state) { IB::OrderState.new(:filled => nil, :remaining => nil,
+                                         :price => nil, :average_price => nil) }
     context 'updating with Hash' do
 
-      subject { IB::OrderState.new.update_missing(props) }
+      subject { nil_state.update_missing(props) }
 
       it_behaves_like 'Model instantiated with properties'
 
@@ -63,7 +65,7 @@ describe IB::Models::OrderState do
 
     context 'updating with Model' do
 
-      subject { IB::OrderState.new.update_missing(IB::OrderState.new(props)) }
+      subject { nil_state.update_missing(IB::OrderState.new(props)) }
 
       it_behaves_like 'Model instantiated with properties'
 
@@ -74,6 +76,8 @@ describe IB::Models::OrderState do
   it 'has extra test methods' do
     empty_state = IB::OrderState.new
     empty_state.should be_new
+    subject.should_not be_pending
+    subject.should_not be_submitted
     empty_state.should be_active
     empty_state.should_not be_inactive
     empty_state.should_not be_complete_fill
@@ -86,6 +90,7 @@ describe IB::Models::OrderState do
       state.should_not be_inactive
       state.should_not be_complete_fill
       state.should be_pending
+      status == 'PendingSubmit' ? state.should_not(be_submitted) : state.should(be_submitted)
     end
 
     ['PendingCancel', 'Cancelled', 'ApiCancelled', 'Inactive'].each do |status|
@@ -95,6 +100,7 @@ describe IB::Models::OrderState do
       state.should be_inactive
       state.should_not be_complete_fill
       state.should_not be_pending
+      subject.should_not be_submitted
     end
 
     state.status = 'Filled'
@@ -103,6 +109,7 @@ describe IB::Models::OrderState do
     state.should be_inactive
     state.should_not be_complete_fill
     state.should_not be_pending
+    subject.should_not be_submitted
 
     state.remaining = 0
     state.should_not be_new
@@ -110,6 +117,7 @@ describe IB::Models::OrderState do
     state.should be_inactive
     state.should be_complete_fill
     state.should_not be_pending
+    subject.should_not be_submitted
   end
 
 end # describe IB::Order

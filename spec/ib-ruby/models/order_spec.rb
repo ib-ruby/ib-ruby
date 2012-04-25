@@ -127,16 +127,17 @@ describe IB::Models::Order do
       subject.init_margin.should be_nil
       subject.maint_margin.should be_nil
       subject.equity_with_loan.should be_nil
-      # Properties arriving via OrderStatus messagesubject.
-      subject.filled.should be_nil
-      subject.remaining.should be_nil
-      subject.price.should be_nil
-      subject.last_fill_price.should be_nil
-      subject.average_price.should be_nil
-      subject.average_fill_price.should be_nil
+      # Properties arriving via OrderStatus message
+      subject.filled.should  == 0
+      subject.remaining.should  == 0
+      subject.price.should  == 0
+      subject.last_fill_price.should  == 0
+      subject.average_price.should  == 0
+      subject.average_fill_price.should  == 0
       subject.why_held.should be_nil
-      # Testing Order statesubject.
+      # Testing Order state
       subject.should be_new
+      subject.should_not be_submitted
       subject.should_not be_pending
       subject.should be_active
       subject.should_not be_inactive
