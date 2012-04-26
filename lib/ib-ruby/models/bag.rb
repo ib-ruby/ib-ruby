@@ -15,15 +15,16 @@ module IB
       validates_format_of :sec_type, :with => /^bag$/, :message => "should be a bag"
       validates_format_of :right, :with => /^none$/, :message => "should be none"
       validates_format_of :expiry, :with => /^$/, :message => "should be blank"
-      validate :legs_cannot_be_empty
 
-      def legs_cannot_be_empty
-        errors.add(:legs, "legs cannot be empty") if legs.empty?
-      end
+      #validate :legs_cannot_be_empty
+      #
+      #def legs_cannot_be_empty
+      #  errors.add(:legs, "legs cannot be empty") if legs.empty?
+      #end
 
       def default_attributes
-        super.merge :legs => Array.new,
-                    :sec_type => :bag
+        super.merge :sec_type => :bag #,:legs => Array.new,
+
       end
 
       def description

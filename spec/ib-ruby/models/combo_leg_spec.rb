@@ -53,4 +53,36 @@ describe IB::Models::ComboLeg,
     end
   end #serialization
 
+  context 'DB backed associations', :db => true do
+    before(:all) { DatabaseCleaner.clean }
+
+    #before(:all) do
+    #  @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
+    #  @ib.wait_for :ManagedAccounts
+    #  @butterfly = butterfly 'GOOG', '201301', 'CALL', 500, 510, 520
+    #  close_connection
+    #end
+
+    it 'is a join Model between BAG and its leg Contracts' do
+      combo = IB::Bag.new
+
+      google = IB::Option.new(:symbol => 'GOOG',
+                              :expiry => 201301,
+                              :right => :call,
+                              :strike => 500)
+
+      combo.leg_contracts << google
+      combo.leg_contracts.should include google
+      p combo.save
+
+      #combo.legs.should_not be_empty
+      combo.leg_contracts.should include google
+      google.combo.should == combo
+
+      leg = combo.legs.first
+      google.leg.should == leg
+
+    end
+  end
+
 end # describe IB::Models::Contract::ComboLeg

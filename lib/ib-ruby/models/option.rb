@@ -7,7 +7,7 @@ module IB
       validates_numericality_of :strike, :greater_than => 0
       validates_format_of :sec_type, :with => /^option$/,
                           :message => "should be an option"
-      validates_format_of :local_symbol, :with => /^\w+\s*\d{15}$|^$/,
+      validates_format_of :local_symbol, :with => /^\w+\s*\d{6}[pcPC]\d{8}$|^$/,
                           :message => "invalid OSI code"
       validates_format_of :right, :with => /^put$|^call$/,
                           :message => "should be put or call"
