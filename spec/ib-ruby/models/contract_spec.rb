@@ -1,65 +1,57 @@
 require 'model_helper'
 require 'combo_helper'
 
-describe IB::Models::Contract do # AKA IB::Contract
+describe IB::Models::Contract,
+         :props =>
+             {:symbol => 'AAPL',
+              :sec_type => :option,
+              :expiry => '201301',
+              :strike => 600.5,
+              :right => :put,
+              :multiplier => 10,
+              :exchange => 'SMART',
+              :currency => 'USD',
+              :local_symbol => 'AAPL  130119C00500000'},
 
-  let(:props) do
-    {:symbol => 'AAPL',
-     :sec_type => :option,
-     :expiry => '201301',
-     :strike => 600.5,
-     :right => :put,
-     :multiplier => 10,
-     :exchange => 'SMART',
-     :currency => 'USD',
-     :local_symbol => 'AAPL  130119C00500000'}
-  end
+         :human => "<Contract: AAPL option 201301 put 600.5 SMART USD>",
 
-  let(:human) do
-    "<Contract: AAPL option 201301 put 600.5 SMART USD>"
-  end
+         :errors => {:sec_type => ["should be valid security type"] },
 
-  let(:errors) do
-    {:sec_type => ["should be valid security type"],
-    }
-  end
+         :assigns =>
+             {:expiry =>
+                  {[200609, '200609'] => '200609',
+                   [20060913, '20060913'] => '20060913',
+                   [:foo, 2006, 42, 'bar'] => /should be YYYYMM or YYYYMMDD/},
 
-  let(:assigns) do
-    {:expiry =>
-         {[200609, '200609'] => '200609',
-          [20060913, '20060913'] => '20060913',
-          [:foo, 2006, 42, 'bar'] => /should be YYYYMM or YYYYMMDD/},
+              :sec_type => codes_and_values_for(:sec_type).
+                  merge([:foo, 'BAR', 42] => /should be valid security type/),
 
-     :sec_type => codes_and_values_for(:sec_type).
-         merge([:foo, 'BAR', 42] => /should be valid security type/),
+              :sec_id_type =>
+                  {[:isin, 'ISIN', 'iSin'] => 'ISIN',
+                   [:sedol, :SEDOL, 'sEDoL', 'SEDOL'] => 'SEDOL',
+                   [:cusip, :CUSIP, 'Cusip', 'CUSIP'] => 'CUSIP',
+                   [:ric, :RIC, 'rIC', 'RIC'] => 'RIC',
+                   [nil, ''] => '',
+                   [:foo, 'BAR', 'baz'] => /should be valid security identifier/},
 
-     :sec_id_type =>
-         {[:isin, 'ISIN', 'iSin'] => 'ISIN',
-          [:sedol, :SEDOL, 'sEDoL', 'SEDOL'] => 'SEDOL',
-          [:cusip, :CUSIP, 'Cusip', 'CUSIP'] => 'CUSIP',
-          [:ric, :RIC, 'rIC', 'RIC'] => 'RIC',
-          [nil, ''] => '',
-          [:foo, 'BAR', 'baz'] => /should be valid security identifier/},
+              :right =>
+                  {["PUT", "put", "P", "p", :put] => :put,
+                   ["CALL", "call", "C", "c", :call] => :call,
+                   ['', '0', '?', :none] => :none,
+                   [:foo, 'BAR', 42] => /should be put, call or none/},
 
-     :right =>
-         {["PUT", "put", "P", "p", :put] => :put,
-          ["CALL", "call", "C", "c", :call] => :call,
-          ['', '0', '?', :none] => :none,
-          [:foo, 'BAR', 42] => /should be put, call or none/},
+              :exchange => string_upcase_assigns.merge(
+                  [:smart, 'SMART', 'smArt'] => 'SMART'),
 
-     :exchange => string_upcase_assigns.merge(
-         [:smart, 'SMART', 'smArt'] => 'SMART'),
+              :primary_exchange =>string_upcase_assigns.merge(
+                  [:SMART, 'SMART'] => /should not be SMART/),
 
-     :primary_exchange =>string_upcase_assigns.merge(
-         [:SMART, 'SMART'] => /should not be SMART/),
+              :multiplier => to_i_assigns,
 
-     :multiplier => to_i_assigns,
+              :strike => to_f_assigns,
 
-     :strike => to_f_assigns,
-
-     :include_expired => boolean_assigns,
-    }
-  end
+              :include_expired => boolean_assigns,
+             } do # AKA IB::Contract
 
   it_behaves_like 'Model'
   it_behaves_like 'Self-equal Model'

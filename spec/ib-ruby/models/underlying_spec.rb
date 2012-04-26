@@ -1,28 +1,23 @@
 require 'model_helper'
 
-describe IB::Models::Underlying do # AKA IB::Underlying
+describe IB::Models::Underlying,
+         :props =>
+             {:con_id => 234567,
+              :delta => 0.55,
+              :price => 20.5,
+             },
 
-  let(:props) do
-    {:con_id => 234567,
-     :delta => 0.55,
-     :price => 20.5,
-    }
-  end
+         :human => /<Underlying: con_id: 234567 .*delta: 0.55 price: 20.5.*>/,
 
-  let(:human) do
-    /<Underlying: con_id: 234567 .*delta: 0.55 price: 20.5.*>/
-  end
+         :errors =>
+             {:delta => ['is not a number'],
+              :price => ['is not a number'],
+             },
 
-  let(:errors) do
-    {:delta => ['is not a number'],
-     :price => ['is not a number'],
-    }
-  end
+         :assigns =>
+             {[:con_id, :delta, :price] => numeric_assigns,
 
-  let(:assigns) do
-    {[:con_id, :delta, :price] => numeric_assigns,
-    }
-  end
+             } do # AKA IB::Underlying
 
   it_behaves_like 'Model'
   it_behaves_like 'Self-equal Model'

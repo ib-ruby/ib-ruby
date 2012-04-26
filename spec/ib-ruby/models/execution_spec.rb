@@ -1,59 +1,50 @@
 require 'model_helper'
 
-describe IB::Models::Execution do # AKA IB::Execution
+describe IB::Models::Execution,
+         :props =>
+             {:account_name => "DU111110",
+              :client_id => 1111,
+              :exchange => "IDEALPRO",
+              :exec_id => "0001f4e8.4f5d48f1.01.01",
+              :liquidation => true,
+              :local_id => 373,
+              :perm_id => 1695693619,
+              :price => 1.31075,
+              :average_price => 1.31075,
+              :shares => 20000,
+              :cumulative_quantity => 20000,
+              :side => :buy,
+              :time => "20120312  15:41:09",
+             },
+         :human =>
+             "<Execution: 20120312  15:41:09 buy 20000 at 1.31075 on IDEALPRO, " +
+                 "cumulative 20000 at 1.31075, ids 373/1695693619/0001f4e8.4f5d48f1.01.01>",
+         :errors =>
+             {:side=>["should be buy/sell/short"],
+              :cumulative_quantity=>["is not a number"],
+              :average_price=>["is not a number"]},
 
-  let(:props) do
-    {:account_name => "DU111110",
-     :client_id => 1111,
-     :exchange => "IDEALPRO",
-     :exec_id => "0001f4e8.4f5d48f1.01.01",
-     :liquidation => true,
-     :local_id => 373,
-     :perm_id => 1695693619,
-     :price => 1.31075,
-     :average_price => 1.31075,
-     :shares => 20000,
-     :cumulative_quantity => 20000,
-     :side => :buy,
-     :time => "20120312  15:41:09",
-    }
-  end
+         :assigns =>
+             {[:local_id, :perm_id, :client_id, :cumulative_quantity, :price, :average_price] =>
+                  numeric_assigns,
+              :liquidation => boolean_assigns,
+             },
 
-  let(:human) do
-    "<Execution: 20120312  15:41:09 buy 20000 at 1.31075 on IDEALPRO, " +
-        "cumulative 20000 at 1.31075, ids 373/1695693619/0001f4e8.4f5d48f1.01.01>"
-  end
+         :aliases =>
+             {[:side, :action] => buy_sell_assigns,
+              [:quantity, :shares] => numeric_assigns,
+              [:account_name, :account_number]=> string_assigns,
+             },
 
-  let(:errors) do
-    {:side=>["should be buy/sell/short"],
-     :cumulative_quantity=>["is not a number"],
-     :average_price=>["is not a number"]}
-  end
-
-  let(:assigns) do
-    {[:local_id, :perm_id, :client_id, :cumulative_quantity, :price, :average_price] =>
-         numeric_assigns,
-     :liquidation => boolean_assigns,
-    }
-  end
-
-  let(:aliases) do
-    {[:side, :action] => buy_sell_assigns,
-     [:quantity, :shares] => numeric_assigns,
-     [:account_name, :account_number]=> string_assigns,
-    }
-  end
-
-  let(:associations) do
-    {:order => IB::Order.new(:local_id => 23,
-                             :perm_id => 173276893,
-                             :client_id => 1111,
-                             :parent_id => 0,
-                             :quantity => 100,
-                             :side => :buy,
-                             :order_type => :market)
-    }
-  end
+         :associations =>
+             {:order => {:local_id => 23,
+                         :perm_id => 173276893,
+                         :client_id => 1111,
+                         :parent_id => 0,
+                         :quantity => 100,
+                         :side => :buy,
+                         :order_type => :market}
+             } do # AKA IB::Execution
 
   it_behaves_like 'Model'
 
@@ -63,7 +54,7 @@ describe IB::Models::Execution do # AKA IB::Execution
     before(:all) { DatabaseCleaner.clean }
 
     it 'saves associated order' do
-      order = associations[:order]
+      order = IB::Order.new associations[:order]
       subject.order = order
       subject.order.should == order
       subject.order.should be_new_record

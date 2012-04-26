@@ -1,39 +1,31 @@
 require 'model_helper'
 
-describe IB::Models::ComboLeg do
+describe IB::Models::ComboLeg,
+         :props =>
+             {:con_id => 81032967,
+              :ratio => 2,
+              :side => :buy,
+              :exchange => 'CBOE',
+              :open_close => :open,
+              :short_sale_slot => :broker,
+              :designated_location => nil,
+              :exempt_code => -1},
 
-  let(:props) do
-    {:con_id => 81032967,
-     :ratio => 2,
-     :side => :buy,
-     :exchange => 'CBOE',
-     :open_close => :open,
-     :short_sale_slot => :broker,
-     :designated_location => nil,
-     :exempt_code => -1}
-  end
+         :human => "<ComboLeg: buy 2 con_id 81032967 at CBOE>",
 
-  let(:human) do
-    "<ComboLeg: buy 2 con_id 81032967 at CBOE>"
-  end
+         :errors => {:ratio => ["is not a number"],
+                     :side => ["should be buy/sell/short"]},
 
-  let(:errors) do
-    {:ratio => ["is not a number"],
-     :side => ["should be buy/sell/short"]}
-  end
+         :assigns =>
+             {:open_close => open_close_assigns,
+              :side => buy_sell_short_assigns,
+              :designated_location =>
+                  {[42, 'FOO', :bar] => /should be blank or orders will be rejected/},
+             },
 
-  let(:assigns) do
-    {:open_close => open_close_assigns,
-     :side => buy_sell_short_assigns,
-     :designated_location =>
-         {[42, 'FOO', :bar] => /should be blank or orders will be rejected/},
-    }
-  end
-
-  let(:aliases) do
-    {[:side, :action] => buy_sell_short_assigns,
-    }
-  end
+         :aliases =>
+             {[:side, :action] => buy_sell_short_assigns,
+             } do
 
   it 'has combined weight accessor' do
     leg = IB::ComboLeg.new props
