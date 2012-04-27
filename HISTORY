@@ -181,3 +181,7 @@
 == 0.7.11 / 2012-04-25
 
 * DB schema extended
+
+== 0.7.12 / 2012-04-27
+
+* ComboLeg is a join Model
