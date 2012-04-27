@@ -19,7 +19,7 @@ describe IB::Models::Bag,
          :assigns =>
              {:expiry =>
                   {[nil, ''] => '',
-                   [20060913, '20060913', 200609, '200609', :foo, 2006, 42, 'bar'] =>
+                   [20060913, '20060913', 200609, '200609', 2006, :foo, 'bar'] =>
                        /should be blank/},
 
               :sec_type =>
@@ -43,20 +43,13 @@ describe IB::Models::Bag,
               :multiplier => to_i_assigns,
              } do # AKA IB::Bag
 
-  it 'does not allow empty legs' do
-    bag = IB::Bag.new props
-    bag.legs = []
-    bag.should be_invalid
-    bag.errors.messages[:legs].should include "legs cannot be empty"
-  end
-
-  context 'using shortest class name without properties' do
-    subject { IB::Bag.new }
-    it_behaves_like 'Model instantiated empty'
-  end
-
-  it_behaves_like 'Model'
+  it_behaves_like 'Model with valid defaults'
   it_behaves_like 'Self-equal Model'
+
+  it 'has class name shortcut' do
+    IB::Bag.should == IB::Models::Bag
+    IB::Bag.new.should == IB::Models::Bag.new
+  end
 
   context 'properly initiated' do
     subject { IB::Bag.new props }

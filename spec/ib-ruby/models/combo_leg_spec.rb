@@ -37,8 +37,14 @@ describe IB::Models::ComboLeg,
     leg.ratio.should == 5
   end
 
-  it_behaves_like 'Model'
+  it_behaves_like 'Model with valid defaults'
   it_behaves_like 'Self-equal Model'
+
+  it 'has class name shortcut' do
+    IB::ComboLeg.should == IB::Models::ComboLeg
+    IB::ComboLeg.new.should == IB::Models::ComboLeg.new
+  end
+
 
   context "serialization" do
     subject { IB::ComboLeg.new props }
@@ -63,24 +69,71 @@ describe IB::Models::ComboLeg,
     #  close_connection
     #end
 
-    it 'is a join Model between BAG and its leg Contracts' do
-      combo = IB::Bag.new
+    before(:each) do
+      @combo = IB::Bag.new
 
-      google = IB::Option.new(:symbol => 'GOOG',
-                              :expiry => 201301,
-                              :right => :call,
-                              :strike => 500)
+      @google = IB::Option.new(:symbol => 'GOOG',
+                               :expiry => 201301,
+                               :right => :call,
+                               :strike => 500)
+    end
 
-      combo.leg_contracts << google
+    it 'saves associated BAG and leg Contract' do
+
+      combo_leg = IB::ComboLeg.new :con_id => 454, :weight => 3
+      combo_leg.should be_valid
+
+      # Assigning both associations for a join model
+      combo_leg.combo = @combo
+      combo_leg.leg_contract = @google
+
+      combo_leg.save.should == true
+      @combo.should_not be_new_record
+      @google.should_not be_new_record
+
+      combo_leg.combo.should == @combo
+      combo_leg.leg_contract.should == @google
+      @combo.legs.should include combo_leg
+      @combo.leg_contracts.should include @google
+      @google.leg.should == combo_leg
+      @google.combo.should == @combo
+
+    end
+
+    it 'loads ComboLeg together with associated BAG and leg Contract' do
+
+      combo_leg = IB::ComboLeg.where(:con_id => 454).first
+      combo_leg.should be_valid
+
+      #p combo_leg.combo.attributes
+      #p combo_leg.combo.strike
+      #p combo_leg.combo.include_expired
+
+      combo = combo_leg.combo
+      google = combo_leg.leg_contract
+      #combo.should == @combo # NOT equal, different legs
+      google.should == @google
+
+      combo.legs.should include combo_leg
       combo.leg_contracts.should include google
-      p combo.save
+      google.leg.should == combo_leg
+      google.combo.should == combo
+    end
+
+
+    it 'creates ComboLeg indirectly through associated BAG and leg Contract' do
+
+      @combo.leg_contracts << @google
+      @combo.leg_contracts.should include @google
+      p @combo.valid?
+      p @combo.save
 
       #combo.legs.should_not be_empty
-      combo.leg_contracts.should include google
-      google.combo.should == combo
+      @combo.leg_contracts.should include @google
+      @google.combo.should == @combo
 
-      leg = combo.legs.first
-      google.leg.should == leg
+      leg = @combo.legs.first
+      @google.leg.should == leg
 
     end
   end
