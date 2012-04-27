@@ -1,11 +1,40 @@
-# WRITING INTEGRATION SPECS
+## RUNNING TESTS:
 
-Pattern for writing integration specs is like this:
+The gem comes with a spec suit that may be used to test ib-ruby compatibility
+with your specific TWS/Gateway installation. The test suit should be run ONLY
+against your IB paper trading account. Running it against live account may result
+in financial losses.
 
-1. You define your user scenario (such as: subscribe for FUTURES market data).
+In order to run tests, you should set up your IB paper trading connection parameters
+in 'spec/spec_helper' file. Modify account_name, host and port under section
+'Your IB PAPER ACCOUNT'. Do not change the client_id.
 
-2. You find out experimentally, what messages should be sent to IB to accomplish it,
-   and what messages are sent by IB in return.
+Before running tests, you need to start your TWS/Gateway and allow API connection.
+You should not have any open/pending orders on your IB paper trading account prior
+to running tests, otherwise some tests will fail. Use 'bin/cancel_orders' script for
+bulk cancelling of open orders before running tests as needed.
+
+By default, specs are run without database support (tableless). In order to run them
+with database backend, use:
+
+    $ rspec -rdb [spec/specific_spec.rb]
+
+Also, by default, specs suppress logging output that is normally produced by IB::Connection.
+This may make it difficult to debug a failing spec. Following option will switch on verbose
+output (both logger output and content of all received IB messages is dumped). Do not use
+this mode to run a whole spec - you will be swamped! Use it to debug specific failing specs
+only:
+
+    $ rspec -rv [spec/specific_spec.rb]
+
+# WRITING YOUR OWN INTEGRATION SPECS
+
+You can easily create your own integration specs. Pattern for writing specs is like this:
+
+1. You define your user scenario (such as: subscribe to FUTURES market data).
+
+2. You find out from documentation or experimentally, what messages should be sent to
+   IB to accomplish it, and what messages are sent by IB in return.
 
 3. You start writing spec, requiring 'integration_helper'. Don't forget to
    'verify_account'! Running tests against live IB account can be pretty painful.
@@ -25,10 +54,10 @@ Pattern for writing integration specs is like this:
    @ib.received Hash, keyed by message type. The Hash has following structure:
    {:MessageType1 => [msg1, msg2, msg3...], :MessageType2 => [msg1, msg2, msg3...] }.
 
-7. If you created @ib Connection with mock_logger, all log entries produced by IB
+7. If you created @ib Connection with a mock_logger, all log entries produced by IB
    will be also caught and placed into log_entries Array.
 
-8. Your examples can thus test the content of @ib.received Hash to see what messages
+8. Your examples can thus check the content of @ib.received Hash to see what messages
    were received, or log_entries Array to see what was logged.
 
 9. When done with this context, you call 'close_connection' helper in a top-level
@@ -36,13 +65,14 @@ Pattern for writing integration specs is like this:
 
 10. If you reuse the connection between contexts and requests, it is recommended to
    call 'clean_connection' in after block to remove old content from @ib.received Hash,
-   or otherwise manually clean it to remove old/not needed messages from it.
+   and log_entries Array or otherwise manually clean them to remove old/not needed
+   messages from and log entries. If your do not do this, your examples become coupled.
 
 11. If you want to see exactly what's going on inside ib-ruby while your examples are
-    running, set OPTS[:silent] = false in your context, and you'll see all the
-    messages received and log entries made as as result of your examples. Be warned,
-    output is very verbose, so don't forget to switch OPTS[:silent] = true after
-    you've done debugging your examples.
+    running, run your specs with '-rv' option to switch on verbose outpset mode.
+    Now you will see all the messages received and log entries made as as result of
+    your examples running. Be warned, output is very verbose, so don't run big chunk of
+    specs with -rv option or you will be swamped!.
 
 Help the development!
 See 'spec/TODO' file for list of scenarios that still need to be tested.
