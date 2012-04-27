@@ -25,11 +25,11 @@ module IB
 
       # If a opts hash is given, keys are taken as attribute names, values as data.
       # The model instance fields are then set automatically from the opts Hash.
-      def initialize opts={}
+      def initialize attributes={}, opts={}
         run_callbacks :initialize do
-          error "Argument must be a Hash", :args unless opts.is_a?(Hash)
+          error "Argument must be a Hash", :args unless attributes.is_a?(Hash)
 
-          self.attributes = default_attributes.merge(opts)
+          self.attributes = default_attributes.merge(attributes)
         end
       end
 

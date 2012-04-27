@@ -29,6 +29,7 @@ describe "Request Contract Info", :connected => true, :integration => true do
       msg = @ib.received[:ContractData].first
       msg.request_id.should == 111
       msg.contract.should == @contract
+      msg.contract.should be_valid
     end
 
     it 'receives Contract Data with extended fields' do
@@ -79,6 +80,7 @@ describe "Request Contract Info", :connected => true, :integration => true do
     it 'receives Contract Data for requested contract' do
       subject.request_id.should == 123
       subject.contract.should == @contract
+      subject.contract.should be_valid
     end
 
     it 'receives Contract Data with extended fields' do
@@ -127,6 +129,7 @@ describe "Request Contract Info", :connected => true, :integration => true do
     it 'receives Contract Data for requested contract' do
       subject.request_id.should == 135
       subject.contract.should == @contract
+      subject.contract.should be_valid
     end
 
     it 'receives Contract Data with extended fields' do
@@ -172,6 +175,7 @@ describe "Request Contract Info", :connected => true, :integration => true do
     it 'receives Contract Data for requested contract' do
       subject.request_id.should == 147
       subject.contract.should == @contract
+      subject.contract.should be_valid
     end
 
     it 'receives Contract Data with extended fields' do

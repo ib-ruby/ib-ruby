@@ -63,14 +63,7 @@ module IB
       validates_numericality_of :local_id, :perm_id, :client_id, :parent_id, :filled,
                                 :remaining, :only_integer => true, :allow_nil => true
 
-      def default_attributes
-        super.merge :filled => 0,
-                    :remaining => 0,
-                    :price => 0.0,
-                    :average_price => 0.0
-      end
-
-      ## Testing Order state:
+     ## Testing Order state:
 
       def new?
         status.empty? || status == 'New'

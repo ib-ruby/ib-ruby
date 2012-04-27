@@ -1,66 +1,59 @@
 require 'model_helper'
 
-describe IB::Models::Option do # AKA IB::Option
+describe IB::Models::Option,
+         :human => "<Option: AAPL 201301 put 600.5 SMART >",
 
-  let(:props) do
-    {:symbol => 'AAPL',
-     :expiry => '201301',
-     :strike => 600.5,
-     :right => :put,
-    }
-  end
+         :errors => {:right => ["should be put or call"],
+                     :strike => ["must be greater than 0"],
+         },
 
-  let(:human) do
-    "<Option: AAPL 201301 put 600.5 SMART >"
-  end
+         :props => {:symbol => 'AAPL',
+                    :expiry => '201301',
+                    :strike => 600.5,
+                    :right => :put,
+         },
 
-  let(:errors) do
-    {:right => ["should be put or call"],
-     :strike => ["must be greater than 0"],
-    }
-  end
+         :assigns => {
+             :local_symbol =>
+                 {['AAPL  130119C00500000',
+                   :'AAPL  130119C00500000'] => 'AAPL  130119C00500000',
+                  'BAR'=> /invalid OSI code/},
 
-  let(:assigns) do
-    {:expiry =>
-         {[200609, '200609'] => '200609',
-          [20060913, '20060913'] => '20060913',
-          [:foo, 2006, 42, 'bar'] => /should be YYYYMM or YYYYMMDD/},
+             :expiry =>
+                 {[200609, '200609'] => '200609',
+                  [20060913, '20060913'] => '20060913',
+                  [:foo, 2006, 42, 'bar'] => /should be YYYYMM or YYYYMMDD/},
 
-     :sec_type =>
-         {['OPT', :option] => :option,
-          IB::CODES[:sec_type].reject { |k, _| k == :option }.to_a =>
-              /should be an option/},
+             :sec_type =>
+                 {['OPT', :option] => :option,
+                  IB::CODES[:sec_type].reject { |k, _| k == :option }.to_a =>
+                      /should be an option/},
 
-     :right =>
-         {["PUT", "put", "P", "p", :put] => :put,
-          ["CALL", "call", "C", "c", :call] => :call,
-          ['', '0', '?', :none, :foo, 'BAR', 42] => /should be put or call/},
+             :right =>
+                 {["PUT", "put", "P", "p", :put] => :put,
+                  ["CALL", "call", "C", "c", :call] => :call,
+                  ['', '0', '?', :none, :foo, 'BAR', 42] => /should be put or call/},
 
-     :exchange => string_upcase_assigns.merge(
-         [:smart, 'SMART', 'smArt'] => 'SMART'),
+             :exchange => string_upcase_assigns.merge(
+                 [:smart, 'SMART', 'smArt'] => 'SMART'),
 
-     :primary_exchange =>string_upcase_assigns.merge(
-         [:SMART, 'SMART'] => /should not be SMART/),
+             :primary_exchange =>string_upcase_assigns.merge(
+                 [:SMART, 'SMART'] => /should not be SMART/),
 
-     :multiplier => to_i_assigns,
+             :multiplier => to_i_assigns,
 
-     :symbol => string_assigns,
+             :symbol => string_assigns,
 
-     :local_symbol =>
-         {['AAPL  130119C00500000', :'AAPL  130119C00500000'] => 'AAPL  130119C00500000',
-          'BAR'=> /invalid OSI code/},
+             :strike => {[0, -30.0] => /must be greater than 0/},
+         } do # AKA IB::Option
 
-     :strike => {[0, -30.0] => /must be greater than 0/},
-    }
-  end
-
-  context 'using shortest class name without properties' do
-    subject { IB::Option.new }
-    it_behaves_like 'Model instantiated empty'
-  end
-
-  it_behaves_like 'Model'
   it_behaves_like 'Self-equal Model'
+  it_behaves_like 'Model with invalid defaults'
+
+  it 'has class name shortcut' do
+    IB::Option.should == IB::Models::Option
+    IB::Option.new.should == IB::Models::Option.new
+  end
 
   context 'properly initiated' do
     subject { IB::Option.new props }
@@ -84,6 +77,13 @@ describe IB::Models::Option do # AKA IB::Option
       contract.should_not be_stock
       contract.should be_option
     end
+  end
+
+  it 'correctly validates OSI symbol' do
+    o = IB::Option.new props
+    o.should be_valid
+    o.local_symbol = "AAPL  130119C00500000"
+    o.should be_valid
   end
 
   context '.from_osi class builder' do

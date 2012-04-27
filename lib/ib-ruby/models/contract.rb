@@ -49,14 +49,14 @@ module IB
                {:set => proc { |val|
                  self[:right] =
                      case val.to_s.upcase
-                       when 'NONE', '', '0', '?'
-                         ''
-                       when 'PUT', 'P'
-                         'P'
-                       when 'CALL', 'C'
-                         'C'
-                       else
-                         val
+                     when 'NONE', '', '0', '?'
+                       ''
+                     when 'PUT', 'P'
+                       'P'
+                     when 'CALL', 'C'
+                       'C'
+                     else
+                       val
                      end },
                 :validate => {:format => {:with => /^put$|^call$|^none$/,
                                           :message => "should be put, call or none"}}
@@ -66,17 +66,26 @@ module IB
 
       ### Associations
 
-      has_one :contract_detail
+      has_many :orders # Placed for this Contract
 
-      has_one :underlying # for Delta-Neutral Combo contracts only!
-      alias under_comp underlying
-      alias under_comp= underlying=
+      has_one :contract_detail # Volatile info about this Contract
 
-      has_many :combo_legs
+      # For Contracts that are part of BAG
+      has_one :leg, :class_name => 'ComboLeg', :foreign_key => :leg_contract_id
+      has_one :combo, :class_name => 'Contract', :through => :leg
+
+      # for Combo/BAG Contracts that contain ComboLegs
+      has_many :combo_legs, :foreign_key => :combo_id
+      has_many :leg_contracts, :class_name => 'Contract', :through => :combo_legs
       alias legs combo_legs
       alias legs= combo_legs=
       alias combo_legs_description legs_description
       alias combo_legs_description= legs_description=
+
+      # for Delta-Neutral Combo Contracts
+      has_one :underlying
+      alias under_comp underlying
+      alias under_comp= underlying=
 
 
       ### Extra validations
@@ -140,12 +149,12 @@ module IB
       # Defined in Contract, not BAG subclass to keep code DRY
       def serialize_legs *fields
         case
-          when !bag?
-            []
-          when legs.empty?
-            [0]
-          else
-            [legs.size, legs.map { |leg| leg.serialize *fields }].flatten
+        when !bag?
+          []
+        when legs.empty?
+          [0]
+        else
+          [legs.size, legs.map { |leg| leg.serialize *fields }].flatten
         end
       end
 

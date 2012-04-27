@@ -1,68 +1,55 @@
 require 'model_helper'
 
-describe IB::Models::Bag do # AKA IB::Bag
+describe IB::Models::Bag,
 
-  let(:props) do
-    {:symbol => 'GOOG',
-     :exchange => 'SMART',
-     :currency => 'USD',
-     :legs => [IB::ComboLeg.new(:con_id => 81032967, :weight => 1),
-               IB::ComboLeg.new(:con_id => 81032968, :weight => -2),
-               IB::ComboLeg.new(:con_id => 81032973, :weight => 1)]
-    }
-  end
+         :props =>
+             {:symbol => 'GOOG',
+              :exchange => 'SMART',
+              :currency => 'USD',
+              :legs => [IB::ComboLeg.new(:con_id => 81032967, :weight => 1),
+                        IB::ComboLeg.new(:con_id => 81032968, :weight => -2),
+                        IB::ComboLeg.new(:con_id => 81032973, :weight => 1)]
+             },
 
-  let(:human) do
-    "<Bag: GOOG SMART USD legs: 81032967|1,81032968|-2,81032973|1 >"
-  end
+         :human => "<Bag: GOOG SMART USD legs: 81032967|1,81032968|-2,81032973|1 >",
 
-  let(:errors) do
-    {:legs => ["legs cannot be empty"],
-    }
-  end
+         :errors =>
+             {:legs => ["legs cannot be empty"]},
 
-  let(:assigns) do
-    {:expiry =>
-         {[nil, ''] => '',
-          [20060913, '20060913', 200609, '200609', :foo, 2006, 42, 'bar'] =>
-              /should be blank/},
+         :assigns =>
+             {:expiry =>
+                  {[nil, ''] => '',
+                   [20060913, '20060913', 200609, '200609', 2006, :foo, 'bar'] =>
+                       /should be blank/},
 
-     :sec_type =>
-         {['BAG', :bag] => :bag,
-          IB::CODES[:sec_type].reject { |k, _| k == :bag }.to_a =>
-              /should be a bag/},
+              :sec_type =>
+                  {['BAG', :bag] => :bag,
+                   IB::CODES[:sec_type].reject { |k, _| k == :bag }.to_a =>
+                       /should be a bag/},
 
-     :right =>
-         {['?', :none, '', '0'] => :none,
-          ["PUT", :put, "CALL", "C", :call, :foo, 'BAR', 42] =>
-              /should be none/},
+              :right =>
+                  {['?', :none, '', '0'] => :none,
+                   ["PUT", :put, "CALL", "C", :call, :foo, 'BAR', 42] =>
+                       /should be none/},
 
-     :exchange => string_upcase_assigns.merge(
-         [:smart, 'SMART', 'smArt'] => 'SMART'),
+              :exchange => string_upcase_assigns.merge(
+                  [:smart, 'SMART', 'smArt'] => 'SMART'),
 
-     :primary_exchange =>string_upcase_assigns.merge(
-         [:SMART, 'SMART'] => /should not be SMART/),
+              :primary_exchange =>string_upcase_assigns.merge(
+                  [:SMART, 'SMART'] => /should not be SMART/),
 
-     [:symbol, :local_symbol] => string_assigns,
+              [:symbol, :local_symbol] => string_assigns,
 
-     :multiplier => to_i_assigns,
-    }
-  end
+              :multiplier => to_i_assigns,
+             } do # AKA IB::Bag
 
-  it 'does not allow empty legs' do
-    bag = IB::Bag.new props
-    bag.legs = []
-    bag.should be_invalid
-    bag.errors.messages[:legs].should include "legs cannot be empty"
-  end
-
-  context 'using shortest class name without properties' do
-    subject { IB::Bag.new }
-    it_behaves_like 'Model instantiated empty'
-  end
-
-  it_behaves_like 'Model'
+  it_behaves_like 'Model with valid defaults'
   it_behaves_like 'Self-equal Model'
+
+  it 'has class name shortcut' do
+    IB::Bag.should == IB::Models::Bag
+    IB::Bag.new.should == IB::Models::Bag.new
+  end
 
   context 'properly initiated' do
     subject { IB::Bag.new props }

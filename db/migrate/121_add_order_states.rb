@@ -13,15 +13,15 @@ class AddOrderStates < ActiveRecord::Migration
       t.integer :remaining
       t.float :price #     double
       t.float :average_price #  double
-      t.float :init_margin # Float: The impact the order would have on your initial margin.
-      t.float :maint_margin # Float: The impact the order would have on your maintenance margin.
-      t.float :equity_with_loan # Float: The impact the order would have on your equity
+      t.string :why_held # String: comma-separated list of reasons for order to be held.
+      t.string :warning_text # String: Displays a warning message if warranted.
+      t.string :commission_currency, :limit => 4 # String: Shows the currency of the commission.
       t.float :commission # double: Shows the commission amount on the order.
       t.float :min_commission # The possible min range of the actual order commission.
       t.float :max_commission # The possible max range of the actual order commission.
-      t.string :commission_currency, :limit => 4 # String: Shows the currency of the commission.
-      t.string :why_held # String: comma-separated list of reasons for order to be held.
-      t.string :warning_text # String: Displays a warning message if warranted.
+      t.float :init_margin # Float: The impact the order would have on your initial margin.
+      t.float :maint_margin # Float: The impact the order would have on your maintenance margin.
+      t.float :equity_with_loan # Float: The impact the order would have on your equity
       t.timestamps
     end
   end

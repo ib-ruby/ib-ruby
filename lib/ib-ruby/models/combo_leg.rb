@@ -1,13 +1,15 @@
 module IB
   module Models
 
-    # ComboLeg objects represent individual securities in a "BAG" contract - which
-    # is not really a contract, but a combination (combo) of securities. AKA basket
-    # or bag of securities.
+    # ComboLeg is essentially a join Model between Combo (BAG) Contract and
+    # individual Contracts (securities) that this BAG contains.
     class ComboLeg < Model.for(:combo_leg)
       include ModelProperties
 
-      belongs_to :contract
+      # BAG Combo Contract that contains this Leg
+      belongs_to :combo, :class_name => 'Contract'
+      # Contract that constitutes this Leg
+      belongs_to :leg_contract, :class_name => 'Contract', :foreign_key => :leg_contract_id
 
       # General Notes:
       # 1. The exchange for the leg definition must match that of the combination order.
@@ -40,6 +42,8 @@ module IB
 
       def default_attributes
         super.merge :con_id => 0,
+                    :ratio => 1,
+                    :side => :buy,
                     :open_close => :same, # The only option for retail customers.
                     :short_sale_slot => :default,
                     :designated_location => '',

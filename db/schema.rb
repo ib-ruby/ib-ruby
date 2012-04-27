@@ -27,15 +27,16 @@ ActiveRecord::Schema.define(:version => 171) do
   end
 
   create_table "combo_legs", :force => true do |t|
-    t.integer  "contract_id"
+    t.integer  "combo_id"
+    t.integer  "leg_contract_id"
     t.integer  "con_id"
-    t.integer  "ratio"
-    t.string   "exchange"
     t.string   "side",                :limit => 1
-    t.integer  "exempt_code"
-    t.integer  "short_sale_slot"
+    t.integer  "ratio",               :limit => 2
+    t.string   "exchange"
+    t.integer  "exempt_code",         :limit => 2
+    t.integer  "short_sale_slot",     :limit => 2
+    t.integer  "open_close",          :limit => 2
     t.string   "designated_location"
-    t.integer  "open_close"
     t.datetime "created_at",                       :null => false
     t.datetime "updated_at",                       :null => false
   end
@@ -128,20 +129,21 @@ ActiveRecord::Schema.define(:version => 171) do
     t.integer  "remaining"
     t.float    "price"
     t.float    "average_price"
-    t.float    "init_margin"
-    t.float    "maint_margin"
-    t.float    "equity_with_loan"
+    t.string   "why_held"
+    t.string   "warning_text"
+    t.string   "commission_currency", :limit => 4
     t.float    "commission"
     t.float    "min_commission"
     t.float    "max_commission"
-    t.string   "commission_currency", :limit => 4
-    t.string   "why_held"
-    t.string   "warning_text"
+    t.float    "init_margin"
+    t.float    "maint_margin"
+    t.float    "equity_with_loan"
     t.datetime "created_at",                       :null => false
     t.datetime "updated_at",                       :null => false
   end
 
   create_table "orders", :force => true do |t|
+    t.integer  "contract_id"
     t.integer  "local_id"
     t.integer  "client_id"
     t.integer  "perm_id"

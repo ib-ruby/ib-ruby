@@ -1,6 +1,12 @@
 require 'spec_helper'
 require 'db_helper'
 
+[:props, :aliases, :errors, :assigns, :human, :associations, :collections].each do |aspect|
+  eval "def #{aspect}
+          (metadata[:#{aspect}] rescue example.metadata[:#{aspect}]) || {}
+        end"
+end
+
 def codes_and_values_for property
   Hash[IB::VALUES[property].map { |code, value| [[code, value], value] }]
 end
@@ -79,7 +85,6 @@ def test_assigns cases, prop, name
 
   # For all test cases given as an Array [res1, res2] or Hash {val => res} ...
   (cases.is_a?(Array) ? cases.map { |e| [e, e] } : cases).each do |values, result|
-    #p prop, cases
 
     # For all values in this test case ...
     [values].flatten.each do |value|
@@ -87,22 +92,31 @@ def test_assigns cases, prop, name
 
       # Assigning this value to a property results in ...
       case result
-        when Exception # ... Exception
+      when Exception # ... Exception
+
+        it "#{prop} = #{value.inspect} #=> raises #{result}" do
           expect { subject.send "#{prop}=", value }.
               to raise_error result
+        end
 
-        when Regexp # ... Non-exceptional error, making model invalid
+      when Regexp # ... Non-exceptional error, making model invalid
+
+        it "#{prop} = #{value.inspect} #=> error #{result.to_s}" do
+
           expect { subject.send "#{prop}=", value }.to_not raise_error
-          subject.valid? # just triggers validation
 
-          #pp subject.errors.messages
+          subject.valid? # just triggers validation
+                         #pp subject.errors.messages
 
           subject.errors.messages.should have_key name
           subject.should be_invalid
           msg = subject.errors.messages[name].find { |msg| msg =~ result }
           msg.should =~ result
+        end
 
-        else # ... correct uniform assignment to result
+      else # ... correct uniform assignment to result
+
+        it "#{prop} = #{value.inspect} #=> #{result.inspect}" do
 
           was_valid = subject.valid?
           expect { subject.send "#{prop}=", value }.to_not raise_error
@@ -112,10 +126,13 @@ def test_assigns cases, prop, name
             subject.errors.messages.should_not have_key name
             subject.should be_valid
           end
+        end
 
-          if name != prop # additional asserts for aliases
+        if name != prop # additional asserts for aliases
 
+          it "#{prop} alias assignment changes #{name} property, and vice versa" do
             # Assignment to alias changes property as well
+            subject.send "#{prop}=", value
             subject.send("#{name}").should == result
 
             # Unsetting alias unsets property as well
@@ -127,12 +144,29 @@ def test_assigns cases, prop, name
             subject.send "#{name}=", value
             subject.send("#{prop}").should == result
           end
+        end
       end
     end
   end
 end
 
-shared_examples_for 'Model' do
+shared_examples_for 'Model with valid defaults' do
+  context 'instantiation without properties' do
+    subject { described_class.new }
+    let(:init_with_props?) { false }
+
+    it_behaves_like 'Model properties'
+    it_behaves_like 'Valid Model'
+  end
+
+  context 'instantiation with properties' do
+    subject { described_class.new props }
+
+    it_behaves_like 'Model instantiated with properties'
+  end
+end
+
+shared_examples_for 'Model with invalid defaults' do
   context 'instantiation without properties' do
     subject { described_class.new }
 
@@ -143,21 +177,11 @@ shared_examples_for 'Model' do
     subject { described_class.new props }
 
     it_behaves_like 'Model instantiated with properties'
-
-
-    it 'has correct human-readeable format' do
-      case human
-        when Regexp
-          subject.to_human.should =~ human
-        else
-          subject.to_human.should == human
-      end
-    end
   end
 end
 
 shared_examples_for 'Self-equal Model' do
-  subject { described_class.new(props) }
+  subject { described_class.new props }
 
   it 'is self-equal ' do
     should == subject
@@ -169,16 +193,17 @@ shared_examples_for 'Self-equal Model' do
 end
 
 shared_examples_for 'Model instantiated empty' do
+  let(:init_with_props?) { false }
   it { should_not be_nil }
 
   it 'sets all properties to defaults' do
     subject.default_attributes.each do |name, value|
       #p name, value
       case value
-        when Time
-          subject.send(name).should be_a Time
-        else
-          subject.send(name).should == value
+      when Time
+        subject.send(name).should be_a Time
+      else
+        subject.send(name).should == value
       end
     end
   end
@@ -188,10 +213,21 @@ shared_examples_for 'Model instantiated empty' do
 end
 
 shared_examples_for 'Model instantiated with properties' do
+  let(:init_with_props?) { true }
+
   it 'auto-assigns all properties given to initializer' do
     props.each do |name, value|
       #p subject, name, value
       subject.send(name).should == value
+    end
+  end
+
+  it 'has correct human-readeable format' do
+    case human
+    when Regexp
+      subject.to_human.should =~ human
+    else
+      subject.to_human.should == human
     end
   end
 
@@ -222,21 +258,30 @@ shared_examples_for 'Model properties' do
     }.to_not raise_error
   end
 
-  it 'sets values to properties as directed by its setters' do
-    defined?(assigns) && assigns.each do |props, cases|
+  props.each do |name, value|
+    it "#{name} = #{value.inspect} #=> does not raise" do
+      expect {
+        subject.send("#{name}=", value)
+        subject.send(name).should == value
+      }.to_not raise_error
+    end
+  end
+
+  assigns.each do |props, cases|
+    [props].flatten.each do |prop|
       # For each given property ...
-      [props].flatten.each { |prop| test_assigns cases, prop, prop }
-
+      test_assigns cases, prop, prop
     end
   end
 
-  it 'sets values to to aliased properties as well' do
-    defined?(aliases) && aliases.each do |alinames, cases|
-      name, aliases = *alinames
-      # For each original property or alias...
-      [name, aliases].flatten.each { |prop| test_assigns cases, prop, name }
+  aliases.each do |alinames, cases|
+    name, aliases = *alinames
+    # For each original property or alias...
+    [name, aliases].flatten.each do |prop|
+      test_assigns cases, prop, name
     end
   end
+
 end
 
 shared_examples_for 'Valid Model' do
@@ -255,7 +300,7 @@ shared_examples_for 'Invalid Model' do
     subject.should_not be_valid
     subject.should be_invalid
     subject.errors.should_not be_empty
-    subject.errors.messages.should == errors if defined? errors
+    subject.errors.messages.should == errors
   end
 
   it_behaves_like 'Invalid DB-backed Model'
