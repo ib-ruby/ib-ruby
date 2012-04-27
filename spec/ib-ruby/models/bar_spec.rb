@@ -30,6 +30,12 @@ describe IB::Models::Bar,
                   {[:foo, 'BAR', nil] => /is not a number/}
              } do # AKA IB::Bar
 
-  it_behaves_like 'Model'
+  it_behaves_like 'Model with invalid defaults'
+  it_behaves_like 'Self-equal Model'
+
+  it 'has class name shortcut' do
+    IB::Bar.should == IB::Models::Bar
+    IB::Bar.new.should == IB::Models::Bar.new
+  end
 
 end # describe IB::Bar

@@ -39,28 +39,26 @@ describe IB::Models::OrderState,
               [:average_price, :average_fill_price] => float_or_nil_assigns,
              } do
 
-  it_behaves_like 'Model'
   it_behaves_like 'Self-equal Model'
+  it_behaves_like 'Model with invalid defaults'
+
+  it 'has class name shortcut' do
+    IB::OrderState.should == IB::Models::OrderState
+    IB::OrderState.new.should == IB::Models::OrderState.new
+  end
 
   context '#update_missing' do
     let(:nil_state) { IB::OrderState.new(:filled => nil, :remaining => nil,
                                          :price => nil, :average_price => nil) }
     context 'updating with Hash' do
-
       subject { nil_state.update_missing(props) }
-
       it_behaves_like 'Model instantiated with properties'
-
     end
 
     context 'updating with Model' do
-
       subject { nil_state.update_missing(IB::OrderState.new(props)) }
-
       it_behaves_like 'Model instantiated with properties'
-
     end
-
   end
 
   it 'has extra test methods' do

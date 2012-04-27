@@ -46,7 +46,13 @@ describe IB::Models::Execution,
                          :order_type => :market}
              } do # AKA IB::Execution
 
-  it_behaves_like 'Model'
+  it_behaves_like 'Model with invalid defaults'
+  it_behaves_like 'Self-equal Model'
+
+  it 'has class name shortcut' do
+    IB::Execution.should == IB::Models::Execution
+    IB::Execution.new.should == IB::Models::Execution.new
+  end
 
   context 'DB backed associations', :db => true do
     subject { IB::Execution.new props }

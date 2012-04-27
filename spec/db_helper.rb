@@ -32,11 +32,13 @@ shared_examples_for 'Valid DB-backed Model' do
     end
 
     it 'and with the same properties' do
-      model = described_class.find(:first)
-      #p model.attributes
-      #p model.content_attributes
-      props.each do |name, value|
-        model.send(name).should == value
+      if init_with_props?
+        model = described_class.find(:first)
+        #p model.attributes
+        #p model.content_attributes
+        props.each do |name, value|
+          model.send(name).should == value
+        end
       end
     end
 

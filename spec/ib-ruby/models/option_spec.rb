@@ -47,12 +47,12 @@ describe IB::Models::Option,
              :strike => {[0, -30.0] => /must be greater than 0/},
          } do # AKA IB::Option
 
-  it_behaves_like 'Model'
   it_behaves_like 'Self-equal Model'
+  it_behaves_like 'Model with invalid defaults'
 
-  context 'using shortest class name without properties' do
-    subject { IB::Option.new }
-    it_behaves_like 'Model instantiated empty'
+  it 'has class name shortcut' do
+    IB::Option.should == IB::Models::Option
+    IB::Option.new.should == IB::Models::Option.new
   end
 
   context 'properly initiated' do

@@ -19,13 +19,11 @@ describe IB::Models::Underlying,
 
              } do # AKA IB::Underlying
 
-  it_behaves_like 'Model'
   it_behaves_like 'Self-equal Model'
+  it_behaves_like 'Model with invalid defaults'
 
-  context 'using shortest class name without properties' do
-    subject { IB::Underlying.new }
-    it_behaves_like 'Model instantiated empty'
-    it_behaves_like 'Self-equal Model'
+  it 'has class name shortcut' do
+    IB::Underlying.should == IB::Models::Underlying
+    IB::Underlying.new.should == IB::Models::Underlying.new
   end
-
 end # describe IB::Contract

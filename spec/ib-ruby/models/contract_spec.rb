@@ -53,8 +53,13 @@ describe IB::Models::Contract,
               :include_expired => boolean_assigns,
              } do # AKA IB::Contract
 
-  it_behaves_like 'Model'
+  it_behaves_like 'Model with invalid defaults'
   it_behaves_like 'Self-equal Model'
+
+  it 'has class name shortcut' do
+    IB::Contract.should == IB::Models::Contract
+    IB::Contract.new.should == IB::Models::Contract.new
+  end
 
   context 'testing for Contract type (sec_type)' do
 
@@ -104,13 +109,6 @@ describe IB::Models::Contract,
       end
     end
 
-  end
-
-  context 'using shortest class name without properties' do
-    subject { IB::Contract.new }
-    it_behaves_like 'Model instantiated empty'
-    it_behaves_like 'Self-equal Model'
-    it_behaves_like 'Contract'
   end
 
   context "serialization" do

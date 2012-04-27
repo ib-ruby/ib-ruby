@@ -83,8 +83,13 @@ describe IB::Models::Order,
                     :time => "20120312  15:41:10"}]
              } do
 
-  it_behaves_like 'Model'
   it_behaves_like 'Self-equal Model'
+  it_behaves_like 'Model with invalid defaults'
+
+  it 'has class name shortcut' do
+    IB::Order.should == IB::Models::Order
+    IB::Order.new.should == IB::Models::Order.new
+  end
 
   context 'Order associations' do
     after(:all) { DatabaseCleaner.clean }

@@ -150,7 +150,23 @@ def test_assigns cases, prop, name
   end
 end
 
-shared_examples_for 'Model' do
+shared_examples_for 'Model with valid defaults' do
+  context 'instantiation without properties' do
+    subject { described_class.new }
+    let(:init_with_props?) { false }
+
+    it_behaves_like 'Model properties'
+    it_behaves_like 'Valid Model'
+  end
+
+  context 'instantiation with properties' do
+    subject { described_class.new props }
+
+    it_behaves_like 'Model instantiated with properties'
+  end
+end
+
+shared_examples_for 'Model with invalid defaults' do
   context 'instantiation without properties' do
     subject { described_class.new }
 
@@ -161,21 +177,11 @@ shared_examples_for 'Model' do
     subject { described_class.new props }
 
     it_behaves_like 'Model instantiated with properties'
-
-
-    it 'has correct human-readeable format' do
-      case human
-      when Regexp
-        subject.to_human.should =~ human
-      else
-        subject.to_human.should == human
-      end
-    end
   end
 end
 
 shared_examples_for 'Self-equal Model' do
-  subject { described_class.new(props) }
+  subject { described_class.new props }
 
   it 'is self-equal ' do
     should == subject
@@ -187,6 +193,7 @@ shared_examples_for 'Self-equal Model' do
 end
 
 shared_examples_for 'Model instantiated empty' do
+  let(:init_with_props?) { false }
   it { should_not be_nil }
 
   it 'sets all properties to defaults' do
@@ -206,10 +213,21 @@ shared_examples_for 'Model instantiated empty' do
 end
 
 shared_examples_for 'Model instantiated with properties' do
+  let(:init_with_props?) { true }
+
   it 'auto-assigns all properties given to initializer' do
     props.each do |name, value|
       #p subject, name, value
       subject.send(name).should == value
+    end
+  end
+
+  it 'has correct human-readeable format' do
+    case human
+    when Regexp
+      subject.to_human.should =~ human
+    else
+      subject.to_human.should == human
     end
   end
 
@@ -282,7 +300,7 @@ shared_examples_for 'Invalid Model' do
     subject.should_not be_valid
     subject.should be_invalid
     subject.errors.should_not be_empty
-    subject.errors.messages.should == errors if defined? errors
+    subject.errors.messages.should == errors
   end
 
   it_behaves_like 'Invalid DB-backed Model'

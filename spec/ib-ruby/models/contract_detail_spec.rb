@@ -35,13 +35,12 @@ describe IB::Models::ContractDetail,
              {[:contract, :summary] => {IB::Contract.new => IB::Contract.new}
              } do # AKA IB::ContractDetail
 
-  it_behaves_like 'Model'
+  it_behaves_like 'Model with invalid defaults'
   it_behaves_like 'Self-equal Model'
 
-  context 'using shortest class name without properties' do
-    subject { IB::ContractDetail.new }
-    it_behaves_like 'Model instantiated empty'
-    it_behaves_like 'Self-equal Model'
+  it 'has class name shortcut' do
+    IB::ContractDetail.should == IB::Models::ContractDetail
+    IB::ContractDetail.new.should == IB::Models::ContractDetail.new
   end
 
 end # describe IB::Contract
