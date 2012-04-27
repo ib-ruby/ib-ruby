@@ -1,97 +1,95 @@
 require 'model_helper'
 
-describe IB::Models::Order do
+describe IB::Models::Order,
+         :props =>
+             {:local_id => 23,
+              :order_ref => 'Test',
+              :client_id => 1111,
+              :perm_id => 173276893,
+              :parent_id => 0,
+              :side => :buy,
+              :order_type => :market_if_touched,
+              :limit_price => 0.1,
+              :quantity => 100,
+              :tif => :good_till_cancelled,
+              :open_close => :close,
+              :oca_group => '',
+              :oca_type => :reduce_no_block,
+              :origin => :firm,
+              :designated_location => "WHATEVER",
+              :exempt_code => 123,
+              :delta_neutral_order_type => :market,
+              :transmit => false,
+              :outside_rth => true,
+              :what_if => true,
+              :not_held => true},
 
-  let(:props) do
-    {:local_id => 23,
-     :order_ref => 'Test',
-     :client_id => 1111,
-     :perm_id => 173276893,
-     :parent_id => 0,
-     :side => :buy,
-     :order_type => :market_if_touched,
-     :limit_price => 0.1,
-     :quantity => 100,
-     :tif => :good_till_cancelled,
-     :open_close => :close,
-     :oca_group => '',
-     :oca_type => :reduce_no_block,
-     :origin => :firm,
-     :designated_location => "WHATEVER",
-     :exempt_code => 123,
-     :delta_neutral_order_type => :market,
-     :transmit => false,
-     :outside_rth => true,
-     :what_if => true,
-     :not_held => true}
-  end
+         # TODO: :presents => { Object => "Formatted"}
+         :human => "<Order: Test MIT GTC buy 100 New 0.1 #23/173276893 from 1111>",
 
-  # TODO: :presents => { Object => "Formatted"}
-  let(:human) do
-    "<Order: Test MIT GTC buy 100 New 0.1 #23/173276893 from 1111>"
-  end
+         :errors => {:side =>["should be buy/sell/short"]},
 
-  let(:errors) do
-    {:side =>["should be buy/sell/short"]}
-  end
+         :assigns =>
+             {[:order_type, :delta_neutral_order_type] => codes_and_values_for(:order_type),
 
-  let(:assigns) do
-    {[:order_type, :delta_neutral_order_type] => codes_and_values_for(:order_type),
+              :open_close =>
+                  {[42, nil, 'Foo', :bar] => /should be same.open.close.unknown/,
+                   ['SAME', 'same', 'S', 's', :same, 0, '0'] => :same,
+                   ['OPEN', 'open', 'O', 'o', :open, 1, '1'] => :open,
+                   ['CLOSE', 'close', 'C', 'c', :close, 2, '2'] => :close,
+                   ['UNKNOWN', 'unknown', 'U', 'u', :unknown, 3, '3'] => :unknown,
+                  },
 
-     :open_close =>
-         {[42, nil, 'Foo', :bar] => /should be same.open.close.unknown/,
-          ['SAME', 'same', 'S', 's', :same, 0, '0'] => :same,
-          ['OPEN', 'open', 'O', 'o', :open, 1, '1'] => :open,
-          ['CLOSE', 'close', 'C', 'c', :close, 2, '2'] => :close,
-          ['UNKNOWN', 'unknown', 'U', 'u', :unknown, 3, '3'] => :unknown,
-         },
+              [:what_if, :not_held, :outside_rth, :hidden, :transmit, :block_order,
+               :sweep_to_fill, :override_percentage_constraints, :all_or_none,
+               :etrade_only, :firm_quote_only, :opt_out_smart_routing, :scale_auto_reset,
+               :scale_random_percent] => boolean_assigns,
 
-     [:what_if, :not_held, :outside_rth, :hidden, :transmit, :block_order,
-      :sweep_to_fill, :override_percentage_constraints, :all_or_none,
-      :etrade_only, :firm_quote_only, :opt_out_smart_routing, :scale_auto_reset,
-      :scale_random_percent] => boolean_assigns,
+              [:local_id, :perm_id, :parent_id] => numeric_or_nil_assigns,
+             },
 
-     [:local_id, :perm_id, :parent_id] => numeric_or_nil_assigns,
-    }
-  end
+         :aliases =>
+             {[:side, :action] => buy_sell_short_assigns,
+              [:quantity, :total_quantity] => numeric_or_nil_assigns,
+             },
 
-  let(:aliases) do
-    {[:side, :action] => buy_sell_short_assigns,
-     [:quantity, :total_quantity] => numeric_or_nil_assigns,
-    }
-  end
+         :collections =>
+             {:order_states =>[{:status => :Foo},
+                               {:status => 'Bar'},],
 
-  let(:collections) do
-    {:order_states => [IB::OrderState.new(:status => :Foo),
-                       IB::OrderState.new(:status => 'Bar'),],
+              :executions =>
+                  [{:local_id => 23,
+                    :client_id => 1111,
+                    :perm_id => 173276893,
+                    :exchange => "IDEALPRO",
+                    :exec_id => "0001f4e8.4f5d48f1.01.01",
+                    :price => 0.1,
+                    :average_price => 0.1,
+                    :shares => 40,
+                    :cumulative_quantity => 40,
+                    :side => :buy,
+                    :time => "20120312  15:41:09"},
 
-     :executions => [IB::Execution.new(:local_id => 23,
-                                       :client_id => 1111,
-                                       :perm_id => 173276893,
-                                       :exchange => "IDEALPRO",
-                                       :exec_id => "0001f4e8.4f5d48f1.01.01",
-                                       :price => 0.1,
-                                       :average_price => 0.1,
-                                       :shares => 40,
-                                       :cumulative_quantity => 40,
-                                       :side => :buy,
-                                       :time => "20120312  15:41:09"),
-                     IB::Execution.new(:local_id => 23,
-                                       :client_id => 1111,
-                                       :perm_id => 173276893,
-                                       :exchange => "IDEALPRO",
-                                       :exec_id => "0001f4e8.4f5d48f1.01.02",
-                                       :price => 0.1,
-                                       :average_price => 0.1,
-                                       :shares => 60,
-                                       :cumulative_quantity => 100,
-                                       :side => :buy,
-                                       :time => "20120312  15:41:10")]
-    }
-  end
+                   {:local_id => 23,
+                    :client_id => 1111,
+                    :perm_id => 173276893,
+                    :exchange => "IDEALPRO",
+                    :exec_id => "0001f4e8.4f5d48f1.01.02",
+                    :price => 0.1,
+                    :average_price => 0.1,
+                    :shares => 60,
+                    :cumulative_quantity => 100,
+                    :side => :buy,
+                    :time => "20120312  15:41:10"}]
+             } do
 
-  it_behaves_like 'Model'
   it_behaves_like 'Self-equal Model'
+  it_behaves_like 'Model with invalid defaults'
+
+  it 'has class name shortcut' do
+    IB::Order.should == IB::Models::Order
+    IB::Order.new.should == IB::Models::Order.new
+  end
 
   context 'Order associations' do
     after(:all) { DatabaseCleaner.clean }
@@ -129,12 +127,12 @@ describe IB::Models::Order do
       subject.maint_margin.should be_nil
       subject.equity_with_loan.should be_nil
       # Properties arriving via OrderStatus message
-      subject.filled.should  == 0
-      subject.remaining.should  == 0
-      subject.price.should  == 0
-      subject.last_fill_price.should  == 0
-      subject.average_price.should  == 0
-      subject.average_fill_price.should  == 0
+      subject.filled.should == 0
+      subject.remaining.should == 0
+      subject.price.should == 0
+      subject.last_fill_price.should == 0
+      subject.average_price.should == 0
+      subject.average_fill_price.should == 0
       subject.why_held.should be_nil
       # Testing Order state
       subject.should be_new

@@ -1,36 +1,29 @@
 require 'model_helper'
 
-describe IB::Models::Underlying do # AKA IB::Underlying
+describe IB::Models::Underlying,
+         :props =>
+             {:con_id => 234567,
+              :delta => 0.55,
+              :price => 20.5,
+             },
 
-  let(:props) do
-    {:con_id => 234567,
-     :delta => 0.55,
-     :price => 20.5,
-    }
-  end
+         :human => /<Underlying: con_id: 234567 .*delta: 0.55 price: 20.5.*>/,
 
-  let(:human) do
-    /<Underlying: con_id: 234567 .*delta: 0.55 price: 20.5.*>/
-  end
+         :errors =>
+             {:delta => ['is not a number'],
+              :price => ['is not a number'],
+             },
 
-  let(:errors) do
-    {:delta => ['is not a number'],
-     :price => ['is not a number'],
-    }
-  end
+         :assigns =>
+             {[:con_id, :delta, :price] => numeric_assigns,
 
-  let(:assigns) do
-    {[:con_id, :delta, :price] => numeric_assigns,
-    }
-  end
+             } do # AKA IB::Underlying
 
-  it_behaves_like 'Model'
   it_behaves_like 'Self-equal Model'
+  it_behaves_like 'Model with invalid defaults'
 
-  context 'using shortest class name without properties' do
-    subject { IB::Underlying.new }
-    it_behaves_like 'Model instantiated empty'
-    it_behaves_like 'Self-equal Model'
+  it 'has class name shortcut' do
+    IB::Underlying.should == IB::Models::Underlying
+    IB::Underlying.new.should == IB::Models::Underlying.new
   end
-
 end # describe IB::Contract

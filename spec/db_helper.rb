@@ -32,11 +32,13 @@ shared_examples_for 'Valid DB-backed Model' do
     end
 
     it 'and with the same properties' do
-      model = described_class.find(:first)
-      #p model.attributes
-      #p model.content_attributes
-      props.each do |name, value|
-        model.send(name).should == value
+      if init_with_props?
+        model = described_class.find(:first)
+        #p model.attributes
+        #p model.content_attributes
+        props.each do |name, value|
+          model.send(name).should == value
+        end
       end
     end
 
@@ -75,79 +77,80 @@ end
 shared_examples_for 'Model with associations' do
 
   it 'works with associations, if any' do
-    if defined? associations
 
-      subject_name_plural = described_class.to_s.demodulize.tableize
+    subject_name_plural = described_class.to_s.demodulize.tableize
 
-      associations.each do |name, item|
-        puts "Testing single association #{name}"
-        subject.association(name).reflection.should_not be_collection
+    associations.each do |name, item_props|
+      item = "IB::Models::#{name.to_s.classify}".constantize.new item_props
+      #item = const_get("IB::#{name.to_s.classify}").new item_props
+      puts "Testing single association #{name}"
+      subject.association(name).reflection.should_not be_collection
 
-        # Assign item to association
-        expect { subject.send "#{name}=", item }.to_not raise_error
+      # Assign item to association
+      expect { subject.send "#{name}=", item }.to_not raise_error
 
-        association = subject.send name #, :reload
-        association.should == item
-        association.should be_new_record
+      association = subject.send name #, :reload
+      association.should == item
+      association.should be_new_record
 
-        # Reverse association does not include subject
-        reverse_association = association.send(subject_name_plural)
-        reverse_association.should be_empty
+      # Reverse association does not include subject
+      reverse_association = association.send(subject_name_plural)
+      reverse_association.should be_empty
 
-        # Now let's save subject
-        if subject.valid?
-          subject.save
+      # Now let's save subject
+      if subject.valid?
+        subject.save
 
-          association = subject.send name
-          association.should_not be_new_record
+        association = subject.send name
+        association.should_not be_new_record
 
-          # Reverse association now DOES include subject (if reloaded!)
-          reverse_association = association.send(subject_name_plural, :reload)
-          reverse_association.should include subject
-        end
+        # Reverse association now DOES include subject (if reloaded!)
+        reverse_association = association.send(subject_name_plural, :reload)
+        reverse_association.should include subject
       end
     end
   end
 
   it 'works with associated collections, if any' do
-    if defined? collections
+    subject_name = described_class.to_s.demodulize.tableize.singularize
 
-      subject_name = described_class.to_s.demodulize.tableize.singularize
+    collections.each do |name, items|
+      puts "Testing associated collection #{name}"
+      subject.association(name).reflection.should be_collection
 
-      collections.each do |name, items|
-        puts "Testing associated collection #{name}"
-        subject.association(name).reflection.should be_collection
+      [items].flatten.each do |item_props|
+        item = "IB::Models::#{name.to_s.classify}".constantize.new item_props
+        #item = item_class.new item_props
+        association = subject.send name #, :reload
 
-        [items].flatten.each do |item|
+        # Add item to collection
+        expect { association << item }.to_not raise_error
+        association.should include item
+
+        # Reverse association does NOT point to subject
+        reverse_association = association.first.send(subject_name)
+        #reverse_association.should be_nil # But not always!
+
+        #association.size.should == items.size # Not for Order, +1 OrderState
+      end
+
+      # Now let's save subject
+      if subject.valid?
+        subject.save
+
+        [items].flatten.each do |item_props|
+          item = "IB::Models::#{name.to_s.classify}".constantize.new item_props
           association = subject.send name #, :reload
 
-          # Add item to collection
-          expect { association << item }.to_not raise_error
           association.should include item
 
-          # Reverse association does NOT point to subject
+          # Reverse association DOES point to subject now
           reverse_association = association.first.send(subject_name)
-          #reverse_association.should be_nil # But not always!
-
-          #association.size.should == items.size # Not for Order, +1 OrderState
+          reverse_association.should == subject
         end
-
-        # Now let's save subject
-        if subject.valid?
-          subject.save
-
-          [items].flatten.each do |item|
-            association = subject.send name #, :reload
-
-            association.should include item
-
-            # Reverse association DOES point to subject now
-            reverse_association = association.first.send(subject_name)
-            reverse_association.should == subject
-          end
-        end
-
       end
     end
   end
+
+
 end
