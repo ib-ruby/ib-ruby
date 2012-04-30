@@ -14,18 +14,23 @@ You should not have any open/pending orders on your IB paper trading account pri
 to running tests, otherwise some tests will fail. Use 'bin/cancel_orders' script for
 bulk cancelling of open orders before running tests as needed.
 
-By default, specs are run without database support (tableless). In order to run them
-with database backend, use:
-
-    $ rspec -rdb [spec/specific_spec.rb]
-
-Also, by default, specs suppress logging output that is normally produced by IB::Connection.
+By default, specs suppress logging output that is normally produced by IB::Connection.
 This may make it difficult to debug a failing spec. Following option will switch on verbose
 output (both logger output and content of all received IB messages is dumped). Do not use
 this mode to run a whole spec - you will be swamped! Use it to debug specific failing specs
 only:
 
     $ rspec -rv [spec/specific_spec.rb]
+
+By default, specs are run without database support (tableless). In order to run them
+with database backend, use:
+
+    $ rspec -rdb [spec/specific_spec.rb]
+
+If you run your specs against both Gateway and TWS, you may want to use the following
+switch to run specs against TWS port (as opposed to default Gateway port):
+
+    $ rspec -rtws [spec/specific_spec.rb]
 
 # WRITING YOUR OWN INTEGRATION SPECS
 

@@ -1,1 +1,1 @@
-rvm use jruby-head@ib-ruby
+rvm use jruby-head@ib-ruby --create
