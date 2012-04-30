@@ -219,26 +219,3 @@ def order_should_be status, order=@order
   msg.contract.should == @contract
 end
 
-def execution_should_be side, opts={}
-  msg = @ib.received[:ExecutionData][opts[:index] || -1]
-  msg.request_id.should == (opts[:request_id] || -1)
-  msg.contract.should == @contract
-
-  exec = msg.execution
-  exec.perm_id.should be_an Integer
-  exec.perm_id.should == @ib.received[:OpenOrder].last.order.perm_id if @ib.received?(:OpenOrder)
-  exec.client_id.should == OPTS[:connection][:client_id]
-  exec.local_id.should be_an Integer
-  exec.local_id.should == @order.local_id if @order
-  exec.exec_id.should be_a String
-  exec.time.should =~ /\d\d:\d\d:\d\d/
-  exec.account_name.should == OPTS[:connection][:account_name]
-  exec.exchange.should == 'IDEALPRO'
-  exec.side.should == side
-  exec.shares.should == 20000
-  exec.cumulative_quantity.should == 20000
-  exec.price.should be > 1
-  exec.price.should be < 2
-  exec.price.should == exec.average_price
-  exec.liquidation.should == false
-end
