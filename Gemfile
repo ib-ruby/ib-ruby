@@ -14,9 +14,12 @@ gem 'xml-simple' , '>= 1.1.1'
 #gem.add_dependency 'pg', '>= 0.12.1'
 
 group :development do
+  gem 'rails'
   gem 'standalone_migrations'
   gem 'database_cleaner', '>= 0.7.2'
   gem 'rspec', '>= 2.9.0'
+  gem "rspec-rails", "~> 2.10"
   gem 'my_scripts'
+  gem 'combustion', '~> 0.3.1'
 end
 #gemspec

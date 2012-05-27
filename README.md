@@ -142,6 +142,13 @@ You can easily create your own tests following the guide in 'spec/README'.
 Help the development! See 'spec/TODO' for the list of use cases/scenarios
 that still need to be tested.
 
+To run specs with database backend (ActiveRecord), use:
+rspec -rdb spec
+
+To run specs with full rails stack, against just the models use:'
+puts '$ bundle exec rspec -rr spec/ib-ruby/models'
+(This currently has 4 failing tests with the paper account or no account.)
+
 ## DB BACKEND:
 
 Latest versions of the gem added (optional and experimental) support for data
