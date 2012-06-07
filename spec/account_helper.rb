@@ -17,10 +17,19 @@ def verify_account
 
   @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
 
-  @ib.wait_for :ManagedAccounts, 5
-  raise "Unable to verify IB PAPER ACCOUNT" unless @ib.received?(:ManagedAccounts)
+  received =
+      if @ib.server[:server_version] <= 60
+        @ib.send_message :RequestAccountData, :subscribe => true
+        @ib.wait_for :AccountValue, 5
+        raise "Unable to verify IB PAPER ACCOUNT" unless @ib.received? :AccountValue
+        p @ib.received[:AccountValue].first
+        @ib.received[:AccountValue].first.account_name
+      else
+        @ib.wait_for :ManagedAccounts, 5
+        raise "Unable to verify IB PAPER ACCOUNT" unless @ib.received?(:ManagedAccounts)
+        @ib.received[:ManagedAccounts].first.accounts_list
+      end
 
-  received = @ib.received[:ManagedAccounts].first.accounts_list
   raise "Connected to wrong account #{received}, expected #{account}" if account != received
 
   close_connection

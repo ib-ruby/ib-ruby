@@ -30,6 +30,6 @@ Gem::Specification.new do |gem|
   #gem.add_dependency 'pg', '>= 0.12.1'
 
   gem.add_development_dependency 'database_cleaner', '>= 2.8.0'
-  gem.add_development_dependency 'rspec', '>= 2.9.0'
+  gem.add_development_dependency 'rspec', '>= 2.10.0'
   gem.add_development_dependency 'my_scripts'
 end

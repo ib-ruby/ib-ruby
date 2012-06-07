@@ -67,12 +67,12 @@ module IB
       MarketDataType = def_message 58, [:request_id, :int], [:market_data_type, :int]
 
       CommissionReport =
-          def_message 59, [:exec_id, :int],
+          def_message 59, [:exec_id, :string],
                       [:commission, :decimal], # Commission amount.
-                      [:currency, :int], #       Commission currency
-                      [:realized_pnl, :decimal],
-                      [:yield, :decimal],
-                      [:yield_redemption_date, :int]
+                      [:currency, :string], # Commission currency
+                      [:realized_pnl, :decimal_max],
+                      [:yield, :decimal_max],
+                      [:yield_redemption_date, :int] # YYYYMMDD format
 
       ### Require standalone source files for more complex message classes:
 

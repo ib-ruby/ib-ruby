@@ -82,3 +82,4 @@ describe "Combo Order", :connected => true, :integration => true, :slow => true 
   end # Limit
 end # Combo Orders
 
+__END__
