@@ -16,7 +16,7 @@ gem 'xml-simple' , '>= 1.1.1'
 group :development do
   gem 'standalone_migrations'
   gem 'database_cleaner', '>= 0.7.2'
-  gem 'rspec', '>= 2.9.0'
+  gem 'rspec', '>= 2.10.0'
   gem 'my_scripts'
 end
 #gemspec
