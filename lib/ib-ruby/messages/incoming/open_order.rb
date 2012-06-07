@@ -4,7 +4,7 @@ module IB
 
       # OpenOrder is the longest message with complex processing logics
       OpenOrder =
-          def_message [5, [23, 28]],
+          def_message [5, [23, 28, 30]],
                       [:order, :local_id, :int],
 
                       [:contract, :con_id, :int],
@@ -130,7 +130,6 @@ module IB
                    [:order, :basis_points_type, :int_max],
                    [:contract, :legs_description, :string],
 
-                   # Never happens! 28 is the max supported version currently
                    # As of client v.55, we receive orderComboLegs (price) in openOrder
                    [29, [:contract, :legs, :array, proc do |_|
                      IB::ComboLeg.new :con_id => socket.read_int,

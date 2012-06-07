@@ -3,7 +3,7 @@ module IB
     module Incoming
 
       ContractDetails = ContractData =
-          def_message([10, 6],
+          def_message([10, [6, 8]],
                       [:request_id, :int], # request id
                       [:contract, :symbol, :string],
                       [:contract, :sec_type, :string],

@@ -1,7 +1,9 @@
 require 'rspec'
 require 'ib-ruby'
 
-# Top level metadata for test suite level hacking
+PORT ||= 4001 #           4001 for Gateway, 7496 for TWS GUI
+
+# Top (test suite) level metadata
 OPTS ||= {
     :verbose => false, #true, # Verbosity of test outputs
     :brokertron => false, # Use mock (Brokertron) instead of paper account
@@ -20,7 +22,7 @@ else
       {:account_name => 'DU118180', # Your IB PAPER ACCOUNT, tests will only run against it
        :client_id => 1111, #      Just an arbitrary id
        :host => '10.211.55.2', #  Where your TWS/gateway is located, likely '127.0.0.1'
-       :port => 4001, #           4001 for Gateway, 7496 for TWS GUI
+       :port => PORT,
        :reuters => true #         Subscription to Reuters data enabled ?
       }
 end
