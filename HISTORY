@@ -189,3 +189,7 @@
 == 0.8.0 / 2012-06-07
 
 * TWS 926 support
+
+== 0.8.1 / 2012-06-13
+
+* Combo routing parameters and algo parameters supported

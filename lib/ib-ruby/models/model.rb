@@ -49,6 +49,7 @@ module IB
       end
 
       def []= key, val
+        # p key, val
         attributes[key.to_sym] = val
       end
 
