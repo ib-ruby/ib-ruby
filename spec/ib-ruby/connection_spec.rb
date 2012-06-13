@@ -103,7 +103,7 @@ describe IB::Connection do
 
           before(:all) do
             @ib.send_message :RequestAccountData
-            @ib.wait_for :AccountDownloadEnd
+            @ib.wait_for :AccountDownloadEnd, 3
           end
 
           after(:all) { @ib.send_message :RequestAccountData, :subscribe => false }
