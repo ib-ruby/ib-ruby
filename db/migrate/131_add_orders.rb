@@ -83,9 +83,9 @@ class AddOrders < ActiveRecord::Migration
       t.float :basis_points_type # double: EFP orders only
       t.string :algo_strategy
 
-      # t.string :algo_params # public Vector<TagValue> m_algoParams; ?!
-      # t.string :leg_prices # Vector<OrderComboLeg> m_orderComboLegs
-      # t.string :combo_params # not used yet
+      t.text :leg_prices # Vector<OrderComboLeg> m_orderComboLegs
+      t.text :algo_params # public Vector<TagValue> m_algoParams; ?!
+      t.text :combo_params # not used yet
 
       t.integer :scale_init_level_size # int: Size of the first (initial) order component.
       t.integer :scale_subs_level_size # int: Order size of the subsequent scale order

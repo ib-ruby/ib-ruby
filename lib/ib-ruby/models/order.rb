@@ -222,9 +222,9 @@ module IB
       alias order_combo_legs leg_prices
       alias smart_combo_routing_params combo_params
 
-      #serialize :leg_prices
-      #serialize :algo_params
-      #serialize :combo_params
+      serialize :leg_prices
+      serialize :algo_params, Hash
+      serialize :combo_params
 
       # Order is always placed for a contract. Here, we explicitly set this link.
       belongs_to :contract
@@ -306,21 +306,14 @@ module IB
                     :transmit => true,
                     :what_if => false,
                     :leg_prices => [],
-                    :algo_params => [],
-                    :combo_params => [],
+                    :algo_params => HashWithIndifferentAccess.new, #{},
+                    :combo_params => HashWithIndifferentAccess.new, #{},
                     :order_state => IB::OrderState.new(:status => 'New',
                                                        :filled => 0,
                                                        :remaining => 0,
                                                        :price => 0,
                                                        :average_price => 0)
       end
-
-      #after_initialize do #opts = {}
-      #                    #self.leg_prices = []
-      #                    #self.algo_params = {}
-      #                    #self.combo_params = {}
-      #                    #self.order_state ||= IB::OrderState.new :status => 'New'
-      #end
 
       def serialize_algo
         if algo_strategy.nil? || algo_strategy.empty?

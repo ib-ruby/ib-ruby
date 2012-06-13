@@ -1,5 +1,7 @@
 Plan:
 
+0. Full Rails compatibility as a Rails engine.
+
 1. IB#send_message method should accept block, thus compressing subscribe/send_message
 pair into a single call - to simplify DSL.
 

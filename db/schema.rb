@@ -1,3 +1,4 @@
+# encoding: UTF-8
 # This file is auto-generated from the current state of the database. Instead
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
@@ -214,6 +215,9 @@ ActiveRecord::Schema.define(:version => 171) do
     t.float    "basis_points"
     t.float    "basis_points_type"
     t.string   "algo_strategy"
+    t.text     "leg_prices"
+    t.text     "algo_params"
+    t.text     "combo_params"
     t.integer  "scale_init_level_size"
     t.integer  "scale_subs_level_size"
     t.float    "scale_price_increment"
