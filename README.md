@@ -148,6 +148,7 @@ rspec -rdb spec
 To run specs with full rails stack, against just the models use:'
 puts '$ bundle exec rspec -rr spec/ib-ruby/models'
 (This currently has 4 failing tests with the paper account or no account.)
+(To test if you rails environment is working, just type rackup in the base directory.)
 
 ## DB BACKEND:
 
