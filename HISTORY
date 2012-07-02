@@ -185,3 +185,11 @@
 == 0.7.12 / 2012-04-27
 
 * ComboLeg is a join Model
+
+== 0.8.0 / 2012-06-07
+
+* TWS 926 support
+
+== 0.8.1 / 2012-06-13
+
+* Combo routing parameters and algo parameters supported

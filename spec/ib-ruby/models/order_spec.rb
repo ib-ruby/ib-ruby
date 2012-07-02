@@ -1,87 +1,87 @@
 require 'model_helper'
 
 describe IB::Models::Order,
-         :props =>
-             {:local_id => 23,
-              :order_ref => 'Test',
-              :client_id => 1111,
-              :perm_id => 173276893,
-              :parent_id => 0,
-              :side => :buy,
-              :order_type => :market_if_touched,
-              :limit_price => 0.1,
-              :quantity => 100,
-              :tif => :good_till_cancelled,
-              :open_close => :close,
-              :oca_group => '',
-              :oca_type => :reduce_no_block,
-              :origin => :firm,
-              :designated_location => "WHATEVER",
-              :exempt_code => 123,
-              :delta_neutral_order_type => :market,
-              :transmit => false,
-              :outside_rth => true,
-              :what_if => true,
-              :not_held => true},
+  :props =>
+  {:local_id => 23,
+   :order_ref => 'Test',
+   :client_id => 1111,
+   :perm_id => 173276893,
+   :parent_id => 0,
+   :side => :buy,
+   :order_type => :market_if_touched,
+   :limit_price => 0.1,
+   :quantity => 100,
+   :tif => :good_till_cancelled,
+   :open_close => :close,
+   :oca_group => '',
+   :oca_type => :reduce_no_block,
+   :origin => :firm,
+   :designated_location => "WHATEVER",
+   :exempt_code => 123,
+   :delta_neutral_order_type => :market,
+   :transmit => false,
+   :outside_rth => true,
+   :what_if => true,
+   :not_held => true},
 
-         # TODO: :presents => { Object => "Formatted"}
-         :human => "<Order: Test MIT GTC buy 100 New 0.1 #23/173276893 from 1111>",
+  # TODO: :presents => { Object => "Formatted"}
+  :human => "<Order: Test MIT GTC buy 100 New 0.1 #23/173276893 from 1111>",
 
-         :errors => {:side =>["should be buy/sell/short"]},
+  :errors => {:side =>["should be buy/sell/short"]},
 
-         :assigns =>
-             {[:order_type, :delta_neutral_order_type] => codes_and_values_for(:order_type),
+  :assigns =>
+  {[:order_type, :delta_neutral_order_type] => codes_and_values_for(:order_type),
 
-              :open_close =>
-                  {[42, nil, 'Foo', :bar] => /should be same.open.close.unknown/,
-                   ['SAME', 'same', 'S', 's', :same, 0, '0'] => :same,
-                   ['OPEN', 'open', 'O', 'o', :open, 1, '1'] => :open,
-                   ['CLOSE', 'close', 'C', 'c', :close, 2, '2'] => :close,
-                   ['UNKNOWN', 'unknown', 'U', 'u', :unknown, 3, '3'] => :unknown,
-                  },
+   :open_close =>
+   {[42, nil, 'Foo', :bar] => /should be same.open.close.unknown/,
+    ['SAME', 'same', 'S', 's', :same, 0, '0'] => :same,
+    ['OPEN', 'open', 'O', 'o', :open, 1, '1'] => :open,
+    ['CLOSE', 'close', 'C', 'c', :close, 2, '2'] => :close,
+    ['UNKNOWN', 'unknown', 'U', 'u', :unknown, 3, '3'] => :unknown,
+    },
 
-              [:what_if, :not_held, :outside_rth, :hidden, :transmit, :block_order,
-               :sweep_to_fill, :override_percentage_constraints, :all_or_none,
-               :etrade_only, :firm_quote_only, :opt_out_smart_routing, :scale_auto_reset,
-               :scale_random_percent] => boolean_assigns,
+   [:what_if, :not_held, :outside_rth, :hidden, :transmit, :block_order,
+    :sweep_to_fill, :override_percentage_constraints, :all_or_none,
+    :etrade_only, :firm_quote_only, :opt_out_smart_routing, :scale_auto_reset,
+    :scale_random_percent] => boolean_assigns,
 
-              [:local_id, :perm_id, :parent_id] => numeric_or_nil_assigns,
-             },
+   [:local_id, :perm_id, :parent_id] => numeric_or_nil_assigns,
+   },
 
-         :aliases =>
-             {[:side, :action] => buy_sell_short_assigns,
-              [:quantity, :total_quantity] => numeric_or_nil_assigns,
-             },
+  :aliases =>
+  {[:side, :action] => buy_sell_short_assigns,
+   [:quantity, :total_quantity] => numeric_or_nil_assigns,
+   },
 
-         :collections =>
-             {:order_states =>[{:status => :Foo},
-                               {:status => 'Bar'},],
+  :collections =>
+  {:order_states =>[{:status => :Foo},
+                    {:status => 'Bar'},],
 
-              :executions =>
-                  [{:local_id => 23,
-                    :client_id => 1111,
-                    :perm_id => 173276893,
-                    :exchange => "IDEALPRO",
-                    :exec_id => "0001f4e8.4f5d48f1.01.01",
-                    :price => 0.1,
-                    :average_price => 0.1,
-                    :shares => 40,
-                    :cumulative_quantity => 40,
-                    :side => :buy,
-                    :time => "20120312  15:41:09"},
+   :executions =>
+   [{:local_id => 23,
+     :client_id => 1111,
+     :perm_id => 173276893,
+     :exchange => "IDEALPRO",
+     :exec_id => "0001f4e8.4f5d48f1.01.01",
+     :price => 0.1,
+     :average_price => 0.1,
+     :shares => 40,
+     :cumulative_quantity => 40,
+     :side => :buy,
+     :time => "20120312  15:41:09"},
 
-                   {:local_id => 23,
-                    :client_id => 1111,
-                    :perm_id => 173276893,
-                    :exchange => "IDEALPRO",
-                    :exec_id => "0001f4e8.4f5d48f1.01.02",
-                    :price => 0.1,
-                    :average_price => 0.1,
-                    :shares => 60,
-                    :cumulative_quantity => 100,
-                    :side => :buy,
-                    :time => "20120312  15:41:10"}]
-             } do
+    {:local_id => 23,
+     :client_id => 1111,
+     :perm_id => 173276893,
+     :exchange => "IDEALPRO",
+     :exec_id => "0001f4e8.4f5d48f1.01.02",
+     :price => 0.1,
+     :average_price => 0.1,
+     :shares => 60,
+     :cumulative_quantity => 100,
+     :side => :buy,
+     :time => "20120312  15:41:10"}]
+} do
 
   it_behaves_like 'Self-equal Model'
   it_behaves_like 'Model with invalid defaults'
@@ -173,53 +173,89 @@ describe IB::Models::Order,
 
     it 'is not equal for Orders with different limit price' do
       order1 = IB::Order.new :quantity => 100,
-                             :limit_price => 1,
-                             :action => 'BUY'
+        :limit_price => 1,
+        :action => 'BUY'
 
       order2 = IB::Order.new :total_quantity => 100,
-                             :limit_price => 2,
-                             :action => 'BUY'
+        :limit_price => 2,
+        :action => 'BUY'
       order1.should_not == order2
       order2.should_not == order1
     end
 
     it 'is not equal for Orders with different total_quantity' do
       order1 = IB::Order.new :quantity => 20000,
-                             :limit_price => 1,
-                             :action => 'BUY'
+        :limit_price => 1,
+        :action => 'BUY'
 
       order2 = IB::Order.new :total_quantity => 100,
-                             :action => 'BUY',
-                             :limit_price => 1
+        :action => 'BUY',
+        :limit_price => 1
       order1.should_not == order2
       order2.should_not == order1
     end
 
     it 'is not equal for Orders with different action/side' do
       order1 = IB::Order.new :quantity => 100,
-                             :limit_price => 1,
-                             :action => 'SELL'
+        :limit_price => 1,
+        :action => 'SELL'
 
       order2 = IB::Order.new :quantity => 100,
-                             :action => 'BUY',
-                             :limit_price => 1
+        :action => 'BUY',
+        :limit_price => 1
       order1.should_not == order2
       order2.should_not == order1
     end
 
     it 'is not equal for Orders with different order_type' do
       order1 = IB::Order.new :quantity => 100,
-                             :limit_price => 1,
-                             :action => 'BUY',
-                             :order_type => 'LMT'
+        :limit_price => 1,
+        :action => 'BUY',
+        :order_type => 'LMT'
 
       order2 = IB::Order.new :quantity => 100,
-                             :action => 'BUY',
-                             :limit_price => 1,
-                             :order_type => 'MKT'
+        :action => 'BUY',
+        :limit_price => 1,
+        :order_type => 'MKT'
       order1.should_not == order2
       order2.should_not == order1
     end
   end
+
+  context 'DB-backed serialization of properties', :db => true do
+    let(:serializable_props) do
+      {
+        :algo_strategy => "ArrivalPx",
+        :algo_params => { "maxPctVol" => "0.01",
+                          "riskAversion" => "Passive",
+                          "startTime" => "9:00:00 EST",
+                          "endTime" => "15:00:00 EST",
+                          "forceCompletion" => "0",
+                          "allowPastEndTime" => "1"},
+        :combo_params => {"NonGuaranteed" => "1",
+                          "LeginPrio" => "0"},
+        :leg_prices => [1,2,3],
+      }
+    end
+
+    subject { IB::Order.new(props.merge(serializable_props)) }
+
+    after(:all) { DatabaseCleaner.clean }
+
+    it 'is saved to DB with serializable_props' do
+      subject.save.should be_true
+    end
+
+    it 'is loaded from DB with serializable_props' do
+      models = described_class.find(:all)
+      models.should have_exactly(1).model
+      order = models.first
+      order.algo_strategy.should == serializable_props[:algo_strategy]
+      order.algo_params.should == serializable_props[:algo_params]
+      order.combo_params.should == serializable_props[:combo_params]
+      order.leg_prices.should == serializable_props[:leg_prices]
+      p order.combo_params
+    end
+  end # DB
 
 end # describe IB::Order

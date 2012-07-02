@@ -22,8 +22,8 @@ else
   OPTS[:connection] =
       {:account_name => 'DU60320', # Your IB PAPER ACCOUNT, tests will only run against it
        :client_id => 1111, #      Just an arbitrary id
-       :host => '127.0.0.1', #  Where your TWS/gateway is located, likely '127.0.0.1'
-       :port => 7496, #           4001 for Gateway, 7496 for TWS GUI
+       :host => '10.211.55.2', #  Where your TWS/gateway is located, likely '127.0.0.1'
+       :port => PORT,
        :reuters => true #         Subscription to Reuters data enabled ?
       }
 end

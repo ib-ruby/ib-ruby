@@ -213,19 +213,18 @@ module IB
            # for ComboLeg compatibility: SAME = 0; OPEN = 1; CLOSE = 2; UNKNOWN = 3;
            [:side, :action] => PROPS[:side] # String: Action/side: BUY/SELL/SSHORT/SSHORTX
 
-      prop :placed_at, :modified_at
+      prop :placed_at,
+           :modified_at,
+           :leg_prices,
+           :algo_params,
+           :combo_params
 
-      # TODO: restore!
-      ## Returned in OpenOrder for Bag Contracts
-      ## public Vector<OrderComboLeg> m_orderComboLegs
-      #prop :algo_params, :leg_prices, :combo_params
-      #
-      #alias order_combo_legs leg_prices
-      #alias smart_combo_routing_params combo_params
-      #
-      ##serialize :algo_params
-      ##serialize :leg_prices
-      ##serialize :combo_params
+      alias order_combo_legs leg_prices
+      alias smart_combo_routing_params combo_params
+
+      serialize :leg_prices
+      serialize :algo_params, Hash
+      serialize :combo_params
 
       # Order is always placed for a contract. Here, we explicitly set this link.
       belongs_to :contract
@@ -242,10 +241,10 @@ module IB
 
       def order_state= state
         self.order_states.push case state
-                                 when IB::OrderState
-                                   state
-                                 when Symbol, String
-                                   IB::OrderState.new :status => state
+                               when IB::OrderState
+                                 state
+                               when Symbol, String
+                                 IB::OrderState.new :status => state
                                end
       end
 
@@ -306,154 +305,14 @@ module IB
                     :algo_strategy => '',
                     :transmit => true,
                     :what_if => false,
+                    :leg_prices => [],
+                    :algo_params => HashWithIndifferentAccess.new, #{},
+                    :combo_params => HashWithIndifferentAccess.new, #{},
                     :order_state => IB::OrderState.new(:status => 'New',
                                                        :filled => 0,
                                                        :remaining => 0,
                                                        :price => 0,
                                                        :average_price => 0)
-      end
-
-      #after_initialize do #opts = {}
-      #                    #self.leg_prices = []
-      #                    #self.algo_params = {}
-      #                    #self.combo_params = {}
-      #                    #self.order_state ||= IB::OrderState.new :status => 'New'
-      #end
-
-      # This returns an Array of data from the given order,
-      # mixed with data from associated contract. Ugly mix, indeed.
-      def serialize_with server, contract
-        [contract.serialize_long(:con_id, :sec_id),
-         # main order fields
-         case side
-           when :short
-             'SSHORT'
-           when :short_exempt
-             'SSHORTX'
-           else
-             side.to_sup
-         end,
-         quantity,
-         self[:order_type], # Internal code, 'LMT' instead of :limit
-         limit_price,
-         aux_price,
-         self[:tif],
-         oca_group,
-         account,
-         open_close.to_sup[0..0],
-         self[:origin],
-         order_ref,
-         transmit,
-         parent_id,
-         block_order || false,
-         sweep_to_fill || false,
-         display_size,
-         self[:trigger_method],
-         outside_rth || false, # was: ignore_rth
-         hidden || false,
-         contract.serialize_legs(:extended),
-
-         # This is specific to PlaceOrder v.38, NOT supported by API yet!
-         #
-         ## Support for per-leg prices in Order
-         #if server[:server_version] >= 61 && contract.bag?
-         #  leg_prices.empty? ? 0 : [leg_prices.size] + leg_prices
-         #else
-         #  []
-         #end,
-         #
-         ## Support for combo routing params in Order
-         #if server[:server_version] >= 57 && contract.bag?
-         #  p 'Here!'
-         #  combo_params.empty? ? 0 : [combo_params.size] + combo_params.to_a
-         #else
-         #  []
-         #end,
-
-         '', # deprecated shares_allocation field
-         discretionary_amount,
-         good_after_time,
-         good_till_date,
-         fa_group,
-         fa_method,
-         fa_percentage,
-         fa_profile,
-         self[:short_sale_slot], # 0 only for retail, 1 or 2 for institution  (Institutional)
-         designated_location, # only populate when short_sale_slot == 2    (Institutional)
-         exempt_code,
-         self[:oca_type],
-         rule_80a,
-         settling_firm,
-         all_or_none || false,
-         min_quantity,
-         percent_offset,
-         etrade_only || false,
-         firm_quote_only || false,
-         nbbo_price_cap,
-         self[:auction_strategy],
-         starting_price,
-         stock_ref_price,
-         delta,
-         stock_range_lower,
-         stock_range_upper,
-         override_percentage_constraints || false,
-         volatility, #                      Volatility orders
-         self[:volatility_type], #
-         self[:delta_neutral_order_type],
-         delta_neutral_aux_price, #
-
-         # Support for delta neutral orders with parameters
-         if server[:server_version] >= 58 && delta_neutral_order_type
-           [delta_neutral_con_id,
-            delta_neutral_settling_firm,
-            delta_neutral_clearing_account,
-            self[:delta_neutral_clearing_intent]
-           ]
-         else
-           []
-         end,
-
-         continuous_update, #               Volatility orders
-         self[:reference_price_type], #     Volatility orders
-
-         trail_stop_price, #         TRAIL_STOP_LIMIT stop price
-
-         # Support for trailing percent
-         server[:server_version] >= 62 ? trailing_percent : [],
-
-         scale_init_level_size, #    Scale Orders
-         scale_subs_level_size, #    Scale Orders
-         scale_price_increment, #    Scale Orders
-
-         # Support extended scale orders parameters
-         if server[:server_version] >= 60 &&
-             scale_price_increment && scale_price_increment > 0
-           [scale_price_adjust_value,
-            scale_price_adjust_interval,
-            scale_profit_offset,
-            scale_auto_reset || false,
-            scale_init_position,
-            scale_init_fill_qty,
-            scale_random_percent || false
-           ]
-         else
-           []
-         end,
-
-         # TODO: Need to add support for hedgeType, not working ATM - beta only
-         # if (m_serverVersion >= MIN_SERVER_VER_HEDGE_ORDERS) {
-         #    send (order.m_hedgeType);
-         #    if (!IsEmpty(order.m_hedgeType)) send (order.m_hedgeParam); }
-         #
-         # if (m_serverVersion >= MIN_SERVER_VER_OPT_OUT_SMART_ROUTING) {
-         #    send (order.m_optOutSmartRouting) ; || false }
-
-         clearing_account,
-         clearing_intent,
-         not_held || false,
-         contract.serialize_under_comp,
-         serialize_algo(),
-         what_if]
       end
 
       def serialize_algo

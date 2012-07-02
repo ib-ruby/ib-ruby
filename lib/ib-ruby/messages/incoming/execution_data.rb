@@ -3,7 +3,7 @@ module IB
     module Incoming
 
       ExecutionData =
-          def_message [11, 8],
+          def_message [11, [8, 9]],
                       # The reqID that was specified previously in the call to reqExecution()
                       [:request_id, :int],
                       [:execution, :local_id, :int],

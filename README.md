@@ -69,7 +69,8 @@ other API implementations. The choice is yours.
     |:------------|------------:|:------------:|
     | 0.5.21      |    918-920  |    965       |
     | 0.6.1       |    921-923  |    966       |
-    | 0.7.1+      |      924+   |    967       |
+    | 0.7.1+      |    924-925  |    966       |
+    | 0.8.0+      |      926+   |    967       |
 
 4. Start Interactive Broker's Trader Work Station or Gateway before your code
    attempts to connect to it. Note that TWS and Gateway listen to different ports,
@@ -122,34 +123,6 @@ The sample scripts in `bin` directory provide examples of how common tasks
 can be achieved using ib-ruby. You may also want to look into `spec/integration`
 directory for more scenarios and examples of handling IB messages.
 
-## RUNNING TESTS:
-
-The gem comes with a spec suit that may be used to test ib-ruby compatibility
-with your specific TWS/Gateway installation. The test suit should be run ONLY
-against your IB paper trading account. Running it against live account may result
-in financial losses.
-
-In order to run tests, you should set up your IB paper trading connection parameters
-in 'spec/spec_helper' file. Modify account_name, host and port under section
-'Your IB PAPER ACCOUNT'. Do not change the client_id.
-
-Before running tests, you need to start your TWS/Gateway and allow API connection.
-You should not have any open/pending orders on your IB paper trading account prior
-to running tests, otherwise some tests will fail. Use 'bin/cancel_orders' script for
-bulk cancelling of open orders before running tests as needed.
-
-You can easily create your own tests following the guide in 'spec/README'.
-Help the development! See 'spec/TODO' for the list of use cases/scenarios
-that still need to be tested.
-
-To run specs with database backend (ActiveRecord), use:
-rspec -rdb spec
-
-To run specs with full rails stack, against just the models use:'
-puts '$ bundle exec rspec -rr spec/ib-ruby/models'
-(This currently has 4 failing tests with the paper account or no account.)
-(To test if you rails environment is working, just type rackup in the base directory.)
-
 ## DB BACKEND:
 
 Latest versions of the gem added (optional and experimental) support for data
@@ -175,6 +148,48 @@ you don't need IB::DB.connect part, Rails will take care of it for you. So, just
 
 Now, all your IB Models are just ActiveRecords and you can do whatever you want with them:
 persist to DB, use in Rails applications, develop controllers and views.
+
+
+## RUNNING TESTS:
+
+The gem comes with a spec suit that may be used to test ib-ruby compatibility
+with your specific TWS/Gateway installation. The test suit should be run ONLY
+against your IB paper trading account. Running it against live account may result
+in financial losses.
+
+In order to run tests, you should set up your IB paper trading connection parameters
+in 'spec/spec_helper' file. Modify account_name, host and port under section
+'Your IB PAPER ACCOUNT'. Do not change the client_id.
+
+Before running tests, you need to start your TWS/Gateway and allow API connection.
+You should not have any open/pending orders on your IB paper trading account prior
+to running tests, otherwise some tests will fail. Use 'bin/cancel_orders' script for
+bulk cancelling of open orders before running tests as needed.
+
+By default, specs are run without database support (tableless). In order to run them
+with database backend, use:
+
+    $ rspec -rdb [spec/specific_spec.rb]
+
+Also, by default, specs suppress logging output that is normally produced by IB::Connection.
+This may make it difficult to debug a failing spec. Following option will switch on verbose
+output (both logger output and content of all received IB messages is dumped). Do not use
+this mode to run a whole spec - you will be swamped! Use it to debug specific failing specs
+only:
+
+    $ rspec -rv [spec/specific_spec.rb]
+
+You can easily create your own tests following the guide in 'spec/README'.
+Help the development! See 'spec/TODO' for the list of use cases/scenarios
+that still need to be tested.
+
+## CONTRIBUTING:
+
+1. Fork it
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Commit your changes (`git commit -am 'Added some feature'`)
+4. Push to the branch (`git push origin my-new-feature`)
+5. Create new Pull Request
 
 ## LICENSE:
 
