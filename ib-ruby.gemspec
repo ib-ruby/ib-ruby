@@ -33,6 +33,10 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency 'rspec', '>= 2.10.0'
   gem.add_development_dependency 'standalone_migrations'
   gem.add_development_dependency 'my_scripts'
-  gem.add_development_dependency 'rails'
+  gem.add_development_dependency 'rails', '~> 3.2.3'
+  gem.add_development_dependency 'rspec-rails', '~> 2.10.1'
   gem.add_development_dependency 'combustion'
+  gem.add_development_dependency 'pry'
+  gem.add_development_dependency 'pry-doc'
+  gem.add_development_dependency 'pry-rails'
 end
