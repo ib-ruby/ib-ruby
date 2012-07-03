@@ -1,0 +1,3 @@
+test:
+  adapter:  jdbcsqlite3
+  database: db/combustion_test.sqlite3
