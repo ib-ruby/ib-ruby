@@ -149,6 +149,31 @@ you don't need IB::DB.connect part, Rails will take care of it for you. So, just
 Now, all your IB Models are just ActiveRecords and you can do whatever you want with them:
 persist to DB, use in Rails applications, develop controllers and views.
 
+## RAILS:
+
+To add to Rails
+
+Installation:
+
+``` ruby
+## Gemfile for Rails 3
+gem 'ib-ruby', '~>0.8'
+```
+and add the require for the ib_engine in your config/application.rb
+``` ruby
+require File.expand_path('../boot', __FILE__)
+
+require 'rails/all'
+
+require 'ib_engine'
+
+if defined?(Bundler)
+
+```
+
+now run
+`bundle exec rake ib_engine:install:migrations`
+to copy the ib-ruby gems migrations in your rails apps migrations.
 
 ## RUNNING TESTS:
 

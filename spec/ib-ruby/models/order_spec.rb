@@ -92,7 +92,7 @@ describe IB::Models::Order,
   end
 
   context 'Order associations' do
-    after(:all) { DatabaseCleaner.clean }
+    after(:all) { DatabaseCleaner.clean if IB::DB }
 
     subject { IB::Order.new props }
 
@@ -240,7 +240,7 @@ describe IB::Models::Order,
 
     subject { IB::Order.new(props.merge(serializable_props)) }
 
-    after(:all) { DatabaseCleaner.clean }
+    after(:all) { DatabaseCleaner.clean if IB::DB }
 
     it 'is saved to DB with serializable_props' do
       subject.save.should be_true
