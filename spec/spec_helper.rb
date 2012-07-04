@@ -1,15 +1,18 @@
 require 'rspec'
 require 'ib-ruby'
 
-PORT ||= 4001 #           4001 for Gateway, 7496 for TWS GUI
+PORT ||= 7496 #           4001 for Gateway, 7496 for TWS GUI
 
-# Top (test suite) level metadata
+# Top level metadata for test suite level hacking
 OPTS ||= {
     :verbose => false, #true, # Verbosity of test outputs
     :brokertron => false, # Use mock (Brokertron) instead of paper account
 }
 
+pp OPTS
+
 if OPTS[:brokertron]
+  puts "Using Brokerton free.brokertron.com mock service."
   # Connection to mock (Brokertron) account
   OPTS[:connection] =
       {:client_id => 1111, # Just an arbitrary id
@@ -19,9 +22,9 @@ if OPTS[:brokertron]
 else
   # Connection to IB PAPER ACCOUNT
   OPTS[:connection] =
-      {:account_name => 'DU118180', # Your IB PAPER ACCOUNT, tests will only run against it
+      {:account_name => 'DU60320', # Your IB PAPER ACCOUNT, tests will only run against it
        :client_id => 1111, #      Just an arbitrary id
-       :host => '10.211.55.2', #  Where your TWS/gateway is located, likely '127.0.0.1'
+       :host => '127.0.0.1', #  Where your TWS/gateway is located, likely '127.0.0.1'
        :port => PORT,
        :reuters => true #         Subscription to Reuters data enabled ?
       }
@@ -52,6 +55,7 @@ RSpec.configure do |config|
   # config.mock_with :rr
 
   if IB::DB
+    puts "Database backed"
     config.before(:suite) do
       DatabaseCleaner.strategy = :truncation
       DatabaseCleaner.clean

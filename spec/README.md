@@ -27,6 +27,9 @@ with database backend, use:
 
     $ rspec -rdb [spec/specific_spec.rb]
 
+To run using the rails engine integration use:
+    $ rspec -rr [spec/specific_spec.rb]
+
 If you run your specs against both Gateway and TWS, you may want to use the following
 switch to run specs against TWS port (as opposed to default Gateway port):
 
