@@ -1,8 +1,8 @@
 puts 'To run specs with rails (ActiveRecord), use:'
-puts '$ bundle exec rspec -rr spec/ib-ruby/models'
+puts '$ rspec -rr spec/ib-ruby/models'
 
+require 'bundler/setup'
 require 'combustion'
-
 require 'ib_engine'
 
 Combustion.initialize!

@@ -32,7 +32,7 @@ def execution_should_be side, opts={}
   exec.local_id.should == @order.local_id if @order
   exec.exec_id.should be_a String
   exec.time.should =~ /\d\d:\d\d:\d\d/
-  exec.account_name.should == OPTS[:connection][:account_name]
+  exec.account_name.should == OPTS[:connection][:account]
   exec.exchange.should == 'IDEALPRO'
   exec.side.should == side
   exec.shares.should == 20000
