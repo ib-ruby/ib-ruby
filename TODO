@@ -16,6 +16,8 @@ http://finance.groups.yahoo.com/group/TWSAPI/message/25413
 
 6. Move Float values to Decimal (roundoff errors showed in spec!)
 
+7. Bars need a contract reference (https://github.com/ib-ruby/ib-ruby/issues/24)
+
 
 Done:
 

@@ -69,8 +69,8 @@ other API implementations. The choice is yours.
     |:------------|------------:|:------------:|
     | 0.5.21      |    918-920  |    965       |
     | 0.6.1       |    921-923  |    966       |
-    | 0.7.1+      |    924-925  |    966       |
-    | 0.8.0+      |      926+   |    967       |
+    | 0.7.1       |    924-925  |    966       |
+    | 0.8.1+      |    926-927  |    967       |
 
 4. Start Interactive Broker's Trader Work Station or Gateway before your code
    attempts to connect to it. Note that TWS and Gateway listen to different ports,
@@ -82,7 +82,7 @@ other API implementations. The choice is yours.
 This is an example of your script that requests and prints out account data, then
 places limit order to buy 100 lots of WFC and waits for execution. All in about ten
 lines of code - and without sacrificing code readability or flexibility.
-
+``` ruby
     require 'ib-ruby'
 
     ib = IB::Connection.new :port => 7496
@@ -98,7 +98,7 @@ lines of code - and without sacrificing code readability or flexibility.
                                 :action => :buy, :order_type => :limit
     ib.place_order buy_order, contract
     ib.wait_for :ExecutionData
-
+```
 Your code interacts with TWS via exchange of messages. Messages that you send to
 TWS are called 'Outgoing', messages your code receives from TWS - 'Incoming'.
 
@@ -131,21 +131,21 @@ the database (SQLite recommended for simplicity) and run migrations located at
 'db/migrate' folder.
 
 You further need to:
-
+``` ruby
     require 'ib-ruby/db'
 
     IB::DB.connect :adapter => 'sqlite3',
                    :database => 'db/test.sqlite3'
 
     require 'ib-ruby'
-
+```
 Only require 'ib-ruby' AFTER you connected to DB, otherwise your Models will not
 inherit from ActiveRecord::Base and won't be persistent. If you are using Rails,
 you don't need IB::DB.connect part, Rails will take care of it for you. So, just use:
-
+``` ruby
     require 'ib-ruby/db'
     require 'ib-ruby'
-
+``` 
 Now, all your IB Models are just ActiveRecords and you can do whatever you want with them:
 persist to DB, use in Rails applications, develop controllers and views.
 
