@@ -5,7 +5,7 @@ require 'active_support/hash_with_indifferent_access'
 module IB
 
   # Module adds prop Macro and
-  module ModelProperties
+  module BaseProperties
     extend ActiveSupport::Concern
 
     def default_attributes
@@ -140,5 +140,5 @@ module IB
       end
 
     end # included
-  end # module ModelProperties
+  end # module BaseProperties
 end

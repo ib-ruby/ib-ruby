@@ -2,8 +2,8 @@
 # require 'ib-ruby/models/underlying'
 
 module IB
-  class Contract < IB::Model.for(:contract)
-    include ModelProperties
+  class Contract < IB::Model
+    include BaseProperties
 
     # Fields are Strings unless noted otherwise
     prop :con_id, # int: The unique contract identifier.

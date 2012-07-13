@@ -1,8 +1,8 @@
 module IB
   # This is a single data point delivered by HistoricData or RealTimeBar messages.
   # Instantiate with a Hash of attributes, to be auto-set via initialize in Model.
-  class Bar < IB::Model.for(:bar)
-    include ModelProperties
+  class Bar < IB::Model
+    include BaseProperties
 
     prop :open, #   The bar opening price.
       :high, #   The high price during the time covered by the bar.

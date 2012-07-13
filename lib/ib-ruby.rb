@@ -15,14 +15,9 @@ module IB
   require 'ib-ruby/connection'
 
   require 'ib-ruby/models'
-  Datatypes = Models # Legacy alias 
-  include Models # Flatten namespace (IB::Contract instead of IB::Models::Contract)
-
   require 'ib-ruby/messages'
-  IncomingMessages = Messages::Incoming # Legacy alias
-  OutgoingMessages = Messages::Outgoing # Legacy alias
-
   require 'ib-ruby/symbols'
-end
-IbRuby = IB
 
+end # module IB
+IbRuby = IB
+Ib = IB

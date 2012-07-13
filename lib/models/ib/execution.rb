@@ -1,8 +1,8 @@
 module IB
 
   # This is IB Order execution report.
-  class Execution < IB::Model.for(:execution)
-    include ModelProperties
+  class Execution < IB::Model
+    include BaseProperties
 
     belongs_to :order
 

@@ -1,8 +1,8 @@
 module IB
 
   # Additional Contract properties (volatile, therefore extracted)
-  class ContractDetail < IB::Model.for(:contract_detail)
-    include ModelProperties
+  class ContractDetail < IB::Model
+    include BaseProperties
 
     # All fields Strings, unless specified otherwise:
     prop :market_name, # The market name for this contract.
