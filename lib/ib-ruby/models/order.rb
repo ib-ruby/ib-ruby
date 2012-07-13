@@ -1,6 +1,6 @@
 module IB
   module Models
-    class Order < Model.for(:order)
+    class Order < IB::Model.for(:order)
       include ModelProperties
 
       # General Notes:

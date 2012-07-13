@@ -4,7 +4,7 @@ module IB
   module Models
 
     # Calculated characteristics of underlying Contract (volatile)
-    class Underlying < Model.for(:underlying)
+    class Underlying < IB::Model.for(:underlying)
       include ModelProperties
 
       has_one :contract

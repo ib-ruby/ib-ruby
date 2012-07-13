@@ -3,7 +3,7 @@ module IB
 
     # OrderState represents dynamic (changeable) info about a single Order,
     # isolating these changes and making Order essentially immutable
-    class OrderState < Model.for(:order_state)
+    class OrderState < IB::Model.for(:order_state)
       include ModelProperties
 
       #p column_names

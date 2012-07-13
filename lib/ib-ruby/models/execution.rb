@@ -2,7 +2,7 @@ module IB
   module Models
     # This is IB Order execution report.
     # Instantiate with a Hash of attributes, to be auto-set via initialize in Model.
-    class Execution < Model.for(:execution)
+    class Execution < IB::Model.for(:execution)
       include ModelProperties
 
       belongs_to :order

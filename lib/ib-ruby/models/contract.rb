@@ -3,7 +3,7 @@ require 'ib-ruby/models/underlying'
 
 module IB
   module Models
-    class Contract < Model.for(:contract)
+    class Contract < IB::Model.for(:contract)
       include ModelProperties
 
       # Fields are Strings unless noted otherwise

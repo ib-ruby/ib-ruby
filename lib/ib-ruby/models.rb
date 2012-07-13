@@ -1,8 +1,10 @@
 module IB
   module Models
 
-    require 'ib-ruby/models/model_properties'
-    require 'ib-ruby/models/model'
+    # require 'ib-ruby/models/model_properties'
+    # require 'ib-ruby/models/model'
+    require 'ib-ruby/model_properties'
+    require 'ib-ruby/model'
 
     require 'ib-ruby/models/contract'
     require 'ib-ruby/models/order_state'

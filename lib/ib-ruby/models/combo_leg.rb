@@ -3,7 +3,7 @@ module IB
 
     # ComboLeg is essentially a join Model between Combo (BAG) Contract and
     # individual Contracts (securities) that this BAG contains.
-    class ComboLeg < Model.for(:combo_leg)
+    class ComboLeg < IB::Model.for(:combo_leg)
       include ModelProperties
 
       # BAG Combo Contract that contains this Leg

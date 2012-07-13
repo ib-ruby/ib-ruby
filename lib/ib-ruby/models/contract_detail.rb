@@ -2,7 +2,7 @@ module IB
   module Models
 
     # Additional Contract properties (volatile, therefore extracted)
-    class ContractDetail < Model.for(:contract_detail)
+    class ContractDetail < IB::Model.for(:contract_detail)
       include ModelProperties
 
       belongs_to :contract
