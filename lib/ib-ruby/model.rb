@@ -1,5 +1,5 @@
 module IB
-  
+
   # Base class for tableless IB data Models, extends ActiveModel API
   class Model
     extend ActiveModel::Naming
@@ -13,8 +13,7 @@ module IB
     # require 'ib-ruby/db' # to make all IB models database-backed
     # If you plan to persist only specific Models, select those subclasses here:
     def self.for subclass
-      if DB # && [:contract, :order, :order_state].include? subclass
-      # if IB.db_backed?
+      if IB.db_backed?
         ActiveRecord::Base
       else
         IB::Model

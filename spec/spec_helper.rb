@@ -48,7 +48,7 @@ RSpec.configure do |config|
       end
     end,
 
-    :db => proc { |condition| !IB::DB == condition }, # true/false
+    :db => proc { |condition| IB.db_backed? != condition }, # true/false
 
     :reuters => proc { |condition| !OPTS[:connection][:reuters] == condition } # true/false
   }
@@ -58,7 +58,7 @@ RSpec.configure do |config|
   # config.mock_with :flexmock
   # config.mock_with :rr
 
-  if IB::DB
+  if IB.db_backed?
     puts "Database backed"
     config.before(:suite) do
       DatabaseCleaner.strategy = :truncation

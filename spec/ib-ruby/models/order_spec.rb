@@ -107,7 +107,7 @@ describe IB::Models::Order,
       last_state.should be_an IB::OrderState
       last_state.status.should == 'New'
       subject.save
-      last_state.order.should == subject if IB::DB
+      last_state.order.should == subject if IB.db_backed?
     end
 
     it 'has abbreviated accessor to last (current) OrderState' do
@@ -152,7 +152,7 @@ describe IB::Models::Order,
         subject.status.should == 'Bar'
         subject.save
         subject.order_states.should have_exactly(3).states
-        subject.order_states.first.order.should == subject if IB::DB
+        subject.order_states.first.order.should == subject if IB.db_backed?
       end
 
       it 'or simply assigning to order_state accessor' do

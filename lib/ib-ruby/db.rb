@@ -20,6 +20,5 @@ module IB
       Time.zone = 'UTC'
     end
 
-     # Load ActiveRecord::Schema ? where from ?
   end # module DB
 end
