@@ -3,7 +3,8 @@ puts '$ rspec -rr spec/ib-ruby/models'
 
 require 'bundler/setup'
 require 'combustion'
-require 'ib_engine'
+# require 'ib_engine'
+require 'ib-ruby/engine'
 
 Combustion.initialize!
 
