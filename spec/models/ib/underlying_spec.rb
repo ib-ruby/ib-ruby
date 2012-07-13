@@ -1,6 +1,6 @@
 require 'model_helper'
 
-describe IB::Models::Underlying,
+describe IB::Underlying,
          :props =>
              {:con_id => 234567,
               :delta => 0.55,
@@ -17,13 +17,9 @@ describe IB::Models::Underlying,
          :assigns =>
              {[:con_id, :delta, :price] => numeric_assigns,
 
-             } do # AKA IB::Underlying
+             } do
 
   it_behaves_like 'Self-equal Model'
   it_behaves_like 'Model with invalid defaults'
 
-  it 'has class name shortcut' do
-    IB::Underlying.should == IB::Models::Underlying
-    IB::Underlying.new.should == IB::Models::Underlying.new
-  end
-end # describe IB::Contract
+end # describe IB::ib/

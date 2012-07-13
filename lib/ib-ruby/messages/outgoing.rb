@@ -108,7 +108,7 @@ module IB
                                       :side)
 
       # data = { :id => ticker_id (int),
-      #          :contract => Contract,
+      #          :contract => IB::Contract,
       #          :exercise_action => int, 1 = exercise, 2 = lapse
       #          :exercise_quantity => int, The number of contracts to be exercised
       #          :account => string,
@@ -130,7 +130,7 @@ module IB
 
       # @data={:id => int: ticker_id - Must be a unique value. When the market data
       #                                returns, it will be identified by this tag,
-      #      :contract => Models::Contract, requested contract.
+      #      :contract => IB::Contract, requested contract.
       #      :tick_list => String: comma delimited list of requested tick groups:
       #        Group ID - Description - Requested Tick Types
       #        100 - Option Volume (currently for stocks) - 29, 30

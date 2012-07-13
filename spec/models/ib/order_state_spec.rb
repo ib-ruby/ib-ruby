@@ -1,6 +1,6 @@
 require 'model_helper'
 
-describe IB::Models::OrderState,
+describe IB::OrderState,
          :props =>
              {:local_id => 23,
               :perm_id => 173276893,
@@ -41,11 +41,6 @@ describe IB::Models::OrderState,
 
   it_behaves_like 'Self-equal Model'
   it_behaves_like 'Model with invalid defaults'
-
-  it 'has class name shortcut' do
-    IB::OrderState.should == IB::Models::OrderState
-    IB::OrderState.new.should == IB::Models::OrderState.new
-  end
 
   context '#update_missing' do
     let(:nil_state) { IB::OrderState.new(:filled => nil, :remaining => nil,
@@ -108,4 +103,4 @@ describe IB::Models::OrderState,
     subject.should_not be_submitted
   end
 
-end # describe IB::Order
+end # describe IB::OrderState

@@ -1,4 +1,4 @@
-require 'ib-ruby/db'
+# require 'ib-ruby/db'
 class IBEngine < Rails::Engine
   #paths["app"]                 # => ["app"]
   #paths["app/controllers"]     # => ["app/controllers"]

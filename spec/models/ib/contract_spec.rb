@@ -1,7 +1,7 @@
 require 'model_helper'
 require 'combo_helper'
 
-describe IB::Models::Contract,
+describe IB::Contract,
          :props =>
              {:symbol => 'AAPL',
               :sec_type => :option,
@@ -51,15 +51,10 @@ describe IB::Models::Contract,
               :strike => to_f_assigns,
 
               :include_expired => boolean_assigns,
-             } do # AKA IB::Contract
+             } do 
 
   it_behaves_like 'Model with invalid defaults'
   it_behaves_like 'Self-equal Model'
-
-  it 'has class name shortcut' do
-    IB::Contract.should == IB::Models::Contract
-    IB::Contract.new.should == IB::Models::Contract.new
-  end
 
   context 'testing for Contract type (sec_type)' do
 
@@ -152,7 +147,3 @@ describe IB::Models::Contract,
 
 
 end # describe IB::Contract
-
-__END__
-IB::Models::ContractDetail id: nil, contract_id: nil, market_name: "AAPL", trading_class: "AAPL", min_tick: 0.01, price_magnifier: 1, order_types: "ACTIVETIM,ADJUST,ALERT,ALGO,ALLOC,AON,AVGCOST,BASKE...", valid_exchanges: "SMART,AMEX,BATS,BOX,CBOE,CBOE2,IBSX,ISE,MIBSX,NASDA...", under_con_id: 265598, long_name: "APPLE INC", contract_month: "201301", industry: "Technology", category: "Computers", subcategory: "Computers", time_zone: "EST", trading_hours: "20120422:0930-1600;20120423:0930-1600", liquid_hours: "20120422:0930-1600;20120423:0930-1600", cusip: nil, ratings: nil, desc_append: nil, bond_type: nil, coupon_type: nil, coupon: 0.0, maturity: nil, issue_date: nil, next_option_date: nil, next_option_type: nil, notes: nil, callable: false, puttable: false, convertible: false, next_option_partial: false, created_at: "2012-04-23 13:58:05", updated_at: "2012-04-23 13:58:05"
-IB::Models::ContractDetail id: nil, contract_id: nil, market_name: "AAPL", trading_class: "AAPL", min_tick: 0.01, price_magnifier: 1, order_types: "ACTIVETIM,ADJUST,ALERT,ALGO,ALLOC,AON,AVGCOST,BASKE...", valid_exchanges: "SMART,AMEX,BATS,BOX,CBOE,CBOE2,IBSX,ISE,MIBSX,NASDA...", under_con_id: 265598, long_name: "APPLE INC", contract_month: "201301", industry: "Technology", category: "Computers", subcategory: "Computers", time_zone: "EST", trading_hours: "20120422:0930-1600;20120423:0930-1600", liquid_hours: "20120422:0930-1600;20120423:0930-1600", cusip: nil, ratings: nil, desc_append: nil, bond_type: nil, coupon_type: nil, coupon: 0.0, maturity: nil, issue_date: nil, next_option_date: nil, next_option_type: nil, notes: nil, callable: false, puttable: false, convertible: false, next_option_partial: false, created_at: "2012-04-23 13:58:04", updated_at: "2012-04-23 13:58:04">

@@ -1,17 +1,17 @@
 module IB
   module Models
 
-    # require 'ib-ruby/models/model_properties'
-    # require 'ib-ruby/models/model'
     require 'ib-ruby/model_properties'
     require 'ib-ruby/model'
 
-    require 'ib-ruby/models/contract'
-    require 'ib-ruby/models/order_state'
-    require 'ib-ruby/models/order'
-    require 'ib-ruby/models/combo_leg'
-    require 'ib-ruby/models/execution'
-    require 'ib-ruby/models/bar'
+    require 'models/ib/contract_detail'
+    require 'models/ib/underlying'
+    require 'models/ib/contract'
+    require 'models/ib/order_state'
+    require 'models/ib/order'
+    require 'models/ib/combo_leg'
+    require 'models/ib/execution'
+    require 'models/ib/bar'
   end
 end
 

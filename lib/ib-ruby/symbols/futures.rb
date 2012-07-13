@@ -39,7 +39,7 @@ module IB
       "#{ next_quarter_year(time) }#{ sprintf("%02d", next_quarter_month(time)) }"
     end
 
-    # Convenience method; generates a Models::Contract instance for a futures
+    # Convenience method; generates an IB::Contract instance for a futures
     # contract with the given parameters.
     #
     # If expiry is nil, it will use the end month of the current

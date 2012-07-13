@@ -1,6 +1,6 @@
 require 'model_helper'
 
-describe IB::Models::ComboLeg,
+describe IB::ComboLeg,
          :props =>
              {:con_id => 81032967,
               :ratio => 2,
@@ -39,12 +39,6 @@ describe IB::Models::ComboLeg,
 
   it_behaves_like 'Model with valid defaults'
   it_behaves_like 'Self-equal Model'
-
-  it 'has class name shortcut' do
-    IB::ComboLeg.should == IB::Models::ComboLeg
-    IB::ComboLeg.new.should == IB::Models::ComboLeg.new
-  end
-
 
   context "serialization" do
     subject { IB::ComboLeg.new props }
@@ -105,10 +99,6 @@ describe IB::Models::ComboLeg,
       combo_leg = IB::ComboLeg.where(:con_id => 454).first
       combo_leg.should be_valid
 
-      #p combo_leg.combo.attributes
-      #p combo_leg.combo.strike
-      #p combo_leg.combo.include_expired
-
       combo = combo_leg.combo
       google = combo_leg.leg_contract
       #combo.should == @combo # NOT equal, different legs
@@ -138,4 +128,4 @@ describe IB::Models::ComboLeg,
     end
   end
 
-end # describe IB::Models::Contract::ComboLeg
+end # describe IB::ComboLeg

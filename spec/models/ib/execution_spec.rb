@@ -1,6 +1,6 @@
 require 'model_helper'
 
-describe IB::Models::Execution,
+describe IB::Execution,
          :props =>
              {:account_name => "DU111110",
               :client_id => 1111,
@@ -48,11 +48,6 @@ describe IB::Models::Execution,
 
   it_behaves_like 'Model with invalid defaults'
   it_behaves_like 'Self-equal Model'
-
-  it 'has class name shortcut' do
-    IB::Execution.should == IB::Models::Execution
-    IB::Execution.new.should == IB::Models::Execution.new
-  end
 
   context 'DB backed associations', :db => true do
     subject { IB::Execution.new props }
@@ -113,4 +108,4 @@ describe IB::Models::Execution,
     end
   end
 
-end # describe IB::Models::Contract
+end # describe IB::Execution

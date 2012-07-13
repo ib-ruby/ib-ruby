@@ -1,6 +1,6 @@
 require 'model_helper'
 
-describe IB::Models::Bag,
+describe IB::Bag,
 
          :props =>
              {:symbol => 'GOOG',
@@ -41,15 +41,10 @@ describe IB::Models::Bag,
               [:symbol, :local_symbol] => string_assigns,
 
               :multiplier => to_i_assigns,
-             } do # AKA IB::Bag
+             } do
 
   it_behaves_like 'Model with valid defaults'
   it_behaves_like 'Self-equal Model'
-
-  it 'has class name shortcut' do
-    IB::Bag.should == IB::Models::Bag
-    IB::Bag.new.should == IB::Models::Bag.new
-  end
 
   context 'properly initiated' do
     subject { IB::Bag.new props }

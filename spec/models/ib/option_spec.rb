@@ -1,6 +1,6 @@
 require 'model_helper'
 
-describe IB::Models::Option,
+describe IB::Option,
          :human => "<Option: AAPL 201301 put 600.5 SMART >",
 
          :errors => {:right => ["should be put or call"],
@@ -49,11 +49,6 @@ describe IB::Models::Option,
 
   it_behaves_like 'Self-equal Model'
   it_behaves_like 'Model with invalid defaults'
-
-  it 'has class name shortcut' do
-    IB::Option.should == IB::Models::Option
-    IB::Option.new.should == IB::Models::Option.new
-  end
 
   context 'properly initiated' do
     subject { IB::Option.new props }

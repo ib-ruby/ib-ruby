@@ -1,6 +1,6 @@
 require 'model_helper'
 
-describe IB::Models::Bar,
+describe IB::Bar,
          :props =>
              {:open => 1.31,
               :high => 1.35,
@@ -32,10 +32,5 @@ describe IB::Models::Bar,
 
   it_behaves_like 'Model with invalid defaults'
   it_behaves_like 'Self-equal Model'
-
-  it 'has class name shortcut' do
-    IB::Bar.should == IB::Models::Bar
-    IB::Bar.new.should == IB::Models::Bar.new
-  end
 
 end # describe IB::Bar

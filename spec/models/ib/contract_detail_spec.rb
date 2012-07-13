@@ -1,6 +1,6 @@
 require 'model_helper'
 
-describe IB::Models::ContractDetail,
+describe IB::ContractDetail,
 
          :props =>
              {:market_name => 'AAPL',
@@ -33,14 +33,9 @@ describe IB::Models::ContractDetail,
 
          :aliases =>
              {[:contract, :summary] => {IB::Contract.new => IB::Contract.new}
-             } do # AKA IB::ContractDetail
+             } do 
 
   it_behaves_like 'Model with invalid defaults'
   it_behaves_like 'Self-equal Model'
 
-  it 'has class name shortcut' do
-    IB::ContractDetail.should == IB::Models::ContractDetail
-    IB::ContractDetail.new.should == IB::Models::ContractDetail.new
-  end
-
-end # describe IB::Contract
+end # describe IB::ContractDetail

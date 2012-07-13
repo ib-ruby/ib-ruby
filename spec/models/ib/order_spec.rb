@@ -1,6 +1,6 @@
 require 'model_helper'
 
-describe IB::Models::Order,
+describe IB::Order,
   :props =>
   {:local_id => 23,
    :order_ref => 'Test',
@@ -85,11 +85,6 @@ describe IB::Models::Order,
 
   it_behaves_like 'Self-equal Model'
   it_behaves_like 'Model with invalid defaults'
-
-  it 'has class name shortcut' do
-    IB::Order.should == IB::Models::Order
-    IB::Order.new.should == IB::Models::Order.new
-  end
 
   context 'Order associations' do
     after(:all) { DatabaseCleaner.clean if IB::DB }
