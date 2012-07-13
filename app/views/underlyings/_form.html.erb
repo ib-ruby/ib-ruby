@@ -1,0 +1,29 @@
+<%= form_for(@underlying, :url => ib_engine.underlyings_path) do |f| %>
+  <% if @underlying.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@underlying.errors.count, "error") %> prohibited this underlying from being saved:</h2>
+
+      <ul>
+      <% @underlying.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :con_id %><br />
+    <%= f.text_field :con_id %>
+  </div>
+  <div class="field">
+    <%= f.label :delta %><br />
+    <%= f.text_field :delta %>
+  </div>
+  <div class="field">
+    <%= f.label :price %><br />
+    <%= f.text_field :price %>
+  </div>
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>
