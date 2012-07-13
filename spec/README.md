@@ -37,6 +37,15 @@ switches (by default, TWS port is used):
     $ rspec -rgw [spec/specific_spec.rb]
     $ rspec -rtws [spec/specific_spec.rb]
 
+Some of the specs may randomly fail from time to time when you are running the spec suit 
+against your IB paper account. This happens because these specs depend on live connection
+to IB, which is inherently non-deterministic. Anything happening along the way - network
+delay, problems with IB data farms, even high CPU load on your machine - may delay the
+expected responce, so that the spec times out or does not find expected data. It is
+suggested that you run the failing specs several times, and start debugging them only 
+if they are failing regularly. Otherwise, you may just waste time chasing an artifact of
+unreliable IB connection, rather than some real problem with the specs.   
+
 # WRITING YOUR OWN INTEGRATION SPECS
 
 You can easily create your own integration specs. Pattern for writing specs is like this:

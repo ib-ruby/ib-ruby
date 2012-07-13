@@ -9,7 +9,7 @@ shared_examples_for 'OrderStatus message' do
   its(:local_id) { should be_an Integer }
   its(:status) { should =~ /Submit/ }
   its(:to_human) { should =~
-      /<OrderStatus: <OrderState: .*Submit.* #\d+\/\d+ from 1111 filled 0\/100/ }
+                   /<OrderStatus: <OrderState: .*Submit.* #\d+\/\d+ from 1111 filled 0\/100/ }
 
   it 'has proper order_state accessor' do
     os = subject.order_state
@@ -38,18 +38,17 @@ describe IB::Messages::Incoming::OrderStatus do
   context 'Instantiated with data Hash' do
     subject do
       IB::Messages::Incoming::OrderStatus.new :version => 6,
-                                              :order_state =>
-                                                  {:local_id => 1313,
-                                                   :perm_id => 172323928,
-                                                   :client_id => 1111,
-                                                   :parent_id => 0,
-                                                   :status => 'PreSubmitted',
-                                                   :filled => 0,
-                                                   :remaining => 100,
-                                                   :average_fill_price => 0.0,
-                                                   :last_fill_price => 0.0,
-                                                   :why_held => 'child'}
-    end
+        :order_state => { :local_id => 1313,
+                          :perm_id => 172323928,
+                          :client_id => 1111,
+                          :parent_id => 0,
+                          :status => 'PreSubmitted',
+                          :filled => 0,
+                          :remaining => 100,
+                          :average_fill_price => 0.0,
+                          :last_fill_price => 0.0,
+                          :why_held => 'child' }
+        end
 
     it_behaves_like 'OrderStatus message'
   end
@@ -58,15 +57,15 @@ describe IB::Messages::Incoming::OrderStatus do
     before(:all) do
       verify_account
       @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
-      @ib.wait_for :NextValidId
-      clean_connection
+      @ib.wait_for :NextValidId, 3
+      @local_id = @ib.next_local_id
       place_order IB::Symbols::Stocks[:wfc]
-      @ib.wait_for :OrderStatus, 6
+      @ib.wait_for 2 # OrderStatus for cancelled orders from previous specs arrives first :(
     end
 
     after(:all) { close_connection } # implicitly cancels order
 
-    subject { @ib.received[:OrderStatus].first }
+    subject { @ib.received[:OrderStatus].find { |msg| msg.local_id == @local_id } }
 
     it_behaves_like 'OrderStatus message'
   end
