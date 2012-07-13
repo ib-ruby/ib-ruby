@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  con_id: 
+  delta: 1.5
+  price: 1.5
+
+two:
+  con_id: 
+  delta: 1.5
+  price: 1.5
