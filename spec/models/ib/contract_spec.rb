@@ -106,8 +106,9 @@ describe IB::Contract,
 
   end
 
-  context "serialization" do
+  context "serialization", :connected => true do
     before(:all) do
+      # TODO: Change butterfly into a stub, reduce dependency on IB connection
       @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
       @ib.wait_for :ManagedAccounts
       @combo = butterfly 'GOOG', '201301', 'CALL', 500, 510, 520
