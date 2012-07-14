@@ -25,3 +25,7 @@ module IB
 
   end # module DB
 end
+
+# You may just require 'ib/db', it will then auto-require core 'ib' for you
+require 'ib'
+

@@ -1,9 +1,3 @@
-module IB
-  def self.db_backed?
-    !!defined?(IB::DB)
-  end
-end
-
 require 'ib/version'
 require 'ib/extensions'
 require 'ib/errors'

@@ -1,4 +1,7 @@
 module IB
+  def self.db_backed?
+    !!defined?(IB::DB)
+  end
 end # module IB
 
 IbRuby = IB
