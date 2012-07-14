@@ -1,7 +1,7 @@
-class AddContracts < ActiveRecord::Migration
+class AddIbContracts < ActiveRecord::Migration
 
   def change
-    create_table(:contracts) do |t|
+    create_table(:ib_contracts) do |t|
 
       t.integer :con_id # int: The unique contract identifier.
       t.string :sec_type, :limit => 5 # Security type. Valid values are: SECURITY_TYPES

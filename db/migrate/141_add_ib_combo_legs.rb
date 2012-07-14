@@ -1,8 +1,8 @@
-class AddComboLegs < ActiveRecord::Migration
+class AddIbComboLegs < ActiveRecord::Migration
 
   def change
     # ComboLeg objects represent individual security legs in a "BAG"
-    create_table(:combo_legs) do |t|
+    create_table(:ib_combo_legs) do |t|
       t.references :combo
       t.references :leg_contract
       t.integer :con_id #  # int: The unique contract identifier specifying the security.

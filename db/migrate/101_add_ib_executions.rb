@@ -1,7 +1,7 @@
-class AddExecutions < ActiveRecord::Migration
+class AddIbExecutions < ActiveRecord::Migration
 
   def change
-    create_table(:executions) do |t|
+    create_table(:ib_executions) do |t|
       # TWS orders have fixed local_id of 0 AND client id of 0
       t.references :order
       t.integer :local_id #    TWS orders have a fixed order id of 0

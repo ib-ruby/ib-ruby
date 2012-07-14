@@ -1,8 +1,8 @@
-class AddBars < ActiveRecord::Migration
+class AddIbBars < ActiveRecord::Migration
 
   def change
     # This is a single data point delivered by HistoricData or RealTimeBar messages.
-    create_table(:bars) do |t|
+    create_table(:ib_bars) do |t|
       t.float :open #       double:
       t.float :high #       double:
       t.float :low #        double:

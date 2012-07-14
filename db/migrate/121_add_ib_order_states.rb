@@ -1,8 +1,8 @@
-class AddOrderStates < ActiveRecord::Migration
+class AddIbOrderStates < ActiveRecord::Migration
 
   def change
     # OrderState represents dynamic (changeable) info about a single Order
-    create_table(:order_states) do |t|
+    create_table(:ib_order_states) do |t|
       t.references :order
       t.integer :local_id #  int: Order id associated with client (volatile).
       t.integer :client_id # int: The id of the client that placed this order.

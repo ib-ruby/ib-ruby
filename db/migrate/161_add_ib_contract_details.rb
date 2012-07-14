@@ -1,8 +1,8 @@
-class AddContractDetails < ActiveRecord::Migration
+class AddIbContractDetails < ActiveRecord::Migration
 
   def change
     # ComboLeg objects represent individual security legs in a "BAG"
-    create_table(:contract_details) do |t|
+    create_table(:ib_contract_details) do |t|
       t.references :contract
       t.string :market_name # The market name for this contract.
       t.string :trading_class # The trading class name for this contract.

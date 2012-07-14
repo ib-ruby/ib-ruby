@@ -1,4 +1,3 @@
-# encoding: UTF-8
 # This file is auto-generated from the current state of the database. Instead
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
@@ -13,7 +12,7 @@
 
 ActiveRecord::Schema.define(:version => 171) do
 
-  create_table "bars", :force => true do |t|
+  create_table "ib_bars", :force => true do |t|
     t.float    "open"
     t.float    "high"
     t.float    "low"
@@ -27,7 +26,7 @@ ActiveRecord::Schema.define(:version => 171) do
     t.datetime "updated_at",               :null => false
   end
 
-  create_table "combo_legs", :force => true do |t|
+  create_table "ib_combo_legs", :force => true do |t|
     t.integer  "combo_id"
     t.integer  "leg_contract_id"
     t.integer  "con_id"
@@ -42,7 +41,7 @@ ActiveRecord::Schema.define(:version => 171) do
     t.datetime "updated_at",                       :null => false
   end
 
-  create_table "contract_details", :force => true do |t|
+  create_table "ib_contract_details", :force => true do |t|
     t.integer  "contract_id"
     t.string   "market_name"
     t.string   "trading_class"
@@ -78,7 +77,7 @@ ActiveRecord::Schema.define(:version => 171) do
     t.datetime "updated_at",                       :null => false
   end
 
-  create_table "contracts", :force => true do |t|
+  create_table "ib_contracts", :force => true do |t|
     t.integer  "con_id"
     t.string   "sec_type",         :limit => 5
     t.float    "strike"
@@ -99,7 +98,7 @@ ActiveRecord::Schema.define(:version => 171) do
     t.datetime "updated_at",                    :null => false
   end
 
-  create_table "executions", :force => true do |t|
+  create_table "ib_executions", :force => true do |t|
     t.integer  "order_id"
     t.integer  "local_id"
     t.integer  "client_id"
@@ -119,7 +118,7 @@ ActiveRecord::Schema.define(:version => 171) do
     t.datetime "updated_at",                        :null => false
   end
 
-  create_table "order_states", :force => true do |t|
+  create_table "ib_order_states", :force => true do |t|
     t.integer  "order_id"
     t.integer  "local_id"
     t.integer  "client_id"
@@ -143,7 +142,7 @@ ActiveRecord::Schema.define(:version => 171) do
     t.datetime "updated_at",                       :null => false
   end
 
-  create_table "orders", :force => true do |t|
+  create_table "ib_orders", :force => true do |t|
     t.integer  "contract_id"
     t.integer  "local_id"
     t.integer  "client_id"
@@ -234,7 +233,7 @@ ActiveRecord::Schema.define(:version => 171) do
     t.datetime "updated_at",                                    :null => false
   end
 
-  create_table "underlyings", :force => true do |t|
+  create_table "ib_underlyings", :force => true do |t|
     t.integer  "contract_id"
     t.integer  "con_id"
     t.float    "delta"
