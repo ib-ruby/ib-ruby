@@ -1,4 +1,4 @@
-require 'ib-ruby/messages/outgoing/abstract_message'
+require 'ib/messages/outgoing/abstract_message'
 
 # TODO: Don't instantiate messages, use their classes as just namespace for .encode/decode
 
@@ -268,8 +268,8 @@ module IB
                       :scanner_setting_pairs,
                       :stock_type_filter)
 
-      require 'ib-ruby/messages/outgoing/place_order'
-      require 'ib-ruby/messages/outgoing/bar_requests'
+      require 'ib/messages/outgoing/place_order'
+      require 'ib/messages/outgoing/bar_requests'
 
     end # module Outgoing
   end # module Messages

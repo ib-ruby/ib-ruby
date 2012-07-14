@@ -1,4 +1,4 @@
-# require 'ib-ruby/models/contract'
+require 'models/ib/contract'
 
 module IB
 

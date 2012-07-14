@@ -61,10 +61,10 @@ class Object
   end
 end
 
-### Patching Object#error in ib-ruby/errors
+### Patching Object#error in ib/errors
 #  def error message, type=:standard
 
-### Patching Object#log, #default_logger= in ib-ruby/logger
+### Patching Object#log, #default_logger= in ib/logger
 #  def default_logger
 #  def default_logger= logger
 #  def log *args

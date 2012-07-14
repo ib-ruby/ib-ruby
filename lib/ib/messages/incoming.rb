@@ -1,4 +1,4 @@
-require 'ib-ruby/messages/incoming/abstract_message'
+require 'ib/messages/incoming/abstract_message'
 
 # EClientSocket.java uses sendMax() rather than send() for a number of these.
 # It sends an EOL rather than a number if the value == Integer.MAX_VALUE (or Double.MAX_VALUE).
@@ -76,19 +76,19 @@ module IB
 
       ### Require standalone source files for more complex message classes:
 
-      require 'ib-ruby/messages/incoming/alert'
-      require 'ib-ruby/messages/incoming/contract_data'
-      require 'ib-ruby/messages/incoming/delta_neutral_validation'
-      require 'ib-ruby/messages/incoming/execution_data'
-      require 'ib-ruby/messages/incoming/historical_data'
-      require 'ib-ruby/messages/incoming/market_depths'
-      require 'ib-ruby/messages/incoming/next_valid_id'
-      require 'ib-ruby/messages/incoming/open_order'
-      require 'ib-ruby/messages/incoming/order_status'
-      require 'ib-ruby/messages/incoming/portfolio_value'
-      require 'ib-ruby/messages/incoming/real_time_bar'
-      require 'ib-ruby/messages/incoming/scanner_data'
-      require 'ib-ruby/messages/incoming/ticks'
+      require 'ib/messages/incoming/alert'
+      require 'ib/messages/incoming/contract_data'
+      require 'ib/messages/incoming/delta_neutral_validation'
+      require 'ib/messages/incoming/execution_data'
+      require 'ib/messages/incoming/historical_data'
+      require 'ib/messages/incoming/market_depths'
+      require 'ib/messages/incoming/next_valid_id'
+      require 'ib/messages/incoming/open_order'
+      require 'ib/messages/incoming/order_status'
+      require 'ib/messages/incoming/portfolio_value'
+      require 'ib/messages/incoming/real_time_bar'
+      require 'ib/messages/incoming/scanner_data'
+      require 'ib/messages/incoming/ticks'
 
     end # module Incoming
   end # module Messages

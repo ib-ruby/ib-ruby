@@ -1,4 +1,4 @@
-# Note that the :description field is particular to ib-ruby, and is NOT part of the
+# Note that the :description field is particular to ib, and is NOT part of the
 # standard TWS API. It is never transmitted to IB. It's purely used clientside, and
 # you can store any arbitrary string that you may find useful there.
 module IB

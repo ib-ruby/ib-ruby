@@ -1,3 +1,5 @@
+require 'models/ib/order_state'
+
 module IB
   class Order < IB::Model
     include BaseProperties
@@ -23,7 +25,7 @@ module IB
       # Advanced Trading: OCA / VOL / SCALE
       # Other (no abbreviation): Bracket, Auction, Discretionary, Sweep-to-Fill,
       # Price Improvement Auction,  Block, Hidden, Iceberg/Reserve, All-or-None, Fill-or-Kill
-      # See 'ib-ruby/constants.rb' ORDER_TYPES for a complete list of valid values.
+      # See 'ib/constants.rb' ORDER_TYPES for a complete list of valid values.
 
       :limit_price, # double: LIMIT price, used for limit, stop-limit and relative
       #               orders. In all other cases specify zero. For relative

@@ -1,5 +1,5 @@
-# require 'ib-ruby/models/contract_detail'
-# require 'ib-ruby/models/underlying'
+require 'models/ib/contract_detail'
+require 'models/ib/underlying'
 
 module IB
   class Contract < IB::Model
@@ -62,7 +62,7 @@ module IB
                                 :message => "should be put, call or none"}}
     }
 
-    attr_accessor :description # NB: local to ib-ruby, not part of TWS.
+    attr_accessor :description # NB: local to ib, not part of TWS.
 
     ### Associations
 

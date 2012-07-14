@@ -1,5 +1,5 @@
-require 'ib-ruby/socket'
-require 'ib-ruby/logger'
+require 'ib/socket'
+require 'ib/logger'
 
 module IB
   # Encapsulates API connection to TWS or Gateway

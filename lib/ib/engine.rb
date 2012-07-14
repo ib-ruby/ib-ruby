@@ -17,10 +17,10 @@ module IB
     config.to_prepare do
     end
 
-    initializer "ib-ruby.active_record" do |app|
+    initializer "ib.active_record" do |app|
       ActiveSupport.on_load :active_record do
-        require 'ib-ruby/db'
-        require 'ib-ruby/requires'
+        require 'ib/db'
+        require 'ib/requires'
       end
     end
 

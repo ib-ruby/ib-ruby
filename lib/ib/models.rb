@@ -1,4 +1,4 @@
-  require 'ib-ruby/model'
+  require 'ib/model'
 
   require 'models/ib/contract_detail'
   require 'models/ib/underlying'
