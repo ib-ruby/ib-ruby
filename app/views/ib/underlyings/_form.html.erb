@@ -1,4 +1,4 @@
-<%= form_for(@underlying, :url => ib_engine.underlyings_path) do |f| %>
+<%= form_for(@underlying) do |f| %>
   <% if @underlying.errors.any? %>
     <div id="error_explanation">
       <h2><%= pluralize(@underlying.errors.count, "error") %> prohibited this underlying from being saved:</h2>
@@ -12,8 +12,12 @@
   <% end %>
 
   <div class="field">
+    <%= f.label :contract_id %><br />
+    <%= f.number_field :contract_id %>
+  </div>
+  <div class="field">
     <%= f.label :con_id %><br />
-    <%= f.text_field :con_id %>
+    <%= f.number_field :con_id %>
   </div>
   <div class="field">
     <%= f.label :delta %><br />

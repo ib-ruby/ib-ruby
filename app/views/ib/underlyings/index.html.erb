@@ -2,7 +2,8 @@
 
 <table>
   <tr>
-    <th>Con</th>
+    <th>Contract</th>
+    <th>Con_id</th>
     <th>Delta</th>
     <th>Price</th>
     <th></th>
@@ -12,11 +13,12 @@
 
 <% @underlyings.each do |underlying| %>
   <tr>
+    <td><%= underlying.contract_id %></td>
     <td><%= underlying.con_id %></td>
     <td><%= underlying.delta %></td>
     <td><%= underlying.price %></td>
     <td><%= link_to 'Show', underlying %></td>
-    <td><%= link_to 'Edit', ib_engine.edit_underlying_path(underlying) %></td>
+    <td><%= link_to 'Edit', edit_underlying_path(underlying) %></td>
     <td><%= link_to 'Destroy', underlying, :method => :delete, :data => { :confirm => 'Are you sure?' } %></td>
   </tr>
 <% end %>
@@ -24,4 +26,4 @@
 
 <br />
 
-<%= link_to 'New Underlying', ib_engine.new_underlying_path %>
+<%= link_to 'New Underlying', new_underlying_path %>
