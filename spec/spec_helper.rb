@@ -1,5 +1,5 @@
 require 'rspec'
-require 'ib-ruby'
+require 'ib'
 
 # Configure top level option indicating how the test suite should be run
 
