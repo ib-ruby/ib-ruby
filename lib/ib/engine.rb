@@ -1,6 +1,6 @@
 module IB
   class Engine < ::Rails::Engine
-    # isolate_namespace IB
+    isolate_namespace IB
 
     #paths["app"]                 # => ["app"]
     #paths["app/controllers"]     # => ["app/controllers"]
@@ -13,6 +13,13 @@ module IB
     #paths["config/initializers"] # => ["config/initializers"]
     #paths["config/locales"]      # => ["config/locales"]
     #paths["config/routes"]       # => ["config/routes.rb"]
+
+    config.generators do |gen|
+      gen.integration_tool :rspec
+      gen.test_framework :rspec
+      gen.helper_specs false
+      # gen.view_specs false
+    end
 
     config.to_prepare do
     end

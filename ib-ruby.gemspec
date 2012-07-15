@@ -13,7 +13,7 @@ Gem::Specification.new do |gem|
 
   # Files setup
   versioned = `git ls-files -z`.split("\0")
-  gem.files = Dir['{bin,lib,man,spec,features,tasks}/**/*', 'db/migrate/**/*',
+  gem.files = Dir['{app,config,db,bin,lib,man,spec,features,tasks}/**/*',
                   'Rakefile', 'README*', 'LICENSE*',
                   'VERSION*', 'HISTORY*', '.gitignore'] & versioned
   gem.executables = (Dir['bin/**/*'] & versioned).map { |file| File.basename(file) }
@@ -35,6 +35,7 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency 'my_scripts'
   gem.add_development_dependency 'rails', '~> 3.2.3'
   gem.add_development_dependency 'rspec-rails', '~> 2.10.1'
+  gem.add_development_dependency 'capybara'
   gem.add_development_dependency 'combustion'
   gem.add_development_dependency 'pry'
   gem.add_development_dependency 'pry-doc'

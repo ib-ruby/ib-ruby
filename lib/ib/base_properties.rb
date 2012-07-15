@@ -91,10 +91,6 @@ module IB
             proc { self[name].send "to_#{body[:get]}" }
           when VALUES[name] # property is encoded
             proc { VALUES[name][self[name]] }
-            #when respond_to?(:column_names) && column_names.include?(name.to_s)
-            #  # noop, ActiveRecord will take care of it...
-            #  p "#{name} => get noop"
-            #  p respond_to?(:column_names) && column_names
           else
             proc { self[name] }
           end
