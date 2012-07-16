@@ -2,6 +2,11 @@ module IB
   def self.db_backed?
     !!defined?(IB::DB)
   end
+ 
+  def self.rails?
+    !!defined?(Rails) && Rails.respond_to?('env')
+  end
+
 end # module IB
 
 IbRuby = IB
@@ -11,7 +16,7 @@ Ib = IB
 # By default there is no DB backend, unless specifically requested
 # require 'ib/db' # to make all IB models database-backed
 
-if defined?(Rails) && Rails.respond_to?('env')
+if IB.rails?
   require 'ib/engine'
 else
   require 'ib/requires'

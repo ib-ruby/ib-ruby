@@ -43,6 +43,7 @@ GEM
       multi_json (~> 1.0)
     addressable (2.2.8)
     arel (3.0.2)
+    backports (2.6.1)
     builder (3.0.0)
     capybara (1.1.2)
       mime-types (>= 1.16)
@@ -162,6 +163,7 @@ PLATFORMS
 
 DEPENDENCIES
   activerecord-jdbcsqlite3-adapter (>= 1.2.2)
+  backports
   capybara
   combustion
   database_cleaner (>= 0.7.2)

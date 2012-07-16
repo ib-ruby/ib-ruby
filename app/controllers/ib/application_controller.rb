@@ -1,4 +1,5 @@
 module Ib
-  class ApplicationController < ::ApplicationController 
+  class ApplicationController <
+    defined?(::ApplicationController) ? ::ApplicationController :  ActionController::Base
   end
 end

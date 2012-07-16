@@ -33,10 +33,11 @@ else
   }
 end
 
-puts 'Running specs with OPTS:'
-pp OPTS
-
 RSpec.configure do |config|
+
+  puts "Running specs '#{config.pattern}' with OPTS:"
+  pp OPTS
+
   # config.filter = { :focus => true }
   # config.include(UserExampleHelpers)
   # config.mock_with :mocha
@@ -82,14 +83,5 @@ RSpec.configure do |config|
 
     config.include Capybara::DSL,
       :example_group => { :file_path => /\brails_spec\//}
-  else
-    # We need to prevent loading Rails-related spec files unless Rails support was required
-    # However, when spec_helper.rb is first required, we're already inside a
-    # config.load_spec_files cycle
-    p config.pattern
-    p config.files_to_run
-    config.files_to_run = config.files_to_run.reject {|path| path =~ /rails/}
-    p config.files_to_run
-
   end
 end

@@ -53,6 +53,14 @@ module IB
 
     alias save! save
 
+    ### Noop methods mocking ActiveRecord::Base macros
+    
+    def self.attr_protected *args
+    end
+
+    def self.attr_accessible *args
+    end
+
     ### ActiveRecord::Base association API mocks
 
     def self.belongs_to model, *args

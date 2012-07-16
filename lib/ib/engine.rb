@@ -1,6 +1,6 @@
 module IB
   class Engine < ::Rails::Engine
-    isolate_namespace IB
+    isolate_namespace Ib
 
     #paths["app"]                 # => ["app"]
     #paths["app/controllers"]     # => ["app/controllers"]
