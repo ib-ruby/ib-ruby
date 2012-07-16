@@ -81,7 +81,7 @@ shared_examples_for 'Model with associations' do
     subject_name_plural = described_class.to_s.demodulize.tableize
 
     associations.each do |name, item_props|
-      item = "IB::Models::#{name.to_s.classify}".constantize.new item_props
+      item = "IB::#{name.to_s.classify}".constantize.new item_props
       #item = const_get("IB::#{name.to_s.classify}").new item_props
       puts "Testing single association #{name}"
       subject.association(name).reflection.should_not be_collection
@@ -119,7 +119,7 @@ shared_examples_for 'Model with associations' do
       subject.association(name).reflection.should be_collection
 
       [items].flatten.each do |item_props|
-        item = "IB::Models::#{name.to_s.classify}".constantize.new item_props
+        item = "IB::#{name.to_s.classify}".constantize.new item_props
         #item = item_class.new item_props
         association = subject.send name #, :reload
 
@@ -139,7 +139,7 @@ shared_examples_for 'Model with associations' do
         subject.save
 
         [items].flatten.each do |item_props|
-          item = "IB::Models::#{name.to_s.classify}".constantize.new item_props
+          item = "IB::#{name.to_s.classify}".constantize.new item_props
           association = subject.send name #, :reload
 
           association.should include item

@@ -3,7 +3,7 @@ puts '$ rspec -rdb spec'
 
 require 'yaml'
 require 'pathname'
-require 'ib-ruby/db'
+require 'ib/db'
 require 'database_cleaner'
 
 # Load DB config, determine correct environment
