@@ -1,16 +1,13 @@
 puts 'To run specs with Combustion-based Rails app, use:'
-puts '$ rspec -rr spec/models'
+puts '$ rspec -rcomb rails_spec'
 
 require 'bundler/setup'
 require 'combustion'
+require 'backports/1.9.2' if RUBY_VERSION =~ /1.8/
 require 'ib'
 
-# Configure Rails Environment ?
-# ENV["RAILS_ENV"] = "test"
+Combustion.path = 'rails_spec/combustion'
 Combustion.initialize!
 
 require 'rspec/rails'
-require 'yaml'
-require 'pathname'
-require 'database_cleaner'
 

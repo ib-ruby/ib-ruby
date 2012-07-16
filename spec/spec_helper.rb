@@ -6,6 +6,8 @@ require 'ib'
 OPTS ||= {
   :verbose => false, #true, # Run test suite in a verbose mode ?
   :brokertron => false, # Use mock (Brokertron) instead of paper account ?
+  :db => IB.db_backed?,
+  :rails => IB.rails?
 }
 
 if OPTS[:brokertron]
@@ -35,6 +37,12 @@ puts 'Running specs with OPTS:'
 pp OPTS
 
 RSpec.configure do |config|
+  # config.filter = { :focus => true }
+  # config.include(UserExampleHelpers)
+  # config.mock_with :mocha
+  # config.mock_with :flexmock
+  # config.mock_with :rr
+
   config.exclusion_filter = {
     :if => proc do |condition|
       t = Time.now.utc
@@ -50,19 +58,38 @@ RSpec.configure do |config|
 
     :db => proc { |condition| IB.db_backed? != condition }, # true/false
 
-    :reuters => proc { |condition| !OPTS[:connection][:reuters] == condition } # true/false
-  }
-  # config.filter = { :focus => true }
-  # config.include(UserExampleHelpers)
-  # config.mock_with :mocha
-  # config.mock_with :flexmock
-  # config.mock_with :rr
+    :rails => proc { |condition| IB.rails? != condition }, # true/false
 
-  if IB.db_backed?
-    puts "Database backed"
+    :reuters => proc { |condition| !OPTS[:connection][:reuters] == condition }, # true/false
+  }
+
+  if OPTS[:db]
+    require 'database_cleaner'
+
     config.before(:suite) do
       DatabaseCleaner.strategy = :truncation
       DatabaseCleaner.clean
     end
+
+    config.after(:suite) do
+      DatabaseCleaner.clean
+    end
+  end
+
+  if OPTS[:rails]
+    config.include IB::Engine.routes.url_helpers,
+      :example_group => {:file_path => /\brails_spec\//}
+
+    config.include Capybara::DSL,
+      :example_group => { :file_path => /\brails_spec\//}
+  else
+    # We need to prevent loading Rails-related spec files unless Rails support was required
+    # However, when spec_helper.rb is first required, we're already inside a
+    # config.load_spec_files cycle
+    p config.pattern
+    p config.files_to_run
+    config.files_to_run = config.files_to_run.reject {|path| path =~ /rails/}
+    p config.files_to_run
+
   end
 end
