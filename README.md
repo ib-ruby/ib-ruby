@@ -135,7 +135,7 @@ Add to your Gemfile:
 ``` ruby
 gem 'ib-ruby', '~>0.8'
 ```
-Add the require to your config/application.rb
+Add the require to your config/application.rb:
 ``` ruby
 require File.expand_path('../boot', __FILE__)
 require 'rails/all'
@@ -174,7 +174,8 @@ like you would with Rails models.
 ## RUNNING TESTS:
 
 The gem comes with a spec suit that may be used to test ib-ruby compatibility with your 
-specific TWS/Gateway installation. Please read 'spec/Readme.md' in order to 
+specific TWS/Gateway installation. Please read 'spec/Readme.md' for more details about
+running specs.
 
 ## CONTRIBUTING:
 
