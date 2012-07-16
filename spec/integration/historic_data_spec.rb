@@ -2,7 +2,7 @@ require 'integration_helper'
 
 describe 'Request Historic Data', :connected => true, :integration => true do
 
-  CORRECT_OPTS = {:id => 456,
+  CORRECT_OPTS = {:id => 567,
                   :contract => IB::Symbols::Stocks[:wfc],
                   :end_date_time => Time.now.to_ib,
                   :duration => '1 D',
@@ -37,7 +37,7 @@ describe 'Request Historic Data', :connected => true, :integration => true do
     before(:all) do
       # No historical data for GBP/CASH@IDEALPRO
       @ib.send_message :RequestHistoricalData, CORRECT_OPTS
-      @ib.wait_for :HistoricalData, 5 # sec
+      @ib.wait_for :HistoricalData, 6 # sec
     end
 
     subject { @ib.received[:HistoricalData].last }
@@ -45,7 +45,7 @@ describe 'Request Historic Data', :connected => true, :integration => true do
     it { @ib.received[:HistoricalData].should have_at_least(1).historic_data }
 
     it { should be_an IB::Messages::Incoming::HistoricalData }
-    its(:request_id) { should == 456 }
+    its(:request_id) { should == 567 }
     its(:count) { should be_an Integer }
     its(:start_date) { should =~ /\d{8} *\d\d:\d\d:\d\d/ } # "20120302  22:46:42"
     its(:end_date) { should =~ /\d{8} *\d\d:\d\d:\d\d/ }
