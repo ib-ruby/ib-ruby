@@ -83,7 +83,7 @@ This is an example of your script that requests and prints out account data, the
 places limit order to buy 100 lots of WFC and waits for execution. All in about ten
 lines of code - and without sacrificing code readability or flexibility.
 ``` ruby
-    require 'ib-ruby'
+    require 'ib'
 
     ib = IB::Connection.new :port => 7496
     ib.subscribe(:Alert, :AccountValue) { |msg| puts msg.to_human }
@@ -115,7 +115,7 @@ given to `#subscribe`.
 In order to give TWS time to respond, you either run a message processing loop or
 just wait until Connection receives the messages type you requested.
 
-See `lib/ib-ruby/messages` for a full list of supported incoming/outgoing messages
+See `lib/ib/messages` for a full list of supported incoming/outgoing messages
 and their attributes. The original TWS docs and code samples can also be found
 in `misc` directory.
 
@@ -123,90 +123,57 @@ The sample scripts in `bin` directory provide examples of how common tasks
 can be achieved using ib-ruby. You may also want to look into `spec/integration`
 directory for more scenarios and examples of handling IB messages.
 
+## RAILS INTEGRATION:
+
+This gem has two operating modes: standalone and Rails-engine. If you require it in a
+Rails environment, it loads Rails engine automatically. Otherwise, it does not load any
+Rails integration. 
+
+To add ib-ruby to your Rails 3 project, follow these steps:
+
+Add to your Gemfile:
+``` ruby
+gem 'ib-ruby', '~>0.8'
+```
+Add the require to your config/application.rb
+``` ruby
+require File.expand_path('../boot', __FILE__)
+require 'rails/all'
+require 'ib'
+if defined?(Bundler)
+```
+Now run:
+    $ bundle install
+    $ rake ib_engine:install:migrations
+
+This will install ib-ruby gem and copy its migrations into your Rails apps migrations.
+
+You can now use or modify IB models, develop controllers and views for them in your Rails app. 
+
 ## DB BACKEND:
 
-Latest versions of the gem added (optional and experimental) support for data
-persistance (ActiveRecord ORM). In order to use this support, you have to set up
-the database (SQLite recommended for simplicity) and run migrations located at
-'db/migrate' folder.
+Even if you don't use Rails, you can still take advantage of its data persistance layer 
+(ActiveRecord ORM). In order to use data persistance, you have to set up the database 
+(SQLite recommended for simplicity) and run migrations located at gems 'db/migrate' folder.
+It is recommended that you use a gem like [standalone_migrations](https://github.com/thuss/standalone-migrations) for this.
 
 You further need to:
 ``` ruby
-    require 'ib-ruby/db'
-
-    IB::DB.connect :adapter => 'sqlite3',
-                   :database => 'db/test.sqlite3'
-
-    require 'ib-ruby'
+    require 'ib/db'
+    IB::DB.connect :adapter => 'sqlite3', :database => 'db/test.sqlite3'
+    require 'ib'
 ```
-Only require 'ib-ruby' AFTER you connected to DB, otherwise your Models will not
+Only require 'ib' AFTER you've connected to DB, otherwise your Models will not
 inherit from ActiveRecord::Base and won't be persistent. If you are using Rails,
-you don't need IB::DB.connect part, Rails will take care of it for you. So, just use:
-``` ruby
-    require 'ib-ruby/db'
-    require 'ib-ruby'
-``` 
-Now, all your IB Models are just ActiveRecords and you can do whatever you want with them:
-persist to DB, use in Rails applications, develop controllers and views.
+you don't need IB::DB.connect part, Rails will take care of it for you.  
 
-## RAILS:
-
-To add to Rails
-
-Installation:
-
-``` ruby
-## Gemfile for Rails 3
-gem 'ib-ruby', '~>0.8'
-```
-and add the require for the ib_engine in your config/application.rb
-``` ruby
-require File.expand_path('../boot', __FILE__)
-
-require 'rails/all'
-
-require 'ib_engine'
-
-if defined?(Bundler)
-
-```
-
-now run
-`bundle exec rake ib_engine:install:migrations`
-to copy the ib-ruby gems migrations in your rails apps migrations.
+Now, all your IB Models are just ActiveRecords and you can save them to DB just
+like you would with Rails models.
 
 ## RUNNING TESTS:
 
-The gem comes with a spec suit that may be used to test ib-ruby compatibility
-with your specific TWS/Gateway installation. The test suit should be run ONLY
-against your IB paper trading account. Running it against live account may result
-in financial losses.
-
-In order to run tests, you should set up your IB paper trading connection parameters
-in 'spec/spec_helper' file. Modify account_name, host and port under section
-'Your IB PAPER ACCOUNT'. Do not change the client_id.
-
-Before running tests, you need to start your TWS/Gateway and allow API connection.
-You should not have any open/pending orders on your IB paper trading account prior
-to running tests, otherwise some tests will fail. Use 'bin/cancel_orders' script for
-bulk cancelling of open orders before running tests as needed.
-
-By default, specs are run without database support (tableless). In order to run them
-with database backend, use:
-
-    $ rspec -rdb [spec/specific_spec.rb]
-
-Also, by default, specs suppress logging output that is normally produced by IB::Connection.
-This may make it difficult to debug a failing spec. Following option will switch on verbose
-output (both logger output and content of all received IB messages is dumped). Do not use
-this mode to run a whole spec - you will be swamped! Use it to debug specific failing specs
-only:
-
-    $ rspec -rv [spec/specific_spec.rb]
-
-You can easily create your own tests following the guide in 'spec/README'.
-Help the development! See 'spec/TODO' for the list of use cases/scenarios
-that still need to be tested.
+The gem comes with a spec suit that may be used to test ib-ruby compatibility with your 
+specific TWS/Gateway installation. Please read 'spec/Readme.md' in order to 
 
 ## CONTRIBUTING:
 

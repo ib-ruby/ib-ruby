@@ -1,4 +1,4 @@
-## RUNNING TESTS:
+## RUNNING TEST SUITE:
 
 The gem comes with a spec suit that may be used to test ib-ruby compatibility
 with your specific TWS/Gateway installation. The test suit should be run ONLY
@@ -27,10 +27,6 @@ with database backend, use:
 
     $ rspec -rdb [spec/specific_spec.rb]
 
-To run specs using the Rails engine integration use:
-
-    $ rspec -rr [spec/specific_spec.rb]
-
 If you run your specs against both Gateway and TWS, you may want to use the following
 switches (by default, TWS port is used):
 
@@ -45,6 +41,28 @@ expected responce, so that the spec times out or does not find expected data. It
 suggested that you run the failing specs several times, and start debugging them only 
 if they are failing regularly. Otherwise, you may just waste time chasing an artifact of
 unreliable IB connection, rather than some real problem with the specs.   
+
+## RUNNING RAILS-SPECIFIC SPECS:
+
+This gem has two operating modes: standalone and Rails-engine. If you require it in a
+Rails environment, it loads Rails engine automatically. Otherwise, it does not load any
+Rails integration. So, Rails-specific specs are separated from generic spec suite and
+located in 'rails_spec'. 
+
+There are two included Rails apps that can be used to test engine integration. One is
+an auto-generated Dummy app, and another is [Combustion](https://github.com/freelancing-god/combustion) based.
+
+To test Rails engine integration with Combustion-based Rails application, use:
+
+    $ rspec -rcomb rails_spec
+    $ rspec -rcomb [spec/specific_spec.rb]
+
+To run specs with Dummy Rails application, use:
+
+    $ rspec -rdummy rails_spec
+    $ rspec -rdummy [spec/specific_spec.rb]
+
+Other suit switches described in previous section should work with Rails as well.    
 
 # WRITING YOUR OWN INTEGRATION SPECS
 
