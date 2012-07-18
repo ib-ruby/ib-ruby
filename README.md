@@ -178,6 +178,13 @@ The gem comes with a spec suit that may be used to test ib-ruby compatibility wi
 specific TWS/Gateway installation. Please read 'spec/Readme.md' for more details about
 running specs.
 
+## RUBY VERSION COMPATIBILITY:
+
+The library is continuously tested with JRuby 1.6.7 (ruby-1.8.7-p357-compatible mode) and 
+JRuby head (ruby-1.9.3-p203-compatible mode). It is not JRuby-specific though, as it is currently used in a some MRI Ruby based projects. If there are any problems in any mode 
+for either JRuby or MRI, please report an [issue](https://github.com/ib-ruby/ib-ruby/issues/new)
+and we will work on it.
+
 ## CONTRIBUTING:
 
 1. Fork it

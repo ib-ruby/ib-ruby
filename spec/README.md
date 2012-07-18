@@ -33,19 +33,6 @@ switches (by default, TWS port is used):
     $ rspec -rgw [spec/specific_spec.rb]
     $ rspec -rtws [spec/specific_spec.rb]
 
-Some of the specs may randomly fail from time to time when you are running the spec suit 
-against your IB paper account. This happens because these specs depend on live connection
-to IB, which is inherently non-deterministic. Anything happening along the way - network
-delay, problems with IB data farms, even high CPU load on your machine - may delay the
-expected responce, so that the spec times out or does not find expected data. For example,
-IB historical data farm is known to disappear from time to time, so any specs related to
-historical data will fail while this outage lasts. 
-
-If you experience such intermittent spec failures, it is recommended that you run the 
-failing specs several times, possibly with a delay of 10-20 minutes. Start debugging 
-the specs only if they are failing regularly. Otherwise, you may just waste time chasing 
-an artifact of unreliable IB connection, rather than some real problem with the specs.   
-
 ## RUNNING RAILS-SPECIFIC SPECS:
 
 This gem has two operating modes: standalone and Rails-engine. If you require it in a
@@ -67,6 +54,21 @@ To run specs with Dummy Rails application, use:
     $ rspec -rdummy [spec/specific_spec.rb]
 
 Other suit switches described in previous section should work with Rails as well.    
+
+## PROBLEMS WHILE RUNNING THE SPECS:
+
+Some of the specs may randomly fail from time to time when you are running the spec suit 
+against your IB paper account. This happens because these specs depend on live connection
+to IB, which is inherently non-deterministic. Anything happening along the way - network
+delay, problems with IB data farms, even high CPU load on your machine - may delay the
+expected responce, so that the spec times out or does not find expected data. For example,
+IB historical data farm is known to disappear from time to time, so any specs related to
+historical data will fail while this outage lasts. 
+
+If you experience such intermittent spec failures, it is recommended that you run the 
+failing specs several times, possibly with a delay of 10-20 minutes. Start debugging 
+the specs only if they are failing regularly. Otherwise, you may just waste time chasing 
+an artifact of unreliable IB connection, rather than some real problem with the specs.   
 
 # WRITING YOUR OWN INTEGRATION SPECS
 
