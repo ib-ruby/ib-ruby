@@ -193,3 +193,8 @@
 == 0.8.1 / 2012-06-13
 
 * Combo routing parameters and algo parameters supported
+
+== 0.8.4 / 2012-07-18
+
+* Working Rails Engine integration
+

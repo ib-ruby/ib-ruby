@@ -135,7 +135,7 @@ Add to your Gemfile:
 ``` ruby
 gem 'ib-ruby', '~>0.8'
 ```
-Add the require to your config/application.rb
+Add the require to your config/application.rb:
 ``` ruby
 require File.expand_path('../boot', __FILE__)
 require 'rails/all'
@@ -145,7 +145,8 @@ if defined?(Bundler)
 Now run:
 
     $ bundle install
-    $ rake ib_engine:install:migrations
+    $ rake ib:install:migrations
+    $ rake db:migrate
 
 This will install ib-ruby gem and copy its migrations into your Rails apps migrations.
 
@@ -174,7 +175,15 @@ like you would with Rails models.
 ## RUNNING TESTS:
 
 The gem comes with a spec suit that may be used to test ib-ruby compatibility with your 
-specific TWS/Gateway installation. Please read 'spec/Readme.md' in order to 
+specific TWS/Gateway installation. Please read 'spec/Readme.md' for more details about
+running specs.
+
+## RUBY VERSION COMPATIBILITY:
+
+The library is continuously tested with JRuby 1.6.7 (ruby-1.8.7-p357-compatible mode) and 
+JRuby head (ruby-1.9.3-p203-compatible mode). It is not JRuby-specific though, as it is currently used in a some MRI Ruby based projects. If there are any problems in any mode 
+for either JRuby or MRI, please report an [issue](https://github.com/ib-ruby/ib-ruby/issues/new)
+and we will work on it.
 
 ## CONTRIBUTING:
 

@@ -184,7 +184,7 @@ describe "Request Contract Info", :connected => true, :integration => true do
 
       contract.symbol.should == 'YM'
       contract.local_symbol.should =~ /YM/
-      contract.expiry.should =~ Regexp.new(IB::Symbols.next_expiry)
+      contract.expiry.should =~ Regexp.new(IB::Symbols::Futures.next_expiry)
       contract.exchange.should == 'ECBOT'
       contract.con_id.should be_an Integer
 
