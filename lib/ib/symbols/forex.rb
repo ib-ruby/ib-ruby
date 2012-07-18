@@ -1,71 +1,74 @@
-# Note that the :description field is particular to ib, and is NOT part of the
-# standard TWS API. It is never transmitted to IB. It's purely used clientside, and
-# you can store any arbitrary string that you may find useful there.
 module IB
   module Symbols
-    # IDEALPRO is for orders over 25,000 and routes to the interbank quote stream.
-    # IDEAL is for smaller orders, and has wider spreads/slower execution... generally
-    # used for smaller currency conversions.
-    Forex = {
-        :audusd => IB::Contract.new(:symbol => "AUD",
-                                    :exchange => "IDEALPRO",
-                                    :currency => "USD",
-                                    :sec_type => :forex,
-                                    :description => "AUDUSD"),
+    module Forex
+      extend Symbols
 
-        :gbpusd => IB::Contract.new(:symbol => "GBP",
-                                    :exchange => "IDEALPRO",
-                                    :currency => "USD",
-                                    :sec_type => :forex,
-                                    :description => "GBPUSD"),
+      # IDEALPRO is for orders over 25,000 and routes to the interbank quote stream.
+      # IDEAL is for smaller orders, and has wider spreads/slower execution... generally
+      # used for smaller currency conversions.
+      def self.contracts
+        @contracts ||= {
+          :audusd => IB::Contract.new(:symbol => "AUD",
+                                      :exchange => "IDEALPRO",
+                                      :currency => "USD",
+                                      :sec_type => :forex,
+                                      :description => "AUDUSD"),
 
-        :euraud => IB::Contract.new(:symbol => "EUR",
-                                    :exchange => "IDEALPRO",
-                                    :currency => "AUD",
-                                    :sec_type => :forex,
-                                    :description => "EURAUD"),
+          :gbpusd => IB::Contract.new(:symbol => "GBP",
+                                      :exchange => "IDEALPRO",
+                                      :currency => "USD",
+                                      :sec_type => :forex,
+                                      :description => "GBPUSD"),
 
-        :eurgbp => IB::Contract.new(:symbol => "EUR",
-                                    :exchange => "IDEALPRO",
-                                    :currency => "GBP",
-                                    :sec_type => :forex,
-                                    :description => "EURGBP"),
+          :euraud => IB::Contract.new(:symbol => "EUR",
+                                      :exchange => "IDEALPRO",
+                                      :currency => "AUD",
+                                      :sec_type => :forex,
+                                      :description => "EURAUD"),
 
-        :eurjpy => IB::Contract.new(:symbol => "EUR",
-                                    :exchange => "IDEALPRO",
-                                    :currency => "JPY",
-                                    :sec_type => :forex,
-                                    :description => "EURJPY"),
+          :eurgbp => IB::Contract.new(:symbol => "EUR",
+                                      :exchange => "IDEALPRO",
+                                      :currency => "GBP",
+                                      :sec_type => :forex,
+                                      :description => "EURGBP"),
 
-        :eurusd => IB::Contract.new(:symbol => "EUR",
-                                    :exchange => "IDEALPRO",
-                                    :currency => "USD",
-                                    :sec_type => :forex,
-                                    :description => "EURUSD"),
+          :eurjpy => IB::Contract.new(:symbol => "EUR",
+                                      :exchange => "IDEALPRO",
+                                      :currency => "JPY",
+                                      :sec_type => :forex,
+                                      :description => "EURJPY"),
 
-        :eurcad => IB::Contract.new(:symbol => "EUR",
-                                    :exchange => "IDEALPRO",
-                                    :currency => "CAD",
-                                    :sec_type => :forex,
-                                    :description => "EURCAD"),
+          :eurusd => IB::Contract.new(:symbol => "EUR",
+                                      :exchange => "IDEALPRO",
+                                      :currency => "USD",
+                                      :sec_type => :forex,
+                                      :description => "EURUSD"),
 
-        :usdchf => IB::Contract.new(:symbol => "USD",
-                                    :exchange => "IDEALPRO",
-                                    :currency => "CHF",
-                                    :sec_type => :forex,
-                                    :description => "USDCHF"),
+          :eurcad => IB::Contract.new(:symbol => "EUR",
+                                      :exchange => "IDEALPRO",
+                                      :currency => "CAD",
+                                      :sec_type => :forex,
+                                      :description => "EURCAD"),
 
-        :usdcad => IB::Contract.new(:symbol => "USD",
-                                    :exchange => "IDEALPRO",
-                                    :currency => "CAD",
-                                    :sec_type => :forex,
-                                    :description => "USDCAD"),
+          :usdchf => IB::Contract.new(:symbol => "USD",
+                                      :exchange => "IDEALPRO",
+                                      :currency => "CHF",
+                                      :sec_type => :forex,
+                                      :description => "USDCHF"),
 
-        :usdjpy => IB::Contract.new(:symbol => "USD",
-                                    :exchange => "IDEALPRO",
-                                    :currency => "JPY",
-                                    :sec_type => :forex,
-                                    :description => "USDJPY")
-    }
+          :usdcad => IB::Contract.new(:symbol => "USD",
+                                      :exchange => "IDEALPRO",
+                                      :currency => "CAD",
+                                      :sec_type => :forex,
+                                      :description => "USDCAD"),
+
+          :usdjpy => IB::Contract.new(:symbol => "USD",
+                                      :exchange => "IDEALPRO",
+                                      :currency => "JPY",
+                                      :sec_type => :forex,
+                                      :description => "USDJPY")
+        }
+      end
+    end
   end
 end

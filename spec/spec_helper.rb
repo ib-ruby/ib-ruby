@@ -35,7 +35,7 @@ end
 
 RSpec.configure do |config|
 
-  puts "Running specs '#{config.pattern}' with OPTS:"
+  puts "Running specs with OPTS:"
   pp OPTS
 
   # config.filter = { :focus => true }
