@@ -145,7 +145,8 @@ if defined?(Bundler)
 Now run:
 
     $ bundle install
-    $ rake ib_engine:install:migrations
+    $ rake ib:install:migrations
+    $ rake db:migrate
 
 This will install ib-ruby gem and copy its migrations into your Rails apps migrations.
 
