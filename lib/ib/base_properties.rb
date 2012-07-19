@@ -8,12 +8,6 @@ module IB
   module BaseProperties
     extend ActiveSupport::Concern
 
-    def default_attributes
-      {:created_at => Time.now,
-       :updated_at => Time.now,
-       }
-    end
-
     ### Instance methods
 
     # Default presentation
@@ -42,11 +36,27 @@ module IB
 
     # Default Model comparison
     def == other
-      content_attributes.inject(true) { |res, (attr, value)| res && other.send(attr) == value } &&
-        other.content_attributes.inject(true) { |res, (attr, value)| res && send(attr) == value }
+      content_attributes.keys.inject(true) { |res, key| send(key) == other.send(key) }
+    end
+
+    ### Default attributes support
+
+    def default_attributes
+      {:created_at => Time.now,
+       :updated_at => Time.now,
+       }
+    end
+
+    def set_attribute_defaults
+      default_attributes.each do |key, val|
+        self.send("#{key}=", val) if self.send(key).nil?
+        # self.send("#{key}=", val) if self[key].nil? # Problems with association defaults
+      end
     end
 
     included do
+
+      after_initialize :set_attribute_defaults
 
       ### Class macros
 
@@ -125,13 +135,8 @@ module IB
         end
       end
 
-      # Extending AR-backed Model class with attribute defaults
-      if defined?(ActiveRecord::Base) && ancestors.include?(ActiveRecord::Base)
-        def initialize attributes={}, opts={}
-          super default_attributes.merge(attributes), opts
-        end
-      else
-        # Timestamps
+      # Timestamps in lightweight models
+      unless defined?(ActiveRecord::Base) && ancestors.include?(ActiveRecord::Base)
         prop :created_at, :updated_at
       end
 

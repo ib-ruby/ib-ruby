@@ -14,8 +14,8 @@ describe "underlyings" do
     within "#notice" do
       page.should have_content("Underlying was successfully created.")
     end
-    p (page.methods-Object.methods).sort
-    p page.body
+    # p (page.methods-Object.methods).sort
+    # p page.body
     page.should have_content("131313")
     page.should have_content("1111")
     page.should have_content("14.15")

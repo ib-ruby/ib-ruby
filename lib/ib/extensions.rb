@@ -39,8 +39,9 @@ class String
 end
 
 class NilClass
+  # We still need to pass on nil, meaning: no value
   def to_bool
-    false
+    self
   end
 end
 
@@ -56,8 +57,9 @@ class Symbol
 end
 
 class Object
+  # We still need to pass on nil, meaning: no value
   def to_sup
-    self.to_s.upcase
+    self.to_s.upcase unless self.nil?
   end
 end
 

@@ -8,7 +8,7 @@ describe IB::ComboLeg,
               :exchange => 'CBOE',
               :open_close => :open,
               :short_sale_slot => :broker,
-              :designated_location => nil,
+              :designated_location => '',
               :exempt_code => -1},
 
          :human => "<ComboLeg: buy 2 con_id 81032967 at CBOE>",
@@ -49,7 +49,7 @@ describe IB::ComboLeg,
 
     it "serializes extended" do
       subject.serialize(:extended).should ==
-          [81032967, 2, "BUY", "CBOE", 1, 1, nil, -1]
+          [81032967, 2, "BUY", "CBOE", 1, 1, '', -1]
     end
   end #serialization
 

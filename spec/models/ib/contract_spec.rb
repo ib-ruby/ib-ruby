@@ -2,56 +2,56 @@ require 'model_helper'
 require 'combo_helper'
 
 describe IB::Contract,
-         :props =>
-             {:symbol => 'AAPL',
-              :sec_type => :option,
-              :expiry => '201301',
-              :strike => 600.5,
-              :right => :put,
-              :multiplier => 10,
-              :exchange => 'SMART',
-              :currency => 'USD',
-              :local_symbol => 'AAPL  130119C00500000'},
+  :props =>
+  {:symbol => 'AAPL',
+   :sec_type => :option,
+   :expiry => '201301',
+   :strike => 600.5,
+   :right => :put,
+   :multiplier => 10,
+   :exchange => 'SMART',
+   :currency => 'USD',
+   :local_symbol => 'AAPL  130119C00500000'},
 
-         :human => "<Contract: AAPL option 201301 put 600.5 SMART USD>",
+  :human => "<Contract: AAPL option 201301 put 600.5 SMART USD>",
 
-         :errors => {:sec_type => ["should be valid security type"] },
+  :errors => {:sec_type => ["should be valid security type"] },
 
-         :assigns =>
-             {:expiry =>
-                  {[200609, '200609'] => '200609',
-                   [20060913, '20060913'] => '20060913',
-                   [:foo, 2006, 42, 'bar'] => /should be YYYYMM or YYYYMMDD/},
+  :assigns => {:expiry =>
+               {[200609, '200609'] => '200609',
+                [20060913, '20060913'] => '20060913',
+                [:foo, 2006, 42, 'bar'] => /should be YYYYMM or YYYYMMDD/},
 
-              :sec_type => codes_and_values_for(:sec_type).
-                  merge([:foo, 'BAR', 42] => /should be valid security type/),
+               :sec_type => codes_and_values_for(:sec_type).
+               merge([:foo, 'BAR', 42] => /should be valid security type/),
 
-              :sec_id_type =>
-                  {[:isin, 'ISIN', 'iSin'] => 'ISIN',
-                   [:sedol, :SEDOL, 'sEDoL', 'SEDOL'] => 'SEDOL',
-                   [:cusip, :CUSIP, 'Cusip', 'CUSIP'] => 'CUSIP',
-                   [:ric, :RIC, 'rIC', 'RIC'] => 'RIC',
-                   [nil, ''] => '',
-                   [:foo, 'BAR', 'baz'] => /should be valid security identifier/},
+               :sec_id_type =>
+               {[:isin, 'ISIN', 'iSin'] => 'ISIN',
+                [:sedol, :SEDOL, 'sEDoL', 'SEDOL'] => 'SEDOL',
+                [:cusip, :CUSIP, 'Cusip', 'CUSIP'] => 'CUSIP',
+                [:ric, :RIC, 'rIC', 'RIC'] => 'RIC',
+                nil => nil,
+                '' => '',
+                [:foo, 'BAR', 'baz'] => /should be valid security identifier/},
 
-              :right =>
-                  {["PUT", "put", "P", "p", :put] => :put,
-                   ["CALL", "call", "C", "c", :call] => :call,
-                   ['', '0', '?', :none] => :none,
-                   [:foo, 'BAR', 42] => /should be put, call or none/},
+               :right =>
+               {["PUT", "put", "P", "p", :put] => :put,
+                ["CALL", "call", "C", "c", :call] => :call,
+                ['', '0', '?', :none] => :none,
+                [:foo, 'BAR', 42] => /should be put, call or none/},
 
-              :exchange => string_upcase_assigns.merge(
-                  [:smart, 'SMART', 'smArt'] => 'SMART'),
+               :exchange => string_upcase_assigns.merge(
+               [:smart, 'SMART', 'smArt'] => 'SMART'),
 
-              :primary_exchange =>string_upcase_assigns.merge(
-                  [:SMART, 'SMART'] => /should not be SMART/),
+               :primary_exchange =>string_upcase_assigns.merge(
+               [:SMART, 'SMART'] => /should not be SMART/),
 
-              :multiplier => to_i_assigns,
+               :multiplier => to_i_assigns,
 
-              :strike => to_f_assigns,
+               :strike => to_f_assigns,
 
-              :include_expired => boolean_assigns,
-             } do 
+               :include_expired => boolean_assigns,
+} do
 
   it_behaves_like 'Model with invalid defaults'
   it_behaves_like 'Self-equal Model'
@@ -119,17 +119,17 @@ describe IB::Contract,
 
     it "serializes long" do
       subject.serialize_long.should ==
-          ["AAPL", "OPT", "201301", 600.5, "P", 10, "SMART", "", "USD", "AAPL  130119C00500000"]
+        ["AAPL", "OPT", "201301", 600.5, "P", 10, "SMART", nil, "USD", "AAPL  130119C00500000"]
     end
 
     it "serializes short" do
       subject.serialize_short.should ==
-          ["AAPL", "OPT", "201301", 600.5, "P", 10, "SMART", "USD", "AAPL  130119C00500000"]
+        ["AAPL", "OPT", "201301", 600.5, "P", 10, "SMART", "USD", "AAPL  130119C00500000"]
     end
 
     it "serializes combo (BAG) contracts for Order placement" do
       @combo.serialize_long(:con_id, :sec_id).should ==
-          [0, "GOOG", "BAG", "", 0.0, "", nil, "SMART", "", "USD", "", "", nil]
+        [0, "GOOG", "BAG", "", 0.0, "", nil, "SMART", nil, "USD", "", nil, nil]
     end
 
     it 'also serializes attached combo legs' do
@@ -137,13 +137,13 @@ describe IB::Contract,
       subject.serialize_legs(:extended).should == []
 
       @combo.serialize_legs.should ==
-          [3, 81032967, 1, "BUY", "SMART", 81032968, 2, "SELL", "SMART", 81032973, 1, "BUY", "SMART"]
+        [3, 81032967, 1, "BUY", "SMART", 81032968, 2, "SELL", "SMART", 81032973, 1, "BUY", "SMART"]
 
       @combo.serialize_legs(:extended).should ==
-          [3, 81032967, 1, "BUY", "SMART", 0, 0, "", -1,
-           81032968, 2, "SELL", "SMART", 0, 0, "", -1,
-           81032973, 1, "BUY", "SMART", 0, 0, "", -1]
-    end
+        [3, 81032967, 1, "BUY", "SMART", 0, 0, "", -1,
+         81032968, 2, "SELL", "SMART", 0, 0, "", -1,
+         81032973, 1, "BUY", "SMART", 0, 0, "", -1]
+        end
   end #serialization
 
 
