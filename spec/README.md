@@ -66,9 +66,11 @@ IB historical data farm is known to disappear from time to time, so any specs re
 historical data will fail while this outage lasts. 
 
 If you experience such intermittent spec failures, it is recommended that you run the 
-failing specs several times, possibly with a delay of 10-20 minutes. Start debugging 
-the specs only if they are failing regularly. Otherwise, you may just waste time chasing 
-an artifact of unreliable IB connection, rather than some real problem with the specs.   
+failing specs several times, possibly with a delay of 10-20 minutes. Sometimes it helps
+to restart your TWS or Gateway, as it may be stuck in inconsistent state, preventing
+test suite from running properly. Start debugging the specs only if they are failing 
+regularly. Otherwise, you may just waste time chasing an artifact of unreliable IB 
+connection, rather than some real problem with the specs.   
 
 # WRITING YOUR OWN INTEGRATION SPECS
 
