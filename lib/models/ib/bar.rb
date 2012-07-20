@@ -4,6 +4,8 @@ module IB
   class Bar < IB::Model
     include BaseProperties
 
+    has_one :contract # The bar represents timeseries info for this Contract
+
     prop :open, #   The bar opening price.
       :high, #   The high price during the time covered by the bar.
       :low, #    The low price during the time covered by the bar.
@@ -39,3 +41,5 @@ module IB
     alias to_s to_human
   end # class Bar
 end # module IB
+
+

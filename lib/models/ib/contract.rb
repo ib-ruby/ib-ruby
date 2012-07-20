@@ -68,6 +68,8 @@ module IB
 
     has_many :orders # Placed for this Contract
 
+    has_many :bars # Possibly representing trading history for this Contract
+
     has_one :contract_detail # Volatile info about this Contract
 
     # For Contracts that are part of BAG
