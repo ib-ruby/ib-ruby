@@ -1,6 +1,7 @@
 IB::Engine.routes.draw do
+  # resources :bars, :module => "ib"
+  resources :bars
   resources :underlyings
-  # resources :underlyings, :module => "ib"
 
   root :to => "underlyings#index"
 end
