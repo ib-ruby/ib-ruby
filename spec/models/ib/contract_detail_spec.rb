@@ -38,4 +38,7 @@ describe IB::ContractDetail,
   it_behaves_like 'Model with invalid defaults'
   it_behaves_like 'Self-equal Model'
 
+  it 'inherited equality method works (important for IB::Base derived tableless models)' do
+    IB::ContractDetail.new(props).should == IB::ContractDetail.new(props)
+  end
 end # describe IB::ContractDetail

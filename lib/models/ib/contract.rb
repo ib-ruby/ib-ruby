@@ -82,17 +82,17 @@ module IB
     alias legs combo_legs
     alias legs= combo_legs=
 
-    alias combo_legs_description legs_description
+      alias combo_legs_description legs_description
     alias combo_legs_description= legs_description=
 
-    # for Delta-Neutral Combo Contracts
-    has_one :underlying
+      # for Delta-Neutral Combo Contracts
+      has_one :underlying
     alias under_comp underlying
     alias under_comp= underlying=
 
 
       ### Extra validations
-    validates_inclusion_of :sec_type, :in => CODES[:sec_type].keys,
+      validates_inclusion_of :sec_type, :in => CODES[:sec_type].keys,
       :message => "should be valid security type"
 
     validates_format_of :expiry, :with => /^\d{6}$|^\d{8}$|^$/,
@@ -179,6 +179,8 @@ module IB
 
     # Contract comparison
     def == other
+      return true if super(other)
+
       return false unless other.is_a?(self.class)
 
       # Different sec_id_type

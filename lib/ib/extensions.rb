@@ -28,9 +28,9 @@ end
 class String
   def to_bool
     case self.chomp.upcase
-      when 'TRUE', 'T'
+      when 'TRUE', 'T', '1'
         true
-      when 'FALSE', 'F', ''
+      when 'FALSE', 'F', '0', ''
         false
       else
         error "Unable to convert #{self} to bool"

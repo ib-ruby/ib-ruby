@@ -36,7 +36,13 @@ module IB
 
     # Default Model comparison
     def == other
-      content_attributes.keys.inject(true) { |res, key| send(key) == other.send(key) }
+      case other
+      when String # Probably a Rails URI, delegate to AR::Base
+        super(other)
+      else
+        content_attributes.keys.inject(true) { |res, key| 
+          res && (send(key) == other.send(key)) }
+      end
     end
 
     ### Default attributes support

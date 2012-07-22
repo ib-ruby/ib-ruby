@@ -19,11 +19,13 @@ module IB
       #        determined by the reqHistoricalData() formatDate parameter.
       :has_gaps => :bool # Whether or not there are gaps in the data.
 
-    validates_numericality_of :open, :high, :low, :close, :volume
+      validates_numericality_of :open, :high, :low, :close, :volume
 
     # Order comparison
     def == other
-      time == other.time &&
+      super(other) ||
+        other.is_a?(self.class) &&
+        time == other.time &&
         open == other.open &&
         high == other.high &&
         low == other.low &&
@@ -41,5 +43,3 @@ module IB
     alias to_s to_human
   end # class Bar
 end # module IB
-
-

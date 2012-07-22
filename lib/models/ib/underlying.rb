@@ -26,7 +26,9 @@ module IB
 
     # Comparison
     def == other
-      con_id == other.con_id && delta == other.delta && price == other.price
+      super(other) ||
+        other.is_a?(self.class) &&
+        con_id == other.con_id && delta == other.delta && price == other.price
     end
 
   end # class Underlying

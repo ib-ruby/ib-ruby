@@ -348,7 +348,9 @@ module IB
 
     # Order comparison
     def == other
-      perm_id && other.perm_id && perm_id == other.perm_id ||
+      super(other) ||
+        other.is_a?(self.class) &&
+        perm_id && other.perm_id && perm_id == other.perm_id ||
         local_id == other.local_id && # ((p __LINE__)||true) &&
         (client_id == other.client_id || client_id == 0 || other.client_id == 0) &&
         parent_id == other.parent_id &&
@@ -366,7 +368,7 @@ module IB
         algo_strategy == other.algo_strategy &&
         algo_params == other.algo_params
 
-      # TODO: || compare all attributes!
+      # TODO: compare more attributes!
     end
 
     def to_s #human
