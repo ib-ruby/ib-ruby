@@ -12,6 +12,11 @@ test-mri:
   <<: *test
   :adapter:     sqlite3
 
+# Dev configurations (JRuby)
+development:
+  <<: *test
+  :database:      db/development.sqlite3
+
 # Battle configurations (JRuby)
 prod:
   <<: *test
