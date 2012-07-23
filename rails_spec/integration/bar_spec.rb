@@ -14,7 +14,7 @@ describe "Bars" do
     fill_in "Volume", :with => 1111
     fill_in "Trades", :with => 444
     check "Has gaps"
-    fill_in "Time", :with => 'is priceless'
+    fill_in "Time", :with => "20120312 15:41:09"
     click_button "Create Bar"
 
     within "#notice" do
@@ -31,7 +31,7 @@ describe "Bars" do
     page.should have_content("1111")
     page.should have_content("444")
     page.should have_content("true")
-    page.should have_content("is priceless")
+    page.should have_content("20120312 15:41:09")
 
   end
 end
