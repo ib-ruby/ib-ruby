@@ -18,85 +18,98 @@ require 'spec_helper'
 # Message expectations are only used when there is no simpler way to specify
 # that an instance is receiving a specific message.
 
-describe ExecutionsController do
+describe Ib::ExecutionsController, :type => :controller do
 
   # This should return the minimal set of attributes required to create a valid
-  # Execution. As you add validations to Execution, be sure to
+  # Ib::Execution. As you add validations to Ib::Execution, be sure to
   # update the return value of this method accordingly.
   def valid_attributes
-    {}
+    {:account_name => "DU111110",
+     :client_id => 1111,
+     :exchange => "IDEALPRO",
+     :exec_id => "0001f4e8.4f5d48f1.01.01",
+     :liquidation => true,
+     :local_id => 373,
+     :perm_id => 1695693619,
+     :price => 1.31075,
+     :average_price => 1.31075,
+     :shares => 20000,
+     :cumulative_quantity => 20000,
+     :side => :buy,
+     :time => "20120312  15:41:09",
+     }
   end
-  
+
   # This should return the minimal set of values that should be in the session
   # in order to pass any filters (e.g. authentication) defined in
-  # ExecutionsController. Be sure to keep this updated too.
+  # Ib::ExecutionsController. Be sure to keep this updated too.
   def valid_session
     {}
   end
 
   describe "GET index" do
     it "assigns all executions as @executions" do
-      execution = Execution.create! valid_attributes
-      get :index, {}, valid_session
+      execution = Ib::Execution.create! valid_attributes
+      get :index, { :use_route => true}, valid_session
       assigns(:executions).should eq([execution])
     end
   end
 
   describe "GET show" do
     it "assigns the requested execution as @execution" do
-      execution = Execution.create! valid_attributes
-      get :show, {:id => execution.to_param}, valid_session
+      execution = Ib::Execution.create! valid_attributes
+      get :show, {:id => execution.to_param, :use_route => true}, valid_session
       assigns(:execution).should eq(execution)
     end
   end
 
   describe "GET new" do
     it "assigns a new execution as @execution" do
-      get :new, {}, valid_session
-      assigns(:execution).should be_a_new(Execution)
+      get :new, {:use_route => true}, valid_session
+      assigns(:execution).should be_a_new(Ib::Execution)
     end
   end
 
   describe "GET edit" do
     it "assigns the requested execution as @execution" do
-      execution = Execution.create! valid_attributes
-      get :edit, {:id => execution.to_param}, valid_session
+      execution = Ib::Execution.create! valid_attributes
+      get :edit, {:id => execution.to_param, :use_route => true}, valid_session
       assigns(:execution).should eq(execution)
     end
   end
 
   describe "POST create" do
     describe "with valid params" do
-      it "creates a new Execution" do
+      it "creates a new Ib::Execution" do
         expect {
-          post :create, {:execution => valid_attributes}, valid_session
-        }.to change(Execution, :count).by(1)
+          post :create, {:execution => valid_attributes, :use_route => true}, valid_session
+        }.to change(Ib::Execution, :count).by(1)
       end
 
       it "assigns a newly created execution as @execution" do
-        post :create, {:execution => valid_attributes}, valid_session
-        assigns(:execution).should be_a(Execution)
+        post :create, {:execution => valid_attributes, :use_route => true}, valid_session
+        assigns(:execution).should be_a(Ib::Execution)
         assigns(:execution).should be_persisted
       end
 
       it "redirects to the created execution" do
-        post :create, {:execution => valid_attributes}, valid_session
-        response.should redirect_to(Execution.last)
+        post :create, {:execution => valid_attributes, :use_route => true}, valid_session
+        response.should redirect_to(Ib::Execution.last)
       end
     end
 
     describe "with invalid params" do
       it "assigns a newly created but unsaved execution as @execution" do
         # Trigger the behavior that occurs when invalid params are submitted
-        Execution.any_instance.stub(:save).and_return(false)
-        post :create, {:execution => {}}, valid_session
-        assigns(:execution).should be_a_new(Execution)
+        Ib::Execution.any_instance.stub(:save).and_return(false)
+        post :create, {:execution => {}, :use_route => true}, valid_session
+        assigns(:execution).should be_a_new(Ib::Execution)
       end
 
       it "re-renders the 'new' template" do
         # Trigger the behavior that occurs when invalid params are submitted
-        Execution.any_instance.stub(:save).and_return(false)
-        post :create, {:execution => {}}, valid_session
+        Ib::Execution.any_instance.stub(:save).and_return(false)
+        post :create, {:execution => {}, :use_route => true}, valid_session
         response.should render_template("new")
       end
     end
@@ -105,42 +118,52 @@ describe ExecutionsController do
   describe "PUT update" do
     describe "with valid params" do
       it "updates the requested execution" do
-        execution = Execution.create! valid_attributes
+        execution = Ib::Execution.create! valid_attributes
         # Assuming there are no other executions in the database, this
-        # specifies that the Execution created on the previous line
+        # specifies that the Ib::Execution created on the previous line
         # receives the :update_attributes message with whatever params are
         # submitted in the request.
-        Execution.any_instance.should_receive(:update_attributes).with({'these' => 'params'})
-        put :update, {:id => execution.to_param, :execution => {'these' => 'params'}}, valid_session
+        Ib::Execution.any_instance.should_receive(:update_attributes).with({'these' => 'params'})
+        put :update, {:id => execution.to_param,
+                      :execution => {'these' => 'params'},
+                      :use_route => true}, valid_session
       end
 
       it "assigns the requested execution as @execution" do
-        execution = Execution.create! valid_attributes
-        put :update, {:id => execution.to_param, :execution => valid_attributes}, valid_session
+        execution = Ib::Execution.create! valid_attributes
+        put :update, {:id => execution.to_param,
+                      :execution => valid_attributes,
+                      :use_route => true}, valid_session
         assigns(:execution).should eq(execution)
       end
 
       it "redirects to the execution" do
-        execution = Execution.create! valid_attributes
-        put :update, {:id => execution.to_param, :execution => valid_attributes}, valid_session
+        execution = Ib::Execution.create! valid_attributes
+        put :update, {:id => execution.to_param,
+                      :execution => valid_attributes,
+                      :use_route => true}, valid_session
         response.should redirect_to(execution)
       end
     end
 
     describe "with invalid params" do
       it "assigns the execution as @execution" do
-        execution = Execution.create! valid_attributes
+        execution = Ib::Execution.create! valid_attributes
         # Trigger the behavior that occurs when invalid params are submitted
-        Execution.any_instance.stub(:save).and_return(false)
-        put :update, {:id => execution.to_param, :execution => {}}, valid_session
+        Ib::Execution.any_instance.stub(:save).and_return(false)
+        put :update, {:id => execution.to_param,
+                      :execution => {},
+                      :use_route => true}, valid_session
         assigns(:execution).should eq(execution)
       end
 
       it "re-renders the 'edit' template" do
-        execution = Execution.create! valid_attributes
+        execution = Ib::Execution.create! valid_attributes
         # Trigger the behavior that occurs when invalid params are submitted
-        Execution.any_instance.stub(:save).and_return(false)
-        put :update, {:id => execution.to_param, :execution => {}}, valid_session
+        Ib::Execution.any_instance.stub(:save).and_return(false)
+        put :update, {:id => execution.to_param,
+                      :execution => {},
+                      :use_route => true}, valid_session
         response.should render_template("edit")
       end
     end
@@ -148,15 +171,16 @@ describe ExecutionsController do
 
   describe "DELETE destroy" do
     it "destroys the requested execution" do
-      execution = Execution.create! valid_attributes
+      execution = Ib::Execution.create! valid_attributes
       expect {
-        delete :destroy, {:id => execution.to_param}, valid_session
-      }.to change(Execution, :count).by(-1)
+        delete :destroy, {:id => execution.to_param, :use_route => true}, valid_session
+      }.to change(Ib::Execution, :count).by(-1)
     end
 
     it "redirects to the executions list" do
-      execution = Execution.create! valid_attributes
-      delete :destroy, {:id => execution.to_param}, valid_session
+      pending 'Something is wrong with RSpecs redirect_to matcher'
+      execution = Ib::Execution.create! valid_attributes
+      delete :destroy, {:id => execution.to_param, :use_route => true}, valid_session
       response.should redirect_to(executions_url)
     end
   end

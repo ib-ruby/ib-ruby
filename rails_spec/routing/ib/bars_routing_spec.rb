@@ -10,31 +10,31 @@ describe Ib::BarsController, :type => :routing do
     before(:each) { @routes = Ib::Engine.routes }
 
     it "routes to #index" do
-      get("/bars").should route_to("bars#index")
+      get("/bars").should route_to("ib/bars#index")
     end
 
     it "routes to #new" do
-      get("/bars/new").should route_to("bars#new")
+      get("/bars/new").should route_to("ib/bars#new")
     end
 
     it "routes to #show" do
-      get("/bars/1").should route_to("bars#show", :id => "1")
+      get("/bars/1").should route_to("ib/bars#show", :id => "1")
     end
 
     it "routes to #edit" do
-      get("/bars/1/edit").should route_to("bars#edit", :id => "1")
+      get("/bars/1/edit").should route_to("ib/bars#edit", :id => "1")
     end
 
     it "routes to #create" do
-      post("/bars").should route_to("bars#create")
+      post("/bars").should route_to("ib/bars#create")
     end
 
     it "routes to #update" do
-      put("/bars/1").should route_to("bars#update", :id => "1")
+      put("/bars/1").should route_to("ib/bars#update", :id => "1")
     end
 
     it "routes to #destroy" do
-      delete("/bars/1").should route_to("bars#destroy", :id => "1")
+      delete("/bars/1").should route_to("ib/bars#destroy", :id => "1")
     end
 
   end
