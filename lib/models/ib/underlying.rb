@@ -4,9 +4,6 @@ module IB
   class Underlying < IB::Model
     include BaseProperties
 
-    attr_accessible :created_at, :updated_at
-    attr_protected :id
-
     has_one :contract
 
     prop :con_id, # Id of the Underlying Contract
