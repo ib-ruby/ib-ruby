@@ -1,31 +1,32 @@
 require 'model_helper'
 
 describe IB::ComboLeg,
-         :props =>
-             {:con_id => 81032967,
-              :ratio => 2,
-              :side => :buy,
-              :exchange => 'CBOE',
-              :open_close => :open,
-              :short_sale_slot => :broker,
-              :designated_location => '',
-              :exempt_code => -1},
+  :props =>
+  {:con_id => 81032967,
+   :ratio => 2,
+   :side => :buy,
+   :exchange => 'CBOE',
+   :open_close => :open,
+   :short_sale_slot => :broker,
+   :designated_location => '',
+   :exempt_code => -1},
 
-         :human => "<ComboLeg: buy 2 con_id 81032967 at CBOE>",
+  :human => "<ComboLeg: buy 2 con_id 81032967 at CBOE>",
 
-         :errors => {:ratio => ["is not a number"],
-                     :side => ["should be buy/sell/short"]},
+  :errors => {:ratio => ["is not a number"],
+              :side => ["should be buy/sell/short"]},
 
-         :assigns =>
-             {:open_close => open_close_assigns,
-              :side => buy_sell_short_assigns,
-              :designated_location =>
-                  {[42, 'FOO', :bar] => /should be blank or orders will be rejected/},
-             },
+  :assigns =>
+  {:open_close => open_close_assigns,
+   :side => buy_sell_short_assigns,
+   :short_sale_slot => codes_and_values_for(:short_sale_slot),
+   :designated_location =>
+   {[42, 'FOO', :bar] => /should be blank or orders will be rejected/},
+   },
 
-         :aliases =>
-             {[:side, :action] => buy_sell_short_assigns,
-             } do
+  :aliases =>
+  {[:side, :action] => buy_sell_short_assigns,
+} do
 
   it 'has combined weight accessor' do
     leg = IB::ComboLeg.new props
@@ -49,7 +50,7 @@ describe IB::ComboLeg,
 
     it "serializes extended" do
       subject.serialize(:extended).should ==
-          [81032967, 2, "BUY", "CBOE", 1, 1, '', -1]
+        [81032967, 2, "BUY", "CBOE", 1, 1, '', -1]
     end
   end #serialization
 
@@ -115,8 +116,8 @@ describe IB::ComboLeg,
 
       @combo.leg_contracts << @google
       @combo.leg_contracts.should include @google
-      p @combo.valid?
-      p @combo.save
+      @combo.valid?.should be_true
+      @combo.save.should be_true
 
       #combo.legs.should_not be_empty
       @combo.leg_contracts.should include @google

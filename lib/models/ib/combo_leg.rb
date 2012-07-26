@@ -91,8 +91,8 @@ module IB
         other.is_a?(self.class) &&
         con_id == other.con_id &&
         ratio == other.ratio &&
-        open_close == other.open_close &&
-        short_sale_slot == other.short_sale_slot&&
+        open_close == other.open_close && 
+        short_sale_slot == other.short_sale_slot &&
         exempt_code == other.exempt_code &&
         side == other.side &&
         exchange == other.exchange &&
