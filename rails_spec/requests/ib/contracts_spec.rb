@@ -1,10 +1,10 @@
 require 'spec_helper'
 
-describe "Contracts" do
-  describe "GET /ib_contracts" do
+describe "Contracts", :type => :request do
+  describe "GET /contracts" do
     it "works! (now write some real specs)" do
       # Run the generator again with the --webrat flag if you want to use webrat methods/matchers
-      get ib_contracts_path
+      get contracts_path
       response.status.should be(200)
     end
   end
