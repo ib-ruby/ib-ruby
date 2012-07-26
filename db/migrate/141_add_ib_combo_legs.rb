@@ -17,3 +17,9 @@ class AddIbComboLegs < ActiveRecord::Migration
     end
   end
 end
+
+__END__
+rails generate scaffold combo_leg combo_id:integer leg_contract_id:integer con_id:integer 
+ side:string ratio:integer exchange:string exempt_code:integer short_sale_slot:integer 
+ open_close:integer designated_location:string 
+
