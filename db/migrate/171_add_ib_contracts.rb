@@ -27,5 +27,7 @@ end
 
 __END__
 rails generate scaffold contract con_id:integer sec_type:string strike:float currency:string 
- sec_id_type:string maint_margin:float equity_with_loan:float
+ sec_id:string sec_id_type:string legs_description:string symbol:string local_symbol:string 
+ multiplier:integer expiry:string exchange:string primary_exchange:string 
+ include_expired:boolean right:string type:string 
 

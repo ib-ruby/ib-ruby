@@ -84,7 +84,7 @@ ActiveRecord::Schema.define(:version => 171) do
     t.float    "strike"
     t.string   "currency",         :limit => 4
     t.string   "sec_id_type",      :limit => 5
-    t.integer  "sec_id"
+    t.string   "sec_id"
     t.string   "legs_description"
     t.string   "symbol"
     t.string   "local_symbol"
