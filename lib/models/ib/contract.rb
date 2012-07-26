@@ -14,7 +14,7 @@ module IB
 
       :sec_type, # Security type. Valid values are: SECURITY_TYPES
 
-      :sec_id, # Unique identifier of the given secIdType.
+      :sec_id => :sup, # Unique identifier of the given secIdType.
 
       :sec_id_type => :sup, # Security identifier, when querying contract details or
       #               when placing orders. Supported identifiers are:

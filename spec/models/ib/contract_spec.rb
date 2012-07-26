@@ -8,6 +8,8 @@ describe IB::Contract,
    :expiry => '201301',
    :strike => 600.5,
    :right => :put,
+   :sec_id => 'US0378331005',
+   :sec_id_type => 'ISIN',
    :multiplier => 10,
    :exchange => 'SMART',
    :currency => 'USD',
@@ -24,6 +26,12 @@ describe IB::Contract,
 
                :sec_type => codes_and_values_for(:sec_type).
                merge([:foo, 'BAR', 42] => /should be valid security type/),
+
+               :sec_id =>
+               {[:US0378331005, 'us0378331005', 'US0378331005'] => 'US0378331005',
+                [:'37833100', 37833100, '37833100'] => '37833100',
+                [:'AAPL.O', 'AAPL.O'] => 'AAPL.O',
+                },
 
                :sec_id_type =>
                {[:isin, 'ISIN', 'iSin'] => 'ISIN',
