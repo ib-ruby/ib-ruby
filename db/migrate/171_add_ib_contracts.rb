@@ -8,7 +8,7 @@ class AddIbContracts < ActiveRecord::Migration
       t.float :strike # double: The strike price.
       t.string :currency, :limit => 4 # Only needed if there is an ambiguity e.g. when SMART exchange
       t.string :sec_id_type, :limit => 5 # Security identifier when querying contract details or
-      t.integer :sec_id # Unique identifier of the given secIdType.
+      t.string :sec_id # Unique identifier of the given secIdType.
       t.string :legs_description # received in OpenOrder for all combos
       t.string :symbol # This is the symbol of the underlying asset.
       t.string :local_symbol # Local exchange symbol of the underlying asset
@@ -24,3 +24,10 @@ class AddIbContracts < ActiveRecord::Migration
     end
   end
 end
+
+__END__
+rails generate scaffold contract con_id:integer sec_type:string strike:float currency:string 
+ sec_id:string sec_id_type:string legs_description:string symbol:string local_symbol:string 
+ multiplier:integer expiry:string exchange:string primary_exchange:string 
+ include_expired:boolean right:string type:string 
+

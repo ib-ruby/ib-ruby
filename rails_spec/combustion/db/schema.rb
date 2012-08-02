@@ -13,6 +13,7 @@
 ActiveRecord::Schema.define(:version => 171) do
 
   create_table "ib_bars", :force => true do |t|
+    t.integer  "contract_id"
     t.float    "open"
     t.float    "high"
     t.float    "low"
@@ -20,10 +21,10 @@ ActiveRecord::Schema.define(:version => 171) do
     t.float    "wap"
     t.integer  "volume"
     t.integer  "trades"
-    t.boolean  "has_gaps",   :limit => 1
-    t.string   "time",       :limit => 18
-    t.datetime "created_at",               :null => false
-    t.datetime "updated_at",               :null => false
+    t.boolean  "has_gaps",    :limit => 1
+    t.string   "time",        :limit => 18
+    t.datetime "created_at",                :null => false
+    t.datetime "updated_at",                :null => false
   end
 
   create_table "ib_combo_legs", :force => true do |t|
@@ -83,7 +84,7 @@ ActiveRecord::Schema.define(:version => 171) do
     t.float    "strike"
     t.string   "currency",         :limit => 4
     t.string   "sec_id_type",      :limit => 5
-    t.integer  "sec_id"
+    t.string   "sec_id"
     t.string   "legs_description"
     t.string   "symbol"
     t.string   "local_symbol"

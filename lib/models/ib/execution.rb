@@ -39,7 +39,9 @@ module IB
 
     # Comparison
     def == other
-      perm_id == other.perm_id &&
+      super(other) ||
+        other.is_a?(self.class) &&
+        perm_id == other.perm_id &&
         local_id == other.local_id && # ((p __LINE__)||true) &&
         client_id == other.client_id &&
         exec_id == other.exec_id &&

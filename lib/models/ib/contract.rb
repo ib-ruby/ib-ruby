@@ -14,7 +14,7 @@ module IB
 
       :sec_type, # Security type. Valid values are: SECURITY_TYPES
 
-      :sec_id, # Unique identifier of the given secIdType.
+      :sec_id => :sup, # Unique identifier of the given secIdType.
 
       :sec_id_type => :sup, # Security identifier, when querying contract details or
       #               when placing orders. Supported identifiers are:
@@ -68,6 +68,8 @@ module IB
 
     has_many :orders # Placed for this Contract
 
+    has_many :bars # Possibly representing trading history for this Contract
+
     has_one :contract_detail # Volatile info about this Contract
 
     # For Contracts that are part of BAG
@@ -80,17 +82,17 @@ module IB
     alias legs combo_legs
     alias legs= combo_legs=
 
-    alias combo_legs_description legs_description
+      alias combo_legs_description legs_description
     alias combo_legs_description= legs_description=
 
-    # for Delta-Neutral Combo Contracts
-    has_one :underlying
+      # for Delta-Neutral Combo Contracts
+      has_one :underlying
     alias under_comp underlying
     alias under_comp= underlying=
 
 
       ### Extra validations
-    validates_inclusion_of :sec_type, :in => CODES[:sec_type].keys,
+      validates_inclusion_of :sec_type, :in => CODES[:sec_type].keys,
       :message => "should be valid security type"
 
     validates_format_of :expiry, :with => /^\d{6}$|^\d{8}$|^$/,
@@ -177,6 +179,8 @@ module IB
 
     # Contract comparison
     def == other
+      return true if super(other)
+
       return false unless other.is_a?(self.class)
 
       # Different sec_id_type

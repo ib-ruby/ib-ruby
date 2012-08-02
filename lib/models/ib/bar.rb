@@ -4,6 +4,8 @@ module IB
   class Bar < IB::Model
     include BaseProperties
 
+    has_one :contract # The bar represents timeseries info for this Contract
+
     prop :open, #   The bar opening price.
       :high, #   The high price during the time covered by the bar.
       :low, #    The low price during the time covered by the bar.
@@ -17,11 +19,13 @@ module IB
       #        determined by the reqHistoricalData() formatDate parameter.
       :has_gaps => :bool # Whether or not there are gaps in the data.
 
-    validates_numericality_of :open, :high, :low, :close, :volume
+      validates_numericality_of :open, :high, :low, :close, :volume
 
     # Order comparison
     def == other
-      time == other.time &&
+      super(other) ||
+        other.is_a?(self.class) &&
+        time == other.time &&
         open == other.open &&
         high == other.high &&
         low == other.low &&

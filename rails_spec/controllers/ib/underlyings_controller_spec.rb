@@ -18,7 +18,6 @@ require 'spec_helper'
 # Message expectations are only used when there is no simpler way to specify
 # that an instance is receiving a specific message.
 
-describe 'Rails Controllers', :rails => true  do
 describe Ib::UnderlyingsController, :type => :controller  do
 
   # This should return the minimal set of attributes required to create a valid
@@ -168,5 +167,4 @@ describe Ib::UnderlyingsController, :type => :controller  do
     end
   end
 
-end
 end

@@ -71,14 +71,14 @@ def buy_sell_assigns
   {['BOT', 'BUY', 'Buy', 'buy', :BUY, :BOT, :Buy, :buy, 'B', :b] => :buy,
    ['SELL', 'SLD', 'Sel', 'sell', :SELL, :SLD, :Sell, :sell, 'S', :S] => :sell,
    [1, nil, 'ASK', :foo] => /should be buy.sell/
-  }
+   }
 end
 
 def buy_sell_short_assigns
   buy_sell_assigns.merge(
-      ['SSHORT', 'Short', 'short', :SHORT, :short, 'T', :T] => :short,
-      ['SSHORTX', 'Shortextemt', 'shortx', :short_exempt, 'X', :X] => :short_exempt,
-      [1, nil, 'ASK', :foo] => /should be buy.sell.short/)
+    ['SSHORT', 'Short', 'short', :SHORT, :short, 'T', :T] => :short,
+    ['SSHORTX', 'Shortextemt', 'shortx', :short_exempt, 'X', :X] => :short_exempt,
+  [1, nil, 'ASK', :foo] => /should be buy.sell.short/)
 end
 
 def test_assigns cases, prop, name
@@ -96,7 +96,7 @@ def test_assigns cases, prop, name
 
         it "#{prop} = #{value.inspect} #=> raises #{result}" do
           expect { subject.send "#{prop}=", value }.
-              to raise_error result
+            to raise_error result
         end
 
       when Regexp # ... Non-exceptional error, making model invalid
@@ -106,7 +106,7 @@ def test_assigns cases, prop, name
           expect { subject.send "#{prop}=", value }.to_not raise_error
 
           subject.valid? # just triggers validation
-                         #pp subject.errors.messages
+          #pp subject.errors.messages
 
           subject.errors.messages.should have_key name
           subject.should be_invalid
@@ -198,7 +198,7 @@ shared_examples_for 'Model instantiated empty' do
 
   it 'sets all properties to defaults' do
     subject.default_attributes.each do |name, value|
-      #p name, value
+      # p name, subject.send(name), value
       case value
       when Time
         subject.send(name).should be_a Time
@@ -216,8 +216,9 @@ shared_examples_for 'Model instantiated with properties' do
   let(:init_with_props?) { true }
 
   it 'auto-assigns all properties given to initializer' do
+    # p subject
     props.each do |name, value|
-      #p subject, name, value
+      # p name, subject.send(name), value
       subject.send(name).should == value
     end
   end

@@ -38,3 +38,14 @@ class AddIbContractDetails < ActiveRecord::Migration
     end
   end
 end
+
+__END__
+rails generate scaffold contract_detail contract_id:integer market_name:string 
+ trading_class:string min_tick:float price_magnifier:integer order_types:string 
+ valid_exchanges:string under_con_id:integer long_name:string contract_month:string 
+ industry:string category:string subcategory:string time_zone:string trading_hours:string 
+ liquid_hours:string cusip:string ratings:string desc_append:string bond_type:string 
+ coupon_type:string coupon:float maturity:string issue_date:string next_option_date:string 
+ next_option_type:string notes:string callable:boolean puttable:boolean convertible:boolean 
+ next_option_partial:boolean
+

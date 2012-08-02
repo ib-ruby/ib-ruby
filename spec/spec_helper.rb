@@ -6,8 +6,8 @@ require 'ib'
 OPTS ||= {
   :verbose => false, #true, # Run test suite in a verbose mode ?
   :brokertron => false, # Use mock (Brokertron) instead of paper account ?
-  :db => IB.db_backed?,
-  :rails => IB.rails?
+  :rails => IB.rails? && Rails.application.class.parent_name,
+  :db => IB.db_backed?
 }
 
 if OPTS[:brokertron]
@@ -59,7 +59,7 @@ RSpec.configure do |config|
 
     :db => proc { |condition| IB.db_backed? != condition }, # true/false
 
-    :rails => proc { |condition| IB.rails? != condition }, # true/false
+    :rails => proc { |condition| IB.rails? != condition }, # false or "Dummy"/"Combustion"
 
     :reuters => proc { |condition| !OPTS[:connection][:reuters] == condition }, # true/false
   }
