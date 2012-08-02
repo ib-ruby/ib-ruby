@@ -26,3 +26,11 @@ class AddIbOrderStates < ActiveRecord::Migration
     end
   end
 end
+
+__END__
+rails generate scaffold order_state order_id:integer local_id:integer client_id:integer 
+perm_id:integer parent_id:integer status:string filled:integer remaining:integer 
+price:float average_price:float why_held:string warning_text:string
+commission_currency:string commission:float min_commission:float max_commission:float 
+init_margin:string maint_margin:float equity_with_loan:float
+

@@ -9,13 +9,15 @@ module IB
     include ActiveModel::Serializers::Xml
     include ActiveModel::Serializers::JSON
 
+    define_model_callbacks :initialize
+
     # If a opts hash is given, keys are taken as attribute names, values as data.
     # The model instance fields are then set automatically from the opts Hash.
     def initialize attributes={}, opts={}
       run_callbacks :initialize do
         error "Argument must be a Hash", :args unless attributes.is_a?(Hash)
 
-        self.attributes = default_attributes.merge(attributes)
+        self.attributes = attributes # set_attribute_defaults is now after_init callback
       end
     end
 

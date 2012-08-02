@@ -1,3 +1,4 @@
+require 'thread'
 require 'ib/socket'
 require 'ib/logger'
 
@@ -11,10 +12,10 @@ module IB
 
     DEFAULT_OPTIONS = {:host =>'127.0.0.1',
                        :port => '4001', # IB Gateway connection (default)
-                       #:port => '7496', # TWS connection, with annoying pop-ups
+                       #:port => '7496', # TWS connection 
                        :connect => true, # Connect at initialization
                        :reader => true, # Start a separate reader Thread
-                       :received => true, # Keep all received messages in a Hash
+                       :received => true, # Keep all received messages in a @received Hash
                        :logger => nil,
                        :client_id => nil, # Will be randomly assigned
                        :client_version => 57, # 48, # 57 = can receive commissionReport message

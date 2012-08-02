@@ -2,10 +2,6 @@ require "spec_helper"
 
 describe Ib::UnderlyingsController, :type => :routing do
   describe "routing" do
-    # Mounted Engine routes do not work properly in specs, need to hack @routes directly
-    # before(:all) { pp (IB::Engine.routes.routes.methods - Object.methods.sort) }
-    # before(:all) { pp 1111111111111; IB::Engine.routes.routes.each {|r| pp(r.methods - Object.methods.sort)} }
-    before(:all) { Ib::Engine.routes.routes.each {|r| pp [r.verb, r.defaults] } }
     before(:each) { @routes = Ib::Engine.routes }
 
     it "routes / to the underlyings index" do

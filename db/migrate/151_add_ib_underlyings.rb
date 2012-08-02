@@ -11,3 +11,6 @@ class AddIbUnderlyings < ActiveRecord::Migration
     end
   end
 end
+
+__END__
+rails generate scaffold underlying contract_id:integer con_id:integer delta:float price:float 

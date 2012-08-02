@@ -8,10 +8,10 @@ describe IB::Order,
    :perm_id => 173276893,
    :parent_id => 0,
    :side => :buy,
+   :tif => :good_till_cancelled,
    :order_type => :market_if_touched,
    :limit_price => 0.1,
    :quantity => 100,
-   :tif => :good_till_cancelled,
    :open_close => :close,
    :oca_group => '',
    :oca_type => :reduce_no_block,
@@ -87,7 +87,7 @@ describe IB::Order,
   it_behaves_like 'Model with invalid defaults'
 
   context 'Order associations' do
-    after(:all) { DatabaseCleaner.clean if IB::DB }
+    after(:all) { DatabaseCleaner.clean if IB.db_backed? }
 
     subject { IB::Order.new props }
 

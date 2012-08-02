@@ -22,3 +22,6 @@ class AddIbExecutions < ActiveRecord::Migration
     end
   end
 end
+
+__END__
+rails generate scaffold execution order_id:integer local_id:integer client_id:integer perm_id:integer order_ref:string exec_id:string side:string quantity:integer cumulative_quantity:integer price:float average_price:float exchange:string account_name:string liquidation:boolean time:string 

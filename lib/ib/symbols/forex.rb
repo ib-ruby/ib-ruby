@@ -8,17 +8,54 @@ module IB
       # used for smaller currency conversions.
       def self.contracts
         @contracts ||= {
+
+         :audchf => IB::Contract.new(:symbol => "AUD",
+                                      :exchange => "IDEALPRO",
+                                      :currency => "CHF",
+                                      :sec_type => :forex,
+                                      :description => "AUDCHF"),
+
+          :audjpy => IB::Contract.new(:symbol => "AUD",
+                                      :exchange => "IDEALPRO",
+                                      :currency => "JPY",
+                                      :sec_type => :forex,
+                                      :description => "AUDJPY"),
+
+          :audnzd => IB::Contract.new(:symbol => "AUD",
+                                      :exchange => "IDEALPRO",
+                                      :currency => "NZD",
+                                      :sec_type => :forex,
+                                      :description => "AUDNZD"),
+
           :audusd => IB::Contract.new(:symbol => "AUD",
                                       :exchange => "IDEALPRO",
                                       :currency => "USD",
                                       :sec_type => :forex,
                                       :description => "AUDUSD"),
 
+          :chfjpy => IB::Contract.new(:symbol => "CHF",
+                                      :exchange => "IDEALPRO",
+                                      :currency => "JPY",
+                                      :sec_type => :forex,
+                                      :description => "CHFJPY"),
+
+          :gbpjpy => IB::Contract.new(:symbol => "GBP",
+                                      :exchange => "IDEALPRO",
+                                      :currency => "JPY",
+                                      :sec_type => :forex,
+                                      :description => "GBPJPY"),
+
           :gbpusd => IB::Contract.new(:symbol => "GBP",
                                       :exchange => "IDEALPRO",
                                       :currency => "USD",
                                       :sec_type => :forex,
                                       :description => "GBPUSD"),
+
+          :eurchf => IB::Contract.new(:symbol => "EUR",
+                                      :exchange => "IDEALPRO",
+                                      :currency => "CHF",
+                                      :sec_type => :forex,
+                                      :description => "EURCHF"),
 
           :euraud => IB::Contract.new(:symbol => "EUR",
                                       :exchange => "IDEALPRO",

@@ -185,6 +185,16 @@ JRuby head (ruby-1.9.3-p203-compatible mode). It is not JRuby-specific though, a
 for either JRuby or MRI, please report an [issue](https://github.com/ib-ruby/ib-ruby/issues/new)
 and we will work on it.
 
+Please keep in mind that when using Ruby 1.8.7, you need to either explicitly: 
+``` ruby
+    require 'rubygems'
+    require 'ib'
+```
+
+or set the environment variable "RUBYOPT" to "-rubygems":
+
+    set RUBYOPT=-rubygems
+
 ## CONTRIBUTING:
 
 1. Fork it

@@ -28,9 +28,9 @@ end
 class String
   def to_bool
     case self.chomp.upcase
-      when 'TRUE', 'T'
+      when 'TRUE', 'T', '1'
         true
-      when 'FALSE', 'F', ''
+      when 'FALSE', 'F', '0', ''
         false
       else
         error "Unable to convert #{self} to bool"
@@ -39,8 +39,9 @@ class String
 end
 
 class NilClass
+  # We still need to pass on nil, meaning: no value
   def to_bool
-    false
+    self
   end
 end
 
@@ -56,8 +57,9 @@ class Symbol
 end
 
 class Object
+  # We still need to pass on nil, meaning: no value
   def to_sup
-    self.to_s.upcase
+    self.to_s.upcase unless self.nil?
   end
 end
 

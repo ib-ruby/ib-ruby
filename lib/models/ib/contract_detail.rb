@@ -48,7 +48,7 @@ module IB
       :next_option_partial => :bool # # only if bond has embedded options.
 
       # Extra validations
-    validates_format_of :time_zone, :with => /^\w{3}$/, :message => 'should be XXX'
+      validates_format_of :time_zone, :with => /^\w{3}$/, :message => 'should be XXX'
 
     belongs_to :contract
     alias summary contract

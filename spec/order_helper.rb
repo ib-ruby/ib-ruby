@@ -127,7 +127,7 @@ shared_examples_for 'Placed Order' do
   context "Cancelling placed order" do
     before(:all) do
       @ib.cancel_order @local_id_placed
-      @ib.wait_for [:OrderStatus, 3], :Alert
+      @ib.wait_for [:OpenOrder, 2], :Alert, 3
     end
 
     after(:all) { clean_connection } # Clear logs and message collector
@@ -138,6 +138,8 @@ shared_examples_for 'Placed Order' do
 
     it 'only receives OpenOrder message with PendingCancel' do
       if @ib.received? :OpenOrder
+        # p @ib.received[:OrderStatus].size
+        # p @ib.received[ :OpenOrder].map {|m| m.order.limit_price.to_s+m.status}
         order_should_be /PendingCancel/
       end
     end
@@ -182,7 +184,7 @@ end
 def status_should_be status, order=@order
   msg = @ib.received[:OrderStatus].find do |msg|
     msg.local_id == order.local_id &&
-        status.is_a?(Regexp) ? msg.status =~ status : msg.status == status
+      status.is_a?(Regexp) ? msg.status =~ status : msg.status == status
   end
   msg.should_not be_nil
   msg.should be_an IB::Messages::Incoming::OrderStatus
@@ -211,11 +213,10 @@ end
 def order_should_be status, order=@order
   msg = @ib.received[:OpenOrder].find do |msg|
     msg.local_id == order.local_id &&
-        status.is_a?(Regexp) ? msg.status =~ status : msg.status == status
+      status.is_a?(Regexp) ? msg.status =~ status : msg.status == status
   end
   msg.should_not be_nil
   msg.should be_an IB::Messages::Incoming::OpenOrder
   msg.order.should == order
   msg.contract.should == @contract
 end
-
