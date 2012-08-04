@@ -10,6 +10,7 @@ module IB
         @contracts ||= define_contracts
       end
       
+      private
       def self.define_contracts
         @contracts = {}
         
