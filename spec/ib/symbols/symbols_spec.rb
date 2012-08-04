@@ -34,8 +34,10 @@ describe IB::Symbols do
   end
   
   it 'references pre-defined IB forex Contracts' do
-    # this tests whether new symbols can be added to currency list to create new forex symbols
-    pending("this tests whether we can add new symbols 'abc' and 'def' to the currency list")
+    # this tests whether new symbols can be added to currency list to create new forex symbols.
+    # first add the new symbols "abc" & "def" to the currency list (in lib/ib/symbols/forex.rb), 
+    # then run this test.
+    pending("can we add new symbols to the currency list?")
     fx = IB::Symbols::Forex[:abcdef]
     fx.should be_an IB::Contract
     fx.sec_type.should == :forex
