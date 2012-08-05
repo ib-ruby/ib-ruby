@@ -32,20 +32,6 @@ describe IB::Symbols do
     fx.exchange.should == "IDEALPRO"
     fx.description.should == "GBPUSD"
   end
-  
-  it 'references pre-defined IB forex Contracts' do
-    # this tests whether new symbols can be added to currency list to create new forex symbols.
-    # first add the new symbols "abc" & "def" to the currency list (in lib/ib/symbols/forex.rb), 
-    # then run this test.
-    pending("can we add new symbols to the currency list?")
-    fx = IB::Symbols::Forex[:abcdef]
-    fx.should be_an IB::Contract
-    fx.sec_type.should == :forex
-    fx.symbol.should == "ABC"
-    fx.currency.should == "DEF"
-    fx.exchange.should == "IDEALPRO"
-    fx.description.should == "ABCDEF"
-  end
 
   it 'references pre-defined IB futures Contracts' do
     fx = IB::Symbols::Futures[:gbp]
@@ -59,5 +45,11 @@ describe IB::Symbols do
     fx.description.should == "British Pounds"
   end
 
+  it 'raises an error if contract symbol is not defined' do
+    lambda{stk = IB::Symbols::Stocks[:xyz]}.should raise_error RuntimeError
+    lambda{opt = IB::Symbols::Options[:xyz20]}.should raise_error RuntimeError
+    lambda{fx = IB::Symbols::Forex[:abcdef]}.should raise_error RuntimeError
+    lambda{fut = IB::Symbols::Futures[:abc]}.should raise_error RuntimeError
+  end
 
 end # describe IB::Symbols
