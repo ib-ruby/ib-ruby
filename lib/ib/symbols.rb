@@ -23,7 +23,7 @@ module IB
         msg = <<-MSG_END
           \n
           *********************************************
-          SYMBOL :'#{symbol.to_s}' IS NOT DEFINED!!
+          SYMBOL ':#{symbol.to_s}' IS NOT DEFINED!!
           Please define it in lib/ib/symbols/
           *********************************************
         MSG_END
@@ -37,3 +37,4 @@ require 'ib/symbols/forex'
 require 'ib/symbols/futures'
 require 'ib/symbols/stocks'
 require 'ib/symbols/options'
+
