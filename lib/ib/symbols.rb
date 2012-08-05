@@ -1,5 +1,5 @@
 # These modules are used to facilitate referencing of most popular IB Contracts.
-# For example, suppose you're explicitely creating such Contract in all your scripts:
+# For example, suppose you're explicitly creating such Contract in all your scripts:
 #    wfc = IB::Contract.new(:symbol => "WFC",
 #                           :exchange => "NYSE",
 #                           :currency => "USD",
@@ -16,7 +16,19 @@
 module IB
   module Symbols
     def [] symbol
-      contracts[symbol]
+      if contracts[symbol]
+        return contracts[symbol]
+      else
+        # symbol probably has not been predefined; tell user about it!
+        msg = <<-MSG_END
+          \n
+          *******************************************
+          SYMBOL ':#{symbol.to_s}' is probably not defined.
+          Please define it in lib/ib/symbols/
+          *******************************************
+        MSG_END
+        raise RuntimeError, msg
+      end
     end
   end
 end
@@ -25,3 +37,4 @@ require 'ib/symbols/forex'
 require 'ib/symbols/futures'
 require 'ib/symbols/stocks'
 require 'ib/symbols/options'
+
