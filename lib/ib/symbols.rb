@@ -1,5 +1,5 @@
 # These modules are used to facilitate referencing of most popular IB Contracts.
-# For example, suppose you're explicitely creating such Contract in all your scripts:
+# For example, suppose you're explicitly creating such Contract in all your scripts:
 #    wfc = IB::Contract.new(:symbol => "WFC",
 #                           :exchange => "NYSE",
 #                           :currency => "USD",
