@@ -46,10 +46,10 @@ describe IB::Symbols do
   end
 
   it 'raises an error if contract symbol is not defined' do
-    lambda{wfc = IB::Symbols::Stocks[:xyz]}.should raise_error RuntimeError
-    lambda{wfc = IB::Symbols::Options[:xy20z]}.should raise_error RuntimeError
+    lambda{stk = IB::Symbols::Stocks[:xyz]}.should raise_error RuntimeError
+    lambda{opt = IB::Symbols::Options[:xyz20]}.should raise_error RuntimeError
     lambda{fx = IB::Symbols::Forex[:abcdef]}.should raise_error RuntimeError
-    lambda{fx = IB::Symbols::Futures[:abc]}.should raise_error RuntimeError
+    lambda{fut = IB::Symbols::Futures[:abc]}.should raise_error RuntimeError
   end
 
 end # describe IB::Symbols
