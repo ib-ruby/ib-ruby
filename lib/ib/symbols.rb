@@ -16,6 +16,7 @@
 module IB
   module Symbols
     def [] symbol
+      raise "SYMBOL ':#{symbol}' IS NOT DEFINED!!  Please define it in lib/ib/symbols/" if contracts[symbol].nil?
       contracts[symbol]
     end
   end
