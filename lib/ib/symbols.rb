@@ -22,10 +22,10 @@ module IB
         # symbol probably has not been predefined; tell user about it!
         msg = <<-MSG_END
           \n
-          *************************************************
+          *******************************************
           SYMBOL ':#{symbol.to_s}' is probably not defined.
           Please define it in lib/ib/symbols/
-          *************************************************
+          *******************************************
         MSG_END
         raise RuntimeError, msg
       end
