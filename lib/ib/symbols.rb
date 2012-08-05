@@ -16,8 +16,19 @@
 module IB
   module Symbols
     def [] symbol
-      raise "SYMBOL ':#{symbol}' IS NOT DEFINED!!  Please define it in lib/ib/symbols/" if contracts[symbol].nil?
-      contracts[symbol]
+      if contracts[symbol]
+        return contracts[symbol]
+      else
+        # symbol probably has not been predefined; tell user about it!
+        msg = <<-MSG_END
+          \n
+          *********************************************
+          SYMBOL :'#{symbol.to_s}' IS NOT DEFINED!!
+          Please define it in lib/ib/symbols/
+          *********************************************
+        MSG_END
+        raise RuntimeError, msg
+      end
     end
   end
 end
