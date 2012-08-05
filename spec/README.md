@@ -1,7 +1,7 @@
 ## RUNNING TEST SUITE:
 
-The gem comes with a spec suit that may be used to test ib-ruby compatibility
-with your specific TWS/Gateway installation. The test suit should be run ONLY
+The gem comes with a spec suite that may be used to test ib-ruby compatibility
+with your specific TWS/Gateway installation. The test suite should be run ONLY
 against your IB paper trading account. Running it against live account may result
 in financial losses.
 
@@ -15,7 +15,7 @@ to running tests, otherwise some tests will fail. Use 'bin/cancel_orders' script
 bulk cancelling of open orders before running tests as needed.
 
 By default, specs suppress logging output that is normally produced by IB::Connection.
-This may make it difficult to debug a failing spec. Following option will switch on verbose
+This may make it difficult to debug a failing spec. The following option will switch on verbose
 output (both logger output and content of all received IB messages is dumped). Do not use
 this mode to run a whole spec - you will be swamped! Use it to debug specific failing specs
 only:
@@ -53,15 +53,15 @@ To run specs with Dummy Rails application, use:
     $ rspec -rdummy rails_spec
     $ rspec -rdummy [spec/specific_spec.rb]
 
-Other suit switches described in previous section should work with Rails as well.    
+Other suite switches described in previous section should work with Rails as well.    
 
 ## PROBLEMS WHILE RUNNING THE SPECS:
 
-Some of the specs may randomly fail from time to time when you are running the spec suit 
+Some of the specs may randomly fail from time to time when you are running the spec suite 
 against your IB paper account. This happens because these specs depend on live connection
 to IB, which is inherently non-deterministic. Anything happening along the way - network
 delay, problems with IB data farms, even high CPU load on your machine - may delay the
-expected responce, so that the spec times out or does not find expected data. For example,
+expected response, so that the spec times out or does not find expected data. For example,
 IB historical data farm is known to disappear from time to time, so any specs related to
 historical data will fail while this outage lasts. 
 
@@ -114,7 +114,7 @@ You can easily create your own integration specs. Pattern for writing specs is l
    messages from and log entries. If your do not do this, your examples become coupled.
 
 11. If you want to see exactly what's going on inside ib-ruby while your examples are
-    running, run your specs with '-rv' option to switch on verbose outpset mode.
+    running, run your specs with '-rv' option to switch on verbose output mode.
     Now you will see all the messages received and log entries made as as result of
     your examples running. Be warned, output is very verbose, so don't run big chunk of
     specs with -rv option or you will be swamped!.
