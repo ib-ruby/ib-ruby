@@ -10,7 +10,7 @@
 # it as IB::Symbols::Stock[:wfc] anywhere you need it.
 #
 # Note that the :description field is local to ib-ruby, and is NOT part of the standard TWS API.
-# It is never transmitted to IB. It's purely used clientside, and you can store any arbitrary 
+# It is never transmitted to IB. It's purely used clientside, and you can store any arbitrary
 # string that you may find useful there.
 
 module IB
@@ -19,15 +19,10 @@ module IB
       if contracts[symbol]
         return contracts[symbol]
       else
-        # symbol probably has not been predefined; tell user about it!
-        msg = <<-MSG_END
-          \n
-          *******************************************
-          SYMBOL ':#{symbol.to_s}' is probably not defined.
-          Please define it in lib/ib/symbols/
-          *******************************************
-        MSG_END
-        raise RuntimeError, msg
+        # symbol probably has not been predefined, tell user about it
+        file = self.to_s.split(/::/).last.downcase
+        msg = "Unknown symbol :#{symbol}, please pre-define it in lib/ib/symbols/#{file}.rb"
+        error msg, :symbol
       end
     end
   end
@@ -37,4 +32,3 @@ require 'ib/symbols/forex'
 require 'ib/symbols/futures'
 require 'ib/symbols/stocks'
 require 'ib/symbols/options'
-
