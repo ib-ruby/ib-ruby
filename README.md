@@ -197,11 +197,19 @@ or set the environment variable "RUBYOPT" to "-rubygems":
 
 ## CONTRIBUTING:
 
-1. Fork it
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Added some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request
+If you want to contribute to ib-ruby development:
+
+1. Make a fresh fork of ib-ruby (Fork button on top of Github GUI)
+2. Clone your fork locally (git clone /your fork private URL/)
+3. Add main ib-ruby repo as upstream (git remote add upstream git://github.com/ib-ruby/ib-ruby.git)
+4. Create your feature branch (git checkout -b my-new-feature)
+5. Modify code as you see fit
+6. Commit your changes (git commit -am 'Added some feature')
+7. Pull in latest upstream changes (git fetch upstream -v; git merge upstream/master)
+8. Push to the branch (git push origin my-new-feature)
+9. Go to your Github fork and create new Pull Request via Github GUI
+
+... then proceed from step 6 for more code modifications...
 
 ## LICENSE:
 

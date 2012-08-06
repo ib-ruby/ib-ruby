@@ -45,11 +45,15 @@ describe IB::Symbols do
     fx.description.should == "British Pounds"
   end
 
-  it 'raises an error if contract symbol is not defined' do
-    lambda{stk = IB::Symbols::Stocks[:xyz]}.should raise_error RuntimeError
-    lambda{opt = IB::Symbols::Options[:xyz20]}.should raise_error RuntimeError
-    lambda{fx = IB::Symbols::Forex[:abcdef]}.should raise_error RuntimeError
-    lambda{fut = IB::Symbols::Futures[:abc]}.should raise_error RuntimeError
+  it 'raises an error if requested contract symbol is not defined' do
+    expect {stk = IB::Symbols::Stocks[:xyz]}.
+      to raise_error "Unknown symbol :xyz, please pre-define it in lib/ib/symbols/stocks.rb"
+    expect {opt = IB::Symbols::Options[:xyz20]}.
+      to raise_error "Unknown symbol :xyz20, please pre-define it in lib/ib/symbols/options.rb"
+    expect {fx = IB::Symbols::Forex[:abcdef]}.
+      to raise_error "Unknown symbol :abcdef, please pre-define it in lib/ib/symbols/forex.rb"
+    expect {fut = IB::Symbols::Futures[:abc]}.
+      to raise_error "Unknown symbol :abc, please pre-define it in lib/ib/symbols/futures.rb"
   end
 
 end # describe IB::Symbols
