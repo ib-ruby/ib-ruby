@@ -45,5 +45,11 @@ describe IB::Symbols do
     fx.description.should == "British Pounds"
   end
 
+  it 'raises an error if contract symbol is not defined' do
+    lambda{stk = IB::Symbols::Stocks[:xyz]}.should raise_error RuntimeError
+    lambda{opt = IB::Symbols::Options[:xyz20]}.should raise_error RuntimeError
+    lambda{fx = IB::Symbols::Forex[:abcdef]}.should raise_error RuntimeError
+    lambda{fut = IB::Symbols::Futures[:abc]}.should raise_error RuntimeError
+  end
 
 end # describe IB::Symbols
