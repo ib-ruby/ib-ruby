@@ -104,3 +104,27 @@ class AddIbOrders < ActiveRecord::Migration
     end
   end
 end
+
+__END__
+rails generate scaffold order contract_id:integer local_id:integer client_id:integer 
+ perm_id:integer parent_id:integer order_ref:string order_type:string tif:string side:string 
+ quantity:integer limit_price:float aux_price:float open_close:integer oca_type:integer 
+ oca_group:string transmit:boolean what_if:boolean outside_rth:boolean not_held:boolean 
+ hidden:boolean block_order:boolean sweep_to_fill:boolean all_or_none:boolean etrade_only:boolean
+ firm_quote_only:boolean opt_out_smart_routing:boolean override_percentage_constraints:boolean 
+ min_quantity:integer display_size:integer trigger_method:integer origin:integer 
+ good_after_time:string good_till_date:string rule_80a:string percent_offset:float 
+ trail_stop_price:float trailing_percent:float fa_group:string fa_profile:string fa_method:string 
+ fa_percentage:string short_sale_slot:integer designated_location:string exempt_code:integer 
+ account:string settling_firm:string clearing_account:string clearing_intent:string 
+ discretionary_amount:float nbbo_price_cap:float auction_strategy:integer starting_price:float 
+ stock_ref_price:float delta:float stock_range_lower:float stock_range_upper:float 
+ volatility:float volatility_type:integer reference_price_type:integer continuous_update:integer 
+ delta_neutral_order_type:string delta_neutral_aux_price:string delta_neutral_con_id:integer 
+ delta_neutral_settling_firm:string delta_neutral_clearing_account:string 
+ delta_neutral_clearing_intent:string hedge_type:string hedge_param:string basis_points:float 
+ basis_points_type:float algo_strategy:string leg_prices:text algo_params:text 
+ combo_params:text scale_init_level_size:integer scale_subs_level_size:integer 
+ scale_price_increment:float scale_price_adjust_value:float scale_price_adjust_interval:integer 
+ scale_profit_offset:float scale_init_position:integer scale_init_fill_qty:integer 
+ scale_auto_reset:boolean scale_random_percent:boolean placed_at:timestamp modified_at:timestamp
