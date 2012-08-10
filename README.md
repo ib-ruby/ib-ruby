@@ -70,7 +70,7 @@ other API implementations. The choice is yours.
     | 0.5.21      |    918-920  |    965       |
     | 0.6.1       |    921-923  |    966       |
     | 0.7.1       |    924-925  |    966       |
-    | 0.8.1+      |    926-927  |    967       |
+    | 0.8.1+      |    926-928  |    967       |
 
 4. Start Interactive Broker's Trader Work Station or Gateway before your code
    attempts to connect to it. Note that TWS and Gateway listen to different ports,
@@ -119,9 +119,11 @@ See `lib/ib/messages` for a full list of supported incoming/outgoing messages
 and their attributes. The original TWS docs and code samples can also be found
 in `misc` directory.
 
-The sample scripts in `bin` directory provide examples of how common tasks
-can be achieved using ib-ruby. You may also want to look into `spec/integration`
-directory for more scenarios and examples of handling IB messages.
+Sample scripts in `example` directory demonstrate common ib-ruby use cases. Examples 
+show you how to access account info, print real time quotes, retrieve historic or 
+fundamental data, request options calculations, place, list, and cancel orders.
+You may also want to look into `spec/integration` directory for more scenarios, 
+use cases and examples of handling IB messages.
 
 ## RAILS INTEGRATION:
 
