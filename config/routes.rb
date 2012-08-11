@@ -5,6 +5,7 @@ IB::Engine.routes.draw do
   resources :contracts
   resources :contract_details
   resources :executions
+  resources :orders
   resources :order_states
   resources :underlyings
 

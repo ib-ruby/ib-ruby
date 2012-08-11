@@ -3,14 +3,16 @@ module IB
     module Forex
       extend Symbols
 
-      # IDEALPRO is for orders over 25,000 and routes to the interbank quote stream.
-      # IDEAL is for smaller orders, and has wider spreads/slower execution... generally
-      # used for smaller currency conversions.
       def self.contracts
         @contracts ||= define_contracts
       end
       
       private
+      
+      # IDEALPRO is for orders over 20,000 and routes to the interbank quote stream.
+      # IDEAL is for smaller orders, and has wider spreads/slower execution... generally
+      # used for smaller currency conversions. IB::Symbols::Forex contracts are pre-defined 
+      # on IDEALPRO, if you need something else please define forex contracts manually.
       def self.define_contracts
         @contracts = {}
         
