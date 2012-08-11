@@ -1,5 +1,5 @@
-# The Futures module tries to guess the front month  currency future using a crude algorithm 
-# that does not take into account expiry/rollover day. This will be valid most of the time, 
+# The Futures module tries to guess the front month future using a crude algorithm that 
+# does not take into account expiry/rollover day. This will be valid most of the time, 
 # but near/after expiry day the next quarter's contract takes over as the volume leader.
 
 module IB
@@ -8,7 +8,6 @@ module IB
       extend Symbols
       
       # Find the next front month of quarterly futures.
-      #
       # N.B. This will not work as expected during the front month before expiration, as
       # it will point to the next quarter even though the current month is still valid!
       def self.next_quarter_month time=Time.now

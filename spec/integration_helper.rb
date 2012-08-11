@@ -9,7 +9,7 @@ shared_examples_for 'Received Market Data' do
     it { should be_warning }
     it { should_not be_error }
     its(:code) { should be_an Integer }
-    its(:message) { should =~ /Market data farm connection is OK/ }
+    its(:message) { should =~ /data farm connection is OK/ }
     its(:to_human) { should =~ /TWS Warning/ }
   end
 

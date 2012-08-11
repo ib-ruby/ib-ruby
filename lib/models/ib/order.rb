@@ -350,26 +350,26 @@ module IB
     def == other
       super(other) ||
         other.is_a?(self.class) &&
-        perm_id && other.perm_id && perm_id == other.perm_id ||
-        local_id == other.local_id && # ((p __LINE__)||true) &&
-        (client_id == other.client_id || client_id == 0 || other.client_id == 0) &&
-        parent_id == other.parent_id &&
-        tif == other.tif &&
-        action == other.action &&
-        order_type == other.order_type &&
-        quantity == other.quantity &&
-        (limit_price == other.limit_price || # TODO Floats should be Decimals!
-         (limit_price - other.limit_price).abs < 0.00001) &&
-        aux_price == other.aux_price &&
-        origin == other.origin &&
-        designated_location == other.designated_location &&
-        exempt_code == other.exempt_code &&
-        what_if == other.what_if &&
-        algo_strategy == other.algo_strategy &&
-        algo_params == other.algo_params
+        (perm_id && other.perm_id && perm_id == other.perm_id ||
+         local_id == other.local_id && # ((p __LINE__)||true) &&
+         (client_id == other.client_id || client_id == 0 || other.client_id == 0) &&
+         parent_id == other.parent_id &&
+         tif == other.tif &&
+         action == other.action &&
+         order_type == other.order_type &&
+         quantity == other.quantity &&
+         (limit_price == other.limit_price || # TODO Floats should be Decimals!
+          (limit_price - other.limit_price).abs < 0.00001) &&
+         aux_price == other.aux_price &&
+         origin == other.origin &&
+         designated_location == other.designated_location &&
+         exempt_code == other.exempt_code &&
+         what_if == other.what_if &&
+         algo_strategy == other.algo_strategy &&
+         algo_params == other.algo_params)
 
-      # TODO: compare more attributes!
-    end
+        # TODO: compare more attributes!
+        end
 
     def to_s #human
       "<Order:" + instance_variables.map do |key|
