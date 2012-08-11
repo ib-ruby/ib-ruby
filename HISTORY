@@ -198,3 +198,6 @@
 
 * Working Rails Engine integration
 
+== 0.8.5 / 2012-08-11
+
+* Complete Rails Engine, TWS 929 support

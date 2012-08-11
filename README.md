@@ -70,7 +70,7 @@ other API implementations. The choice is yours.
     | 0.5.21      |    918-920  |    965       |
     | 0.6.1       |    921-923  |    966       |
     | 0.7.1       |    924-925  |    966       |
-    | 0.8.1+      |    926-928  |    967       |
+    | 0.8.1+      |    926-929  |    967       |
 
 4. Start Interactive Broker's Trader Work Station or Gateway before your code
    attempts to connect to it. Note that TWS and Gateway listen to different ports,
