@@ -42,7 +42,7 @@ end
                       :end_date_time => Time.now.to_ib,
                       :duration => '2 D', #    ?
                       :bar_size => '1 min', #  IB::BAR_SIZES.key(:hour)?
-                      :what_to_show => :trades,
+                      :what_to_show => :bid,
                       :use_rth => 1,
                       :format_date => 1)
 end
