@@ -1,4 +1,5 @@
-# Stock contracts definitions
+# Frequently used stock contracts definitions
+# TODO: auto-request :ContractDetails from IB if unknown symbol is requested?
 module IB
   module Symbols
     module Stocks

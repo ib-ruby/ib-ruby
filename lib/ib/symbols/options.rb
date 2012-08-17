@@ -1,4 +1,5 @@
-# Option contracts definitions
+# Option contracts definitions. 
+# TODO: add next_expiry and other convenience from Futures module.
 module IB
   module Symbols
     module Options
