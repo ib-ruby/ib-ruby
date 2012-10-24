@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 #
-# This script converts given migration file into rails scaffold command
+# This script converts given migration file into a Rails scaffold command
 
 output = STDOUT
 ARGV.each do |file_name|

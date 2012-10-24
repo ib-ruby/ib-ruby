@@ -1,0 +1,87 @@
+#!/usr/bin/env ruby
+#
+# FLEX is a web-based service from IB that helps you to retrieve your activity,
+# trades and positions. It is working independently from TWS or Gateway, using your
+# internet connection directly. See /misc/flex for extended FLEX documentation.
+# 
+# In order to use this service, activate it and configure your token first.
+# Your Token is located at Account Management->Reports->Delivery Settings->Flex Web Service. 
+# You need to activate Flex Web Service and generate new token(s) there.
+# Your Flex Query Ids are in Account Management->Reports->Activity->Flex Queries. 
+# Create new Flex query and make sure to set its output format to XML.
+# 
+# This script retrieves your pre-defined FLEX report from IB using 'hands-on' approach 
+# where you control all the low-level details of the communication with FLEX service.
+
+require 'rubygems'
+require 'net/http'
+require 'net/https'
+require 'xmlsimple'
+require 'yaml'
+
+if File.exists? "config/flex.yml" 
+  # You may want to put your favorite FLEX queries info into a separate config file
+  query_name = ARGV[0] || 'default'	
+  config = YAML::load_file('config/flex.yml')[query_name]
+  raise "FLEX error: no config for #{query_name} in 'config/flex.yml'" unless config
+  query_id = config[:query_id]
+  token = config[:token]
+  raise "FLEX error: no token or query_id for #{query_name}" unless token && query_id
+else
+  # ... or just hardcode your token and query_id here:
+  query_id = ARGV[0] || 11111 # CHANGE to actual query id!
+  token = 1111111111111111111111111111111111 # CHANGE to your actual token!
+end	
+
+# Helper method to get and parse XML responses from IB Flex Web Service
+def get_xml address, fields
+  uri = URI("#{address}?" + fields.map { |k, v| "#{k}=#{URI.encode(v.to_s)}" }.join('&'))
+
+  server = Net::HTTP.new(uri.host, uri.port)
+  server.use_ssl = (uri.scheme == 'https')
+  server.verify_mode = OpenSSL::SSL::VERIFY_NONE if server.use_ssl? # Avoid OpenSSL failures
+
+  resp = server.start do |http|
+    req = Net::HTTP::Get.new(uri.request_uri)
+    http.request(req)
+  end
+
+  raise "FLEX error: URI responded with #{resp.code}" unless resp.code.to_i == 200
+  raise "FLEX error: Expected xml, got #{resp.content_type}" unless resp.content_type == 'text/xml'
+
+  XmlSimple.xml_in(resp.body, :ForceArray => false)
+end
+
+# Initiate FLEX request at a known FLEX Web Service URI
+flex_uri = 'https://www.interactivebrokers.com/Universal/servlet/FlexStatementService.SendRequest' 
+resp = get_xml flex_uri, :t => token, :q => query_id, :v => 3
+
+raise "FLEX error #{resp['ErrorCode']}: #{resp['ErrorMessage']}" if resp['Status'] == 'Fail'
+
+reference_code = resp['ReferenceCode']   
+report_uri = resp['Url']
+
+# Retrieve the FLEX report
+report = nil
+until report do
+  report = get_xml report_uri, :t => token, :q => reference_code, :v => 3
+  
+  # If Status is specified, xml contains only error message, not actual report
+  if report['Status'] == 'Fail'
+  	error_code = report['ErrorCode'].to_i
+  	error_message = "FLEX error #{error_code}: #{report['ErrorMessage']}"
+    
+    case error_code
+      when 1001..1009, 1018, 1019, 1021
+      	# Report is just not ready yet, wait and retry
+      	puts error_message
+      	report = nil
+        sleep 1
+      else # Fatal error 
+      	raise error_message
+    end	
+  end
+end
+
+# Now you have to extract all the data you need from the report
+p report
