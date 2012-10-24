@@ -75,6 +75,15 @@ module IB
                                                                :account_code)
 
       # data => { :id => request_id (int), :contract => Contract }
+      # 
+      # Special case for options: "wildcards" in the Contract fields retrieve Option chains
+      #   strike = 0 means all strikes
+      #   right = "" meanns both call and put
+      #   expiry = "" means all expiries
+      #   expiry = "2013" means all expiries in 2013
+      #   expiry = "201311" means all expiries in Nov 2013
+      # You'll get several ContractData (10) messages back if there is more than one match.
+      # When all the matches are delivered you'll get ContractDataEnd (52) message.
       RequestContractDetails = RequestContractData =
           def_message([9, 6],
                       [:contract, :serialize_short, [:con_id, :include_expired, :sec_id]])
@@ -83,8 +92,6 @@ module IB
       RequestMarketDepth = def_message([10, 3],
                                        [:contract, :serialize_short, []],
                                        :num_rows)
-
-      ### Defining (complex) Outgoing Message classes for IB:
 
       # When this message is sent, TWS responds with ExecutionData messages, each
       # containing the execution report that meets the specified criteria.
