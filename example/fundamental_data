@@ -11,13 +11,12 @@ require 'ib-ruby'
 require 'xmlsimple'
 require 'pp'
 
-
 ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS
 
 ib.subscribe(:Alert) { |msg| puts msg.to_human }
 
-# Fundamental Data will arrive as XML, parse it
-ib.subscribe(:FundamentalData) { |msg| @xml = XmlSimple.xml_in(msg.data) }
+# Fundamental Data will arrive in XML format, we need to parse it
+ib.subscribe(:FundamentalData) { |msg| @xml = XmlSimple.xml_in(msg.data, :ForceArray => false) }
 
 ibm = IB::Contract.new :symbol => 'IBM',
                        :exchange => 'NYSE',
@@ -36,4 +35,5 @@ ib.send_message :RequestFundamentalData,
 # Needs some time to receive and parse XML. Standard timeout of 1 sec is just too low.
 ib.wait_for(30) { @xml}
 
+# Now just extract and use all the fundamental data you needed
 pp @xml
