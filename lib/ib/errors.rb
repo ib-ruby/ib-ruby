@@ -13,6 +13,9 @@ module IB
   class LoadError < LoadError
   end
 
+  class FlexError < RuntimeError
+  end
+
 end # module IB
 
 # Patching Object with universally accessible top level error method. 
@@ -29,6 +32,8 @@ def error message, type=:standard, backtrace=nil
     IB::SymbolError.new message
   when :load
     IB::LoadError.new message
+  when :flex
+    IB::FlexError.new message
   end
   e.set_backtrace(backtrace) if backtrace
   raise e
