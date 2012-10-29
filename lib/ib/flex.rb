@@ -39,6 +39,7 @@ module IB
     end
 
     # Run a pre-defined Flex query against IB Flex Web Service
+    # Returns a (parsed) report or raises FlexError in case of problems
     def run
       # Initiate FLEX request at a known FLEX Web Service URI
       resp = get_content Flex.uri, :t => @token, :q => @query_id, :v => 3
@@ -72,7 +73,7 @@ module IB
       report
     end
 
-    # Helper method to get and parse XML responses from IB Flex Web Service
+    # Helper method to get (and parse XML) responses from IB Flex Web Service
     def get_content address, fields
       text_ok = fields.delete(:text_ok)
       resp = get address, fields
@@ -84,7 +85,7 @@ module IB
       end
     end
 
-    # Helper method to get text responses from IB Flex Web Service
+    # Helper method to get raw responses from IB Flex Web Service
     def get address, fields
       uri = URI("#{address}?" + fields.map { |k, v| "#{k}=#{URI.encode(v.to_s)}" }.join('&'))
 
