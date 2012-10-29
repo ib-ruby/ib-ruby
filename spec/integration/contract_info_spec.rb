@@ -144,7 +144,7 @@ describe "Request Contract Info", :connected => true, :integration => true do
 
       detail.market_name.should == 'EUR.USD'
       detail.trading_class.should == 'EUR.USD'
-      detail.long_name.should == 'European Monetary Union euro'
+      detail.long_name.should =~ /European Monetary Union [Ee]uro/
       detail.industry.should == ''
       detail.category.should == ''
       detail.subcategory.should == ''

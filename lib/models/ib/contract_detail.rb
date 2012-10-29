@@ -28,6 +28,18 @@ module IB
       :liquid_hours, #  The liquid trading hours of the product. For example,
       #                 20090507:0930-1600;20090508:CLOSED.
 
+      # To support products in Australia which trade in non-currency units, the following 
+      # attributes have been added to Execution and Contract Details objects:
+      :ev_rule, # evRule - String contains the Economic Value Rule name and optional argument, 
+      #          separated by a colon. Examle: aussieBond:YearsToExpiration=3. 
+      #          When the optional argument not present, the value will be followed by a colon.
+      :ev_multipler, # evMultipler - double, tells you approximately how much the market 
+      #               value of a contract would change if the price were to change by 1. 
+      #               It cannot be used to get market value by multiplying the price by 
+      #               the approximate multiplier.
+
+      :sec_id_list, # Hash with many Security ids
+
       # BOND values:
       :cusip, # The nine-character bond CUSIP or the 12-character SEDOL.
       :ratings, # Credit rating of the issuer. Higher rating is less risky investment.
@@ -47,8 +59,10 @@ module IB
       :convertible => :bool, # Can be converted to stock under certain conditions.
       :next_option_partial => :bool # # only if bond has embedded options.
 
-      # Extra validations
-      validates_format_of :time_zone, :with => /^\w{3}$/, :message => 'should be XXX'
+    # Extra validations
+    validates_format_of :time_zone, :with => /^\w{3}$/, :message => 'should be XXX'
+
+    serialize :sec_id_list, HashWithIndifferentAccess
 
     belongs_to :contract
     alias summary contract
@@ -58,6 +72,8 @@ module IB
       super.merge :coupon => 0.0,
         :under_con_id => 0,
         :min_tick => 0,
+        :ev_multipler => 0,
+        :sec_id_list => HashWithIndifferentAccess.new,
         :callable => false,
         :puttable => false,
         :convertible => false,

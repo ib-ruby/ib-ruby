@@ -74,6 +74,9 @@ ActiveRecord::Schema.define(:version => 171) do
     t.boolean  "puttable",            :limit => 1
     t.boolean  "convertible",         :limit => 1
     t.boolean  "next_option_partial", :limit => 1
+    t.string   "ev_rule"
+    t.float    "ev_multipler"
+    t.text     "sec_id_list"
     t.datetime "created_at",                       :null => false
     t.datetime "updated_at",                       :null => false
   end
