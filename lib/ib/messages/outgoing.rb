@@ -283,6 +283,7 @@ module IB
 end # module IB
 
 __END__
+
     // outgoing msg id's
     private static final int REQ_MKT_DATA = 1;
     private static final int CANCEL_MKT_DATA = 2;

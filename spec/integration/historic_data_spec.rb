@@ -5,7 +5,7 @@ describe 'Request Historic Data', :connected => true, :integration => true do
   CORRECT_OPTS = {:id => 567,
                   :contract => IB::Symbols::Stocks[:wfc],
                   :end_date_time => Time.now.to_ib,
-                  :duration => '1 D',
+                  :duration => '5 D',
                   :bar_size => '15 mins',
                   :data_type => :trades,
                   :format_date => 1}
