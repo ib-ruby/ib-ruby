@@ -42,11 +42,11 @@ module IB
 
       def to_human
         "<#{self.message_type}:" +
-            @data.map do |key, value|
-              unless [:version].include?(key)
-                " #{key} #{ value.is_a?(Hash) ? value.inspect : value}"
-              end
-            end.compact.join(',') + " >"
+        @data.map do |key, value|
+          unless [:version].include?(key)
+            " #{key} #{ value.is_a?(Hash) ? value.inspect : value}"
+          end
+        end.compact.join(',') + " >"
       end
 
     end # class AbstractMessage
@@ -66,10 +66,13 @@ module IB
         @data_map = data_map
 
         @data_map.each do |(name, _, type_args)|
-          if type_args.is_a?(Symbol) # This is Incoming with [group, field, type]
-            attr_reader name
-          else
-            define_method(name) { @data[name] }
+          # Avoid redefining existing accessor methods
+          unless instance_methods.include?(name.to_s) || instance_methods.include?(name.to_sym)
+            if type_args.is_a?(Symbol) # This is Incoming with [group, field, type]
+              attr_reader name
+            else
+              define_method(name) { @data[name] } 
+            end
           end
         end
 

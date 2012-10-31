@@ -70,12 +70,18 @@ ActiveRecord::Schema.define(:version => 171) do
     t.string   "next_option_date"
     t.string   "next_option_type"
     t.string   "notes"
-    t.boolean  "callable",            :limit => 1
-    t.boolean  "puttable",            :limit => 1
-    t.boolean  "convertible",         :limit => 1
-    t.boolean  "next_option_partial", :limit => 1
-    t.datetime "created_at",                       :null => false
-    t.datetime "updated_at",                       :null => false
+    t.boolean  "callable",                  :limit => 1
+    t.boolean  "puttable",                  :limit => 1
+    t.boolean  "convertible",               :limit => 1
+    t.boolean  "next_option_partial",       :limit => 1
+    t.string   "valid_next_option_date"
+    t.string   "valid_next_option_type"
+    t.string   "valid_next_option_partial"
+    t.string   "ev_rule"
+    t.float    "ev_multiplier"
+    t.text     "sec_id_list"
+    t.datetime "created_at",                             :null => false
+    t.datetime "updated_at",                             :null => false
   end
 
   create_table "ib_contracts", :force => true do |t|
@@ -105,6 +111,8 @@ ActiveRecord::Schema.define(:version => 171) do
     t.integer  "client_id"
     t.integer  "perm_id"
     t.string   "order_ref"
+    t.string   "ev_rule"
+    t.float    "ev_multiplier"
     t.string   "exec_id"
     t.string   "side",                :limit => 1
     t.integer  "quantity"

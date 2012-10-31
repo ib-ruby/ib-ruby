@@ -57,7 +57,7 @@ describe 'Ids valid for Order placement', :connected => true, :integration => tr
     end
 
     it 'logs connection notification' do
-      should_log /Connected to server, version: .., connection time/
+      should_log /Connected to server, ver: .., connection time/
     end
   end # at connect
 

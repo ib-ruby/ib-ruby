@@ -70,7 +70,8 @@ other API implementations. The choice is yours.
     | 0.5.21      |    918-920  |    965       |
     | 0.6.1       |    921-923  |    966       |
     | 0.7.1       |    924-925  |    966       |
-    | 0.8.1+      |    926-929  |    967       |
+    | 0.8.1       |    926-930  |    967 beta  |
+    | 0.9.0+      |    931-932  |    967 final |
 
 4. Start Interactive Broker's Trader Work Station or Gateway before your code
    attempts to connect to it. Note that TWS and Gateway listen to different ports,
@@ -119,23 +120,23 @@ See `lib/ib/messages` for a full list of supported incoming/outgoing messages
 and their attributes. The original TWS docs and code samples can also be found
 in `misc` directory.
 
-Sample scripts in `example` directory demonstrate common ib-ruby use cases. Examples 
-show you how to access account info, print real time quotes, retrieve historic or 
+Sample scripts in `example` directory demonstrate common ib-ruby use cases. Examples
+show you how to access account info, print real time quotes, retrieve historic or
 fundamental data, request options calculations, place, list, and cancel orders.
-You may also want to look into `spec/integration` directory for more scenarios, 
+You may also want to look into `spec/integration` directory for more scenarios,
 use cases and examples of handling IB messages.
 
 ## RAILS INTEGRATION:
 
 This gem has two operating modes: standalone and Rails-engine. If you require it in a
 Rails environment, it loads Rails engine automatically. Otherwise, it does not load any
-Rails integration. 
+Rails integration.
 
 To add ib-ruby to your Rails 3 project, follow these steps:
 
 Add to your Gemfile:
 ``` ruby
-gem 'ib-ruby', '~>0.8'
+gem 'ib-ruby', '~>0.9'
 ```
 Add the require to your config/application.rb:
 ``` ruby
@@ -152,12 +153,12 @@ Now run:
 
 This will install ib-ruby gem and copy its migrations into your Rails apps migrations.
 
-You can now use or modify IB models, develop controllers and views for them in your Rails app. 
+You can now use or modify IB models, develop controllers and views for them in your Rails app.
 
 ## DB BACKEND:
 
-Even if you don't use Rails, you can still take advantage of its data persistance layer 
-(ActiveRecord ORM). In order to use data persistance, you have to set up the database 
+Even if you don't use Rails, you can still take advantage of its data persistance layer
+(ActiveRecord ORM). In order to use data persistance, you have to set up the database
 (SQLite recommended for simplicity) and run migrations located at gems 'db/migrate' folder.
 It is recommended that you use a gem like [standalone_migrations](https://github.com/thuss/standalone-migrations) for this.
 
@@ -169,25 +170,25 @@ You further need to:
 ```
 Only require 'ib' AFTER you've connected to DB, otherwise your Models will not
 inherit from ActiveRecord::Base and won't be persistent. If you are using Rails,
-you don't need IB::DB.connect part, Rails will take care of it for you.  
+you don't need IB::DB.connect part, Rails will take care of it for you.
 
 Now, all your IB Models are just ActiveRecords and you can save them to DB just
 like you would with Rails models.
 
 ## RUNNING TESTS:
 
-The gem comes with a spec suit that may be used to test ib-ruby compatibility with your 
+The gem comes with a spec suit that may be used to test ib-ruby compatibility with your
 specific TWS/Gateway installation. Please read 'spec/Readme.md' for more details about
 running specs.
 
 ## RUBY VERSION COMPATIBILITY:
 
-The library is continuously tested with JRuby 1.6.7 (ruby-1.8.7-p357-compatible mode) and 
-JRuby head (ruby-1.9.3-p203-compatible mode). It is not JRuby-specific though, as it is currently used in a some MRI Ruby based projects. If there are any problems in any mode 
+The library is continuously tested with JRuby 1.6.7 (ruby-1.8.7-p357-compatible mode) and
+JRuby head (ruby-1.9.3-p203-compatible mode). It is not JRuby-specific though, as it is currently used in a some MRI Ruby based projects. If there are any problems in any mode
 for either JRuby or MRI, please report an [issue](https://github.com/ib-ruby/ib-ruby/issues/new)
 and we will work on it.
 
-Please keep in mind that when using Ruby 1.8.7, you need to either explicitly: 
+Please keep in mind that when using Ruby 1.8.7, you need to either explicitly:
 ``` ruby
     require 'rubygems'
     require 'ib'

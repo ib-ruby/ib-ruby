@@ -30,11 +30,11 @@ describe 'Request Fundamental Data',
 
   it { should be_an IB::Messages::Incoming::FundamentalData }
   its(:request_id) { should == 456 }
-  its(:data) { should be_a String }
+  its(:xml) { should be_a String }
 
   it 'responds with XML with relevant data' do
     require 'xmlsimple'
-    data_xml = XmlSimple.xml_in(subject.data, 'ForceArray' => false) #, 'ContentKey' => 'content')
+    data_xml = XmlSimple.xml_in(subject.xml, 'ForceArray' => false) #, 'ContentKey' => 'content')
     name = data_xml["CoIDs"]["CoID"].find {|tag| tag['Type'] == 'CompanyName'}['content']
     name.should =~ /International Business Machines/
   end

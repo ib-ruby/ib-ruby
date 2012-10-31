@@ -224,8 +224,8 @@ module IB
     alias smart_combo_routing_params combo_params
 
     serialize :leg_prices
-    serialize :algo_params, Hash
-    serialize :combo_params
+    serialize :algo_params, HashWithIndifferentAccess
+    serialize :combo_params, HashWithIndifferentAccess
 
     # Order is always placed for a contract. Here, we explicitly set this link.
     belongs_to :contract

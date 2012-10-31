@@ -14,6 +14,9 @@ describe IB::Execution,
              :cumulative_quantity => 20000,
              :side => :buy,
              :time => "20120312  15:41:09",
+             :order_ref => 'Myref',
+             :ev_rule => 'aussieBond:YearsToExpiration=3',
+             :ev_multiplier => 0.5,
              },
 
   :human => "<Execution: 20120312  15:41:09 buy 20000 at 1.31075 on IDEALPRO, cumulative 20000 at 1.31075, ids 373/1695693619/0001f4e8.4f5d48f1.01.01>",
@@ -86,12 +89,14 @@ describe IB::Execution,
        "id"=>nil,
        "liquidation"=>true,
        "local_id"=>373,
-       "order_ref"=>nil,
+       "order_ref"=>'Myref',
+       "ev_rule" => 'aussieBond:YearsToExpiration=3',
+       "ev_multiplier" => 0.5,
        "perm_id"=>1695693619,
        "price"=>1.31075,
        "quantity"=>20000,
        "time"=>"20120312  15:41:09",
-      "side"=>:buy, }.each do |key, value|
+       "side"=>:buy, }.each do |key, value|
 
         subject.serializable_hash[key].should == value
 

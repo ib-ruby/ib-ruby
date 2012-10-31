@@ -41,7 +41,7 @@ shared_examples_for 'OpenOrder message' do
 
   it 'has class accessors as well' do
     subject.class.message_id.should == 5
-    subject.class.version.should == [23, 28, 30] # Message versions supported
+    subject.class.version.should == 30 # Message versions supported
     subject.class.message_type.should == :OpenOrder
   end
 

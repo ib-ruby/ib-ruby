@@ -10,26 +10,33 @@ require 'ib-ruby'
 # Definition of what we want market data for.  We have to keep track of what ticker id
 # corresponds to what symbol ourselves, because the ticks don't include any other
 # identifying information. The choice of ticker ids is, as far as I can tell, arbitrary.
-@market = {122 => IB::Symbols::Stocks[:wfc],
-           133 => IB::Symbols::Options[:wfc20],
-           144 => IB::Symbols::Stocks[:wrong]}
+@market = {1 => IB::Symbols::Stocks[:wfc],
+           2 => IB::Symbols::Options[:wfc20], 
+           3 => IB::Symbols::Forex[:eurusd],
+           4 => IB::Symbols::Futures[:ym],
+           5 => IB::Symbols::Bonds[:wag],
+           6 => IB::Symbols::Stocks[:wrong]}
 
 # Connect to IB TWS.
 ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS
+ib.wait_for :NextValidOrderId
 
-# Subscribe to TWS alerts/errors
-ib.subscribe(IB::Messages::Incoming::Alert) { |msg| puts msg.to_human }
+# Subscribe to TWS alerts/errors and contract data end marker
+ib.subscribe(:Alert, :ContractDataEnd) { |msg| puts msg.to_human }
 
 # Now, subscribe to ContractData incoming events.  The code passed in the block
 # will be executed when a message of that type is received, with the received
 # message as its argument. In this case, we just print out the data.
-ib.subscribe(:ContractData) { |msg| puts msg.contract.inspect }
+ib.subscribe(:ContractData, :BondContractData) { |msg| puts(msg.contract.inspect + "\n")}
 
-# Now we actually request Contract details for the symbols we're interested in. TWS will
-# respond with ContractData messages, which will be processed by the code above.
 @market.each_pair do |id, contract|
-  ib.send_message :RequestContractData, :id => id, :contract => contract
-end
+  puts "\nRequesting contract data #{id}: #{contract.description}"
 
-# Wait for IB to respond to our request
-ib.wait_for :ContractDataEnd
+  # Request Contract details for the symbols we're interested in. TWS will
+  # respond with ContractData messages, which will be processed by the code above.
+  ib.send_message :RequestContractData, :id => id, :contract => contract
+
+  # Wait for IB to respond to our request
+  ib.wait_for :ContractDataEnd, 5 #sec
+  ib.clear_received :ContractDataEnd
+end

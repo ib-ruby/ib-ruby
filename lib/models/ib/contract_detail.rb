@@ -8,15 +8,20 @@ module IB
     prop :market_name, # The market name for this contract.
       :trading_class, # The trading class name for this contract.
       :min_tick, # double: The minimum price tick.
-      :price_magnifier, # int: Allows execution and strike prices to be
-      #     reported consistently with market data, historical data and the
-      #     order price: Z on LIFFE is reported in index points, not GBP.
+      :price_magnifier, # int: Allows execution and strike prices to be reported
+      #                 consistently with market data, historical data and the
+      #                 order price: Z on LIFFE is reported in index points, not GBP.
 
       :order_types, #       The list of valid order types for this contract.
       :valid_exchanges, #   The list of exchanges this contract is traded on.
       :under_con_id, # int: The underlying contract ID.
       :long_name, #         Descriptive name of the asset.
       :contract_month, #    The contract month of the underlying futures contract.
+
+      # For Bonds only
+      :valid_next_option_date,
+      :valid_next_option_type,
+      :valid_next_option_partial,
 
       # The industry classification of the underlying/product:
       :industry, #    Wide industry. For example, Financial.
@@ -27,6 +32,18 @@ module IB
       #                 20090507:0700-1830,1830-2330;20090508:CLOSED.
       :liquid_hours, #  The liquid trading hours of the product. For example,
       #                 20090507:0930-1600;20090508:CLOSED.
+
+      # To support products in Australia which trade in non-currency units, the following
+      # attributes have been added to Execution and Contract Details objects:
+      :ev_rule, # evRule - String contains the Economic Value Rule name and optional argument,
+      #          separated by a colon. Examle: aussieBond:YearsToExpiration=3.
+      #          When the optional argument not present, the value will be followed by a colon.
+      [:ev_multiplier, :ev_multipler], # evMultiplier - double, tells you approximately
+      #          how much the market value of a contract would change if the price were
+      #          to change by 1. It cannot be used to get market value by multiplying
+      #          the price by the approximate multiplier.
+
+      :sec_id_list, # Hash with multiple Security ids
 
       # BOND values:
       :cusip, # The nine-character bond CUSIP or the 12-character SEDOL.
@@ -50,6 +67,8 @@ module IB
       # Extra validations
       validates_format_of :time_zone, :with => /^\w{3}$/, :message => 'should be XXX'
 
+    serialize :sec_id_list, HashWithIndifferentAccess
+
     belongs_to :contract
     alias summary contract
     alias summary= contract=
@@ -58,6 +77,8 @@ module IB
       super.merge :coupon => 0.0,
         :under_con_id => 0,
         :min_tick => 0,
+        :ev_multipler => 0,
+        :sec_id_list => HashWithIndifferentAccess.new,
         :callable => false,
         :puttable => false,
         :convertible => false,

@@ -6,20 +6,21 @@ module IB
 
     belongs_to :order
 
-    prop :local_id, #     int: order id. TWS orders have a fixed order id of 0.
-      :client_id, #    int: client id. TWS orders have a fixed client id of 0.
-      :perm_id, #      int: TWS id used to identify orders over TWS sessions
-      :exec_id, #      String: Unique order execution id over TWS sessions.
+    prop :local_id, #   int: order id. TWS orders have a fixed order id of 0.
+      :client_id, #     int: client id. TWS orders have a fixed client id of 0.
+      :perm_id, #       int: TWS id used to identify orders over TWS sessions
+      :exec_id, #       String: Unique order execution id over TWS sessions.
       :time, #         # TODO: convert into Time object?
-      #                String: The order execution time.
-      :exchange, #     String: Exchange that executed the order.
-      :order_ref, #  int: Same order_ref as in corresponding Order
-      :price, #        double: The order execution price.
-      :average_price, # double: Average price. Used in regular trades, combo
-      #                         trades and legs of the combo.
+      #                 String: The order execution time.
+      :exchange, #      String: Exchange that executed the order.
+      :order_ref, #     String: Same order_ref as in corresponding Order
+      :price, #         double: The order execution price.
+      :average_price, # double: Used in regular trades, combo trades and legs of the combo.
+      :ev_rule, #       String: Australian products only
+      :ev_multiplier, # double: Australian products only
+
       [:quantity, :shares], #       int: The number of shares filled.
-      :cumulative_quantity, # int: Cumulative quantity. Used in regular
-      #                            trades, combo trades and legs of the combo
+      :cumulative_quantity, # int: Used in regular trades, combo trades and legs of combo
       :liquidation => :bool, # This position is liquidated last should the need arise.
       [:account_name, :account_number] => :s, # The customer account number.
       [:side, :action] => PROPS[:side] # Was the transaction a buy or a sale: BOT|SLD
