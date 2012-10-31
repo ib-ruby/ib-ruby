@@ -34,6 +34,8 @@ namespace :gem do
 
   desc "Build and push gem to Gemcutter"
   task :release => [:build, 'git:tag'] do
+    p "RUBY_ENGINE =~ /jruby/"
+    p RUBY_ENGINE =~ /jruby/
     require 'openssl' if RUBY_ENGINE =~ /jruby/
     puts "Pushing gem to Gemcutter"
     system "gem push #{PKG_PATH}/#{gem_file}"
