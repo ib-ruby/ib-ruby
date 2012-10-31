@@ -4,7 +4,7 @@ module IB
 
       # OpenOrder is the longest message with complex processing logics
       OpenOrder =
-          def_message [5, [23, 28, 30]],
+          def_message [5, 30],
                       [:order, :local_id, :int],
 
                       [:contract, :con_id, :int],
@@ -112,26 +112,25 @@ module IB
         def load
           super
 
-          load_map [27, [proc { | | filled?(@data[:order][:delta_neutral_order_type]) },
-                         # As of client v.52, we receive delta... params in openOrder
-                         [:order, :delta_neutral_con_id, :int],
-                         [:order, :delta_neutral_settling_firm, :string],
-                         [:order, :delta_neutral_clearing_account, :string],
-                         [:order, :delta_neutral_clearing_intent, :string]]
-                   ],
+          load_map [proc { | | filled?(@data[:order][:delta_neutral_order_type]) },
+                      # As of client v.52, we may receive delta... params in openOrder
+                     [:order, :delta_neutral_con_id, :int],
+                     [:order, :delta_neutral_settling_firm, :string],
+                     [:order, :delta_neutral_clearing_account, :string],
+                     [:order, :delta_neutral_clearing_intent, :string]],
+
                    [:order, :continuous_update, :int],
                    [:order, :reference_price_type, :int],
                    [:order, :trail_stop_price, :decimal_max],
-
-                   # As of client v.56, we receive trailing_percent in openOrder
-                   [30, [:order, :trailing_percent, :decimal_max]], # Never! 28 currently
-
+                   [:order, :trailing_percent, :decimal_max],
                    [:order, :basis_points, :decimal_max],
                    [:order, :basis_points_type, :int_max],
                    [:contract, :legs_description, :string],
 
-                   # As of client v.55, we receive orderComboLegs (price) in openOrder
-                   [29, [:contract, :legs, :array, proc do |_|
+                   # As of client v.55, we receive in OpenOrder for Combos:
+                   #    Contract.orderComboLegs Array
+                   #    Order.leg_prices Array
+                   [:contract, :legs, :array, proc do |_|
                      IB::ComboLeg.new :con_id => socket.read_int,
                                       :ratio => socket.read_int,
                                       :action => socket.read_string,
@@ -141,51 +140,44 @@ module IB
                                       :designated_location => socket.read_string,
                                       :exempt_code => socket.read_int
                    end],
-
-                    # Order keeps received leg prices in a separate Array for some reason ?!
-                    [:order, :leg_prices, :array, proc { |_| socket.read_decimal_max }],
-                   ],
-                   # As of client v.51, we can receive smartComboRoutingParams in openOrder
-                   [26, [:smart_combo_routing_params, :hash]],
+                   [:order, :leg_prices, :array, proc { |_| socket.read_decimal_max }],
+                   [:smart_combo_routing_params, :hash],
 
                    [:order, :scale_init_level_size, :int_max],
                    [:order, :scale_subs_level_size, :int_max],
+
                    [:order, :scale_price_increment, :decimal_max],
-
-                   # As of client v.54, we can receive scale order fields
-                   [28, [proc { | | filled?(@data[:order][:scale_price_increment]) },
-                         [:order, :scale_price_adjust_value, :decimal_max],
-                         [:order, :scale_price_adjust_interval, :int_max],
-                         [:order, :scale_profit_offset, :decimal_max],
-                         [:order, :scale_auto_reset, :boolean],
-                         [:order, :scale_init_position, :int_max],
-                         [:order, :scale_init_fill_qty, :decimal_max],
-                         [:order, :scale_random_percent, :boolean]]
+                   [proc { | | filled?(@data[:order][:scale_price_increment]) },
+                     # As of client v.54, we may receive scale order fields
+                     [:order, :scale_price_adjust_value, :decimal_max],
+                     [:order, :scale_price_adjust_interval, :int_max],
+                     [:order, :scale_profit_offset, :decimal_max],
+                     [:order, :scale_auto_reset, :boolean],
+                     [:order, :scale_init_position, :int_max],
+                     [:order, :scale_init_fill_qty, :decimal_max],
+                     [:order, :scale_random_percent, :boolean]
                    ],
 
-                   # As of client v.49/50, we can receive hedgeType, hedgeParam, optOutSmartRouting
-                   [25,
-                    [:order, :hedge_type, :string],
-                    [proc { | | filled?(@data[:order][:hedge_type]) },
-                     [:order, :hedge_param, :string],
-                    ],
-                    [:order, :opt_out_smart_routing, :boolean]
+                   [:order, :hedge_type, :string],
+                   [proc { | | filled?(@data[:order][:hedge_type]) },
+                     # As of client v.49/50, we can receive hedgeType, hedgeParam
+                     [:order, :hedge_param, :string]
                    ],
 
+                   [:order, :opt_out_smart_routing, :boolean],
                    [:order, :clearing_account, :string],
                    [:order, :clearing_intent, :string],
                    [:order, :not_held, :boolean],
-                   [:underlying_present, :boolean],
 
+                   [:underlying_present, :boolean],
                    [proc { | | filled?(@data[:underlying_present]) },
                     [:underlying, :con_id, :int],
                     [:underlying, :delta, :decimal],
                     [:underlying, :price, :decimal]
                    ],
 
-                   [:order, :algo_strategy, :string],
-
                    # TODO: Test Order with algo_params, scale and legs!
+                   [:order, :algo_strategy, :string],
                    [proc { | | filled?(@data[:order][:algo_strategy]) },
                     [:order, :algo_params, :hash]
                    ],

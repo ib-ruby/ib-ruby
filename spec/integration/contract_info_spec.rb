@@ -144,7 +144,7 @@ describe "Request Contract Info", :connected => true, :integration => true do
 
       detail.market_name.should == 'EUR.USD'
       detail.trading_class.should == 'EUR.USD'
-      detail.long_name.should == 'European Monetary Union euro'
+      detail.long_name.should =~ /European Monetary Union [Ee]uro/
       detail.industry.should == ''
       detail.category.should == ''
       detail.subcategory.should == ''
@@ -200,6 +200,47 @@ describe "Request Contract Info", :connected => true, :integration => true do
       detail.order_types.should be_a String
       detail.price_magnifier.should == 1
       detail.min_tick.should == 1
+    end
+  end # Request Forex data
+
+  context "Request Bond data" do
+
+    before(:all) do
+      @contract = IB::Symbols::Bonds[:wag] # Wallgreens bonds (multiple)
+      @ib.send_message :RequestContractData, :id => 158, :contract => @contract
+      @ib.wait_for :ContractDataEnd, 5 # sec
+    end
+
+    after(:all) { clean_connection } # Clear logs and message collector
+
+    subject { @ib.received[:BondContractData].first }
+
+    it { @ib.received[:BondContractData].should have_at_least(1).contract_data }
+    it { @ib.received[:ContractDataEnd].should have_exactly(1).contract_data_end }
+
+    it 'receives Contract Data for requested contract' do
+      subject.request_id.should == 158
+      # subject.contract.should == @contract # symbol is blanc in returned Bond contracts
+      subject.contract.should be_valid
+    end
+
+    it 'receives Contract Data with extended fields' do
+      contract = subject.contract
+      detail = subject.contract_detail
+
+      contract.sec_type.should == :bond
+      contract.symbol.should == ''
+      contract.con_id.should be_an Integer
+
+      detail.cusip.should be_a String
+      detail.desc_append.should =~ /WAG/ # "WAG 4 7/8 08/01/13" or similar
+      detail.trading_class.should =~ /IBCID/ # "IBCID113527163"
+      detail.sec_id_list.should be_a Hash
+      detail.sec_id_list.should have_key "CUSIP"
+      detail.sec_id_list.should have_key "ISIN"
+      detail.valid_exchanges.should be_a String
+      detail.order_types.should be_a String
+      detail.min_tick.should == 0.001
     end
   end # Request Forex data
 end # Contract Data

@@ -136,11 +136,12 @@ shared_examples_for 'Placed Order' do
       @ib.next_local_id.should == @local_id_after
     end
 
-    it 'only receives OpenOrder message with PendingCancel' do
+    it 'only receives OpenOrder message with (Pending)Cancel', 
+      :pending => 'Receives OrderState: PreSubmitted from previous context' do
       if @ib.received? :OpenOrder
         # p @ib.received[:OrderStatus].size
         # p @ib.received[ :OpenOrder].map {|m| m.order.limit_price.to_s+m.status}
-        order_should_be /PendingCancel/
+        order_should_be /Cancel/
       end
     end
 

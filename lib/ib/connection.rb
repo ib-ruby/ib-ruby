@@ -1,6 +1,7 @@
 require 'thread'
 require 'ib/socket'
 require 'ib/logger'
+require 'ib/messages'
 
 module IB
   # Encapsulates API connection to TWS or Gateway
@@ -18,8 +19,8 @@ module IB
                        :received => true, # Keep all received messages in a @received Hash
                        :logger => nil,
                        :client_id => nil, # Will be randomly assigned
-                       :client_version => 57, # 48, # 57 = can receive commissionReport message
-                       :server_version => 60 # 53? Minimal server version required
+                       :client_version => IB::Messages::CLIENT_VERSION,
+                       :server_version => IB::Messages::SERVER_VERSION
     }
 
     # Singleton to make active Connection universally accessible as IB::Connection.current
@@ -68,7 +69,7 @@ module IB
       server[:client_version] = options[:client_version]
       server[:server_version] = socket.read_int
       if server[:server_version] < options[:server_version]
-        error "TWS version #{server[:server_version]}, #{options[:server_version]} required."
+        error "Server version #{server[:server_version]}, #{options[:server_version]} required."
       end
       server[:remote_connect_time] = socket.read_string
       server[:local_connect_time] = Time.now()
@@ -80,7 +81,7 @@ module IB
       socket.write_data server[:client_id]
 
       @connected = true
-      log.info "Connected to server, version: #{server[:server_version]}, connection time: " +
+      log.info "Connected to server, ver: #{server[:server_version]}, connection time: " +
                    "#{server[:local_connect_time]} local, " +
                    "#{server[:remote_connect_time]} remote."
 
