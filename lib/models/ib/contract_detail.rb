@@ -8,7 +8,7 @@ module IB
     prop :market_name, # The market name for this contract.
       :trading_class, # The trading class name for this contract.
       :min_tick, # double: The minimum price tick.
-      :price_magnifier, # int: Allows execution and strike prices to be reported 
+      :price_magnifier, # int: Allows execution and strike prices to be reported
       #                 consistently with market data, historical data and the
       #                 order price: Z on LIFFE is reported in index points, not GBP.
 
@@ -38,10 +38,10 @@ module IB
       :ev_rule, # evRule - String contains the Economic Value Rule name and optional argument,
       #          separated by a colon. Examle: aussieBond:YearsToExpiration=3.
       #          When the optional argument not present, the value will be followed by a colon.
-      :ev_multipler, # evMultipler - double, tells you approximately how much the market
-      #               value of a contract would change if the price were to change by 1.
-      #               It cannot be used to get market value by multiplying the price by
-      #               the approximate multiplier.
+      [:ev_multiplier, :ev_multipler], # evMultiplier - double, tells you approximately
+      #          how much the market value of a contract would change if the price were
+      #          to change by 1. It cannot be used to get market value by multiplying
+      #          the price by the approximate multiplier.
 
       :sec_id_list, # Hash with multiple Security ids
 

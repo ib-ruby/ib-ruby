@@ -38,7 +38,7 @@ class AddIbContractDetails < ActiveRecord::Migration
       t.string :valid_next_option_type # Bonds only
       t.string :valid_next_option_partial # Bonds only
       t.string :ev_rule # Australian non-currency products only
-      t.float :ev_multipler # Australian non-currency products only
+      t.float :ev_multiplier # Australian non-currency products only
       t.text :sec_id_list
       t.timestamps
     end
@@ -46,13 +46,13 @@ class AddIbContractDetails < ActiveRecord::Migration
 end
 
 __END__
-rails generate scaffold contract_detail contract_id:integer market_name:string 
- trading_class:string min_tick:float price_magnifier:integer order_types:string 
- valid_exchanges:string under_con_id:integer long_name:string contract_month:string 
- industry:string category:string subcategory:string time_zone:string trading_hours:string 
- liquid_hours:string cusip:string ratings:string desc_append:string bond_type:string 
- coupon_type:string coupon:float maturity:string issue_date:string next_option_date:string 
- next_option_type:string notes:string callable:boolean puttable:boolean convertible:boolean 
- next_option_partial:boolean valid_next_option_date:string valid_next_option_type:string 
- valid_next_option_partial:string ev_rule:string ev_multipler:float sec_id_list:text
+rails generate scaffold contract_detail contract_id:integer market_name:string
+ trading_class:string min_tick:float price_magnifier:integer order_types:string
+ valid_exchanges:string under_con_id:integer long_name:string contract_month:string
+ industry:string category:string subcategory:string time_zone:string trading_hours:string
+ liquid_hours:string cusip:string ratings:string desc_append:string bond_type:string
+ coupon_type:string coupon:float maturity:string issue_date:string next_option_date:string
+ next_option_type:string notes:string callable:boolean puttable:boolean convertible:boolean
+ next_option_partial:boolean valid_next_option_date:string valid_next_option_type:string
+ valid_next_option_partial:string ev_rule:string ev_multiplier:float sec_id_list:text
 

@@ -78,7 +78,7 @@ ActiveRecord::Schema.define(:version => 171) do
     t.string   "valid_next_option_type"
     t.string   "valid_next_option_partial"
     t.string   "ev_rule"
-    t.float    "ev_multipler"
+    t.float    "ev_multiplier"
     t.text     "sec_id_list"
     t.datetime "created_at",                             :null => false
     t.datetime "updated_at",                             :null => false
