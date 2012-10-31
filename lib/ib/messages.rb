@@ -2,7 +2,7 @@ module IB
   module Messages
   	# This gem supports incoming/outgoing IB messages compatible with the following
   	# IB client/server versions:
-    CLIENT_VERSION = 57 # 59? Maximal client version implemented
+    CLIENT_VERSION = 59 # 59? Maximal client version implemented
     SERVER_VERSION = 60 # 38? 53? 62? Minimal server version required
   end
 end
