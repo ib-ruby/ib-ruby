@@ -268,12 +268,13 @@ module IB
   require 'models/ib/bag'
 
   class Contract
-    # Specialized Contract subclasses representing different security types
+    # Contract subclasses representing specialized security types.
+    # Most security types do not have their own subclass, they use generic Contract class.
     Subclasses = Hash.new(Contract)
     Subclasses[:bag] = IB::Bag
     Subclasses[:option] = IB::Option
 
-    # This returns a Contract initialized from the serialize_ib_ruby format string.
+    # This builds an appropriate Contract subclass based on its type
     def self.build opts = {}
       subclass = VALUES[:sec_type][opts[:sec_type]] || opts[:sec_type].to_sym
       Contract::Subclasses[subclass].new opts
