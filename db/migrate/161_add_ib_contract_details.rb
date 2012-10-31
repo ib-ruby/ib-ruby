@@ -34,9 +34,9 @@ class AddIbContractDetails < ActiveRecord::Migration
       t.boolean :puttable, :limit => 1 # Can be sold back to the issuer under certain conditions
       t.boolean :convertible, :limit => 1 # Can be converted to stock under certain conditions.
       t.boolean :next_option_partial, :limit => 1 # # only if bond has embedded options.
-      t.string :valid_next_option_date, # Bonds only
-      t.string :valid_next_option_type, # Bonds only
-      t.string :valid_next_option_partial, # Bonds only
+      t.string :valid_next_option_date # Bonds only
+      t.string :valid_next_option_type # Bonds only
+      t.string :valid_next_option_partial # Bonds only
       t.string :ev_rule # Australian non-currency products only
       t.float :ev_multipler # Australian non-currency products only
       t.text :sec_id_list

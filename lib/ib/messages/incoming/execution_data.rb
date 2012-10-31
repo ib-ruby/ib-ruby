@@ -13,6 +13,7 @@ module IB
                       [:contract, :expiry, :string],
                       [:contract, :strike, :decimal],
                       [:contract, :right, :string],
+                      [:contract, :multiplier, :string],
                       [:contract, :exchange, :string],
                       [:contract, :currency, :string],
                       [:contract, :local_symbol, :string],
@@ -28,7 +29,10 @@ module IB
                       [:execution, :client_id, :int],
                       [:execution, :liquidation, :int],
                       [:execution, :cumulative_quantity, :int],
-                      [:execution, :average_price, :decimal]
+                      [:execution, :average_price, :decimal],
+                      [:execution, :order_ref, :string],
+                      [:execution, :ev_rule, :string],
+                      [:execution, :ev_multiplier, :decimal]
 
       class ExecutionData
 
@@ -38,15 +42,6 @@ module IB
 
         def execution
           @execution = IB::Execution.new @data[:execution]
-        end
-
-        def load
-          super
-
-          # As of client v.53, we can receive orderRef in ExecutionData
-          load_map [proc { | | @server[:client_version] >= 53 },
-                    [:execution, :order_ref, :string]
-                   ]
         end
 
         def to_human
