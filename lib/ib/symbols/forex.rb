@@ -6,54 +6,36 @@ module IB
       def self.contracts
         @contracts ||= define_contracts
       end
-      
+
       private
-      
+
       # IDEALPRO is for orders over 20,000 and routes to the interbank quote stream.
       # IDEAL is for smaller orders, and has wider spreads/slower execution... generally
-      # used for smaller currency conversions. IB::Symbols::Forex contracts are pre-defined 
+      # used for smaller currency conversions. IB::Symbols::Forex contracts are pre-defined
       # on IDEALPRO, if you need something else please define forex contracts manually.
       def self.define_contracts
         @contracts = {}
-        
-        # use combinations of these currencies for pre-defined forex contracts
-        recognized_currencies = [
-          "aud",
-          "cad",
-          "chf",
-          "eur",
-          "gbp",
-          "hkd",
-          "jpy",
-          "nzd",
-          "usd"
-          ]
 
-        # create fx symbol list from currency list
-        fx_symbol_list = []
-        all_pairs = recognized_currencies.product(recognized_currencies)
-        all_pairs.each_index do |i|
-          fx_symbol_list[i] = (all_pairs[i][0] + all_pairs[i][1]).downcase.to_sym unless all_pairs[i][0] == all_pairs[i][1]
-        end
-        # delete nil entries in fx_symbol_list array
-        fx_symbol_list.compact!
+        # use combinations of these currencies for pre-defined forex contracts
+        currencies = [ "aud", "cad", "chf", "eur", "gbp", "hkd", "jpy", "nzd", "usd" ]
+
+        # create pairs list from currency list
+        pairs = currencies.product(currencies).
+          map { |pair| pair.join.upcase unless pair.first == pair.last }.compact
 
         # now define each contract
-        fx_symbol_list.each do |fx_sym|
-          @contracts[fx_sym] = IB::Contract.new(
-              :symbol => fx_sym.to_s[0..2].upcase,
-              :exchange => "IDEALPRO",
-              :currency => fx_sym.to_s[3..5].upcase,
-              :sec_type => :forex,
-              :description => fx_sym.to_s.upcase
+        pairs.each do |pair|
+          @contracts[pair.downcase.to_sym] = IB::Contract.new(
+            :symbol => pair[0..2],
+            :exchange => "IDEALPRO",
+            :currency => pair[3..5],
+            :sec_type => :forex,
+            :description => pair
           )
-        end  
-        return @contracts      
+        end
+        
+        @contracts
       end
     end
   end
 end
-                                    
-                                      
-                                      
-                                      
