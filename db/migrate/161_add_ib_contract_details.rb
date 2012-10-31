@@ -34,6 +34,9 @@ class AddIbContractDetails < ActiveRecord::Migration
       t.boolean :puttable, :limit => 1 # Can be sold back to the issuer under certain conditions
       t.boolean :convertible, :limit => 1 # Can be converted to stock under certain conditions.
       t.boolean :next_option_partial, :limit => 1 # # only if bond has embedded options.
+      t.string :valid_next_option_date, # Bonds only
+      t.string :valid_next_option_type, # Bonds only
+      t.string :valid_next_option_partial, # Bonds only
       t.string :ev_rule # Australian non-currency products only
       t.float :ev_multipler # Australian non-currency products only
       t.text :sec_id_list
@@ -50,5 +53,6 @@ rails generate scaffold contract_detail contract_id:integer market_name:string
  liquid_hours:string cusip:string ratings:string desc_append:string bond_type:string 
  coupon_type:string coupon:float maturity:string issue_date:string next_option_date:string 
  next_option_type:string notes:string callable:boolean puttable:boolean convertible:boolean 
- next_option_partial:boolean ev_rule:string ev_multipler:float sec_id_list:text
+ next_option_partial:boolean valid_next_option_date:string valid_next_option_type:string 
+ valid_next_option_partial:string ev_rule:string ev_multipler:float sec_id_list:text
 
