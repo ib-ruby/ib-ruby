@@ -95,11 +95,32 @@ module IB
       #                     even if the time span requested falls partially or completely
       #                     outside of them.
       #          :format_date => int: 1 - text format, like "20050307 11:32:16".
-      #                               2 - offset in seconds from the beginning of 1970,
-      #                                   which is the same format as the UNIX epoch time.
+      #                               2 - offset from 1970-01-01 in sec (UNIX epoch)
       #         }
       #
-      # Note that as of 4/07 there is no historical data available for forex spot.
+      # NB: using the D :duration only returns bars in whole days, so requesting "1 D"
+      # for contract ending at 08:05 will only return 1 bar, for 08:00 on that day.
+      # But requesting "86400 S" gives 86400/barlengthsecs bars before the end Time.
+      #
+      # Note also that the :duration for any request must be such that the start Time is not
+      # more than one year before the CURRENT-Time-less-one-day (not 1 year before the end
+      # Time in the Request)
+      #
+      # Bar Size Max Duration
+      # -------- ------------
+      # 1 sec        2000 S
+      # 5 sec       10000 S
+      # 15 sec      30000 S
+      # 30 sec      86400 S
+      # 1 minute    86400 S, 6 D
+      # 2 minutes   86400 S, 6 D
+      # 5 minutes   86400 S, 6 D
+      # 15 minutes  86400 S, 6 D, 20 D, 2 W
+      # 30 minutes  86400 S, 34 D, 4 W, 1 M
+      # 1 hour      86400 S, 34 D, 4 w, 1 M
+      # 1 day       60 D, 12 M, 52 W, 1 Y
+      #
+      # NB: as of 4/07 there is no historical data available for forex spot.
       #
       # data[:contract] may either be a Contract object or a String. A String should be
       # in serialize_ib_ruby format; that is, it should be a colon-delimited string in

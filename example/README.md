@@ -33,7 +33,7 @@ flex_query* - Run a pre-defined Flex query, receive and print Flex report. Examp
 
 fundamental_data* - Request and print fundamental data report for a specific stock.
 
-historic_data* - Receive 2 days of 1-minute trade data for Stock, Forex and Future symbols.
+historic_data* - Receive 5 days of 1-hour trade data for Stock, Forex and Future symbols.
 
 historic_data_cli* - CLI script for historic data downloading. It has many options, for detailed help run:
 
