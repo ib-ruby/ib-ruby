@@ -3,8 +3,10 @@ require "logger"
 # Add default_logger accessor into Object
 def default_logger
   @@default_logger ||= Logger.new(STDOUT).tap do |logger|
+    time_format = RUBY_VERSION =~ /1\.8\./ ? '%H:%M:%S.%N' : '%H:%M:%S.%3N'
     logger.formatter = proc do |level, time, prog, msg|
-      "#{time.strftime('%H:%M:%S.%N')} #{msg}\n"
+
+      "#{time.strftime(time_format)} #{msg}\n"
     end
     logger.level = Logger::INFO
   end
