@@ -13,7 +13,7 @@ module IB
 
     DEFAULT_OPTIONS = {:host =>'127.0.0.1',
                        :port => '4001', # IB Gateway connection (default)
-                       #:port => '7496', # TWS connection 
+                       #:port => '7496', # TWS connection
                        :connect => true, # Connect at initialization
                        :reader => true, # Start a separate reader Thread
                        :received => true, # Keep all received messages in a @received Hash
@@ -270,8 +270,10 @@ module IB
       log.warn "No subscribers for message #{msg.class}!" if subscribers[msg.class].empty?
 
       # Collect all received messages into a @received Hash
-      @receive_lock.synchronize do
-        received[msg.message_type] << msg if options[:received]
+      if options[:received]
+        @receive_lock.synchronize do
+          received[msg.message_type] << msg
+        end
       end
     end
 
