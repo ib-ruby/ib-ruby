@@ -10,9 +10,9 @@ require 'ib-ruby'
 # Definition of what we want data for.  We have to keep track of what ticker id
 # corresponds to what symbol ourselves, because the ticks don't include any other
 # identifying information. The choice of ticker ids is, as far as I can tell, arbitrary.
-@market = {123 => IB::Symbols::Stocks[:wfc],
-           456 => IB::Symbols::Futures[:ym],
-           789 => IB::Symbols::Forex[:gbpusd] # No historical data for GBP/CASH@IDEALPRO
+@market = {123 => IB::Symbols::Stocks[:vxx],
+           456 => IB::Symbols::Futures[:vix],
+           789 => IB::Symbols::Forex[:eurusd] # No historical data for GBP/CASH@IDEALPRO
 }
 
 # Connect to IB TWS.
@@ -30,7 +30,6 @@ ib.subscribe(:Alert) { |msg| puts msg.to_human }
 ib.subscribe(IB::Messages::Incoming::HistoricalData) do |msg|
   puts @market[msg.request_id].description + ": #{msg.count} items:"
   msg.results.each { |entry| puts "  #{entry}" }
-  @last_msg_time = Time.now.to_i
 end
 
 # Now we actually request historical data for the symbols we're interested in. TWS will
@@ -40,12 +39,17 @@ end
                       :request_id => id,
                       :contract => contract,
                       :end_date_time => Time.now.to_ib,
-                      :duration => '2 D', #    ?
-                      :bar_size => '1 min', #  IB::BAR_SIZES.key(:hour)?
+                      :duration => '30 D', #    ?
+                      :bar_size => '1 hour', #  IB::BAR_SIZES.key(:hour)?
                       :what_to_show => :trades,
                       :use_rth => 1,
                       :format_date => 1)
 end
 
-# Wait for IB to respond to our request
-sleep 0.1 until @last_msg_time && @last_msg_time < Time.now.to_i + 0.5
+p 'Yello'
+p (Time.now + 30.days)
+
+# IB does not send any indication when all historic data is done being delivered.
+# So we need to interrupt manually when our request is answered.
+puts "\n******** Press <Enter> to exit... *********\n\n"
+STDIN.gets

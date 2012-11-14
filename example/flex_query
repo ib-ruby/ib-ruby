@@ -3,13 +3,13 @@
 # FLEX is a web-based service from IB that helps you to retrieve your activity,
 # trades and positions. It is working independently from TWS or Gateway, using your
 # internet connection directly. See /misc/flex for extended FLEX documentation.
-# 
+#
 # In order to use this service, activate it and configure your token first.
-# Your Token is located at Account Management->Reports->Delivery Settings->Flex Web Service. 
+# Your Token is located at Account Management->Reports->Delivery Settings->Flex Web Service.
 # You need to activate Flex Web Service and generate new token(s) there.
-# Your Flex Query Ids are in Account Management->Reports->Activity->Flex Queries. 
+# Your Flex Query Ids are in Account Management->Reports->Activity->Flex Queries.
 # Create new Flex query and make sure to set its output format to XML.
-# 
+#
 # This script runs your pre-defined FLEX query and prints the resulting report
 
 require 'rubygems'
@@ -17,11 +17,10 @@ require 'bundler/setup'
 $LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
 require 'yaml'
-require 'pp'
 
-if File.exists? "config/flex.yml" 
+if File.exists? "config/flex.yml"
   # You may want to put your favorite FLEX queries info into a separate yaml file
-  query_name = ARGV[0] || 'default'	
+  query_name = ARGV[0] || 'default'
   query = YAML::load_file('config/flex.yml')[query_name]
   raise "FLEX error: no query #{query_name} in 'config/flex.yml'" unless query
   raise "FLEX error: no token/query_id for #{query_name}" unless query[:token] && query[:query_id]
@@ -32,10 +31,10 @@ else
     :query_id => ARGV[0] || 11111, # CHANGE to actual query id!
     :format => :xml
   }
-end	
+end
 
 # Initiate FLEX request at a known FLEX Web Service URI
 report = IB::Flex.new(query).run
 
 # Now you have to extract all the data you need from the report
-pp report
+puts report

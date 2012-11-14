@@ -9,7 +9,7 @@ $LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
 
 # First, connect to IB TWS.
-ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS
+ib = IB::Connection.new :client_id => 1112, :port => 7496 # TWS
 
 # Set log level
 log.level = Logger::FATAL
@@ -27,3 +27,4 @@ STDIN.gets
 puts "Cancelling account data subscription.."
 
 ib.send_message :RequestAccountData, :subscribe => false
+sleep 1
