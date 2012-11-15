@@ -329,7 +329,7 @@ module IB
     # Placement
     def place contract, connection
       error "Unable to place order, next_local_id not known" unless connection.next_local_id
-      self.client_id = connection.server[:client_id]
+      self.client_id = connection.client_id
       self.local_id = connection.next_local_id
       connection.next_local_id += 1
       self.placed_at = Time.now
