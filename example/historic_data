@@ -46,9 +46,6 @@ end
                       :format_date => 1)
 end
 
-p 'Yello'
-p (Time.now + 30.days)
-
 # IB does not send any indication when all historic data is done being delivered.
 # So we need to interrupt manually when our request is answered.
 puts "\n******** Press <Enter> to exit... *********\n\n"
