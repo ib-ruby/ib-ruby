@@ -24,21 +24,25 @@ module IB
         # each one and postpending a '\0'.
         #
         def send_to socket
-          preprocess.each {|data| socket.write_data data}
+          self.preprocess.each {|data| socket.write_data data}
         end
 
+        # Same message representation as logged by TWS into API messages log file
         def to_s
-          preprocess.join('-')
+          self.preprocess.join('-')
         end
 
-        # Pre-process encoded message before sending into socket
+        # Pre-process encoded message Array before sending into socket, such as
+        # changing booleans into 0/1 and stuff
         def preprocess
           self.encode.flatten.map {|data| data == true ? 1 : data == false ? 0 : data }
         end
 
-        # At minimum, Outgoing message contains message_id and version.
+        # Encode message content into (possibly, nested) Array of values.
+        # At minimum, encoded Outgoing message contains message_id and version.
         # Most messages also contain (ticker, request or order) :id.
         # Then, content of @data Hash is encoded per instructions in data_map.
+        # This method may be modified by message subclasses!
         def encode
           [self.class.message_id,
            self.class.version,
