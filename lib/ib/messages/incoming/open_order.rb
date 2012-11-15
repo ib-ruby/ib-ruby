@@ -74,7 +74,19 @@ module IB
 
         # Accessors to make OpenOrder API-compatible with OrderStatus message
 
-        def local_id
+        def client_id
+          order.client_id
+        end
+
+        def parent_id
+          order.parent_id
+        end
+
+        def perm_id
+          order.perm_id
+        end
+
+         def local_id
           order.local_id
         end
 
@@ -83,6 +95,8 @@ module IB
         def status
           order.status
         end
+
+        # Object accessors
 
         def order
           @order ||= IB::Order.new @data[:order].merge(:order_state => order_state)

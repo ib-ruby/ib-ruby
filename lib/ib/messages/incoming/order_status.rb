@@ -49,6 +49,18 @@ module IB
         end
 
         # Accessors to make OpenOrder and OrderStatus messages API-compatible
+        def client_id
+          order_state.client_id
+        end
+
+        def parent_id
+          order_state.parent_id
+        end
+
+        def perm_id
+          order_state.perm_id
+        end
+
         def local_id
           order_state.local_id
         end

@@ -27,3 +27,4 @@ STDIN.gets
 puts "Cancelling account data subscription.."
 
 ib.send_message :RequestAccountData, :subscribe => false
+sleep 1
