@@ -9,6 +9,8 @@ module IB
 
       class AbstractMessage < IB::Messages::AbstractMessage
 
+        attr_accessor :socket
+
         def version # Per message, received messages may have the different versions
           @data[:version]
         end
@@ -19,36 +21,33 @@ module IB
           end
         end
 
-        # Create incoming message from a given source (IB server or data Hash)
+        # Create incoming message from a given source (IB Socket or data Hash)
         def initialize source
           @created_at = Time.now
-          if source[:socket] # Source is a server
-            @server = source
-            @data = Hash.new
-            begin
-              self.load
-            rescue => e
-              error "Reading #{self.class}: #{e.class}: #{e.message}", :load, e.backtrace
-            ensure
-              @server = nil
-            end
-          else # Source is a @data Hash
+          if source.is_a?(Hash)  # Source is a @data Hash
             @data = source
+          else # Source is a Socket
+            @socket = source
+            @data = Hash.new
+            self.load
           end
-        end
-
-        def socket
-          @server[:socket]
         end
 
         # Every message loads received message version first
         # Override the load method in your subclass to do actual reading into @data.
         def load
-          @data[:version] = socket.read_int
+          if socket
+            @data[:version] = socket.read_int
 
-          check_version @data[:version], self.class.version
+            check_version @data[:version], self.class.version
 
-          load_map *self.class.data_map
+            load_map *self.class.data_map
+          else
+            raise "Unable to load, no socket"
+          end
+
+        rescue => e
+          error "Reading #{self.class}: #{e.class}: #{e.message}", :load, e.backtrace
         end
 
         # Load @data from the socket according to the given data map.
@@ -62,34 +61,34 @@ module IB
             # We determine the function of the first element
             head = instruction.first
             case head
-              when Integer # >= Version condition: [ min_version, [map]]
-                load_map *instruction.drop(1) if version >= head
+            when Integer # >= Version condition: [ min_version, [map]]
+              load_map *instruction.drop(1) if version >= head
 
-              when Proc # Callable condition: [ condition, [map]]
-                load_map *instruction.drop(1) if head.call
+            when Proc # Callable condition: [ condition, [map]]
+              load_map *instruction.drop(1) if head.call
 
-              when true # Pre-condition already succeeded!
-                load_map *instruction.drop(1)
+            when true # Pre-condition already succeeded!
+              load_map *instruction.drop(1)
 
-              when nil, false # Pre-condition already failed! Do nothing...
+            when nil, false # Pre-condition already failed! Do nothing...
 
-              when Symbol # Normal map
-                group, name, type, block =
-                    if  instruction[2].nil? || instruction[2].is_a?(Proc)
-                      [nil] + instruction # No group, [ :name, :type, (:block) ]
-                    else
-                      instruction # [ :group, :name, :type, (:block)]
-                    end
-
-                data = socket.__send__("read_#{type}", &block)
-                if group
-                  @data[group] ||= {}
-                  @data[group][name] = data
-                else
-                  @data[name] = data
-                end
+            when Symbol # Normal map
+              group, name, type, block =
+              if  instruction[2].nil? || instruction[2].is_a?(Proc)
+                [nil] + instruction # No group, [ :name, :type, (:block) ]
               else
-                error "Unrecognized instruction #{instruction}"
+                instruction # [ :group, :name, :type, (:block)]
+              end
+
+              data = socket.__send__("read_#{type}", &block)
+              if group
+                @data[group] ||= {}
+                @data[group][name] = data
+              else
+                @data[name] = data
+              end
+            else
+              error "Unrecognized instruction #{instruction}"
             end
           end
         end
