@@ -6,8 +6,8 @@ describe IB::Messages::Outgoing do
 
     subject do
       IB::Messages::Outgoing::RequestAccountData.new(
-          :subscribe => true,
-          :account_code => 'DUH')
+        :subscribe => true,
+      :account_code => 'DUH')
     end
 
     it { should be_an IB::Messages::Outgoing::RequestAccountData }
@@ -25,7 +25,15 @@ describe IB::Messages::Outgoing do
     end
 
     it 'encodes into Array' do
-      subject.encode(:server_version => 60).should == [6, 2, true, "DUH"]
+      subject.encode.should == [6, 2, [], [true, "DUH"]]
+    end
+
+    it 'that is flattened before sending it over socket to IB server' do
+      subject.preprocess.should == [6, 2, 1, "DUH"]
+    end
+
+    it 'and has correct #to_s representation' do
+      subject.to_s.should == "6-2-1-DUH"
     end
 
   end

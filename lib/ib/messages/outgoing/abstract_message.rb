@@ -23,37 +23,44 @@ module IB
         # an Array of elements that ought to be sent to the server by calling to_s on
         # each one and postpending a '\0'.
         #
-        def send_to server
-          self.encode(server).flatten.each do |datum|
-            #p datum
-            server[:socket].write_data datum
-          end
+        def send_to socket
+          preprocess.each {|data| socket.write_data data}
+        end
+
+        def to_s
+          preprocess.join('-')
+        end
+
+        # Pre-process encoded message before sending into socket
+        def preprocess
+          self.encode.flatten.map {|data| data == true ? 1 : data == false ? 0 : data }
         end
 
         # At minimum, Outgoing message contains message_id and version.
         # Most messages also contain (ticker, request or order) :id.
         # Then, content of @data Hash is encoded per instructions in data_map.
-        def encode server
+        def encode
           [self.class.message_id,
            self.class.version,
            @data[:id] || @data[:ticker_id] || @data[:request_id] ||
-               @data[:local_id] || @data[:order_id] || [],
+           @data[:local_id] || @data[:order_id] || [],
            self.class.data_map.map do |(field, default_method, args)|
              case
-               when default_method.nil?
-                 @data[field]
+             when default_method.nil?
+               @data[field]
 
-               when default_method.is_a?(Symbol) # method name with args
-                 @data[field].send default_method, *args
+             when default_method.is_a?(Symbol) # method name with args
+               @data[field].send default_method, *args
 
-               when default_method.respond_to?(:call) # callable with args
-                 default_method.call @data[field], *args
+             when default_method.respond_to?(:call) # callable with args
+               default_method.call @data[field], *args
 
-               else # default
-                 @data[field].nil? ? default_method : @data[field] # may be false still
+             else # default
+               @data[field].nil? ? default_method : @data[field] # may be false still
              end
            end
-          ].flatten
+           ]
+          # TWS wants to receive booleans as 1 or 0
         end
 
       end # AbstractMessage

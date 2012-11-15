@@ -44,14 +44,14 @@ module IB
       RequestRealTimeBars = def_message 50, BarRequestMessage
 
       class RequestRealTimeBars
-        def encode server
+        def encode
           data_type, bar_size, contract = parse @data
 
           [super,
            contract.serialize_long,
            bar_size,
            data_type.to_s.upcase,
-           @data[:use_rth]].flatten
+           @data[:use_rth]]
         end
       end # RequestRealTimeBars
 
@@ -150,7 +150,7 @@ module IB
       RequestHistoricalData = def_message [20, 4], BarRequestMessage
 
       class RequestHistoricalData
-        def encode server
+        def encode
           data_type, bar_size, contract = parse @data
 
           [super,
@@ -161,7 +161,7 @@ module IB
            @data[:use_rth],
            data_type.to_s.upcase,
            @data[:format_date],
-           contract.serialize_legs].flatten
+           contract.serialize_legs]
         end
       end # RequestHistoricalData
 
