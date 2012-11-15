@@ -14,12 +14,15 @@ ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS
 # Set log level
 log.level = Logger::FATAL
 
+# Only for Advisor accounts: you need to provide account_code such as U666777
+account_code = ARGV[0] || ''
+
 # Subscribe to TWS alerts/errors and account-related messages
 # that TWS sends in response to account data request
 ib.subscribe(:Alert, :AccountValue,
              :PortfolioValue, :AccountUpdateTime) { |msg| puts msg.to_human }
 
-ib.send_message :RequestAccountData, :subscribe => true
+ib.send_message :RequestAccountData, :subscribe => true, :account_code => account_code
 
 puts "\nSubscribing to IB account data"
 puts "\n******** Press <Enter> to cancel... *********\n\n"
@@ -27,4 +30,4 @@ STDIN.gets
 puts "Cancelling account data subscription.."
 
 ib.send_message :RequestAccountData, :subscribe => false
-sleep 1
+sleep 2

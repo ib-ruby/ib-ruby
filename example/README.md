@@ -14,7 +14,13 @@ If you're on Unix-like platform, you can make these files executable.
 
 ## EXAMPLE DESCRIPTION:
 
-account_info*   - Request your account info, current positions, portfolio values and so on.
+account_info* - Request your account info, current positions, portfolio values and so on:
+
+    $ ruby example/account_info
+
+For Financial Advisors, you need to add the managed account you want info for:
+
+    $ ruby example/account_info U123456
 
 cancel_orders*  - Cancel either all open orders, or specific order(s),  by their (local) ids. Examples:
 
