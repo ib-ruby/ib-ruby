@@ -42,7 +42,7 @@ describe IB::Symbols do
     fx.currency.should == "USD"
     fx.multiplier.should == 62500
     fx.exchange.should == "GLOBEX"
-    fx.description.should == "British Pounds"
+    fx.description.should =~ /British Pounds/
   end
 
   it 'raises an error if requested contract symbol is not defined' do

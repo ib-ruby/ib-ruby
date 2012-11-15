@@ -329,7 +329,7 @@ module IB
     # Placement
     def place contract, connection
       error "Unable to place order, next_local_id not known" unless connection.next_local_id
-      self.client_id = connection.server[:client_id]
+      self.client_id = connection.client_id
       self.local_id = connection.next_local_id
       connection.next_local_id += 1
       self.placed_at = Time.now
@@ -381,7 +381,7 @@ module IB
     def to_human
       "<Order: " + ((order_ref && order_ref != '') ? "#{order_ref} " : '') +
         "#{self[:order_type]} #{self[:tif]} #{side} #{quantity} " +
-        "#{status} " + (limit_price ? "#{limit_price} " : '') +
+        (limit_price ? "#{limit_price} " : '') + "#{status} " +
         ((aux_price && aux_price != 0) ? "/#{aux_price}" : '') +
         "##{local_id}/#{perm_id} from #{client_id}" +
         (account ? "/#{account}" : '') +

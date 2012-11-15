@@ -40,8 +40,8 @@ module IB
       when String # Probably a Rails URI, delegate to AR::Base
         super(other)
       else
-        content_attributes.keys.inject(true) { |res, key| 
-          res && (send(key) == other.send(key)) }
+        content_attributes.keys.inject(true) { |res, key|
+          res && other.respond_to?(key) && (send(key) == other.send(key)) }
       end
     end
 

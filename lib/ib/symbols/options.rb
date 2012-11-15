@@ -1,4 +1,4 @@
-# Option contracts definitions. 
+# Option contracts definitions.
 # TODO: add next_expiry and other convenience from Futures module.
 module IB
   module Symbols
@@ -30,6 +30,8 @@ module IB
                                    :strike => 75.0,
                                    :description => "SPY 75.0 Put 2014-01"),
           :spy100 => IB::Option.new(:osi => 'SPY 140118P00100000'),
+          :vix20 => IB::Option.new(:osi =>  'VIX 121121C00020000'),
+          :vxx40 => IB::Option.new(:osi =>  'VXX 121117C00040000'),
         }
       end
     end

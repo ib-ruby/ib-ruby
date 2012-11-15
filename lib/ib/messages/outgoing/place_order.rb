@@ -5,13 +5,11 @@ module IB
       # Data format is { :id => int: local_id,
       #                  :contract => Contract,
       #                  :order => Order }
-      PlaceOrder = def_message [3, 38] # v.38 is NOT properly supported by API yet ?!
+      PlaceOrder = def_message [3, 38]
 
       class PlaceOrder
 
-        def encode server
-          # Old server version supports no enhancements
-          #@version = 31 if server[:server_version] <= 60
+        def encode
 
           order = @data[:order]
           contract = @data[:contract]
@@ -21,14 +19,7 @@ module IB
            contract.serialize_long(:con_id, :sec_id),
 
            # main order fields
-           case order.side
-             when :short
-               'SSHORT'
-             when :short_exempt
-               'SSHORTX'
-             else
-               order.side.to_sup
-           end,
+           (order.side == :short ? 'SSHORT' : order.side == :short_exempt ? 'SSHORTX' : order.side.to_sup),
            order.quantity,
            order[:order_type], # Internal code, 'LMT' instead of :limit
            order.limit_price,
@@ -49,18 +40,14 @@ module IB
            order.hidden || false,
            contract.serialize_legs(:extended),
 
-           # This is specific to PlaceOrder v.38, NOT supported by API yet!
-           ## Support for per-leg prices in Order
-           if server[:server_version] >= 61 && contract.bag?
-             #order.leg_prices.empty? ? 0 : [order.leg_prices.size] + order.leg_prices
-             [contract.legs.size] + contract.legs.map { |_| nil }
-           else
-             []
-           end,
 
-           ## Support for combo routing params in Order
-           if server[:server_version] >= 57 && contract.bag?
-             order.combo_params.empty? ? 0 : [order.combo_params.size] + order.combo_params.to_a
+           if contract.bag?
+             [
+               ## Support for per-leg prices in Order
+               [contract.legs.size] + contract.legs.map { |_| nil },
+               ## Support for combo routing params in Order
+               order.combo_params.empty? ? 0 : [order.combo_params.size] + order.combo_params.to_a
+             ]
            else
              []
            end,
@@ -77,7 +64,7 @@ module IB
            order.designated_location, # only populate when short_sale_slot == 2    (Institutional)
            order.exempt_code,
            order[:oca_type],
-           order.rule_80a,
+           order[:rule_80a], #.to_sup[0..0],
            order.settling_firm,
            order.all_or_none || false,
            order.min_quantity,
@@ -92,37 +79,34 @@ module IB
            order.stock_range_lower,
            order.stock_range_upper,
            order.override_percentage_constraints || false,
-           order.volatility, #                      Volatility orders
-           order[:volatility_type], #
-           order[:delta_neutral_order_type],
-           order.delta_neutral_aux_price, #
+           order.volatility, #              Volatility orders
+           order[:volatility_type], #       Volatility orders
 
            # Support for delta neutral orders with parameters
-           if server[:server_version] >= 58 && order.delta_neutral_order_type
-             [order.delta_neutral_con_id,
+           if order.delta_neutral_order_type && order.delta_neutral_order_type != :none
+             [order[:delta_neutral_order_type],
+              order.delta_neutral_aux_price,
+              order.delta_neutral_con_id,
               order.delta_neutral_settling_firm,
               order.delta_neutral_clearing_account,
               order[:delta_neutral_clearing_intent]
-             ]
+              ]
            else
-             []
+             ['', '']
            end,
 
-           order.continuous_update, #               Volatility orders
-           order[:reference_price_type], #     Volatility orders
+           order.continuous_update, #        Volatility orders
+           order[:reference_price_type], #   Volatility orders
 
            order.trail_stop_price, #         TRAIL_STOP_LIMIT stop price
-
-           # Support for trailing percent
-           server[:server_version] >= 62 ? order.trailing_percent : [],
+           order.trailing_percent, #         Support for trailing percent
 
            order.scale_init_level_size, #    Scale Orders
            order.scale_subs_level_size, #    Scale Orders
            order.scale_price_increment, #    Scale Orders
 
-           # Support extended scale orders parameters
-           if server[:server_version] >= 60 && # MIN_SERVER_VER_SCALE_ORDERS3
-               order.scale_price_increment && order.scale_price_increment > 0
+           # Support for extended scale orders parameters
+           if order.scale_price_increment && order.scale_price_increment > 0
              [order.scale_price_adjust_value,
               order.scale_price_adjust_interval,
               order.scale_profit_offset,
@@ -130,17 +114,16 @@ module IB
               order.scale_init_position,
               order.scale_init_fill_qty,
               order.scale_random_percent || false
-             ]
+              ]
            else
              []
            end,
 
-           # TODO: Need to add support for hedgeType, not working ATM - beta only
-           # MIN_SERVER_VER_HEDGE_ORDERS
-           server[:server_version] >= 54 ? [order.hedge_type, order.hedge_param || []] : [],
+           # Support for hedgeType
+           order.hedge_type, # MIN_SERVER_VER_HEDGE_ORDERS
+           order.hedge_param || [],
 
-           #MIN_SERVER_VER_OPT_OUT_SMART_ROUTING
-           server[:server_version] >= 56 ? (order.opt_out_smart_routing || false) : [],
+           order.opt_out_smart_routing || false, # MIN_SERVER_VER_OPT_OUT_SMART_ROUTING
 
            order.clearing_account,
            order.clearing_intent,

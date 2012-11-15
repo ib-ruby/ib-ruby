@@ -9,7 +9,7 @@ shared_examples_for 'OpenOrder message' do
   its(:local_id) { should be_an Integer }
   its(:status) { should =~ /Submit/ }
   its(:to_human) { should =~
-      /<OpenOrder: <Contract: WFC stock NYSE USD> <Order: LMT DAY buy 100 .*Submit.* 9.13 #\d+\/\d+ from 1111/ }
+      /<OpenOrder: <Contract: WFC stock NYSE USD> <Order: LMT DAY buy 100 9.13 .*Submit.* #\d+\/\d+ from 1111/ }
 
   it 'has proper contract accessor' do
     c = subject.contract

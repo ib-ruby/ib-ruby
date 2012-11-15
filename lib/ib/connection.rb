@@ -13,7 +13,7 @@ module IB
 
     DEFAULT_OPTIONS = {:host =>'127.0.0.1',
                        :port => '4001', # IB Gateway connection (default)
-                       #:port => '7496', # TWS connection 
+                       #:port => '7496', # TWS connection
                        :connect => true, # Connect at initialization
                        :reader => true, # Start a separate reader Thread
                        :received => true, # Keep all received messages in a @received Hash
@@ -21,16 +21,22 @@ module IB
                        :client_id => nil, # Will be randomly assigned
                        :client_version => IB::Messages::CLIENT_VERSION,
                        :server_version => IB::Messages::SERVER_VERSION
-    }
+                       }
 
     # Singleton to make active Connection universally accessible as IB::Connection.current
     class << self
       attr_accessor :current
     end
 
-    attr_accessor :server, #   Info about IB server and server connection state
-                  :options, #  Connection options
-                  :next_local_id # Next valid order id
+    attr_accessor :options, #  Connection options
+      :socket, #   Socket to IB server (TWS or Gateway)
+      :reader, # Reader thread
+      :client_version,
+      :server_version,
+      :remote_connect_time,
+      :local_connect_time,
+      :client_id, # Client id of this Connection (as seen bu IB server)
+      :next_local_id # Next valid order id
 
     alias next_order_id next_local_id
     alias next_order_id= next_local_id=
@@ -45,7 +51,6 @@ module IB
       self.default_logger = options[:logger] if options[:logger]
       @connected = false
       self.next_local_id = nil
-      @server = Hash.new
 
       connect if options[:connect]
       Connection.current = self
@@ -62,28 +67,28 @@ module IB
         log.info "Got next valid order id: #{next_local_id}."
       end
 
-      server[:socket] = IBSocket.open(options[:host], options[:port])
+      @socket = IBSocket.open(options[:host], options[:port])
 
       # Secret handshake
-      socket.write_data options[:client_version]
-      server[:client_version] = options[:client_version]
-      server[:server_version] = socket.read_int
-      if server[:server_version] < options[:server_version]
-        error "Server version #{server[:server_version]}, #{options[:server_version]} required."
+      @client_version = options[:client_version]
+      socket.write_data @client_version
+      @server_version = socket.read_int
+      if @server_version < options[:server_version]
+        error "Server version #{@server_version}, #{options[:server_version]} required."
       end
-      server[:remote_connect_time] = socket.read_string
-      server[:local_connect_time] = Time.now()
+      @remote_connect_time = socket.read_string
+      @local_connect_time = Time.now
 
       # Sending (arbitrary) client ID to identify subsequent communications.
       # The client with a client_id of 0 can manage the TWS-owned open orders.
       # Other clients can only manage their own open orders.
-      server[:client_id] = options[:client_id] || random_id
-      socket.write_data server[:client_id]
+      @client_id = options[:client_id] || random_id
+      socket.write_data @client_id
 
       @connected = true
-      log.info "Connected to server, ver: #{server[:server_version]}, connection time: " +
-                   "#{server[:local_connect_time]} local, " +
-                   "#{server[:remote_connect_time]} remote."
+      log.info "Connected to server, ver: #{@server_version}, connection time: " +
+        "#{@local_connect_time} local, " +
+        "#{@remote_connect_time} remote."
 
       start_reader if options[:reader] # Allows reconnect
     end
@@ -93,11 +98,10 @@ module IB
     def disconnect
       if reader_running?
         @reader_running = false
-        server[:reader].join
+        @reader.join
       end
       if connected?
         socket.close
-        @server = Hash.new
         @connected = false
       end
     end
@@ -106,10 +110,6 @@ module IB
 
     def connected?
       @connected
-    end
-
-    def socket
-      server[:socket]
     end
 
     ### Working with message subscribers
@@ -126,16 +126,16 @@ module IB
 
         args.each do |what|
           message_classes =
-              case
-                when what.is_a?(Class) && what < Messages::Incoming::AbstractMessage
-                  [what]
-                when what.is_a?(Symbol)
-                  [Messages::Incoming.const_get(what)]
-                when what.is_a?(Regexp)
-                  Messages::Incoming::Classes.values.find_all { |klass| klass.to_s =~ what }
-                else
-                  error "#{what} must represent incoming IB message class", :args
-              end
+          case
+          when what.is_a?(Class) && what < Messages::Incoming::AbstractMessage
+            [what]
+          when what.is_a?(Symbol)
+            [Messages::Incoming.const_get(what)]
+          when what.is_a?(Regexp)
+            Messages::Incoming::Classes.values.find_all { |klass| klass.to_s =~ what }
+          else
+            error "#{what} must represent incoming IB message class", :args
+          end
           message_classes.flatten.each do |message_class|
             # TODO: Fix: RuntimeError: can't add a new key into hash during iteration
             subscribers[message_class][id] = subscriber
@@ -194,17 +194,17 @@ module IB
     # Check if all given conditions are satisfied
     def satisfied? *conditions
       !conditions.empty? &&
-          conditions.inject(true) do |result, condition|
-            result && if condition.is_a?(Symbol)
-                        received?(condition)
-                      elsif condition.is_a?(Array)
-                        received?(*condition)
-                      elsif condition.respond_to?(:call)
-                        condition.call
-                      else
-                        error "Unknown wait condition #{condition}"
-                      end
-          end
+      conditions.inject(true) do |result, condition|
+        result && if condition.is_a?(Symbol)
+        received?(condition)
+        elsif condition.is_a?(Array)
+          received?(*condition)
+        elsif condition.respond_to?(:call)
+          condition.call
+        else
+          error "Unknown wait condition #{condition}"
+        end
+      end
     end
 
     # Wait for specific condition(s) - given as callable/block, or
@@ -216,7 +216,7 @@ module IB
       conditions = args.delete_if { |arg| arg.is_a? Numeric }.push(block).compact
 
       until end_time < Time.now || satisfied?(*conditions)
-        if server[:reader]
+        if @reader
           sleep 0.05
         else
           process_messages 50
@@ -226,26 +226,26 @@ module IB
 
     ### Working with Incoming messages from IB
 
-    # Start reader thread that continuously reads messages from server in background.
+    # Start reader thread that continuously reads messages from @socket in background.
     # If you don't start reader, you should manually poll @socket for messages
     # or use #process_messages(msec) API.
     def start_reader
       Thread.abort_on_exception = true
       @reader_running = true
-      server[:reader] = Thread.new do
+      @reader = Thread.new do
         process_messages while @reader_running
       end
     end
 
     def reader_running?
-      @reader_running && server[:reader] && server[:reader].alive?
+      @reader_running && @reader && @reader.alive?
     end
 
     # Process incoming messages during *poll_time* (200) msecs, nonblocking
     def process_messages poll_time = 200 # in msec
       time_out = Time.now + poll_time/1000.0
       while (time_left = time_out - Time.now) > 0
-        # If server socket is readable, process single incoming message
+        # If socket is readable, process single incoming message
         process_message if select [socket], nil, nil, time_left
       end
     end
@@ -258,10 +258,10 @@ module IB
       log.debug "Got message #{msg_id} (#{Messages::Incoming::Classes[msg_id]})"
 
       # Create new instance of the appropriate message type,
-      # and have it read the message from server.
+      # and have it read the message from socket.
       # NB: Failure here usually means unsupported message type received
       error "Got unsupported message #{msg_id}" unless Messages::Incoming::Classes[msg_id]
-      msg = Messages::Incoming::Classes[msg_id].new(server)
+      msg = Messages::Incoming::Classes[msg_id].new(socket)
 
       # Deliver message to all registered subscribers, alert if no subscribers
       @subscribe_lock.synchronize do
@@ -270,8 +270,10 @@ module IB
       log.warn "No subscribers for message #{msg.class}!" if subscribers[msg.class].empty?
 
       # Collect all received messages into a @received Hash
-      @receive_lock.synchronize do
-        received[msg.message_type] << msg if options[:received]
+      if options[:received]
+        @receive_lock.synchronize do
+          received[msg.message_type] << msg
+        end
       end
     end
 
@@ -280,18 +282,18 @@ module IB
     # Send an outgoing message.
     def send_message what, *args
       message =
-          case
-            when what.is_a?(Messages::Outgoing::AbstractMessage)
-              what
-            when what.is_a?(Class) && what < Messages::Outgoing::AbstractMessage
-              what.new *args
-            when what.is_a?(Symbol)
-              Messages::Outgoing.const_get(what).new *args
-            else
-              error "Only able to send outgoing IB messages", :args
-          end
+      case
+      when what.is_a?(Messages::Outgoing::AbstractMessage)
+        what
+      when what.is_a?(Class) && what < Messages::Outgoing::AbstractMessage
+        what.new *args
+      when what.is_a?(Symbol)
+        Messages::Outgoing.const_get(what).new *args
+      else
+        error "Only able to send outgoing IB messages", :args
+      end
       error "Not able to send messages, IB not connected!" unless connected?
-      message.send_to server
+      message.send_to socket
     end
 
     alias dispatch send_message # Legacy alias

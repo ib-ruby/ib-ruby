@@ -18,8 +18,9 @@ shared_examples_for 'Connected Connection without receiver' do
 
   it { should_not be_nil }
   it { should be_connected }
-  its(:server) { should be_a Hash }
-  its(:server) { should have_key :reader }
+  its(:reader) { should be_a Thread }
+  its(:server_version) { should be_an Integer }
+  its(:client_version) { should be_an Integer }
   its(:subscribers) { should have_at_least(1).item } # :NextValidId and empty Hashes
   its(:next_local_id) { should be_a Fixnum } # Not before :NextValidId arrives
 end
@@ -188,8 +189,9 @@ describe IB::Connection do
 
     it { should_not be_nil }
     it { should_not be_connected }
-    its(:server) { should be_a Hash }
-    its(:server) { should_not have_key :reader }
+    its(:reader) { should be_nil }
+    its(:server_version) { should be_nil }
+    its(:client_version) { should be_nil }
     its(:received) { should be_empty }
     its(:subscribers) { should be_empty }
     its(:next_local_id) { should be_nil }
@@ -215,8 +217,9 @@ describe IB::Connection do
 
     it { should_not be_nil }
     it { should_not be_connected }
-    its(:server) { should be_a Hash }
-    its(:server) { should_not have_key :reader }
+    its(:reader) { should be_nil }
+    its(:server_version) { should be_nil }
+    its(:client_version) { should be_nil }
     its(:received) { should be_empty }
     its(:subscribers) { should be_empty }
     its(:next_local_id) { should be_nil }

@@ -3,7 +3,7 @@ module IB
   	# This gem supports incoming/outgoing IB messages compatible with the following
   	# IB client/server versions:
     CLIENT_VERSION = 59 # 59? Maximal client version implemented
-    SERVER_VERSION = 60 # 38? 53? 62? Minimal server version required
+    SERVER_VERSION = 62 # 38? 53? 62? Minimal server version required
   end
 end
 
@@ -44,10 +44,10 @@ __END__
     // 29 = can receive trail stop limit price in open order and can place them: API 8.91
     // 30 = can receive extended bond contract def, new ticks, and trade count in bars
     // 31 = can receive EFP extensions to scanner and market data, and combo legs on open orders
-    //    ; can receive RT bars 
+    //    ; can receive RT bars
     // 32 = can receive TickType.LAST_TIMESTAMP
-    //    ; can receive "whyHeld" in order status messages 
-    // 33 = can receive ScaleNumComponents and ScaleComponentSize is open order messages 
+    //    ; can receive "whyHeld" in order status messages
+    // 33 = can receive ScaleNumComponents and ScaleComponentSize is open order messages
     // 34 = can receive whatIf orders / order state
     // 35 = can receive contId field for Contract objects
     // 36 = can receive outsideRth field for Order objects
@@ -78,7 +78,7 @@ __END__
     // 51 = can receive smartComboRoutingParams in openOrder
     // 52 = can receive deltaNeutralConId, deltaNeutralSettlingFirm, deltaNeutralClearingAccount and deltaNeutralClearingIntent in openOrder
     // 53 = can receive orderRef in execution
-    // 54 = can receive scale order fields (PriceAdjustValue, PriceAdjustInterval, ProfitOffset, AutoReset, 
+    // 54 = can receive scale order fields (PriceAdjustValue, PriceAdjustInterval, ProfitOffset, AutoReset,
     //      InitPosition, InitFillQty and RandomPercent) in openOrder
     // 55 = can receive orderComboLegs (price) in openOrder
     // 56 = can receive trailingPercent in openOrder

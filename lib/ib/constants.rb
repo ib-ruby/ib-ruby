@@ -159,7 +159,8 @@ module IB
        'OCA' => :one_cancels_all, #        One-Cancels-All
        'VOL' => :volatility, #             Volatility
        'SCALE' => :scale, #                Scale
-       'NONE' => :no_order # Used to indicate no hedge in :delta_neutral_order_type
+       'NONE' => :none, # Used to indicate no hedge in :delta_neutral_order_type
+       'None' => :none, # Used to indicate no hedge in :delta_neutral_order_type
       }.freeze
 
   # Valid security types (sec_type attribute of IB::Contract)
