@@ -11,7 +11,8 @@ require 'ib-ruby'
 # Define the symbols we're interested in.
 @market = {
     123 => IB::Symbols::Futures[:gbp],
-    234 => IB::Symbols::Futures[:jpy]
+    234 => IB::Symbols::Futures[:jpy],
+    444 => IB::Symbols::Forex[:usdjpy]
 }
 
 # To determine when the timeout has passed.
@@ -30,7 +31,7 @@ ib.subscribe(:Alert) { |msg| puts msg.to_human }
 #  locally in forex.rb, and is just arbitrary text.)
 def show_sales_and_size(msg)
   #return if msg.type != :last_price || msg.data[:size] < MIN_SIZE
-  puts @market[msg.data[:id]].description + ": " +
+  puts @market[msg.ticker_id].description + ": " +
            (msg.is_a?(IB::Messages::Incoming::TickPrice) ?
                "#{msg.data[:size]} at #{msg.data[:price]}" : msg.to_human)
 end
@@ -51,3 +52,5 @@ STDIN.gets
 puts "Unsubscribing from TWS market data.."
 
 @market.each_pair { |id, contract| ib.send_message :CancelMarketData, :id => id }
+
+sleep 2
