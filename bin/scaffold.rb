@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 #
-# This script converts given migration file into a Rails scaffold command
+# This dev helper script converts any migration file into a Rails scaffold command
 
 output = STDOUT
 ARGV.each do |file_name|
@@ -19,7 +19,7 @@ ARGV.each do |file_name|
           field, type = Regexp.last_match(2), Regexp.last_match(1)
           if type == 'references'
           	field, type = field + '_id', 'integer'
-          end	
+          end
           output.print "#{field}:#{type} "
         end
       end
