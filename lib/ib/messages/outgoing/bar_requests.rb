@@ -13,16 +13,16 @@ module IB
             error ":data_type must be one of #{DATA_TYPES.inspect}", :args
           end
 
-          size = data[:bar_size] || data[:size]
-          bar_size = BAR_SIZES.invert[size] || size
-          unless  BAR_SIZES.keys.include?(bar_size)
-            error ":bar_size must be one of #{BAR_SIZES.inspect}", :args
-          end
+          #size = data[:bar_size] || data[:size]
+          #bar_size = BAR_SIZES.invert[size] || size
+          # unless  BAR_SIZES.keys.include?(bar_size)
+            # error ":bar_size must be one of #{BAR_SIZES.inspect}", :args
+          # end
 
           contract = data[:contract].is_a?(IB::Contract) ?
               data[:contract] : IB::Contract.from_ib_ruby(data[:contract])
 
-          [data_type, bar_size, contract]
+          [data_type, nil, contract]
         end
       end
 
@@ -44,6 +44,14 @@ module IB
       RequestRealTimeBars = def_message 50, BarRequestMessage
 
       class RequestRealTimeBars
+        def parse data
+          data_type, bar_size, contract = super data
+
+          size = data[:bar_size] || data[:size]
+          bar_size = size.to_i
+          [data_type, bar_size, contract]
+        end
+
         def encode
           data_type, bar_size, contract = parse @data
 
@@ -150,6 +158,17 @@ module IB
       RequestHistoricalData = def_message [20, 4], BarRequestMessage
 
       class RequestHistoricalData
+        def parse data
+          data_type, bar_size, contract = super data
+
+          size = data[:bar_size] || data[:size]
+          bar_size = BAR_SIZES.invert[size] || size
+          unless  BAR_SIZES.keys.include?(bar_size)
+            error ":bar_size must be one of #{BAR_SIZES.inspect}", :args
+          end
+          [data_type, bar_size, contract]
+        end
+
         def encode
           data_type, bar_size, contract = parse @data
 
