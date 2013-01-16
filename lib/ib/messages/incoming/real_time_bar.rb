@@ -7,7 +7,7 @@ module IB
       #    :time - The date-time stamp of the start of the bar. The format is offset in
       #            seconds from the beginning of 1970, same format as the UNIX epoch time
       #    :bar - received RT Bar
-      RealTimeBar = def_message 50,
+      RealTimeBar = def_message [50, 3],
                                 [:request_id, :int],
                                 [:bar, :time, :int],
                                 [:bar, :open, :decimal],
@@ -23,7 +23,7 @@ module IB
         end
 
         def to_human
-          "<RealTimeBar: #{request_id} #{time}, #{bar}>"
+          "<RealTimeBar: #{request_id} #{bar}>"
         end
       end # RealTimeBar
 

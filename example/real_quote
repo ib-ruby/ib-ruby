@@ -1,0 +1,42 @@
+#!/usr/bin/env ruby
+#
+# This script downloads historic data for specific symbols from IB
+
+require 'rubygems'
+require 'bundler/setup'
+$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
+require 'ib-ruby'
+
+@market = {20000 => IB::Symbols::Stocks[:vxx]}
+
+
+# Connect to IB TWS.
+ib = IB::Connection.new :client_id => 1112#, :port => 7496 # TWS
+
+# Subscribe to TWS alerts/errors
+ib.subscribe(:Alert) { |msg| puts msg.to_human }
+
+# Subscribe to HistoricalData incoming events.  The code passed in the block
+# will be executed when a message of that type is received, with the received
+# message as its argument. In this case, we just print out the data.
+#
+# Note that we have to look the ticker id of each incoming message
+# up in local memory to figure out what it's for.
+ib.subscribe(IB::Messages::Incoming::RealTimeBar) do |msg|
+  puts @market[msg.request_id].description + ": #{msg.to_human}"
+end
+
+@market.each_pair do |id, contract|
+  ib.send_message IB::Messages::Outgoing::RequestRealTimeBars.new(
+                        :request_id => id,
+                        :contract => contract,
+                        :bar_size => 5, #  IB::BAR_SIZES.key(:hour)?
+                        :data_type => :trades,
+                        :use_rth => 1)
+end
+
+                      
+# IB does not send any indication when all historic data is done being delivered.
+# So we need to interrupt manually when our request is answered.
+puts "\n******** Press <Enter> to exit... *********\n\n"
+STDIN.gets
