@@ -14,15 +14,27 @@ module IB
       ## Empty messages (no data)
 
       # Request the open orders that were placed from THIS client. Each open order
-      # will be fed back through the OpenOrder and OrderStatus messages.
+      # will be fed back through the OpenOrder and OrderStatus messages ONCE.
       # NB: Client with a client_id of 0 will also receive the TWS-owned open orders.
       # These orders will be associated with the client and a new orderId will be
       # generated. This association will persist over multiple API and TWS sessions.
       RequestOpenOrders = def_message 5
 
       # Request the open orders placed from all clients and also from TWS. Each open
-      # order will be fed back through the OpenOrder and OrderStatus messages.
+      # order will be fed back through the OpenOrder and OrderStatus messages ONCE.
+      # Note this does not re-bind those Orders to requesting Client!
+      # Use RequestAutoOpenOrders to request such re-binding.
       RequestAllOpenOrders = def_message 16
+
+      # Request that newly created TWS orders be implicitly associated with this client.
+      # When a new TWS order is created, the order will be associated with this client
+      # and automatically fed back through the OpenOrder and OrderStatus messages.
+      # It is a 'continuous' request such that it gets turned 'on' when called with a
+      # TRUE auto_bind parameter. When it's called with FALSE auto_bind, new TWS orders
+      # will not bind to this client going forward. Note that TWS orders can only be
+      # bound to clients with a client_id of 0. TODO: how to properly test this?
+      # data = { :auto_bind => boolean }
+      RequestAutoOpenOrders = def_message 15, :auto_bind
 
       # Requests an XML document that describes the valid parameters that a scanner
       # subscription can have (for outgoing RequestScannerSubscription message).
@@ -48,8 +60,6 @@ module IB
       ## Data format is: @data ={ :id => local_id of order to cancel }
       CancelOrder = def_message 4
 
-      ## These messages contain just one or two extra fields:
-
       # Request the next valid ID that can be used when placing an order. Responds with
       # NextValidId message, and the id returned is that next valid Id for orders.
       # That ID will reflect any autobinding that has occurred (which generates new
@@ -60,8 +70,6 @@ module IB
       RequestNewsBulletins = def_message 12, :all_messages
       # data = { :log_level => int }
       SetServerLoglevel = def_message 14, :log_level
-      # data = { :auto_bind => boolean }
-      RequestAutoOpenOrders = def_message 15, :auto_bind
       # data = { :fa_data_type => int }
       RequestFA = def_message 18, :fa_data_type
       # data = { :fa_data_type => int, :xml => String }
@@ -75,7 +83,7 @@ module IB
                                                                :account_code)
 
       # data => { :id => request_id (int), :contract => Contract }
-      # 
+      #
       # Special case for options: "wildcards" in the Contract fields retrieve Option chains
       #   strike = 0 means all strikes
       #   right = "" meanns both call and put

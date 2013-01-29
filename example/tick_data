@@ -13,8 +13,10 @@ contract = IB::Contract.new :symbol=> 'AAPL',
                             :sec_type=> :stock,
                             :description=> "Some stock"
 
-# First, connect to IB TWS. Arbitrary :client_id is used to identify your script
-ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS
+# First, connect to IB Gateway.
+ib = IB::Connection.new :client_id => 1112, #  Arbitrary id to identify your script
+                        #:port => 7496,     # TWS connection (instead of default Gateway)
+                        :received => false  # Do not keep all received messages in memory
 
 ib.subscribe(:Alert) { |msg| puts msg.to_human }
 ib.subscribe(:TickGeneric, :TickString, :TickPrice, :TickSize) { |msg| puts msg.inspect }

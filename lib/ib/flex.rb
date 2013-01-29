@@ -25,7 +25,7 @@ module IB
       end
     end
 
-    #  Create new Flex query with options:  
+    #  Create new Flex query with options:
     #    :token => 1111111111111111111111111111111111  # CHANGE to your actual token!
     #    :query_id => 11111                            # CHANGE to actual query id!
     #    :format => :xml (default) / :csv
@@ -55,7 +55,7 @@ module IB
                                :text_ok => @format != :xml)
 
           # If Status is specified, returned xml contains only error message, not actual report
-          if report.is_a?(Hash) && report['Status'] == 'Fail'
+          if report.is_a?(Hash) && report['Status'] =~ /Fail|Warn/
             error_code = report['ErrorCode'].to_i
             error_message = "#{error_code}: #{report['ErrorMessage']}"
 
