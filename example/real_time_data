@@ -1,0 +1,35 @@
+#!/usr/bin/env ruby
+#
+# This script downloads historic data for specific symbols from IB
+
+require 'rubygems'
+require 'bundler/setup'
+$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
+require 'ib-ruby'
+
+@contracts = {1 => IB::Symbols::Stocks[:vxx]}
+
+# Connect to IB TWS.
+ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS
+
+# Subscribe to TWS alerts/errors
+ib.subscribe(:Alert) { |msg| puts msg.to_human }
+
+# Subscribe to RealTimeBar incoming events. We have to use message request_id
+# to figure out what contract it's for.
+ib.subscribe(IB::Messages::Incoming::RealTimeBar) do |msg|
+  puts @contracts[msg.request_id].description + ": #{msg.to_human}"
+end
+
+@contracts.each_pair do |request_id, contract|
+  ib.send_message IB::Messages::Outgoing::RequestRealTimeBars.new(
+                        :request_id => request_id,
+                        :contract => contract,
+                        :bar_size => 5, # Only 5 secs bars available?
+                        :data_type => :trades,
+                        :use_rth => true)
+end
+
+# So we need to interrupt manually when we do not want any more quotes.
+puts "\n******** Press <Enter> to exit... *********\n\n"
+STDIN.gets

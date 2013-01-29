@@ -1,0 +1,67 @@
+#!/usr/bin/env ruby
+#
+# This script exports your IB portfolio in a CSV format. Usage:
+# $ example/portfolio_csv [account] > portfolio.csv
+
+require 'rubygems'
+require 'bundler/setup'
+$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
+require 'ib-ruby'
+
+# Only for Advisors: you need to provide account id such as U666777
+account = ARGV[0] || ''
+
+# Get rid of logging verbosity
+log.level = Logger::FATAL
+
+# Connect to IB TWS
+ib = IB::Connection.new :client_id => 1112, :port => 7496 # TWS
+
+# Redirect TWS alerts/errors to STDERR to keep output file clean
+ib.subscribe(:Alert) { |msg| STDERR.puts msg.to_human }
+
+# Silently ignore account-related messages other than :PortfolioValue
+ib.subscribe(:AccountUpdateTime, :AccountValue, :ManagedAccounts, :AccountDownloadEnd) {}
+
+# Output CSV headers
+puts %w[Symbol
+        SecType
+        Expiry
+        Strike
+        Right
+        Currency
+        LocalSymbol
+        Position
+        MarketPrice
+        MarketValue
+        AvgCost
+        UnrealizedPNL
+        RealizedPNL
+        Acct].map {|val| "\"#{val}\""}.join(",")
+
+# Output each portfolio position as a single line in CSV format
+ib.subscribe(:PortfolioValue) do |msg|
+  contract = msg.contract
+  csv = [ contract.symbol,
+          IB::CODES[:sec_type][contract.sec_type],
+          contract.expiry,
+          contract.strike == 0 ? "" : contract.strike,
+          contract.right == :none ? "" : contract.right,
+          contract.currency,
+          contract.local_symbol,
+          msg.position,
+          msg.market_price,
+          msg.market_value,
+          msg.average_cost,
+          msg.unrealized_pnl,
+          msg.realized_pnl,
+          msg.account_name
+        ].map {|val| "\"#{val}\""}.join(",")
+   puts csv
+end
+
+# Request account data, wait for its end, unsubscribe
+ib.send_message :RequestAccountData, :subscribe => true, :account_code => account
+ib.wait_for :AccountDownloadEnd, 30
+ib.send_message :RequestAccountData, :subscribe => false, :account_code => account
+sleep 0.5

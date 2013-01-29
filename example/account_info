@@ -8,11 +8,11 @@ require 'bundler/setup'
 $LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
 
-# First, connect to IB TWS.
-ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS
-
 # Set log level
 log.level = Logger::FATAL
+
+# Connect to IB TWS
+ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS
 
 # Only for Advisor accounts: you need to provide account_code such as U666777
 account_code = ARGV[0] || ''
