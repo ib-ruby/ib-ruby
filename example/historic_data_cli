@@ -129,7 +129,7 @@ DATE_FORMAT = (opt["dateformat"] && opt["dateformat"].to_i) || 1
 PORT = (opt["port"] && opt["port"]) || '4001'
 
 # First, connect to IB TWS.
-ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS
+ib = IB::Connection.new :client_id => 1112, :port => PORT
 
 # Subscribe to TWS alerts/errors
 ib.subscribe(:Alert) { |msg| puts msg.to_human }
