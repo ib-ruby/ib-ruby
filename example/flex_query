@@ -10,7 +10,14 @@
 # Your Flex Query Ids are in Account Management->Reports->Activity->Flex Queries.
 # Create new Flex query and make sure to set its output format to XML.
 #
-# This script runs your pre-defined FLEX query and prints the resulting report
+# This script runs your pre-defined FLEX query and prints the resulting report.
+# You may want to put your favorite FLEX queries info into a separate yaml file, such as:
+# -------------config/flex.yml---------------
+# last_orders:
+#   :token: 1111111111111111111111111111111111
+#   :query_id: 79999
+#   :format: :csv
+# --------------------------------------------
 
 require 'rubygems'
 require 'bundler/setup'
@@ -19,7 +26,14 @@ require 'ib-ruby'
 require 'yaml'
 
 if File.exists? "config/flex.yml"
-  # You may want to put your favorite FLEX queries info into a separate yaml file
+  # You may want to put your favorite FLEX queries info into a separate yaml file, such as:
+  # -------------config/flex.yml---------------
+  # last_orders:
+  #   :token: 1111111111111111111111111111111111
+  #   :query_id: 79999
+  #   :format: :csv
+  # --------------------------------------------
+  #
   query_name = ARGV[0] || 'default'
   query = YAML::load_file('config/flex.yml')[query_name]
   raise "FLEX error: no query #{query_name} in 'config/flex.yml'" unless query

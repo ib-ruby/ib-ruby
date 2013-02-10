@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 #
-# This script downloads historic data for specific symbols from IB
+# Subscribe to real time data for specific symbol from IB
 
 require 'rubygems'
 require 'bundler/setup'
