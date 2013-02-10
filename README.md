@@ -2,7 +2,7 @@
 
 Ruby Implementation of the Interactive Brokers Trader Workstation (TWS) API v.965-967.
 
-Copyright (C) 2006-2012 Paul Legato, Wes Devauld, and Ar Vicco.
+Copyright (C) 2006-2013 Paul Legato, Wes Devauld, and Ar Vicco.
 
 https://github.com/ib-ruby/ib-ruby
 
@@ -212,7 +212,7 @@ If you want to contribute to ib-ruby development:
 8. Push to the branch (git push origin my-new-feature)
 9. Go to your Github fork and create new Pull Request via Github GUI
 
-... then proceed from step 6 for more code modifications...
+... then proceed from step 5 for more code modifications...
 
 ## LICENSE:
 

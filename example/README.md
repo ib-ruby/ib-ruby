@@ -57,8 +57,14 @@ place_combo_order* - Place an Option combo order (Google butterfly).
 
 place_order* - Place a simple limit order to buy Stock.
 
+portfolio_csv* - Exports your IB portfolio in a CSV format. Usage:
+
+    $ ruby example/portfolio_csv [account] > my_portfolio.csv
+
+real_time_data* - Subscribe to real time data for specific symbol.
+
 template* - A blank example to start a new script (setting up all the dependencies).
 
-tick_data* - Subscribing for extended tick types for a single stock symbol.
+tick_data* - Subscribe to extended tick types for a single stock symbol.
 
 time_and_sales* - Print out Time&Sales format for Futures symbols.
