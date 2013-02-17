@@ -36,7 +36,7 @@ end
 # respond with a HistoricalData message, which will be processed by the code above.
 @contracts.each_pair do |request_id, contract|
   ib.send_message IB::Messages::Outgoing::RequestHistoricalData.new(
-                      :request_id => id,
+                      :request_id => request_id,
                       :contract => contract,
                       :end_date_time => Time.now.to_ib,
                       :duration => '30 D', #    ?
