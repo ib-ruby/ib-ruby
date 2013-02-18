@@ -1,0 +1,62 @@
+#!/usr/bin/env ruby
+#
+# This script setups a scan request and retreives the results.
+
+require 'rubygems'
+require 'bundler/setup'
+$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
+require 'ib-ruby'
+
+
+
+# Connect to IB TWS.
+ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS
+
+
+# Subscribe to TWS alerts/errors
+ib.subscribe(:Alert) { |msg| puts msg.to_human }
+
+
+# Subscribe to ScannerData incoming events.  The code passed in the block
+# will be executed when a message of that type is received, with the received
+# message as its argument. In this case, we just print out the data.
+#
+ib.subscribe(IB::Messages::Incoming::ScannerData) do |msg|
+   puts "ID: #{msg.request_id} : #{msg.count} items:"
+  msg.results.each { |entry| puts "  #{entry}" }
+end
+
+@id = 42
+# Now we actually request scanner data for the type of scan we are interested.
+# Some scan types can be found here:  http://www.interactivebrokers.com/php/apiUsersGuide/apiguide/tables/available_market_scanners.htm
+mess = IB::Messages::Outgoing::RequestScannerSubscription.new(
+                    :request_id => @id,
+                    :number_of_rows => 20,
+                    :instrument => "STK",
+                    :location_code => 'STK.US.MAJOR',
+                    :scan_code  => 'TOP_PERC_GAIN',
+                    :above_price => 4.0,
+                    :below_price => Float::MAX,
+                    :above_volume => 5000,
+                    :market_cap_above => 100000000,
+                    :market_cap_below =>  Float::MAX,
+                    :moody_rating_above => "",
+                    :moody_rating_below => "",
+                    :sp_rating_above => "",
+                    :sp_rating_below => "",
+                    :maturity_date_above => "",
+                    :maturity_date_below => "",
+                    :coupon_rate_above => Float::MAX,
+                    :coupon_rate_below => Float::MAX,
+                    :exclude_convertible => "",
+                    :average_option_volume_above => "", # ?
+                    :scanner_setting_pairs => "Annual,true",
+                    :stock_type_filter => "Stock"
+                    )
+                    
+ib.send_message( mess )   
+
+# IB does not send any indication when all  data is done being delivered.
+# So we need to interrupt manually when our request is answered.
+puts "\n******** Press <Enter> to exit... *********\n\n"
+STDIN.gets
