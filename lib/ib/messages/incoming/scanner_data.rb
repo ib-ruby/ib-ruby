@@ -27,22 +27,22 @@ module IB
              :contract =>
                  Contract.build(
                      :con_id => socket.read_int,
-                     :symbol => socket.read_str,
-                     :sec_type => socket.read_str,
-                     :expiry => socket.read_str,
+                     :symbol => socket.read_string,
+                     :sec_type => socket.read_string,
+                     :expiry => socket.read_string,
                      :strike => socket.read_decimal,
-                     :right => socket.read_str,
-                     :exchange => socket.read_str,
-                     :currency => socket.read_str,
-                     :local_symbol => socket.read_str,
+                     :right => socket.read_string,
+                     :exchange => socket.read_string,
+                     :currency => socket.read_string,
+                     :local_symbol => socket.read_string,
                      :contract_detail =>
                          IB::ContractDetail.new(
-                             :market_name => socket.read_str,
-                             :trading_class => socket.read_str)),
-             :distance => socket.read_str,
-             :benchmark => socket.read_str,
-             :projection => socket.read_str,
-             :legs => socket.read_str,
+                             :market_name => socket.read_string,
+                             :trading_class => socket.read_string)),
+             :distance => socket.read_string,
+             :benchmark => socket.read_string,
+             :projection => socket.read_string,
+             :legs => socket.read_string,
             }
           end
         end
