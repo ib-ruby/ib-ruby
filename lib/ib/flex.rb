@@ -21,7 +21,8 @@ module IB
 
       # By default, uri is a well known FLEX Web Service URI
       def uri
-        @uri || 'https://www.interactivebrokers.com/Universal/servlet/FlexStatementService.SendRequest'
+        #@uri || 'https://www.interactivebrokers.com/Universal/servlet/FlexStatementService.SendRequest'
+        @uri || 'https://gdcdyn.interactivebrokers.com/Universal/servlet/FlexStatementService.SendRequest'
       end
     end
 
