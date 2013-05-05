@@ -19,7 +19,8 @@ opt = Getopt::Long.getopts(
     ["--barsize", REQUIRED],
     ["--csv", BOOLEAN],
     ["--dateformat", REQUIRED],
-    ["--nonregularhours", BOOLEAN]
+    ["--nonregularhours", BOOLEAN],
+    ["--what", OPTIONAL]
 )
 
 if opt["help"] || opt["security"].nil? || opt["security"].empty?
