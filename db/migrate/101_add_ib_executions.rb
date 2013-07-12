@@ -18,7 +18,7 @@ class AddIbExecutions < ActiveRecord::Migration
       t.float :average_price #   double: Average price (for all executions?)
       t.string :exchange #       Exchange that executed the order
       t.string :account_name #   The customer account number
-      t.boolean :liquidation, :limit => 1 # This position to be liquidated last should the need arise
+      t.boolean :liquidation # This position to be liquidated last should the need arise
       t.string :time, :limit => 18 # String! The order execution time
       t.timestamps
     end

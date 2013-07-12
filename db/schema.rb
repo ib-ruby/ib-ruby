@@ -21,7 +21,7 @@ ActiveRecord::Schema.define(:version => 171) do
     t.float    "wap"
     t.integer  "volume"
     t.integer  "trades"
-    t.boolean  "has_gaps",    :limit => 1
+    t.boolean  "has_gaps"
     t.string   "time",        :limit => 18
     t.datetime "created_at",                :null => false
     t.datetime "updated_at",                :null => false
@@ -70,10 +70,10 @@ ActiveRecord::Schema.define(:version => 171) do
     t.string   "next_option_date"
     t.string   "next_option_type"
     t.string   "notes"
-    t.boolean  "callable",                  :limit => 1
-    t.boolean  "puttable",                  :limit => 1
-    t.boolean  "convertible",               :limit => 1
-    t.boolean  "next_option_partial",       :limit => 1
+    t.boolean  "callable"
+    t.boolean  "puttable"
+    t.boolean  "convertible"
+    t.boolean  "next_option_partial"
     t.string   "valid_next_option_date"
     t.string   "valid_next_option_type"
     t.string   "valid_next_option_partial"
@@ -98,7 +98,7 @@ ActiveRecord::Schema.define(:version => 171) do
     t.string   "expiry"
     t.string   "exchange"
     t.string   "primary_exchange"
-    t.boolean  "include_expired",  :limit => 1
+    t.boolean  "include_expired"
     t.string   "right",            :limit => 1
     t.string   "type"
     t.datetime "created_at",                    :null => false
@@ -121,7 +121,7 @@ ActiveRecord::Schema.define(:version => 171) do
     t.float    "average_price"
     t.string   "exchange"
     t.string   "account_name"
-    t.boolean  "liquidation",         :limit => 1
+    t.boolean  "liquidation"
     t.string   "time",                :limit => 18
     t.datetime "created_at",                        :null => false
     t.datetime "updated_at",                        :null => false
@@ -167,18 +167,18 @@ ActiveRecord::Schema.define(:version => 171) do
     t.integer  "open_close"
     t.integer  "oca_type"
     t.string   "oca_group"
-    t.boolean  "transmit",                        :limit => 1
-    t.boolean  "what_if",                         :limit => 1
-    t.boolean  "outside_rth",                     :limit => 1
-    t.boolean  "not_held",                        :limit => 1
-    t.boolean  "hidden",                          :limit => 1
-    t.boolean  "block_order",                     :limit => 1
-    t.boolean  "sweep_to_fill",                   :limit => 1
-    t.boolean  "all_or_none",                     :limit => 1
-    t.boolean  "etrade_only",                     :limit => 1
-    t.boolean  "firm_quote_only",                 :limit => 1
-    t.boolean  "opt_out_smart_routing",           :limit => 1
-    t.boolean  "override_percentage_constraints", :limit => 1
+    t.boolean  "transmit"
+    t.boolean  "what_if"
+    t.boolean  "outside_rth"
+    t.boolean  "not_held"
+    t.boolean  "hidden"
+    t.boolean  "block_order"
+    t.boolean  "sweep_to_fill"
+    t.boolean  "all_or_none"
+    t.boolean  "etrade_only"
+    t.boolean  "firm_quote_only"
+    t.boolean  "opt_out_smart_routing"
+    t.boolean  "override_percentage_constraints"
     t.integer  "min_quantity"
     t.integer  "display_size"
     t.integer  "trigger_method"
@@ -234,8 +234,8 @@ ActiveRecord::Schema.define(:version => 171) do
     t.float    "scale_profit_offset"
     t.integer  "scale_init_position"
     t.integer  "scale_init_fill_qty"
-    t.boolean  "scale_auto_reset",                :limit => 1
-    t.boolean  "scale_random_percent",            :limit => 1
+    t.boolean  "scale_auto_reset"
+    t.boolean  "scale_random_percent"
     t.datetime "placed_at"
     t.datetime "modified_at"
     t.datetime "created_at",                                    :null => false
