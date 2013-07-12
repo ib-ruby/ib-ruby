@@ -20,18 +20,18 @@ class AddIbOrders < ActiveRecord::Migration
       t.integer :oca_type # int: Tells how to handle remaining orders in an OCA group
       t.string :oca_group #   String: Identifies a member of a one-cancels-all group.
 
-      t.boolean :transmit, :limit => 1 #  If false, order will be created but not transmitted.
-      t.boolean :what_if, :limit => 1 # Only return pre-trade commissions and margin info, do not place
-      t.boolean :outside_rth, :limit => 1 # Order may trigger or fill outside of regular hours.
-      t.boolean :not_held, :limit => 1 # Not Held
-      t.boolean :hidden, :limit => 1 # Order will not be visible in market depth. ISLAND only.
-      t.boolean :block_order, :limit => 1 #   This is an ISE Block order.
-      t.boolean :sweep_to_fill, :limit => 1 # This is a Sweep-to-Fill order.
-      t.boolean :all_or_none, :limit => 1 #     AON
-      t.boolean :etrade_only, :limit => 1 #     Trade with electronic quotes.
-      t.boolean :firm_quote_only, :limit => 1 # Trade with firm quotes.
-      t.boolean :opt_out_smart_routing, :limit => 1 # Australian exchange only, default false
-      t.boolean :override_percentage_constraints, :limit => 1
+      t.boolean :transmit #  If false, order will be created but not transmitted.
+      t.boolean :what_if # Only return pre-trade commissions and margin info, do not place
+      t.boolean :outside_rth # Order may trigger or fill outside of regular hours.
+      t.boolean :not_held # Not Held
+      t.boolean :hidden # Order will not be visible in market depth. ISLAND only.
+      t.boolean :block_order #   This is an ISE Block order.
+      t.boolean :sweep_to_fill # This is a Sweep-to-Fill order.
+      t.boolean :all_or_none #     AON
+      t.boolean :etrade_only #     Trade with electronic quotes.
+      t.boolean :firm_quote_only # Trade with firm quotes.
+      t.boolean :opt_out_smart_routing # Australian exchange only, default false
+      t.boolean :override_percentage_constraints
 
       t.integer :min_quantity # int: Identifies a minimum quantity order type.
       t.integer :display_size # int: publicly disclosed order size for Iceberg orders.
@@ -95,8 +95,8 @@ class AddIbOrders < ActiveRecord::Migration
       t.float :scale_profit_offset
       t.integer :scale_init_position
       t.integer :scale_init_fill_qty
-      t.boolean :scale_auto_reset, :limit => 1
-      t.boolean :scale_random_percent, :limit => 1
+      t.boolean :scale_auto_reset
+      t.boolean :scale_random_percent
 
       t.timestamp :placed_at
       t.timestamp :modified_at

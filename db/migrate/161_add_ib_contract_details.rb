@@ -30,10 +30,10 @@ class AddIbContractDetails < ActiveRecord::Migration
       t.string :next_option_date # only if bond has embedded options.
       t.string :next_option_type # only if bond has embedded options.
       t.string :notes # Additional notes if populated for the bond in IB's database
-      t.boolean :callable, :limit => 1 # Can be called by the issuer under certain conditions.
-      t.boolean :puttable, :limit => 1 # Can be sold back to the issuer under certain conditions
-      t.boolean :convertible, :limit => 1 # Can be converted to stock under certain conditions.
-      t.boolean :next_option_partial, :limit => 1 # # only if bond has embedded options.
+      t.boolean :callable # Can be called by the issuer under certain conditions.
+      t.boolean :puttable # Can be sold back to the issuer under certain conditions
+      t.boolean :convertible # Can be converted to stock under certain conditions.
+      t.boolean :next_option_partial # # only if bond has embedded options.
       t.string :valid_next_option_date # Bonds only
       t.string :valid_next_option_type # Bonds only
       t.string :valid_next_option_partial # Bonds only
