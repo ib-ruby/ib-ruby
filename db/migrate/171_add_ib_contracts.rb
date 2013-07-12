@@ -16,7 +16,7 @@ class AddIbContracts < ActiveRecord::Migration
       t.string :expiry # The expiration date. Use the format YYYYMM or YYYYMMDD
       t.string :exchange # The order destination such as Smart.
       t.string :primary_exchange # Non-SMART exchange where the contract trades.
-      t.boolean :include_expired, :limit => 1 # When true contract details requests and historical
+      t.boolean :include_expired # When true contract details requests and historical
       t.string :right, :limit => 1 # Specifies a Put or Call. Valid input values are: P PUT C CALL
 
       t.string  :type # Contract Subclasses STI
