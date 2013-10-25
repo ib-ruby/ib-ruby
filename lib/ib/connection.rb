@@ -301,7 +301,7 @@ module IB
     # Place Order (convenience wrapper for send_message :PlaceOrder).
     # Assigns client_id and order_id fields to placed order. Returns assigned order_id.
     def place_order order, contract
-      order.place contract, self
+      order.place contract, self  if order.is_a? IB::Order
     end
 
     # Modify Order (convenience wrapper for send_message :PlaceOrder). Returns order_id.
