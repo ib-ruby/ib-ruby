@@ -22,7 +22,7 @@ Gem::Specification.new do |gem|
 
   # Dependencies
   gem.add_dependency 'bundler', '>= 1.1.3'
-  gem.add_dependency 'activerecord', '>= 3.2.0'
+  gem.add_dependency 'activerecord', '~> 3.2.0'
   #gem.add_dependency 'activerecord-jdbcsqlite3-adapter', '>= 1.2.2'
   #gem.add_dependency 'jdbc-sqlite3', '>= 3.7.2'
   gem.add_dependency 'xml-simple', '>= 1.1.1'
