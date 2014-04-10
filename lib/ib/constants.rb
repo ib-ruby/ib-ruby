@@ -294,9 +294,9 @@ module IB
   PROPS = {:side =>
                {:set => proc { |val| # BUY(BOT)/SELL(SLD)/SSHORT/SSHORTX
                  self[:side] = case val.to_s.upcase
-                                 when /SHORT.*X|^X\z/
+                                 when /SHORT.*X|\AX\z/
                                    'X'
-                                 when /SHORT|^T\z/
+                                 when /SHORT|\AT\z/
                                    'T'
                                  when /\AB/
                                    'B'
@@ -305,7 +305,7 @@ module IB
                                end },
                 :validate =>
                     {:format =>
-                         {:with => /\Abuy$|^sell$|^short$|^short_exempt\z/,
+                         {:with => /\Abuy\z|\Asell\z|\Ashort\z|\Ashort_exempt\z/,
                           :message => "should be buy/sell/short"}
                     }
                },
@@ -325,7 +325,7 @@ module IB
                },
                 :validate =>
                     {:format =>
-                         {:with => /\Asame$|^open$|^close$|^unknown\z/,
+                         {:with => /\Asame\z|\Aopen\z|\Aclose\z|\Aunknown\z/,
                           :message => "should be same/open/close/unknown"}
                     },
                }
