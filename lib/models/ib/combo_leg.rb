@@ -36,7 +36,7 @@ module IB
 
     # Extra validations
     validates_numericality_of :ratio, :con_id
-    validates_format_of :designated_location, :with => /^$/,
+    validates_format_of :designated_location, :with => /\A\z/,
       :message => "should be blank or orders will be rejected"
 
     def default_attributes
