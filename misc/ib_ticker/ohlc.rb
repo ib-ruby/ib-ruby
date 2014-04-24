@@ -153,7 +153,7 @@ Das Volumen wird an den generierten String angehängt  und es wird ein SatzEndeZe
 		else
 				a= self.to_s(*values, &b)
 		end
-		a +self[ :volume ].to_s+$/
+		a +self[ :volume ].to_s+\z/
 	end
 				
 		

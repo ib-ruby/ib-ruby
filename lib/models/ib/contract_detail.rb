@@ -65,7 +65,7 @@ module IB
       :next_option_partial => :bool # # only if bond has embedded options.
 
       # Extra validations
-      validates_format_of :time_zone, :with => /^\w{3}$/, :message => 'should be XXX'
+      validates_format_of :time_zone, :with => /\A\w{3}\z/, :message => 'should be XXX'
 
     serialize :sec_id_list, HashWithIndifferentAccess
 

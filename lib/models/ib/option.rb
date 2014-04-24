@@ -4,11 +4,11 @@ module IB
   class Option < Contract
 
     validates_numericality_of :strike, :greater_than => 0
-    validates_format_of :sec_type, :with => /^option$/,
+    validates_format_of :sec_type, :with => /\Aoption\z/,
       :message => "should be an option"
-    validates_format_of :local_symbol, :with => /^\w+\s*\d{6}[pcPC]\d{8}$|^$/,
+    validates_format_of :local_symbol, :with => /\A\w+\s*\d{6}[pcPC]\d{8}$|\A\z/,
       :message => "invalid OSI code"
-    validates_format_of :right, :with => /^put$|^call$/,
+    validates_format_of :right, :with => /\Aput$|^call\z/,
       :message => "should be put or call"
 
     # For Options, this is contract's OSI (Option Symbology Initiative) name/code

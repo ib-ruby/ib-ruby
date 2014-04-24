@@ -20,7 +20,7 @@ module IB
     # Comparison support
     def content_attributes
       HashWithIndifferentAccess[attributes.reject do |(attr, _)|
-                                  attr.to_s =~ /(_count)$/ ||
+                                  attr.to_s =~ /(_count)\z/ ||
                                     [:created_at, :updated_at, :type,
                                      :id, :order_id, :contract_id].include?(attr.to_sym)
       end]
