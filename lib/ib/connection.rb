@@ -114,6 +114,7 @@ module IB
 
     ### Working with message subscribers
 
+    # Given a Class, symbol or regex, return the corresponding Incoming Message class
     def resolve_subscription_type(what)
       case
         when what.is_a?(Class) && what < Messages::Incoming::AbstractMessage
