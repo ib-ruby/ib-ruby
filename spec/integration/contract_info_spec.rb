@@ -64,8 +64,8 @@ describe "Request Contract Info", :connected => true, :integration => true do
   context "Request Option contract data" do
 
     before(:all) do
-      @contract = IB::Option.new :symbol => "AAPL", :expiry => "201301",
-                                 :right => :call, :strike => 500
+      @contract = IB::Option.new :symbol => "TAP", :expiry => "201501",
+                                 :right => :call, :strike => 72.5
       @ib.send_message :RequestContractData, :id => 123, :contract => @contract
       @ib.wait_for :ContractDataEnd, 5 # sec
     end
@@ -87,18 +87,18 @@ describe "Request Contract Info", :connected => true, :integration => true do
       contract = subject.contract
       detail = subject.contract_detail
 
-      contract.symbol.should == 'AAPL'
-      contract.local_symbol.should == 'AAPL  130119C00500000'
-      contract.expiry.should == '20130118'
+      contract.symbol.should == 'TAP'
+      contract.local_symbol.should == 'TAP   150117C00072500'
+      contract.expiry.should == '20150116'
       contract.exchange.should == 'SMART'
       contract.con_id.should be_an Integer
 
-      detail.market_name.should == 'AAPL'
-      detail.trading_class.should == 'AAPL'
-      detail.long_name.should == 'APPLE INC'
-      detail.industry.should == 'Technology'
-      detail.category.should == 'Computers'
-      detail.subcategory.should == 'Computers'
+      detail.market_name.should == 'TAP'
+      detail.trading_class.should == 'TAP'
+      detail.long_name.should == 'MOLSON COORS BREWING CO -B'
+      detail.industry.should == 'Consumer, Non-cyclical'
+      detail.category.should == 'Beverages'
+      detail.subcategory.should == 'Brewery'
       detail.trading_hours.should =~ /\d{8}:\d{4}-\d{4}/
       detail.liquid_hours.should =~ /\d{8}:\d{4}-\d{4}/
       detail.valid_exchanges.should =~ /CBOE/
@@ -236,8 +236,9 @@ describe "Request Contract Info", :connected => true, :integration => true do
       detail.desc_append.should =~ /WAG/ # "WAG 4 7/8 08/01/13" or similar
       detail.trading_class.should =~ /IBCID/ # "IBCID113527163"
       detail.sec_id_list.should be_a Hash
-      detail.sec_id_list.should have_key "CUSIP"
-      detail.sec_id_list.should have_key "ISIN"
+	# it seems, that these bonds don't got a filled sec_id_list 
+#      detail.sec_id_list.should have_key "CUSIP"
+ #     detail.sec_id_list.should have_key "ISIN"
       detail.valid_exchanges.should be_a String
       detail.order_types.should be_a String
       detail.min_tick.should == 0.001

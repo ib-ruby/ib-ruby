@@ -23,7 +23,7 @@ def verify_account
   # recieved is an array of accounts, found in the accounts_list
   received = @ib.received[:ManagedAccounts].first.accounts_list.split(',')
   # we check, if the account is on the list
-  raise "Connected to wrong account #{received}, expected #{account}" if received.include?(account)
+  raise "Connected to wrong account #{received}, expected #{account}" unless received.include?(account)
 
   close_connection
   OPTS[:account_verified] = true

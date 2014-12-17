@@ -5,17 +5,17 @@ describe IB::Contract,
   :props =>
   {:symbol => 'AAPL',
    :sec_type => :option,
-   :expiry => '201301',
-   :strike => 600.5,
+   :expiry => '201503',
+   :strike => 110,
    :right => :put,
    :sec_id => 'US0378331005',
    :sec_id_type => 'ISIN',
    :multiplier => 10,
    :exchange => 'SMART',
    :currency => 'USD',
-   :local_symbol => 'AAPL  130119C00500000'},
+   :local_symbol => 'AAPL  150320C00110000'},
 
-  :human => "<Contract: AAPL option 201301 put 600.5 SMART USD>",
+  :human => "<Contract: AAPL option 201503 put 110.0 SMART USD>",
 
   :errors => {:sec_type => ["should be valid security type"] },
 
@@ -127,12 +127,12 @@ describe IB::Contract,
 
     it "serializes long" do
       subject.serialize_long.should ==
-        ["AAPL", "OPT", "201301", 600.5, "P", 10, "SMART", nil, "USD", "AAPL  130119C00500000"]
+        ["AAPL", "OPT", "201503", 110.0, "P", 10, "SMART", nil, "USD", "AAPL  150320C00110000"]
     end
 
     it "serializes short" do
       subject.serialize_short.should ==
-        ["AAPL", "OPT", "201301", 600.5, "P", 10, "SMART", "USD", "AAPL  130119C00500000"]
+        ["AAPL", "OPT", "201503", 110.0, "P", 10, "SMART", "USD", "AAPL  150320C00110000"]
     end
 
     it "serializes combo (BAG) contracts for Order placement" do
