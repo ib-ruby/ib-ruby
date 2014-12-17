@@ -119,7 +119,7 @@ describe IB::Contract,
       # TODO: Change butterfly into a stub, reduce dependency on IB connection
       @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
       @ib.wait_for :ManagedAccounts
-      @combo = butterfly 'GOOG', '201301', 'CALL', 500, 510, 520
+      @combo = butterfly 'GOOG', '201501', 'CALL', 500, 510, 520
       close_connection
     end
 
@@ -145,12 +145,12 @@ describe IB::Contract,
       subject.serialize_legs(:extended).should == []
 
       @combo.serialize_legs.should ==
-        [3, 81032967, 1, "BUY", "SMART", 81032968, 2, "SELL", "SMART", 81032973, 1, "BUY", "SMART"]
+        [3, 176695686, 1, "BUY", "SMART", 176695703, 2, "SELL", "SMART", 176695716, 1, "BUY", "SMART"]
 
       @combo.serialize_legs(:extended).should ==
-        [3, 81032967, 1, "BUY", "SMART", 0, 0, "", -1,
-         81032968, 2, "SELL", "SMART", 0, 0, "", -1,
-         81032973, 1, "BUY", "SMART", 0, 0, "", -1]
+        [3, 176695686, 1, "BUY", "SMART", 0, 0, "", -1,
+         176695703, 2, "SELL", "SMART", 0, 0, "", -1,
+         176695716, 1, "BUY", "SMART", 0, 0, "", -1]
         end
   end #serialization
 
