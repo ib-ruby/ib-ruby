@@ -6,6 +6,16 @@ gemspec
 gem 'getopt'
 gem 'xml-simple'
 
+group :development, :test do
+	gem "factory_girl", "~> 4.0"
+	gem "rspec"
+	gem 'guard'
+	gem 'guard-rspec'
+	gem 'database_cleaner'
+	gem 'pry'
+end
+
+
 # jquery-rails is used by the dummy application
 #gem "jquery-rails"
 

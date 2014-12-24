@@ -30,14 +30,14 @@ Gem::Specification.new do |gem|
 #  gem.add_dependency 'standalone_migrations'
   #gem.add_dependency 'pg', '>= 0.12.1'
 
-  gem.add_development_dependency 'database_cleaner'
-  gem.add_development_dependency 'rspec', '~> 3.1'
+#  gem.add_development_dependency 'database_cleaner'
+#  gem.add_development_dependency 'rspec', '~> 3.1'
 #  gem.add_development_dependency 'my_scripts'
 #  gem.add_development_dependency 'rails', '~> 3.2.3'
 #  gem.add_development_dependency 'rspec-rails', '~> 2.10.1'
 #  gem.add_development_dependency 'capybara'
 #  gem.add_development_dependency 'combustion'
-  gem.add_development_dependency 'pry'
+#  gem.add_development_dependency 'pry'
 #  gem.add_development_dependency 'pry-doc'
 #  gem.add_development_dependency 'pry-rails'
 end
