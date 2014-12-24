@@ -60,7 +60,7 @@ describe IB::ComboLeg,
     #before(:all) do
     #  @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
     #  @ib.wait_for :ManagedAccounts
-    #  @butterfly = butterfly 'GOOG', '201301', 'CALL', 500, 510, 520
+    #  @butterfly = butterfly 'GOOG', '201501', 'CALL', 500, 510, 520
     #  close_connection
     #end
 

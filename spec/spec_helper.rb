@@ -20,7 +20,7 @@ if OPTS[:brokertron]
   }
 else
   # Connection to IB PAPER ACCOUNT
-  ACCOUNT ||= 'DU60320'
+  ACCOUNT ||= 'DU167348'
   HOST ||= '127.0.0.1'
   PORT ||= 7496
 
@@ -29,7 +29,7 @@ else
     :host => HOST, #       Where your TWS/gateway is located, likely '127.0.0.1'
     :port => PORT, #       4001 for Gateway, 7496 for TWS GUI
     :client_id => 1111, #  Client id that identifies the test suit
-    :reuters => true #     Subscription to Reuters data enabled ?
+    :reuters => false #     Subscription to Reuters data enabled ?
   }
 end
 
