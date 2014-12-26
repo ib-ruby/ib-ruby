@@ -1,0 +1,10 @@
+---
+:gateway:
+ :port: 7496 #4001
+ :host: 127.0.0.1
+ :client_id: 998
+ :reuters: false
+:account: 
+ :advisor: DF167347
+ :user: DU167384
+# hfx: 101
