@@ -1,25 +1,25 @@
 require 'model_helper'
 require 'combo_helper'
+## needs tws-connection (update connect.yml, if nessacary)
+describe IB::Contract ,
+	:props =>  { 
+	:symbol => 'AAPL',
+	:sec_type => :option,
+	:expiry => '201503',
+	:strike => 110,
+	:right => :put,
+	:sec_id => 'US0378331005',
+	:sec_id_type => 'ISIN',
+	:multiplier => 10,
+	:exchange => 'SMART',
+	:currency => 'USD',
+	:local_symbol => 'AAPL  150320C00110000'} ,
 
-describe IB::Contract,
-  :props =>
-  {:symbol => 'AAPL',
-   :sec_type => :option,
-   :expiry => '201503',
-   :strike => 110,
-   :right => :put,
-   :sec_id => 'US0378331005',
-   :sec_id_type => 'ISIN',
-   :multiplier => 10,
-   :exchange => 'SMART',
-   :currency => 'USD',
-   :local_symbol => 'AAPL  150320C00110000'},
+	:human => "<Contract: AAPL option 201503 put 110.0 SMART USD>",
 
-  :human => "<Contract: AAPL option 201503 put 110.0 SMART USD>",
+	:errors => {:sec_type => ["should be valid security type"] },
 
-  :errors => {:sec_type => ["should be valid security type"] },
-
-  :assigns => {:expiry =>
+	:assigns => {:expiry =>
                {[200609, '200609'] => '200609',
                 [20060913, '20060913'] => '20060913',
                 [:foo, 2006, 42, 'bar'] => /should be YYYYMM or YYYYMMDD/},
@@ -60,9 +60,9 @@ describe IB::Contract,
 
                :include_expired => boolean_assigns,
 } do
-
-  it_behaves_like 'Model with invalid defaults'
+  it_behaves_like 'Model with invalid defaults' 
   it_behaves_like 'Self-equal Model'
+ end
 
   context 'testing for Contract type (sec_type)' do
 
@@ -71,10 +71,10 @@ describe IB::Contract,
        IB::Contract.new(:sec_type => 'OPT'),
        IB::Option.new
       ].each do |contract|
-        contract.should_not be_bag
-        contract.should_not be_bond
-        contract.should_not be_stock
-        contract.should be_option
+        expect( contract).not_to be_bag
+        expect( contract).not_to be_bond
+        expect( contract).not_to be_stock
+        expect( contract).to be_option
       end
     end
 
@@ -83,21 +83,21 @@ describe IB::Contract,
        IB::Contract.new(:sec_type => 'BAG'),
        IB::Bag.new
       ].each do |contract|
-        contract.should be_bag
-        contract.should_not be_bond
-        contract.should_not be_stock
-        contract.should_not be_option
+        expect( contract).to be_bag
+        expect( contract).not_to be_bond
+        expect( contract).not_to be_stock
+        expect( contract).not_to be_option
       end
     end
 
-    it 'correctly defines Contract type for Bag Contracts' do
+    it 'correctly defines Contract type for Stock Contracts' do
       [IB::Contract.new(:sec_type => :stock),
        IB::Contract.new(:sec_type => 'STK'),
       ].each do |contract|
-        contract.should_not be_bag
-        contract.should_not be_bond
-        contract.should be_stock
-        contract.should_not be_option
+        expect( contract).not_to be_bag
+        expect( contract).not_to be_bond
+        expect( contract).to be_stock
+        expect( contract).not_to be_option
       end
     end
 
@@ -105,52 +105,48 @@ describe IB::Contract,
       [IB::Contract.new(:sec_type => :bond),
        IB::Contract.new(:sec_type => 'BOND'),
       ].each do |contract|
-        contract.should_not be_bag
-        contract.should be_bond
-        contract.should_not be_stock
-        contract.should_not be_option
+        expect( contract).not_to be_bag
+        expect( contract).to be_bond
+        expect( contract).not_to be_stock
+        expect( contract).not_to be_option
       end
     end
 
-  end
-
+#  end
+#
   context "serialization", :connected => true do
-    before(:all) do
-      # TODO: Change butterfly into a stub, reduce dependency on IB connection
-      @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
-      @ib.wait_for :ManagedAccounts
-      @combo = butterfly 'GOOG', '201501', 'CALL', 500, 510, 520
-      close_connection
-    end
+    
+    let( :contract ) { FactoryGirl.build :ib_option_contract }
+		       #IB::Contract.new props }
+    let( :bag ){ FactoryGirl.build( :butterfliege ,{symbol:'GOOG', expire:'201501', legs:[500,510,520], kind:'CALL'}) }
+    let( :google_option_1){ FactoryGirl.build(:tws_option_contract, symbol:'GOOG', right:'CALL', strike: 500, expiry:'201501')}	
+    let( :google_option_2){ FactoryGirl.build(:tws_option_contract, symbol:'GOOG', right:'CALL', strike: 510, expiry:'201501')}	
+    let( :google_option_3){ FactoryGirl.build(:tws_option_contract, symbol:'GOOG', right:'CALL', strike: 520, expiry:'201501')}	
 
-    subject { IB::Contract.new props }
 
     it "serializes long" do
-      subject.serialize_long.should ==
-        ["AAPL", "OPT", "201503", 110.0, "P", 10, "SMART", nil, "USD", "AAPL  150320C00110000"]
+      expect( contract.serialize_long).to eq ["AAPL", "OPT", "201503", 110.0, "P", 10, "SMART", nil, "USD", "AAPL  150320C00110000"]
     end
 
     it "serializes short" do
-      subject.serialize_short.should ==
-        ["AAPL", "OPT", "201503", 110.0, "P", 10, "SMART", "USD", "AAPL  150320C00110000"]
+      expect( contract.serialize_short).to eq ["AAPL", "OPT", "201503", 110.0, "P", 10, "SMART", "USD", "AAPL  150320C00110000"]
     end
 
     it "serializes combo (BAG) contracts for Order placement" do
-      @combo.serialize_long(:con_id, :sec_id).should ==
-        [0, "GOOG", "BAG", "", 0.0, "", nil, "SMART", nil, "USD", "", nil, nil]
+     expect( bag.serialize_long(:con_id, :sec_id)).to eq [0, "GOOG", "BAG", "", 0.0, "", nil, "SMART", nil, "USD", "", nil, nil]
     end
 
     it 'also serializes attached combo legs' do
-      subject.serialize_legs.should == []
-      subject.serialize_legs(:extended).should == []
+      expect( contract.serialize_legs(:extended) ).to eq []
 
-      @combo.serialize_legs.should ==
-        [3, 176695686, 1, "BUY", "SMART", 176695703, 2, "SELL", "SMART", 176695716, 1, "BUY", "SMART"]
+#      expect( bag.serialize_legs ).to eq [3, 176695686, 1, "BUY", "SMART", 176695703, 2, "SELL", "SMART", 176695716, 1, "BUY", "SMART"]
+      expect( bag.serialize_legs ).to eq [3, 	google_option_1.con_id, 1, "BUY", "SMART", 
+					  	google_option_2.con_id, 2, "SELL", "SMART", 
+					  	google_option_3.con_id, 1, "BUY", "SMART"]
 
-      @combo.serialize_legs(:extended).should ==
-        [3, 176695686, 1, "BUY", "SMART", 0, 0, "", -1,
-         176695703, 2, "SELL", "SMART", 0, 0, "", -1,
-         176695716, 1, "BUY", "SMART", 0, 0, "", -1]
+     expect( bag.serialize_legs(:extended) ).to eq [3, google_option_1.con_id, 1, "BUY", "SMART", 0, 0, "", -1,
+						       google_option_2.con_id, 2, "SELL", "SMART", 0, 0, "", -1,
+						       google_option_3.con_id, 1, "BUY", "SMART", 0, 0, "", -1]
         end
   end #serialization
 

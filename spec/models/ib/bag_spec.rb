@@ -1,5 +1,5 @@
 require 'model_helper'
-
+## not tws-connection required
 describe IB::Bag,
 
          :props =>
@@ -46,25 +46,25 @@ describe IB::Bag,
   it_behaves_like 'Model with valid defaults'
   it_behaves_like 'Self-equal Model'
 
-  context 'properly initiated' do
-    subject { IB::Bag.new props }
+
+context  FactoryGirl.build( :butterfly )  do
 
     it_behaves_like 'Contract'
 
     it 'has extra legs_description accessor' do
-      subject.legs_description.should == "81032967|1,81032968|-2,81032973|1"
+      expect(subject.legs_description).to eq "258651|1,258652|-2,258653|1"
     end
   end
 
   it 'correctly defines Contract type (sec_type) for Bag contract' do
-    [IB::Contract.new(:sec_type => :bag),
-     IB::Contract.new(:sec_type => 'BAG'),
-     IB::Bag.new
-    ].each do |contract|
-      contract.should be_bag
-      contract.should_not be_bond
-      contract.should_not be_stock
-      contract.should_not be_option
+  	[FactoryGirl.build( :ib_contract, :sec_type => :bag),
+	 FactoryGirl.build( :ib_contract, :sec_type => 'BAG'),
+	 FactoryGirl.build( :empty_bag ) ].each do |contract|
+	    expect( contract).to be_bag
+	    expect( contract).not_to be_bond
+	    expect( contract).not_to be_stock
+	    expect( contract).not_to be_option
+	    expect( contract).to be_valid
     end
   end
 

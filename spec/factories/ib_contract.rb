@@ -21,6 +21,12 @@ FactoryGirl.define do
 
 	end
 	# liest einen Optionsdatensatz aus der TWS aus
+	factory :default_option, class:IB::Option do
+		symbol  'AAPL'
+		expiry  '201301'
+		strike  600.5
+		right  :put
+	end
 
 	factory :tws_option_contract, class:IB::Contract do
 		transient do

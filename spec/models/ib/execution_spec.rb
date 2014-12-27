@@ -75,6 +75,7 @@ describe IB::Execution,
     end
   end
 
+  if OPTS[:db]
   context 'extra ActiveModel goodness' do
     subject { IB::Execution.new props }
 
@@ -117,6 +118,7 @@ describe IB::Execution,
 
       IB::Execution.new.from_json(subject.to_json).should == subject
     end
+  end
   end
 
 end # describe IB::Execution

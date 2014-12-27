@@ -86,6 +86,7 @@ describe IB::Order,
   it_behaves_like 'Self-equal Model'
   it_behaves_like 'Model with invalid defaults'
 
+  if OPTS[:db]
   context 'Order associations' do
     after(:all) { DatabaseCleaner.clean if IB.db_backed? }
 
@@ -158,7 +159,7 @@ describe IB::Order,
         subject.order_states.should have_exactly(3).states
       end
     end
-
+  end
   end
 
   context 'equality' do

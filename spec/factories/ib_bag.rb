@@ -1,10 +1,9 @@
 FactoryGirl.define do
-	factory :empty_ib_bag, class:IB::Bag do
+	factory :empty_bag, class:IB::Bag do
 		symbol  'GOOG'
 		sec_type  :bag
 		currency 'USD' 
 		exchange 'SMART' 
-		expire '201503'
 	end
 
 	factory :apple_bag, class:IB::Bag do
@@ -52,9 +51,6 @@ FactoryGirl.define do
 				bag.combo_legs << build( :combo_leg, weight:weight,  con_id:contract.con_id )
 
 			end
-##			puts "affterm :build"
-#			puts bag.inspect
-#			puts e.expire
 		end
 
 	end
