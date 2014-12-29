@@ -1,4 +1,5 @@
 require 'model_helper'
+require 'message_helper'
 
 describe IB::Execution,
   :props => {:account_name => "DU111110",
@@ -64,7 +65,7 @@ describe IB::Execution,
     end
 
     it 'loads saved association with execution' do
-      order = IB::Order.find(:first)
+      order = IB::Order.first
 
       execution = IB::Execution.first
 

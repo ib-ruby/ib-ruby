@@ -1,4 +1,5 @@
 require 'model_helper'
+require 'message_helper'
 ## no tws-connection required
 describe IB::Option,
          :human => "<Option: AAPL 201301 put 600.5 SMART >",

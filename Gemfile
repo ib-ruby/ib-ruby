@@ -9,6 +9,8 @@ gem 'xml-simple'
 group :development, :test do
 	gem "factory_girl", "~> 4.0"
 	gem "rspec"
+	gem "rspec-its"
+	gem 'rspec-collection_matchers'
 	gem 'guard'
 	gem 'guard-rspec'
 	gem 'database_cleaner'
@@ -23,5 +25,5 @@ end
 #gem 'sqlite3', '> 1.3.3', :platforms => [:ruby_18, :ruby_19] #:ruby
 gem 'activerecord-jdbcsqlite3-adapter', '>= 1.2.2', :platforms => :jruby
 gem 'jdbc-sqlite3', '>= 3.7.2', :platforms => :jruby
-
+gem 'mysql2'
 #gem "backports"

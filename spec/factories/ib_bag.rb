@@ -6,17 +6,17 @@ FactoryGirl.define do
 		exchange 'SMART' 
 	end
 
-	factory :apple_bag, class:IB::Bag do
-		  symbol  'AAPL'
-		 sec_type  :bag
-		   currency  'USD'
-		exchange 'SMART' 
-
-		after(:build) do |bag|  
-			bag.combo_legs << build(:ib_option_contract)
-			bag.combo_legs << build(:ib_option_contract)
-		end
-	end
+#	factory :apple_bag, class:IB::Bag do
+#		  symbol  'AAPL'
+#		 sec_type  :bag
+#		   currency  'USD'
+#		exchange 'SMART' 
+#
+#		after(:build) do |bag|  
+#			bag.legs << build(:ib_option_contract)
+#			bag.legs << build(:ib_option_contract)
+#		end
+#	end
 	# create a fake butterfly bag
 	factory :butterfly, class:IB::Bag do
 			symbol 'FAKE'
@@ -25,17 +25,18 @@ FactoryGirl.define do
 			currency  'USD'
 			after(:build) do |bag|  
 				[1, -2 , 1].each do | w |
-					bag.combo_legs << build( :combo_leg, weight:w )
+					bag.legs << build( :combo_leg, weight:w )
 				end
 			end
 
 	end
-
+### for some reasons, in the db-backed environment, a bag hat legs, 
+	#the standalone-verson refers to combo_legs
 	factory :butterfliege, class:IB::Bag do
 		## transient definiert Default-Parameter, die im Aufruf überschrieben werden können
 		transient do
 			expire '201503'
-			legs [ 1, 2, 3 ]
+			legs [ 100, 102, 103 ]
 			kind 'PUT'
 			exchange 'SMART' 
 			symbol 'AAPL'
@@ -48,7 +49,7 @@ FactoryGirl.define do
 			bag.symbol = e.symbol
 			list_of_con_ids = e.legs.zip([1,-2,1]).each do | strike, weight |
 				contract = build(:tws_option_contract, symbol:bag.symbol, right:e.kind, strike:strike, expiry:e.expire )
-				bag.combo_legs << build( :combo_leg, weight:weight,  con_id:contract.con_id )
+				bag.legs << build( :combo_leg, weight:weight,  con_id:contract.con_id )
 
 			end
 		end

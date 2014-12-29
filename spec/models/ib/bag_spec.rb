@@ -1,7 +1,7 @@
 require 'model_helper'
+require 'message_helper'
 ## not tws-connection required
 describe IB::Bag,
-
          :props =>
              {:symbol => 'GOOG',
               :exchange => 'SMART',

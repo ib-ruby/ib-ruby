@@ -8,7 +8,7 @@ shared_examples_for 'Valid DB-backed Model' do
     it_behaves_like 'Model with associations'
 
     it 'is saved' do
-      subject.save.should be_true
+      expect( subject.save).to  be_truthy
       @saved = subject
     end
 
@@ -18,12 +18,12 @@ shared_examples_for 'Valid DB-backed Model' do
     end
 
     it 'saves a single model' do
-      all_models = described_class.find(:all)
+      all_models = described_class.all
       all_models.should have_exactly(1).model
     end
 
     it 'loads back in the same valid state as saved' do
-      model = described_class.find(:first)
+      model = described_class.first
       model.object_id.should_not == subject.object_id
       #model.valid?
       #p model.errors
@@ -33,7 +33,7 @@ shared_examples_for 'Valid DB-backed Model' do
 
     it 'and with the same properties' do
       if init_with_props?
-        model = described_class.find(:first)
+        model = described_class.first
         #p model.attributes
         #p model.content_attributes
         props.each do |name, value|
@@ -43,7 +43,7 @@ shared_examples_for 'Valid DB-backed Model' do
     end
 
     it 'updates timestamps when saving the model' do
-      model = described_class.find(:first)
+      model = described_class.first
       model.created_at.usec.should_not == subject.created_at.utc.usec #be_a Time
       model.updated_at.usec.should_not == subject.updated_at.utc.usec #be_a Time
     end
@@ -64,11 +64,11 @@ shared_examples_for 'Invalid DB-backed Model' do
     it_behaves_like 'Model with associations'
 
     it 'is not saved' do
-      subject.save.should be_false
+      expect( subject.save).to be_falsey
     end
 
     it 'is not loaded' do
-      models = described_class.find(:all)
+      models = described_class.all
       models.should have_exactly(0).model
     end
   end # DB

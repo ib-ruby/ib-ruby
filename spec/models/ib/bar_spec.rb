@@ -1,4 +1,5 @@
 require 'model_helper'
+require 'message_helper'
 
 describe IB::Bar,
          :props =>

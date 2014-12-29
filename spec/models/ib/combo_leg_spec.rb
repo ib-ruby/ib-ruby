@@ -1,4 +1,5 @@
 require 'model_helper'
+require 'message_helper'
 
 describe IB::ComboLeg,
   :props =>
@@ -116,8 +117,8 @@ describe IB::ComboLeg,
 
       @combo.leg_contracts << @google
       @combo.leg_contracts.should include @google
-      @combo.valid?.should be_true
-      @combo.save.should be_true
+      @combo.valid?.should be_truthy
+      @combo.save.should be_truthy
 
       #combo.legs.should_not be_empty
       @combo.leg_contracts.should include @google

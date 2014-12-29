@@ -1,4 +1,6 @@
 require 'rspec'
+require 'rspec/its'
+require 'rspec/collection_matchers'
 require 'ib'
 require 'factory_girl'
 require 'yaml'
@@ -35,8 +37,8 @@ else
   # read from connect.yml
 
   OPTS[:connection] = read_yml[:gateway]
-  OPTS[:connection][:account] = read_yml[:advisor]
-  #OPTS[:connection][:account] = read_yml[:user]
+#  OPTS[:connection][:account] = read_yml[:advisor]
+  OPTS[:connection][:account] = read_yml[:user]
   
 end
  
