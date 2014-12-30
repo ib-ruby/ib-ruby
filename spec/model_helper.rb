@@ -106,12 +106,12 @@ def test_assigns cases, prop, name
           expect { subject.send "#{prop}=", value }.to_not raise_error
 
           subject.valid? # just triggers validation
-          #pp subject.errors.messages
+          pp subject.errors.messages
 
-          subject.errors.messages.should have_key name
-          subject.should be_invalid
+          expect( subject.errors.messages).to have_key name
+          expect( subject).to  be_invalid
           msg = subject.errors.messages[name].find { |msg| msg =~ result }
-          msg.should =~ result
+          expect( msg ).to match  result
         end
 
       else # ... correct uniform assignment to result
@@ -124,7 +124,7 @@ def test_assigns cases, prop, name
           if was_valid
             # Assignment keeps validity
             expect( subject.errors.messages).not_to have_key name
-            subject.should be_valid
+            expect( subject).to  be_valid
           end
         end
 
@@ -137,8 +137,8 @@ def test_assigns cases, prop, name
 
             # Unsetting alias unsets property as well
             subject.send "#{prop}=", nil # unset alias
-            subject.send("#{prop}").should be_blank #== nil
-            subject.send("#{name}").should be_blank #== nil
+            expect( subject.send("#{prop}")).to be_blank #== nil
+            expect( subject.send("#{name}")).to be_blank #== nil
 
             # Assignment to original property changes alias as well
             subject.send "#{name}=", value
@@ -219,20 +219,19 @@ shared_examples 'Model instantiated with properties' do
     # p subject
     props.each do |name, value|
       # p name, subject.send(name), value
-      subject.send(name).should == value
+      expect( subject.send(name)).to eq value
     end
   end
 
   it 'has correct human-readeable format' do
     case human
     when Regexp
-      subject.to_human.should =~ human
+      expect( subject.to_human ).to match human
     else
-      subject.to_human.should == human
+      expect( subject.to_human ).to eq human
     end
   end
 
-  # subject :: SUBJECT: #<IB::Contract:0x00000002ecce60 @attributes={"created_at"=>2014-12-24 09:50:24 +0100, "updated_at"=>2014-12-24 09:50:24 +0100, "con_id"=>0, "right"=>"", "exchange"=>"SMART", "include_expired"=>false}>
   it_behaves_like 'Model properties'
   it_behaves_like 'Valid Model'
 end
@@ -292,8 +291,8 @@ end
 shared_examples 'Valid Model' do
 
   it 'validates' do
-    subject.should be_valid
-    subject.errors.should be_empty
+    expect( subject).to be_valid
+    expect( subject.errors).to  be_empty
   end
 
   it_behaves_like 'Valid DB-backed Model'
