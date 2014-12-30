@@ -62,6 +62,7 @@ describe IB::Contract ,
 } do
   it_behaves_like 'Model with invalid defaults' 
   it_behaves_like 'Self-equal Model'
+  it_behaves_like 'Contract'
  end
 
   context 'testing for Contract type (sec_type)' do

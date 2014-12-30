@@ -1,6 +1,6 @@
 require 'spec_helper'
 require 'db_helper'
-### this does now work in Rspec 3
+### this does now work with Rspec 3 / Ruby 2.2 / AR 4.18 / db__backed(mysql)
 [:props, :aliases, :errors, :assigns, :human, :associations, :collections].each do |aspect|
   eval "def #{aspect}
 	  (metadata[:#{aspect}] rescue RSpec.current_example.metadata[:#{aspect}]) || {}

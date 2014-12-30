@@ -220,9 +220,11 @@ module IB
 
     def to_s
       "<Contract: " + instance_variables.map do |key|
-        value = send(key[1..-1])
+	      puts "CONTRACT: #{key.inspect}"
+	      value = send(key[1..-1]) rescue 'U-N-K-N-O-W-N'
         " #{key}=#{value}" unless value.nil? || value == '' || value == 0
       end.compact.join(',') + " >"
+
     end
 
     def to_human

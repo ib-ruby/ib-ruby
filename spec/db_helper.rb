@@ -9,41 +9,44 @@ shared_examples_for 'Valid DB-backed Model' do
 
     it 'is saved' do
       expect( subject.save ).to  be_truthy
-      @saved = subject
+#      @saved = subject
     end
 
     it 'does not set created and updated properties to SAVED model' do
+	    subject.save
       expect( subject.created_at ).to be_a Time
       expect( subject.updated_at ).to be_a Time
     end
 
     it 'saves a single model' do
-      all_models = described_class.all
-      expect( all_models ).to have_exactly(1).model
+	all_models = described_class.all
+      expect( all_models ).to have_exactly(2).model
     end
 
-    it 'loads back in the same valid state as saved' do
-      model = described_class.first
+    it 'loads back in the same valid state as saved'  do
+	    subject.save
+      model = described_class.last
       expect( model.object_id ).not_to eq subject.object_id
-      #model.valid?
-      #p model.errors
       expect( model ).to be_valid
       expect( model ).to eq subject
     end
 
     it 'and with the same properties' do
+	    subject.save
       if init_with_props?
-        model = described_class.first
+        model = described_class.last
         #p model.attributes
         #p model.content_attributes
         props.each do |name, value|
+#		puts "PROPS #{name} --> #{value}"
           expect( model.send(name) ).to eq value
         end
       end
     end
 
     it 'updates timestamps when saving the model' do
-      model = described_class.first
+	    subject.save
+      model = described_class.last
       expect( model.created_at.usec ).not_to eq subject.created_at.utc.usec #be_a Time
       expect( model.updated_at.usec ).not_to eq subject.updated_at.utc.usec #be_a Time
     end

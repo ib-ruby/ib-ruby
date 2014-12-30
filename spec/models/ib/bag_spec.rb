@@ -45,6 +45,8 @@ describe IB::Bag,
 
   it_behaves_like 'Model with valid defaults'
   it_behaves_like 'Self-equal Model'
+    it_behaves_like 'Contract'
+
 
 
 context  FactoryGirl.build( :butterfly )  do
