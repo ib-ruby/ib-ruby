@@ -1,9 +1,11 @@
 require 'models/ib/contract_detail'
 require 'models/ib/underlying'
+require 'ib/tws_reader'
 
 module IB
   class Contract < IB::Model
     include BaseProperties
+    include TWS_Reader
 
     # Fields are Strings unless noted otherwise
     prop :con_id, # int: The unique contract identifier.
@@ -219,11 +221,11 @@ module IB
     end
 
     def to_s
-      "<Contract: " + instance_variables.map do |key|
-	      puts "CONTRACT: #{key.inspect}"
-	      value = send(key[1..-1]) rescue 'U-N-K-N-O-W-N'
-        " #{key}=#{value}" unless value.nil? || value == '' || value == 0
-      end.compact.join(',') + " >"
+	    "<Contract: #{attributes.inspect} >"
+#      "<Contract: " + instance_variables.map do |key|
+#	      value = send(key[1..-1]) rescue 'U-N-K-N-O-W-N'
+#        " #{key}=#{value}" unless value.nil? || value == '' || value == 0
+#      end.compact.join(',') + " >"
 
     end
 

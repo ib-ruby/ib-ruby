@@ -1,0 +1,23 @@
+---
+## the first Level specifies the :sec_type
+## the second level contains the nessesary attributes and their default-value, if present 
+:stock:
+  :currency: USD
+  :exchange: SMART
+  :symbol: 
+:option:
+  :currency: USD
+  :exchange: SMART
+  :multiplier: 100
+  :expiry: 
+  :strike: 
+  :symbol: 
+:future:
+  :currency: USD
+  :exchange: SMART
+  :multiplier: 1000
+  :expiry: 
+  :symbol: 
+:forex:
+  :currency: USD
+  :symbol: 

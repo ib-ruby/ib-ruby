@@ -30,27 +30,30 @@ FactoryGirl.define do
 			end
 
 	end
-### for some reasons, in the db-backed environment, a bag hat legs, 
-	#the standalone-verson refers to combo_legs
 	factory :butterfliege, class:IB::Bag do
 		## transient definiert Default-Parameter, die im Aufruf überschrieben werden können
 		transient do
-			expire '201503'
-			legs [ 100, 102, 103 ]
+			### if wrong attributes are set, the factory becomes invalid 
+			### and no tests ar performed at all (FactoryGirl::InvalidFactoryError)
+			expire '201503' 	## Expiry of the options, adjust to appropiate date
+			legs [ 110, 115, 105]  ## strikes of the apple-options. make sure they are valid
 			kind 'PUT'
 			exchange 'SMART' 
 			symbol 'AAPL'
 		end
 		sec_type  :bag
 		currency  'USD'
-		# e --> class::.:: @build_strategy=#<FactoryGirl::Strategy::Build:0x0000000328c208>, @overrides={:expire=>"201501", :legs=>[500, 510, 520], :kind=>"CALL", :symbol=>"AAPL", :sec_type=>:bag, :currency=>"USD", :exchange=>"SMART"}, @cached_attributes={:expire=>"201501", :legs=>[500, 510, 520], :kind=>"CALL", :symbol=>"AAPL", :sec_type=>:bag, :currency=>"USD", :exchange=>"SMART"}, @instance=#<IB::Bag:0x00000003299d90 @attributes={"created_at"=>2014-12-25 15:12:32 +0100, "updated_at"=>2014-12-25 15:12:32 +0100, "con_id"=>0, "right"=>"", "exchange"=>"SMART", "include_expired"=>false, "sec_type"=>"BAG", "symbol"=>"AAPL", "currency"=>"USD"
 		after(:build) do |bag, e|  
 			bag.exchange = e.exchange 
 			bag.symbol = e.symbol
-			list_of_con_ids = e.legs.zip([1,-2,1]).each do | strike, weight |
-				contract = build(:tws_option_contract, symbol:bag.symbol, right:e.kind, strike:strike, expiry:e.expire )
+			if IB::Connection.current.nil?
+				IB::Connection.new( OPTS[:connection].merge(:logger => mock_logger))
+			end
+			list_of_con_ids = e.legs.zip( [ 1,-2, 1 ] ).each do | strike, weight |
+				contract = build(:default_option, currency:bag.currency, symbol:bag.symbol, right:e.kind, strike:strike, expiry:e.expire )
+#				puts "Butterfliege::contract :>#{contract.inspect}"
+#				contract=contract.update_contract
 				bag.legs << build( :combo_leg, weight:weight,  con_id:contract.con_id )
-
 			end
 		end
 

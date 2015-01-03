@@ -50,6 +50,8 @@ RSpec.configure do |config|
   puts "Running specs with OPTS:"
   puts OPTS.inspect
 
+  config.alias_it_behaves_like_to :it_returns_a, 'it returns a:'
+
   # config.include(UserExampleHelpers)
   # config.mock_with :mocha
   # config.mock_with :flexmock
@@ -104,4 +106,5 @@ RSpec.configure do |config|
     config.include Capybara::DSL,
       :example_group => { :file_path => /\brails_spec\//}
   end
+	config.order = 'defined'  # "random"
 end
