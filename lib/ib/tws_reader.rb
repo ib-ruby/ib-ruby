@@ -78,6 +78,11 @@ If the the internal Message-Handler is used (new_record/ no DB)  the updated con
 				u+=1; sleep 0.05 
 			end
 		end
+		
+		attributes_to_be_transfered = ->(obj) do
+			obj.attributes.reject{|x,y| ["created_at","updated_at","id"].include? x }
+		end
+
 		a = ib.subscribe(:Alert, :ContractData,  :ContractDataEnd) do |msg| 
 			case msg
 			when IB::Messages::Incoming::Alert
@@ -103,14 +108,12 @@ If the the internal Message-Handler is used (new_record/ no DB)  the updated con
 					yield msg if block_given?
 					if to_be_saved
 					# AR4-specific: update attributes in object, not db	
-						self.update msg.contract.attributes.reject{|x,y| ["created_at","updated_at","id"].include? x}
+						self.update attributes_to_be_transfered[msg.contract]
 						if contract_detail.nil?
 						self.contract_detail =  msg.contract_detail
 						else
-						contract_detail.update msg.contract_detail.attributes.reject{|x,y| ["created_at","updated_at","id"].include? x}
+						contract_detail.update attributes_to_be_transfered[msg.contract_detail]
 						end
-
-
 					else
 						self.attributes =  msg.contract.attributes
 
