@@ -29,7 +29,7 @@ If the con_id is present, only con_id and currency are transmitted to the tws.
 		end  # if
 		## modify the Object, ie. set con_id to zero
 		if new_record?
-			write_attribute( :con_id,  0 )
+			self.con_id=0
 		else
 			update_attribute( :con_id,  0 )
 		end if invalid_record
@@ -59,14 +59,14 @@ If the the internal Message-Handler is used (new_record/ no DB)  the updated con
 		ib = IB::Connection.current
 		raise "NO TWS" unless ib.present?
 
-		to_be_saved = !IB.db_backed? || !new_record?
+		to_be_saved = IB.db_backed? && !new_record?
 
 		# if it's a not-saved object, we generate an Request-Message-ID on the fly
 		# otherwise the Object.id is used as Message-ID and the database is updated
 		message_id =  
 			if !to_be_saved
 				random = 1.times.inject([]) {|r| v = rand(200) until v and not r.include? v; r << v}.pop 			
-				random + ( IB::Contract.maximum(:id).presence||1 )  ## return_value
+				random + ( IB::Contract.maximum(:id).presence||1 )  rescue random ## return_value
 			else
 				id
 			end
@@ -84,7 +84,7 @@ If the the internal Message-Handler is used (new_record/ no DB)  the updated con
 				if msg.code==200 && msg.error_id==message_id
 					warn { "Not a valid Contract :: #{self.to_human} " }
 					# save message to local_symbol
-				 to_be_saved ? update_attribute( :local_symbol,  msg.message ) : write_attribute( :local_symbol, msg.message )
+				 to_be_saved ? update_attribute( :local_symbol,  msg.message ) : self.local_symbol= msg.message 
 
 
 
