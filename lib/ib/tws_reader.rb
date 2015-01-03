@@ -127,7 +127,7 @@ If the the internal Message-Handler is used (new_record/ no DB)  the updated con
 		end # subscribe
 		ib.send_message :RequestContractData, 
 			:id => new_record? ? message_id : id,
-			:contract => query_contract
+			:contract => query_contract rescue self  # prevents error if Ruby vers < 2.1.0
 		wait_until_exitcondition[]
 		ib.unsubscribe a
 		

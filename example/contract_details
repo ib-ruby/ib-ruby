@@ -12,7 +12,7 @@ require 'ib-ruby'
 # corresponds to what symbol ourselves, because the ticks don't include any other
 # identifying information. The choice of ticker ids is, as far as I can tell, arbitrary.
 begin
-@market = {0 => IB::Symbols::Stocks[:wfc],
+market = {0 => IB::Symbols::Stocks[:wfc],
            1 => IB::Symbols::Stocks[:vxx],
            2 => IB::Symbols::Futures[:vix],
            3 => IB::Symbols::Futures[:es],
@@ -24,9 +24,9 @@ begin
            6 => IB::Symbols::Options[:vxx40] }  #--> osi definition is not supported
 
 # Connect to IB TWS.
-ib = IB::Connection.new :client_id => 1112, :port => 7496 # TWS
+IB::Connection.new :client_id => 1112, :logger=> Logger.new(STDOUT) , :port => 7496 # TWS
 
-@market.each_pair do |id, contract|
+market.each_pair do |id, contract|
   puts "\nRequesting contract data #{id}: #{contract.description}"
   contract.read_contract_from_tws do |msg|
 	  puts "TWS-Response:"
