@@ -99,8 +99,10 @@ If the the internal Message-Handler is used (new_record/ no DB)  the updated con
 					# if multible contracts are present, all of them are assigned
 					# Only the last contract is returned. However 'count' is incremented
 					count +=1
-					# AR4-specific: update attributes in object, not db	
+					## a specified block gets the msg-object
+					yield msg if block_given?
 					if to_be_saved
+					# AR4-specific: update attributes in object, not db	
 						self.update msg.contract.attributes.reject{|x,y| ["created_at","updated_at","id"].include? x}
 						if contract_detail.nil?
 						self.contract_detail =  msg.contract_detail
