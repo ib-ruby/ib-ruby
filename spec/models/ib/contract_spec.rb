@@ -213,6 +213,11 @@ let( :ford_option_3){ FactoryGirl.build(:default_option, strike: 16)}
 		let( :contract ){ FactoryGirl.create( :default_stock, symbol:'AARL' ) }
 	end
 	end
+	describe  "User default Forex contract"  do
+	it_behaves_like  "correctly query's the tws" do  
+		let( :contract ){ IB::Symbols::Forex[:eurusd] }
+	end
+	end
 
 	it "adds valid records to the database and updates contract_details as well" do
 		list_of_stocks.each do |stock|

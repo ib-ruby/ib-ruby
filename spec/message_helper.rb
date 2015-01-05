@@ -21,13 +21,13 @@ end
 
 def should_log *patterns
   patterns.each do |pattern|
-    log_entries.any? { |entry| entry =~ pattern }.should be_true
+   expect( log_entries.any? { |entry| entry =~ pattern }).to be_truthy
   end
 end
 
 def should_not_log *patterns
   patterns.each do |pattern|
-    log_entries.any? { |entry| entry =~ pattern }.should be_false
+    expect( log_entries.any? { |entry| entry =~ pattern }).to be_falsey
   end
 end
 

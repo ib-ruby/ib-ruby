@@ -47,7 +47,7 @@ FactoryGirl.define do
 			bag.exchange = e.exchange 
 			bag.symbol = e.symbol
 			if IB::Connection.current.nil?
-				IB::Connection.new( OPTS[:connection].merge(:logger => mock_logger))
+				IB::Connection.new( OPTS[:connection].merge(:logger => Logger.new(STDOUT)))
 			end
 			list_of_con_ids = e.legs.zip( [ 1,-2, 1 ] ).each do | strike, weight |
 				contract = build(:default_option, currency:bag.currency, symbol:bag.symbol, right:e.kind, strike:strike, expiry:e.expire )

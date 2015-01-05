@@ -37,8 +37,9 @@ FactoryGirl.define do
 		exchange 'ECBOT'
 	end
 	# stellt  Minimale Attribute für die Abfrage eines Optionsdatensatze aus der TWS bereit
-	factory :default_option, class:IB::Contract do
-		sec_type  :option
+	# Test funktionieren nur, wenn explizit IB::Option angegeben wird
+	# Ansonsten wird type nicht gesetzt und die Options-spezifischen Methoden sind nicht verfügbar
+	factory :default_option, class:IB::Option do
 		symbol  'F'
 		expiry  '201503'
 		strike 15 
