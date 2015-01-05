@@ -58,7 +58,6 @@ If the the internal Message-Handler is used (new_record/ no DB)  the updated con
 		
 		ib = IB::Connection.current
 		raise "NO TWS" unless ib.present?
-
 		to_be_saved = IB.db_backed? && !new_record?
 
 		# if it's a not-saved object, we generate an Request-Message-ID on the fly
@@ -72,7 +71,7 @@ If the the internal Message-Handler is used (new_record/ no DB)  the updated con
 			end
 		exitcondition, count = false, 0
 		wait_until_exitcondition = -> do 
-			u=0; while u<10  do   # wair max 10 sec
+			u=0; while u<10  do   # wait max 10 sec
 				break if exitcondition 
 				#		puts "waiting for ContractDataEnd"
 				u+=1; sleep 0.05 
@@ -82,7 +81,7 @@ If the the internal Message-Handler is used (new_record/ no DB)  the updated con
 		attributes_to_be_transfered = ->(obj) do
 			obj.attributes.reject{|x,y| ["created_at","updated_at","id"].include? x }
 		end
-
+		count = 0
 		a = ib.subscribe(:Alert, :ContractData,  :ContractDataEnd) do |msg| 
 			case msg
 			when IB::Messages::Incoming::Alert
@@ -91,11 +90,9 @@ If the the internal Message-Handler is used (new_record/ no DB)  the updated con
 					# save message to local_symbol
 				 to_be_saved ? update_attribute( :local_symbol,  msg.message ) : self.local_symbol= msg.message 
 
-
-
 					exitcondition = true
 					# alternative
-					#	raise RunTimeError,'Not a valid Contract '
+			#		raise 'Not a valid Contract '
 				else
 					puts msg.to_human 
 				end
@@ -104,18 +101,18 @@ If the the internal Message-Handler is used (new_record/ no DB)  the updated con
 					# if multible contracts are present, all of them are assigned
 					# Only the last contract is returned. However 'count' is incremented
 					count +=1
-					## a specified block gets the msg-object
+	warn{ "Multible Contracts are detected, only the last is returned, this one is overridden -->#{self.to_human} "} if count>1
+					## a specified block gets the msg-object on any uniq ContractData-Event
 					yield msg if block_given?
-					if to_be_saved
-					# AR4-specific: update attributes in object, not db	
-						self.update attributes_to_be_transfered[msg.contract]
+					if to_be_saved 
+						update attributes_to_be_transfered[msg.contract]
 						if contract_detail.nil?
 						self.contract_detail =  msg.contract_detail
 						else
-						contract_detail.update attributes_to_be_transfered[msg.contract_detail]
+						contract_detail.update attributes_to_be_transfered[msg.contract_detail] ## AR4 specific
 						end
 					else
-						self.attributes =  msg.contract.attributes
+						self.attributes =  msg.contract.attributes  # AR4 specific
 
 
 					end
@@ -136,7 +133,7 @@ If the the internal Message-Handler is used (new_record/ no DB)  the updated con
 		
 		warn{ "NO Contract returned by TWS -->#{self.to_human} "} unless exitcondition
 		warn{ "Multible Contracts are detected, only the last is returned -->#{contract.to_human} "} if count>1
-		local_symbol # return_value	
+		count>1 ? count : local_symbol # return_value
 	end # def
 end # module
 end # module

@@ -21,6 +21,7 @@ market = {0 => IB::Symbols::Stocks[:wfc],
            7 => IB::Symbols::Forex[:eurusd],
 #           8 => IB::Symbols::Bonds[:wag],  --> bonds are not defined in contract_config (yet)
            9 => IB::Symbols::Stocks[:wrong] ,
+	   10 => IB::Contract.new( symbol:'GE', strike:25, expiry:201501, :sec_type=>:option), # multible put-options, only the last ist selected
            6 => IB::Symbols::Options[:vxx40] }  #--> osi definition is not supported
 
 # Connect to IB TWS.

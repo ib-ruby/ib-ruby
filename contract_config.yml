@@ -9,6 +9,7 @@
   :currency: USD
   :exchange: SMART
   :multiplier: 100
+  :right: P
   :expiry: 
   :strike: 
   :symbol: 
