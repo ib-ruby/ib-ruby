@@ -27,20 +27,16 @@ FactoryGirl.define do
 		sec_type  :stock
 		con_id 	 '7516'
 	end
-	factory :default_stock, class:IB::Contract do
-		sec_type  :stock
+	factory :default_stock, class:IB::Stock do
 		symbol 	 'GPS'
 	end
-	factory :default_future, class:IB::Contract do
-		sec_type  :future
+	factory :default_future, class:IB::Future do
 		symbol 	 'ZN'
 		expiry  '201503'
 		exchange 'ECBOT'
 	end
-	factory :default_forex, class:IB::Contract do
-		sec_type  :forex
+	factory :default_forex, class:IB::Forex do
 		symbol 	 'EUR'
-		exchange 'IDEALPRO'
 	end
 	# stellt  Minimale Attribute für die Abfrage eines Optionsdatensatze aus der TWS bereit
 	# Test funktionieren nur, wenn explizit IB::Option angegeben wird
