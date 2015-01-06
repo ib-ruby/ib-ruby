@@ -97,8 +97,8 @@ module IB
       ### Extra validations
 ## Ths validation is missleading because a query with con_id and currency is valid
 ## better: create IB::Future, IB::Stock, IB::Forex and IB::Bond models
-#      validates_inclusion_of :sec_type, :in => CODES[:sec_type].keys,
-#      :message => "should be valid security type"
+      validates_inclusion_of :sec_type, :in => CODES[:sec_type].keys,
+      :message => "should be valid security type"
 
     validates_format_of :expiry, :with => /\A\d{6}$|^\d{8}$|\A\z/,
       :message => "should be YYYYMM or YYYYMMDD"
