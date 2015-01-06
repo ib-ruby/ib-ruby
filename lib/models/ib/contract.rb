@@ -6,7 +6,8 @@ module IB
   class Contract < IB::Model
     include BaseProperties
     include TWS_Reader
-
+   
+#    has_many :ib_assets
     # Fields are Strings unless noted otherwise
     prop :con_id, # int: The unique contract identifier.
       :currency, # Only needed if there is an ambiguity, e.g. when SMART exchange
@@ -94,8 +95,10 @@ module IB
 
 
       ### Extra validations
-      validates_inclusion_of :sec_type, :in => CODES[:sec_type].keys,
-      :message => "should be valid security type"
+## Ths validation is missleading because a query with con_id and currency is valid
+## better: create IB::Future, IB::Stock, IB::Forex and IB::Bond models
+#      validates_inclusion_of :sec_type, :in => CODES[:sec_type].keys,
+#      :message => "should be valid security type"
 
     validates_format_of :expiry, :with => /\A\d{6}$|^\d{8}$|\A\z/,
       :message => "should be YYYYMM or YYYYMMDD"
@@ -112,7 +115,7 @@ module IB
       super.merge :con_id => 0,
         :strike => 0.0,
         :right => :none, # Not an option
-        :exchange => 'SMART',
+#        :exchange => 'SMART',  --> overload in IB::Stock, IB::Option, IB::Future, IB::Forex
         :include_expired => false
     end
 

@@ -11,11 +11,11 @@ If the con_id is present, only con_id and currency are transmitted to the tws.
 =end
 	def  query_contract invalid_record:true
 		## the yml presents symbol-entries
-		## these are converted to readable capitalized strings 
+		## these are converted to capitalized strings 
 		items_as_string = ->(i){i.map{|x,y| x.to_s.capitalize}.join(', ')}
 		## here we read the corresponding attributes of the specified contract 
 		item_values = ->(i){ i.map{|x,y| self.send(x).presence || y }}
-		## and finally we create a usable attribute-hash to instantiate a new Contract
+		## and finally we create a attribute-hash to instantiate a new Contract
 		## to_h is present only after ruby 2.1.0
 		item_attributehash = ->(i){ i.keys.zip(item_values[i]).to_h }
 		## now lets proceed, but only if no con_id is present
@@ -54,7 +54,7 @@ If the method is invoked by a unsaved IB::Contract, it is saved autonomusly.
 Otherwise it is assumed, that a handler to process IB::Messages::Incoming::ContractData is present.
 If the the internal Message-Handler is used (new_record/ no DB)  the updated contract  is returned. 
 =end
-	def read_contract_from_tws( unique:true, details:true)
+	def read_contract_from_tws unique:true
 		
 		ib = IB::Connection.current
 		raise "NO TWS" unless ib.present?
@@ -71,9 +71,8 @@ If the the internal Message-Handler is used (new_record/ no DB)  the updated con
 			end
 		exitcondition, count = false, 0
 		wait_until_exitcondition = -> do 
-			u=0; while u<10  do   # wait max 10 sec
+			u=0; while u<100  do   # wait max 5 sec
 				break if exitcondition 
-				#		puts "waiting for ContractDataEnd"
 				u+=1; sleep 0.05 
 			end
 		end
@@ -114,11 +113,7 @@ If the the internal Message-Handler is used (new_record/ no DB)  the updated con
 					else
 						self.attributes =  msg.contract.attributes  # AR4 specific
 
-
 					end
-				#	puts "valid ContractDataEvent"
-				else
-				#	puts "ContractDataEvent invalid"
 				end
 			when IB::Messages::Incoming::ContractDataEnd
 				exitcondition = true if msg.request_id.to_i ==  message_id
@@ -127,7 +122,9 @@ If the the internal Message-Handler is used (new_record/ no DB)  the updated con
 		end # subscribe
 		ib.send_message :RequestContractData, 
 			:id => new_record? ? message_id : id,
-			:contract => query_contract rescue self  # prevents error if Ruby vers < 2.1.0
+			:contract => unique ? query_contract : self  rescue self  # prevents error if Ruby vers < 2.1.0
+		# we do not rely on the received hash, we simply wait for the ContractDataEnd Event 
+		# (or 5 sec). 
 		wait_until_exitcondition[]
 		ib.unsubscribe a
 		
