@@ -7,37 +7,48 @@ require 'bundler/setup'
 $LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'yaml'
 require 'ib-ruby'
+require 'factory_girl'
 
 # Definition of what we want market data for.  We have to keep track of what ticker id
 # corresponds to what symbol ourselves, because the ticks don't include any other
-# identifying information. The choice of ticker ids is, as far as I can tell, arbitrary.
+# identifying infoormation. The choice of ticker ids is, as far as I can tell, arbitrary.
+
+FactoryGirl.definition_file_paths=["../spec/factories"]
+FactoryGirl.find_definitions
+
 begin
-market = {0 => IB::Symbols::Stocks[:wfc],
-           1 => IB::Symbols::Stocks[:vxx],
-           2 => IB::Symbols::Futures[:vix],
-           3 => IB::Symbols::Futures[:es],
-           4 => IB::Symbols::Options[:wfc20],
-	   5 => IB::Symbols::Options[:spy75],
-           7 => IB::Symbols::Forex[:eurusd],
-#           8 => IB::Symbols::Bonds[:wag],  --> bonds are not defined in contract_config (yet)
-           9 => IB::Symbols::Stocks[:wrong] ,
-	   10 => IB::Contract.new( symbol:'GE', strike:25, expiry:201501, :sec_type=>:option), # multible put-options, only the last ist selected
-           6 => IB::Symbols::Options[:vxx40] }  #--> osi definition is not supported
+market = {1 => FactoryGirl.build( :ib_contract ), # apple
+          2 => FactoryGirl.build( :ib_contract, symbol:'TAP') ,
+          3 => FactoryGirl.build( :default_option, expiry:201503 ),
+	  4 => FactoryGirl.build( :default_stock ),
+	  5 => FactoryGirl.build( :default_future ),
+	  6 => FactoryGirl.build( :default_future, symbol:'ES', expiry:201512, multiplier:50 , :exchange => 'GLOBEX'),	
+	  7 => FactoryGirl.build( :default_forex ),
+	  8 => FactoryGirl.build( :default_forex , symbol:'NOK', currency:'SEK'),
+	  9 => IB::Contract.new( symbol:'GE', strike:25, expiry:201501, :sec_type=>:option), # multible put-options, only the last ist selected
+	  10 => FactoryGirl.build( :default_stock, :symbol=>'FAKE' )  # not a valid symbol
+	}
+#           6 => IB::Symbols::Options[:vxx40] }  #--> osi definition is not supported
 
 # Connect to IB TWS.
 IB::Connection.new :client_id => 1112, :logger=> Logger.new(STDOUT) , :port => 7496 # TWS
 
 market.each_pair do |id, contract|
   puts "\nRequesting contract data #{id}: #{contract.description}"
-  contract.read_contract_from_tws do |msg|
-	  puts "TWS-Response:"
-	  puts msg.contract
-	  puts " . . . . . . . . . ContractDetails. . . . . . . . . . . . . . "
-	  puts msg.contract_detail.attributes
+  symbol, min_tick = nil
+  result=  contract.read_contract_from_tws do |msg|
+	  # Any attribute of the contract-object is assesible, i.e.
+	  symbol=  msg.contract.present? ? msg.contract.symbol : "XXX"
+	  # In Addition, all Contract-Detail-Attributes are present 
+	  min_tick= msg.contract_detail.present? ? msg.contract_detail.min_tick : 0
   end
-  puts "Updated Contract"
+
+  puts "Query #{id}-----------------------------------------------------------"
+  puts "Result: #{result } \t (local symbol)"
+  puts "TWS-resonse: Symbol -> #{symbol}", "Min-Tick:#{min_tick}"
+  puts "Updated-Contract"
   puts  contract.to_human
-  puts "-----------------------------------------------------------"
+  puts "----------------------------------------------------------------------"
   # Request Contract details for the symbols we're interested in. TWS will
   # respond with ContractData messages, which will be processed by the code above.
 end
@@ -49,10 +60,21 @@ end
 =begin
 Requesting contract data 7: EURUSD
 TWS-Response:
-<Contract: {"symbol"=>"EUR", "sec_type"=>"CASH", "expiry"=>"", "strike"=>0.0, "right"=>"", "exchange"=>"IDEALPRO", "currency"=>"USD", "local_symbol"=>"EUR.USD", "con_id"=>12087792, "multiplier"=>0, "primary_exchange"=>"", "created_at"=>2015-01-03 16:26:26 +0100, "updated_at"=>2015-01-03 16:26:26 +0100, "include_expired"=>false} >
+<Contract: {"symbol"=>"EUR", "sec_type"=>"CASH", "expiry"=>"", "strike"=>0.0,
+"right"=>"", "exchange"=>"IDEALPRO", "currency"=>"USD",
+"local_symbol"=>"EUR.USD", "con_id"=>12087792, "multiplier"=>0,
+"primary_exchange"=>"", "created_at"=>2015-01-03 16:26:26 +0100,
+"updated_at"=>2015-01-03 16:26:26 +0100, "include_expired"=>false} >
  . . . . . . . . . ContractDetails. . . . . . . . . . . . . . 
- {"market_name"=>"EUR.USD", "trading_class"=>"EUR.USD", "min_tick"=>5.0e-05, "order_types"=>"ACTIVETIM,ADJUST,ALERT,ALGO,ALLOC,AVGCOST,BASKET,COND,CONDORDER,DAY,DEACT,DEACTDIS,DEACTEOD,GAT,GTC,GTD,GTT,HID,IOC,LIT,LMT,MIT,MKT,NONALGO,OCA,REL,SCALE,SCALERST,STP,STPLMT,TRAIL,TRAILLIT,TRAILLMT,TRAILMIT,WHATIF,", "valid_exchanges"=>"IDEALPRO", "price_magnifier"=>1, "under_con_id"=>0, "long_name"=>"European Monetary Union Euro", "contract_month"=>"", "industry"=>"", "category"=>"", "subcategory"=>"", "time_zone"=>"EST5EDT", "trading_hours"=>"20150103:CLOSED;20150105:1715-1700", "liquid_hours"=>"20150103:CLOSED;20150105:1715-1700", "ev_rule"=>0.0, "ev_multiplier"=>"", "sec_id_list"=>{}, "created_at"=>2015-01-03 16:26:26 +0100, "updated_at"=>2015-01-03 16:26:26 +0100, "coupon"=>0.0, "callable"=>false, "puttable"=>false, "convertible"=>false, "next_option_partial"=>false}
- Updated Contract
- <Contract: EUR forex IDEALPRO USD>
- -----------------------------------------------------------
+ {"market_name"=>"EUR.USD", "trading_class"=>"EUR.USD", "min_tick"=>5.0e-05,
+ "order_types"=>"ACTIVETIM,ADJUST,ALERT,ALGO,ALLOC,AVGCOST,BASKET,COND,CONDORDER,DAY,DEACT,DEACTDIS,DEACTEOD,GAT,GTC,GTD,GTT,HID,IOC,LIT,LMT,MIT,MKT,NONALGO,OCA,REL,SCALE,SCALERST,STP,STPLMT,TRAIL,TRAILLIT,TRAILLMT,TRAILMIT,WHATIF,",
+ "valid_exchanges"=>"IDEALPRO", "price_magnifier"=>1, "under_con_id"=>0,
+ "long_name"=>"European Monetary Union Euro", "contract_month"=>"",
+ "industry"=>"", "category"=>"", "subcategory"=>"", "time_zone"=>"EST5EDT",
+ "trading_hours"=>"20150103:CLOSED;20150105:1715-1700",
+ "liquid_hours"=>"20150103:CLOSED;20150105:1715-1700", "ev_rule"=>0.0,
+ "ev_multiplier"=>"", "sec_id_list"=>{}, "created_at"=>2015-01-03 16:26:26
+ +0100, "updated_at"=>2015-01-03 16:26:26 +0100, "coupon"=>0.0,
+ "callable"=>false, "puttable"=>false, "convertible"=>false,
+ "next_option_partial"=>false}
 =end

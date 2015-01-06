@@ -6,7 +6,8 @@ FactoryGirl.define do
 		exchange 'SMART' 
 		sec_type  :stock
 	end
-
+	# Stellt deutlich mehr Attribute zur Verfügung, als für die 
+	# Abfrage benötigt werden. query_contract extrahiert die notwendigen Attribute
 	factory :ib_option_contract, class:IB::Contract do
 		symbol  'AAPL'
 		sec_type  :option
@@ -35,6 +36,11 @@ FactoryGirl.define do
 		symbol 	 'ZN'
 		expiry  '201503'
 		exchange 'ECBOT'
+	end
+	factory :default_forex, class:IB::Contract do
+		sec_type  :forex
+		symbol 	 'EUR'
+		exchange 'IDEALPRO'
 	end
 	# stellt  Minimale Attribute für die Abfrage eines Optionsdatensatze aus der TWS bereit
 	# Test funktionieren nur, wenn explizit IB::Option angegeben wird
