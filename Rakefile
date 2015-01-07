@@ -1,12 +1,13 @@
-begin
-  require 'rake'
-rescue LoadError
-  require 'rubygems'
-  gem 'rake', '~> 0.8.3.1'
-  require 'rake'
-end
+#begin
+#  require 'rake'
+#rescue LoadError
+#  require 'rubygems'
+#  gem 'rake', '~> 0.8.3.1'
+#  require 'rake'
+#end
 
 require 'pathname'
+ require 'rspec/core/rake_task'
 
 BASE_PATH = Pathname.new(__FILE__).dirname
 LIB_PATH = BASE_PATH + 'lib'

@@ -37,7 +37,7 @@ describe IB::Messages::Incoming do
   context 'Message received from IB', :connected => true do
 
     before(:all) do
-      @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
+      @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger, client_id:1290)
       @ib.wait_for :Alert
       pending 'No Alert received upon connect!' unless @ib.received? :Alert
     end

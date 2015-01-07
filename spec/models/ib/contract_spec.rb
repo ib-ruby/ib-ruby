@@ -1,25 +1,26 @@
 require 'model_helper'
 require 'combo_helper'
+require 'contract_helper'
+## needs tws-connection (update connect.yml, if nessacary)
+describe IB::Contract ,
+	:props =>  { 
+	:symbol => 'AAPL',
+	:sec_type => :option,
+	:expiry => '201503',
+	:strike => 110,
+	:right => :put,
+	:sec_id => 'US0378331005',
+	:sec_id_type => 'ISIN',
+	:multiplier => 10,
+	:exchange => 'SMART',
+	:currency => 'USD',
+	:local_symbol => 'AAPL  150320C00110000'} ,
 
-describe IB::Contract,
-  :props =>
-  {:symbol => 'AAPL',
-   :sec_type => :option,
-   :expiry => '201301',
-   :strike => 600.5,
-   :right => :put,
-   :sec_id => 'US0378331005',
-   :sec_id_type => 'ISIN',
-   :multiplier => 10,
-   :exchange => 'SMART',
-   :currency => 'USD',
-   :local_symbol => 'AAPL  130119C00500000'},
+	:human => "<Contract: AAPL option 201503 put 110.0 SMART USD>",
 
-  :human => "<Contract: AAPL option 201301 put 600.5 SMART USD>",
+	:errors => {:sec_type => ["should be valid security type"] },
 
-  :errors => {:sec_type => ["should be valid security type"] },
-
-  :assigns => {:expiry =>
+	:assigns => {:expiry =>
                {[200609, '200609'] => '200609',
                 [20060913, '20060913'] => '20060913',
                 [:foo, 2006, 42, 'bar'] => /should be YYYYMM or YYYYMMDD/},
@@ -60,9 +61,10 @@ describe IB::Contract,
 
                :include_expired => boolean_assigns,
 } do
-
-  it_behaves_like 'Model with invalid defaults'
+  it_behaves_like 'Model with invalid defaults' 
   it_behaves_like 'Self-equal Model'
+  it_behaves_like 'Contract'
+ end
 
   context 'testing for Contract type (sec_type)' do
 
@@ -71,10 +73,10 @@ describe IB::Contract,
        IB::Contract.new(:sec_type => 'OPT'),
        IB::Option.new
       ].each do |contract|
-        contract.should_not be_bag
-        contract.should_not be_bond
-        contract.should_not be_stock
-        contract.should be_option
+        expect( contract).not_to be_bag
+        expect( contract).not_to be_bond
+        expect( contract).not_to be_stock
+        expect( contract).to be_option
       end
     end
 
@@ -83,21 +85,21 @@ describe IB::Contract,
        IB::Contract.new(:sec_type => 'BAG'),
        IB::Bag.new
       ].each do |contract|
-        contract.should be_bag
-        contract.should_not be_bond
-        contract.should_not be_stock
-        contract.should_not be_option
+        expect( contract).to be_bag
+        expect( contract).not_to be_bond
+        expect( contract).not_to be_stock
+        expect( contract).not_to be_option
       end
     end
 
-    it 'correctly defines Contract type for Bag Contracts' do
+    it 'correctly defines Contract type for Stock Contracts' do
       [IB::Contract.new(:sec_type => :stock),
        IB::Contract.new(:sec_type => 'STK'),
       ].each do |contract|
-        contract.should_not be_bag
-        contract.should_not be_bond
-        contract.should be_stock
-        contract.should_not be_option
+        expect( contract).not_to be_bag
+        expect( contract).not_to be_bond
+        expect( contract).to be_stock
+        expect( contract).not_to be_option
       end
     end
 
@@ -105,54 +107,141 @@ describe IB::Contract,
       [IB::Contract.new(:sec_type => :bond),
        IB::Contract.new(:sec_type => 'BOND'),
       ].each do |contract|
-        contract.should_not be_bag
-        contract.should be_bond
-        contract.should_not be_stock
-        contract.should_not be_option
+        expect( contract).not_to be_bag
+        expect( contract).to be_bond
+        expect( contract).not_to be_stock
+        expect( contract).not_to be_option
       end
     end
 
-  end
+#  end
+#
+  context "serialization", :connected => true  do
+    
+if IB::Connection.current.nil?
+	IB::Connection.new( OPTS[:connection].merge(:logger => mock_logger))
+	to_be_disconnected =  true
+end
+let( :contract ) { FactoryGirl.build :ib_option_contract }
+#IB::Contract.new props }
+let( :bag ){ FactoryGirl.build( :butterfliege ,{symbol:'F', expire:'201503', legs:[14,15,16], kind:'Put'}) }
+let( :ford_option_1){ FactoryGirl.build(:default_option, strike: 14)}	
+let( :ford_option_2){ FactoryGirl.build(:default_option, strike: 15)}	
+let( :ford_option_3){ FactoryGirl.build(:default_option, strike: 16)}	
 
-  context "serialization", :connected => true do
-    before(:all) do
-      # TODO: Change butterfly into a stub, reduce dependency on IB connection
-      @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
-      @ib.wait_for :ManagedAccounts
-      @combo = butterfly 'GOOG', '201301', 'CALL', 500, 510, 520
-      close_connection
-    end
-
-    subject { IB::Contract.new props }
 
     it "serializes long" do
-      subject.serialize_long.should ==
-        ["AAPL", "OPT", "201301", 600.5, "P", 10, "SMART", nil, "USD", "AAPL  130119C00500000"]
+      expect( contract.serialize_long).to eq ["AAPL", "OPT", "201503", 110.0, "P", 10, "SMART", nil, "USD", "AAPL  150320C00110000"]
     end
 
     it "serializes short" do
-      subject.serialize_short.should ==
-        ["AAPL", "OPT", "201301", 600.5, "P", 10, "SMART", "USD", "AAPL  130119C00500000"]
+      expect( contract.serialize_short).to eq ["AAPL", "OPT", "201503", 110.0, "P", 10, "SMART", "USD", "AAPL  150320C00110000"]
     end
 
     it "serializes combo (BAG) contracts for Order placement" do
-      @combo.serialize_long(:con_id, :sec_id).should ==
-        [0, "GOOG", "BAG", "", 0.0, "", nil, "SMART", nil, "USD", "", nil, nil]
+     expect( bag.serialize_long(:con_id, :sec_id)).to eq [0, "F", "BAG", "", 0.0, "", nil, "SMART", nil, "USD", "", nil, nil]
     end
 
     it 'also serializes attached combo legs' do
-      subject.serialize_legs.should == []
-      subject.serialize_legs(:extended).should == []
+      expect( contract.serialize_legs(:extended) ).to eq []
+      ford_option_1.read_contract_from_tws
+	ford_option_2.read_contract_from_tws
+	ford_option_3.read_contract_from_tws
+	bag.legs[0].con_id= ford_option_1.con_id
+	bag.legs[1].con_id= ford_option_2.con_id
+	bag.legs[2].con_id= ford_option_3.con_id
+#      expect( bag.serialize_legs ).to eq [3, 176695686, 1, "BUY", "SMART", 176695703, 2, "SELL", "SMART", 176695716, 1, "BUY", "SMART"]
+      expect( bag.serialize_legs ).to eq [3, 	ford_option_1.con_id, 1, "BUY", "SMART", 
+					  	ford_option_2.con_id, 2, "SELL", "SMART", 
+					  	ford_option_3.con_id, 1, "BUY", "SMART"]
 
-      @combo.serialize_legs.should ==
-        [3, 81032967, 1, "BUY", "SMART", 81032968, 2, "SELL", "SMART", 81032973, 1, "BUY", "SMART"]
-
-      @combo.serialize_legs(:extended).should ==
-        [3, 81032967, 1, "BUY", "SMART", 0, 0, "", -1,
-         81032968, 2, "SELL", "SMART", 0, 0, "", -1,
-         81032973, 1, "BUY", "SMART", 0, 0, "", -1]
-        end
+     expect( bag.serialize_legs(:extended) ).to eq [3, ford_option_1.con_id, 1, "BUY", "SMART", 0, 0, "", -1,
+						       ford_option_2.con_id, 2, "SELL", "SMART", 0, 0, "", -1,
+						       ford_option_3.con_id, 1, "BUY", "SMART", 0, 0, "", -1]
+   
+#     IB::Connection.current.disconnect if to_be_disconnected
+    end
   end #serialization
 
 
+
+  describe 'tws_reader' do
+	  before { IB::Connection.new( OPTS[:connection].merge(:logger => mock_logger)) if IB::Connection.current.nil? }
+	let( :list_of_stocks )  { ["BAP","LNN","T","MSFT","GE"] }
+
+
+	describe  "default Stock" do 
+	it_behaves_like  "correctly query's the tws" do  # valid contract
+		let( :contract ){ FactoryGirl.build( :con_id_contract ) }
+	end
+	end
+	describe  "User-Defined Stock" do 
+	it_behaves_like  "correctly query's the tws" do  # valid contract
+		let( :contract ){ FactoryGirl.build( :default_stock, symbol:'AAPL' ) }
+	end
+	end
+
+	describe  "User-Defined Stock, saved to the DB" do 
+	it_behaves_like  "correctly query's the tws" do   # valid database-record
+
+		let( :contract ){ FactoryGirl.create( :default_stock, symbol:'AAPL' ) }
+	end
+	end
+	describe  "default Option"  do 
+	it_behaves_like  "correctly query's the tws" do  
+		let( :contract ){ FactoryGirl.build( :default_option ) }
+	end
+	end
+
+	describe  "default Future"   do 
+	it_behaves_like  "correctly query's the tws" do  
+		let( :contract ){ FactoryGirl.build( :default_future ) }
+	end
+	end	
+	describe  "User defined Future"   do 
+	it_behaves_like  "correctly query's the tws" do  
+		let( :contract ){ FactoryGirl.create( :default_future, symbol:'ES', exchange:'GLOBEX', multiplier:50 ) }
+	end
+	end
+	describe "Invalid Stock-Symbol" do
+	it_behaves_like  "invalid query of tws" do  # invalid symbol
+		let( :contract ){ FactoryGirl.build( :default_stock, symbol:'AARL' ) }
+	end
+	end	
+	describe "Invalid Stock-Symbol living in the DB" do
+	it_behaves_like  "invalid query of tws" do  # invalid symbol in database-record
+		let( :contract ){ FactoryGirl.create( :default_stock, symbol:'AARL' ) }
+	end
+	end
+	describe  "User default Forex contract"  do
+	it_behaves_like  "correctly query's the tws" do  
+		let( :contract ){ IB::Symbols::Forex[:eurusd] }
+	end
+	end
+
+	it "adds valid records to the database and updates contract_details as well" do
+		list_of_stocks.each do |stock|
+			contract= FactoryGirl.create( :default_stock, symbol:stock )
+			# validity-test:
+			expect{ contract.read_contract_from_tws }.to change{ contract.con_id }
+			expect( contract.contract_detail ).to be_a IB::ContractDetail
+			nc=  IB::Contract.find contract.id
+			expect{ nc.read_contract_from_tws }.not_to change{ nc.contract_detail }
+
+		end
+		expect( IB::Contract.count).to eq list_of_stocks.size
+	end
+
+	  ["15","16","17"].each do |strike|
+		it_behaves_like  "correctly query's the tws"  do
+		  	let( :contract ){ FactoryGirl.build( :default_option, strike:strike ) } #, symbol:'FAST', strike:strike, expiry:201503) }
+		  end # descirbe FG
+
+	  end # loop
+#	  ["AAPL","BAP","LNN","T","MSFT","GE"].each do |stock|
+#		  describe  FactoryGirl.create( :default_stock , symbol:stock)  do
+#		  it_returns_a 'correct ib contract object after a tws-query' 
+#		  end # descirbe FG
+#	  end
+	end # describe tws_reader
 end # describe IB::Contract

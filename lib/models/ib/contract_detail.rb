@@ -65,7 +65,9 @@ module IB
       :next_option_partial => :bool # # only if bond has embedded options.
 
       # Extra validations
-      validates_format_of :time_zone, :with => /\A\w{3}\z/, :message => 'should be XXX'
+      ## /\A\w{3}\z/,fails because us-stocks come with a time-zone of "EST5EDT"
+      ## Futures (ES) still got "CST" 
+      validates_format_of :time_zone, :with => /\A\w{3}/, :message => 'should be XXX'
 
     serialize :sec_id_list, HashWithIndifferentAccess
 

@@ -5,42 +5,76 @@
 require 'rubygems'
 require 'bundler/setup'
 $LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
+require 'yaml'
 require 'ib-ruby'
+require 'factory_girl'
 
 # Definition of what we want market data for.  We have to keep track of what ticker id
 # corresponds to what symbol ourselves, because the ticks don't include any other
-# identifying information. The choice of ticker ids is, as far as I can tell, arbitrary.
-@market = {0 => IB::Symbols::Stocks[:wfc],
-           1 => IB::Symbols::Stocks[:vxx],
-           2 => IB::Symbols::Futures[:vix],
-           3 => IB::Symbols::Futures[:ym],
-           4 => IB::Symbols::Options[:wfc20],
-           5 => IB::Symbols::Options[:vix20],
-           6 => IB::Symbols::Options[:vxx40],
-           7 => IB::Symbols::Forex[:eurusd],
-           # 8 => IB::Symbols::Bonds[:wag],
-           9 => IB::Symbols::Stocks[:wrong]}
+# identifying infoormation. The choice of ticker ids is, as far as I can tell, arbitrary.
+
+FactoryGirl.definition_file_paths=["../spec/factories"]
+FactoryGirl.find_definitions
+
+begin
+market = {1 => FactoryGirl.build( :ib_contract ), # apple
+          2 => FactoryGirl.build( :ib_contract, symbol:'TAP') ,
+          3 => FactoryGirl.build( :default_option, expiry:201503 ),
+	  4 => FactoryGirl.build( :default_stock ),
+	  5 => FactoryGirl.build( :default_future ),
+	  6 => FactoryGirl.build( :default_future, symbol:'ES', expiry:201512, multiplier:50 , :exchange => 'GLOBEX'),	
+	  7 => FactoryGirl.build( :default_forex ),
+	  8 => FactoryGirl.build( :default_forex , symbol:'NOK', currency:'SEK'),
+	  9 => IB::Contract.new( symbol:'GE', strike:25, expiry:201501, :sec_type=>:option), # multible put-options, only the last ist selected
+	  10 => FactoryGirl.build( :default_stock, :symbol=>'FAKE' )  # not a valid symbol
+	}
+#           6 => IB::Symbols::Options[:vxx40] }  #--> osi definition is not supported
 
 # Connect to IB TWS.
-ib = IB::Connection.new :client_id => 1112, :port => 7496 # TWS
-ib.wait_for :NextValidOrderId
+IB::Connection.new :client_id => 1112, :logger=> Logger.new(STDOUT) , :port => 7496 # TWS
 
-# Subscribe to TWS alerts/errors and contract data end marker
-ib.subscribe(:Alert, :ContractDataEnd) { |msg| puts msg.to_human }
-
-# Now, subscribe to ContractData incoming events.  The code passed in the block
-# will be executed when a message of that type is received, with the received
-# message as its argument. In this case, we just print out the data.
-ib.subscribe(:ContractData, :BondContractData) { |msg| puts(msg.contract.inspect + "\n")}
-
-@market.each_pair do |id, contract|
+market.each_pair do |id, contract|
   puts "\nRequesting contract data #{id}: #{contract.description}"
+  symbol, min_tick = nil
+  result=  contract.read_contract_from_tws do |msg|
+	  # Any attribute of the contract-object is assesible, i.e.
+	  symbol=  msg.contract.present? ? msg.contract.symbol : "XXX"
+	  # In Addition, all Contract-Detail-Attributes are present 
+	  min_tick= msg.contract_detail.present? ? msg.contract_detail.min_tick : 0
+  end
 
+  puts "Query #{id}-----------------------------------------------------------"
+  puts "Result: #{result } \t (local symbol)"
+  puts "TWS-resonse: Symbol -> #{symbol}", "Min-Tick:#{min_tick}"
+  puts "Updated-Contract"
+  puts  contract.to_human
+  puts "----------------------------------------------------------------------"
   # Request Contract details for the symbols we're interested in. TWS will
   # respond with ContractData messages, which will be processed by the code above.
-  ib.send_message :RequestContractData, :id => id, :contract => contract
-
-  # Wait for IB to respond to our request
-  ib.wait_for :ContractDataEnd, 5 #sec
-  ib.clear_received :ContractDataEnd
 end
+rescue RuntimeError => e
+	puts "Error"
+	puts e
+end
+
+=begin
+Requesting contract data 7: EURUSD
+TWS-Response:
+<Contract: {"symbol"=>"EUR", "sec_type"=>"CASH", "expiry"=>"", "strike"=>0.0,
+"right"=>"", "exchange"=>"IDEALPRO", "currency"=>"USD",
+"local_symbol"=>"EUR.USD", "con_id"=>12087792, "multiplier"=>0,
+"primary_exchange"=>"", "created_at"=>2015-01-03 16:26:26 +0100,
+"updated_at"=>2015-01-03 16:26:26 +0100, "include_expired"=>false} >
+ . . . . . . . . . ContractDetails. . . . . . . . . . . . . . 
+ {"market_name"=>"EUR.USD", "trading_class"=>"EUR.USD", "min_tick"=>5.0e-05,
+ "order_types"=>"ACTIVETIM,ADJUST,ALERT,ALGO,ALLOC,AVGCOST,BASKET,COND,CONDORDER,DAY,DEACT,DEACTDIS,DEACTEOD,GAT,GTC,GTD,GTT,HID,IOC,LIT,LMT,MIT,MKT,NONALGO,OCA,REL,SCALE,SCALERST,STP,STPLMT,TRAIL,TRAILLIT,TRAILLMT,TRAILMIT,WHATIF,",
+ "valid_exchanges"=>"IDEALPRO", "price_magnifier"=>1, "under_con_id"=>0,
+ "long_name"=>"European Monetary Union Euro", "contract_month"=>"",
+ "industry"=>"", "category"=>"", "subcategory"=>"", "time_zone"=>"EST5EDT",
+ "trading_hours"=>"20150103:CLOSED;20150105:1715-1700",
+ "liquid_hours"=>"20150103:CLOSED;20150105:1715-1700", "ev_rule"=>0.0,
+ "ev_multiplier"=>"", "sec_id_list"=>{}, "created_at"=>2015-01-03 16:26:26
+ +0100, "updated_at"=>2015-01-03 16:26:26 +0100, "coupon"=>0.0,
+ "callable"=>false, "puttable"=>false, "convertible"=>false,
+ "next_option_partial"=>false}
+=end
