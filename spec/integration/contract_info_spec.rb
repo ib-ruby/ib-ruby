@@ -4,8 +4,6 @@ describe "Request Contract Info", :connected => true, :integration => true do
 
   before(:all) do
     verify_account
-#    @ib = IB::Connection.current.presence || IB::Connection.new( OPTS[:connection].merge(:logger =>))
-    @ib.wait_for :NextValidId
   end
 
  # after(:all) { close_connection }
