@@ -17,16 +17,17 @@ FactoryGirl.definition_file_paths=["../spec/factories"]
 FactoryGirl.find_definitions
 
 begin
-market = {1 => FactoryGirl.build( :ib_contract ), # apple
-          2 => FactoryGirl.build( :ib_contract, symbol:'TAP') ,
-          3 => FactoryGirl.build( :default_option, expiry:201503 ),
-	  4 => FactoryGirl.build( :default_stock ),
-	  5 => FactoryGirl.build( :default_future ),
-	  6 => FactoryGirl.build( :default_future, symbol:'ES', expiry:201512, multiplier:50 , :exchange => 'GLOBEX'),	
-	  7 => FactoryGirl.build( :default_forex ),
-	  8 => FactoryGirl.build( :default_forex , symbol:'NOK', currency:'SEK'),
-	  9 => IB::Contract.new( symbol:'GE', strike:25, expiry:201501, :sec_type=>:option), # multible put-options, only the last ist selected
-	  10 => FactoryGirl.build( :default_stock, :symbol=>'FAKE' )  # not a valid symbol
+market = {"Apple - Manual" => FactoryGirl.build( :ib_contract ), # apple
+          "Molson Coors via Factory" => FactoryGirl.build( :ib_contract, symbol:'TAP') ,
+          "Default Option via Factory"  => FactoryGirl.build( :default_option, expiry:201503 ),
+	  "Default Stock via Factory" => FactoryGirl.build( :default_stock ),
+	  "Fastenal - manual " => IB::Stock.new( symbol:'FAST' ),
+	  "Default Future via Facotry" => FactoryGirl.build( :default_future ),
+	  "S&P Future - Manual"  => IB::Future.new( symbol:'ES', expiry:201512, multiplier:50 , :exchange => 'GLOBEX'),	
+	  "Default Forex via Factory" => FactoryGirl.build( :default_forex ),
+	  "NOK/SEK - Manual" => FactoryGirl.build( :default_forex , symbol:'NOK', currency:'SEK'),
+	  "GE-Option -Manual with multible contracts" => IB::Option.new( symbol:'GE', strike:25, expiry:201501), # multible put-options, only the last ist selected
+	  "Fake Stock via Factory"  => FactoryGirl.build( :default_stock, :symbol=>'FAKE' )  # not a valid symbol
 	}
 #           6 => IB::Symbols::Options[:vxx40] }  #--> osi definition is not supported
 
@@ -44,7 +45,7 @@ market.each_pair do |id, contract|
   end
 
   puts "Query #{id}-----------------------------------------------------------"
-  puts "Result: #{result } \t (local symbol)"
+  puts "Result: #{result } \t (local symbol / Nr of Contracts)"
   puts "TWS-resonse: Symbol -> #{symbol}", "Min-Tick:#{min_tick}"
   puts "Updated-Contract"
   puts  contract.to_human

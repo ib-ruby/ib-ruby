@@ -25,7 +25,7 @@ If the con_id is present, only con_id and currency are transmitted to the tws.
 			raise "#{items_as_string[nessesary_items]} are needed to retrieve Contract, got: #{item_values[nessesary_items].join(',')}" if item_values[nessesary_items].any?( &:nil? ) 
 			IB::Contract.new  item_attributehash[nessesary_items].merge(:sec_type=> sec_type)
 			else #if currency.present?
-			IB::Contract.new sec_type:sec_type, con_id:con_id , :currency => currency.presence || item_attributehash[nessesary_items][:currency]
+#			IB::Contract.new  con_id:con_id , :currency => currency.presence || item_attributehash[nessesary_items][:currency]
 		end  # if
 		## modify the Object, ie. set con_id to zero
 		if new_record?
@@ -49,10 +49,14 @@ This method can be overloaded to include a file from a different location
 Update_contract requests ContractData from the TWS
 
 If the parameter »unique« is set (the default), the #yml_file is used to check the nessesary 
-query-attributes, otherwise the check is suppressed
-If the method is invoked by a unsaved IB::Contract, it is saved autonomusly.
-Otherwise it is assumed, that a handler to process IB::Messages::Incoming::ContractData is present.
-If the the internal Message-Handler is used (new_record/ no DB)  the updated contract  is returned. 
+query-attributes, otherwise the check is suppressed.
+
+The msg-object returned by the tws is assesible via an optional block.
+If many Contracts match the definition by the attributs of the IB::Contract
+the block is executed for each returned Contract
+
+A ActiveRecord::RecordNotUnique-Error is raised, if an update of attributes in the DB fails 
+The responsible DB-Index reflects the uniqueness of ["con_id", "symbol", "sec_type"]
 =end
 	def read_contract_from_tws unique:true
 		
@@ -61,15 +65,18 @@ If the the internal Message-Handler is used (new_record/ no DB)  the updated con
 		to_be_saved = IB.db_backed? && !new_record?
 
 		# if it's a not-saved object, we generate an Request-Message-ID on the fly
-		# otherwise the Object.id is used as Message-ID and the database is updated
-		message_id =  
-			if !to_be_saved
-				random = 1.times.inject([]) {|r| v = rand(200) until v and not r.include? v; r << v}.pop 			
-				random + ( IB::Contract.maximum(:id).presence||1 )  rescue random ## return_value
-			else
-				id
-			end
+		# otherwise the Object.id is used as Message-ID and the database is updated 
+		# after the query
+		#
+		message_id =  if !to_be_saved
+				      random = 1.times.inject([]) {|r| v = rand(200) until v and not r.include? v; r << v}.pop 			
+				      random + ( IB::Contract.maximum(:id).presence||1 )  rescue random ## return_value
+			      else
+				      id
+			      end
+		# define loacl vars which are updated within the follwoing block
 		exitcondition, count = false, 0
+
 		wait_until_exitcondition = -> do 
 			u=0; while u<100  do   # wait max 5 sec
 				break if exitcondition 
@@ -80,7 +87,8 @@ If the the internal Message-Handler is used (new_record/ no DB)  the updated con
 		attributes_to_be_transfered = ->(obj) do
 			obj.attributes.reject{|x,y| ["created_at","updated_at","id"].include? x }
 		end
-		count = 0
+			
+		# subscribe to ib-messages and describe what to do
 		a = ib.subscribe(:Alert, :ContractData,  :ContractDataEnd) do |msg| 
 			case msg
 			when IB::Messages::Incoming::Alert
@@ -120,6 +128,8 @@ If the the internal Message-Handler is used (new_record/ no DB)  the updated con
 
 			end  # case
 		end # subscribe
+
+		### send the request !
 		ib.send_message :RequestContractData, 
 			:id => new_record? ? message_id : id,
 			:contract => unique ? query_contract : self  rescue self  # prevents error if Ruby vers < 2.1.0
