@@ -10,8 +10,9 @@ describe 'Orders', :connected => true, :integration => true do
     before(:all) do
       @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
       @ib.wait_for :NextValidId
-
       place_order IB::Symbols::Stocks[:wfc],
+                    :action => 'BUY',
+		    :account => OPTS[:connection][:account],
                   :limit_price => 9.131313 # Weird non-acceptable price
       @ib.wait_for 1 # sec
     end
@@ -43,26 +44,36 @@ describe 'Orders', :connected => true, :integration => true do
     before(:all) do
       @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
       @ib.wait_for :NextValidId
+      buy_order = IB::Order.new :total_quantity => 100,  
+	      			:limit_price => 50.13, # Set acceptable price
+				:what_if => true, # Hypothetical
+				:action => 'BUY',
+				:account => OPTS[:connection][:account]
 
-      place_order IB::Symbols::Stocks[:wfc],
-                  :limit_price => 9.13, # Set acceptable price
-                  :what_if => true # Hypothetical
+
+      @local_id_before =	@ib.next_local_id
+      @local_id_placed =	@ib.place_order  buy_order, IB::Symbols::Stocks[:wfc] 
       @ib.wait_for 1
+       
     end
 
     after(:all) { close_connection }
 
     it 'changes client`s next_local_id' do
-      @local_id_placed.should == @local_id_before
-      @ib.next_local_id.should == @local_id_before + 1
+	    puts " local_id_placed and local_id_before are not defined! "
+	    puts "local_id  placed: #{@local_id_placed}"
+	    puts "local_id before: #{@local_id_before}"
+	    puts "ib next local_id : #{@ib.next_local_id}"
+      @local_id_placed.should eq @local_id_before
+      @ib.next_local_id.should eq  @local_id_before.next
     end
 
     it { @ib.received[:OpenOrder].should have_at_least(1).open_order_message }
     it { @ib.received[:OrderStatus].should have_exactly(0).status_messages }
 
     it 'responds with margin and commission info' do
-      order_should_be /PreSubmitted/
       order = @ib.received[:OpenOrder].first.order
+      order_should_be /PreSubmitted/, order
       order.what_if.should == true
       order.equity_with_loan.should be_a Float
       order.init_margin.should be_a Float
@@ -71,7 +82,7 @@ describe 'Orders', :connected => true, :integration => true do
       order.equity_with_loan.should be > 0
       order.init_margin.should be > 0
       order.maint_margin.should be > 0
-      order.commission.should be > 1
+      order.commission.should be_a  Numeric
     end
 
     it 'is not actually being placed though' do
@@ -86,7 +97,8 @@ describe 'Orders', :connected => true, :integration => true do
     before(:all) do
       @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
       @ib.wait_for :NextValidId
-      place_order IB::Symbols::Stocks[:wfc], :limit_price => 9.13 # Acceptable price
+      place_order IB::Symbols::Stocks[:wfc], :limit_price => 9.13,  # Acceptable price
+	      :account => OPTS[:connection][:account]
       @ib.wait_for [:OpenOrder, 3], [:OrderStatus, 2], 6
     end
 

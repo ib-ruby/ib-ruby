@@ -22,7 +22,10 @@ class AddIbContracts < ActiveRecord::Migration
       t.string  :type # Contract Subclasses STI
       t.timestamps
     end
+    add_index "ib_contracts",[ "con_id", "symbol","sec_type"], name: "unique_contracts", unique: true, using: :btree
+
   end
+
 end
 
 __END__

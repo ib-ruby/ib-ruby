@@ -1,10 +1,13 @@
 require 'models/ib/contract_detail'
 require 'models/ib/underlying'
+require 'ib/tws_reader'
 
 module IB
   class Contract < IB::Model
     include BaseProperties
-
+    include TWS_Reader
+   
+#    has_many :ib_assets
     # Fields are Strings unless noted otherwise
     prop :con_id, # int: The unique contract identifier.
       :currency, # Only needed if there is an ambiguity, e.g. when SMART exchange
@@ -92,6 +95,8 @@ module IB
 
 
       ### Extra validations
+## Ths validation is missleading because a query with con_id and currency is valid
+## better: create IB::Future, IB::Stock, IB::Forex and IB::Bond models
       validates_inclusion_of :sec_type, :in => CODES[:sec_type].keys,
       :message => "should be valid security type"
 
@@ -110,7 +115,7 @@ module IB
       super.merge :con_id => 0,
         :strike => 0.0,
         :right => :none, # Not an option
-        :exchange => 'SMART',
+#        :exchange => 'SMART',  --> overload in IB::Stock, IB::Option, IB::Future, IB::Forex
         :include_expired => false
     end
 
@@ -219,10 +224,12 @@ module IB
     end
 
     def to_s
-      "<Contract: " + instance_variables.map do |key|
-        value = send(key[1..-1])
-        " #{key}=#{value}" unless value.nil? || value == '' || value == 0
-      end.compact.join(',') + " >"
+	    "<Contract: #{attributes.inspect} >"
+#      "<Contract: " + instance_variables.map do |key|
+#	      value = send(key[1..-1]) rescue 'U-N-K-N-O-W-N'
+#        " #{key}=#{value}" unless value.nil? || value == '' || value == 0
+#      end.compact.join(',') + " >"
+
     end
 
     def to_human

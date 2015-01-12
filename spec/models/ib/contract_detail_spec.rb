@@ -1,4 +1,5 @@
 require 'model_helper'
+require 'message_helper'
 
 describe IB::ContractDetail,
 
@@ -38,9 +39,9 @@ describe IB::ContractDetail,
              } do
 
   it_behaves_like 'Model with invalid defaults'
-  it_behaves_like 'Self-equal Model'
+#  it_behaves_like 'Self-equal Model' 
 
   it 'inherited equality method works (important for IB::Base derived tableless models)' do
-    IB::ContractDetail.new(props).should == IB::ContractDetail.new(props)
+    expect( IB::ContractDetail.new(props) ).to eq IB::ContractDetail.new(props)
   end
 end # describe IB::ContractDetail

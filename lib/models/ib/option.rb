@@ -44,7 +44,8 @@ module IB
         :exchange => "SMART",
         :expiry => expiry_date.to_ib[2..7], # YYMMDD
         :right => right,
-        :strike => strike
+        :strike => strike,
+      	:multiplier => 100
     end
 
     def default_attributes

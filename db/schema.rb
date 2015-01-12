@@ -104,6 +104,7 @@ ActiveRecord::Schema.define(:version => 171) do
     t.datetime "created_at",                    :null => false
     t.datetime "updated_at",                    :null => false
   end
+  add_index "ib_contracts",[ "con_id", "symbol","sec_type"], name: "unique_contracts", unique: true, using: :btree
 
   create_table "ib_executions", :force => true do |t|
     t.integer  "order_id"
