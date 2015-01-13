@@ -7,6 +7,9 @@ module IB
   # Encapsulates API connection to TWS or Gateway
   class Connection
 
+  include LogDev
+
+    mattr_accessor :logger  ## borrowed from active_support
     # Please note, we are realizing only the most current TWS protocol versions,
     # thus improving performance at the expense of backwards compatibility.
     # Older protocol versions support can be found in older gem versions.
@@ -48,7 +51,7 @@ module IB
       @subscribe_lock = Mutex.new
       @receive_lock = Mutex.new
 
-      self.default_logger = options[:logger] if options[:logger]
+      self.logger = options[:logger].presence || default_logger
       @connected = false
       self.next_local_id = nil
 
@@ -59,12 +62,13 @@ module IB
     ### Working with connection
 
     def connect
-      error "Already connected!" if connected?
+	logger.progname='IB::Connection#connect' if logger.is_a?(Logger)
+	logger.error { "Already connected!"} if connected?
 
       # TWS always sends NextValidId message at connect - save this id
       self.subscribe(:NextValidId) do |msg|
         self.next_local_id = msg.local_id
-        log.info "Got next valid order id: #{next_local_id}."
+        logger.info { "Got next valid order id: #{next_local_id}." }
       end
 
       @socket = IBSocket.open(options[:host], options[:port])
@@ -74,7 +78,7 @@ module IB
       socket.write_data @client_version
       @server_version = socket.read_int
       if @server_version < options[:server_version]
-        error "Server version #{@server_version}, #{options[:server_version]} required."
+        logger.error { "Server version #{@server_version}, #{options[:server_version]} required." }
       end
       @remote_connect_time = socket.read_string
       @local_connect_time = Time.now
@@ -86,9 +90,9 @@ module IB
       socket.write_data @client_id
 
       @connected = true
-      log.info "Connected to server, ver: #{@server_version}, connection time: " +
+      logger.info { "Connected to server, ver: #{@server_version}, connection time: " +
         "#{@local_connect_time} local, " +
-        "#{@remote_connect_time} remote."
+        "#{@remote_connect_time} remote."}
 
       start_reader if options[:reader] # Allows reconnect
     end
@@ -119,10 +123,10 @@ module IB
     # Returns subscriber id to allow unsubscribing
     def subscribe *args, &block
       @subscribe_lock.synchronize do
-        subscriber = args.last.respond_to?(:call) ? args.pop : block
+        subscriber = args.last.respond_to?(:call) ? s.pop : block
         id = random_id
 
-        error "Need subscriber proc or block", :args unless subscriber.is_a? Proc
+        error  "Need subscriber proc or block ", :args  unless subscriber.is_a? Proc
 
         args.each do |what|
           message_classes =
@@ -134,7 +138,7 @@ module IB
           when what.is_a?(Regexp)
             Messages::Incoming::Classes.values.find_all { |klass| klass.to_s =~ what }
           else
-            error "#{what} must represent incoming IB message class", :args
+            error  "#{what} must represent incoming IB message class", :args 
           end
           message_classes.flatten.each do |message_class|
             # TODO: Fix: RuntimeError: can't add a new key into hash during iteration
@@ -151,7 +155,7 @@ module IB
         removed = []
         ids.each do |id|
           removed_at_id = subscribers.map { |_, subscribers| subscribers.delete id }.compact
-          error "No subscribers with id #{id}" if removed_at_id.empty?
+          logger.error  "No subscribers with id #{id}"   if removed_at_id.empty?
           removed << removed_at_id
         end
         removed.flatten
@@ -202,7 +206,7 @@ module IB
         elsif condition.respond_to?(:call)
           condition.call
         else
-          error "Unknown wait condition #{condition}"
+          logger.error { "Unknown wait condition #{condition}" }
         end
       end
     end
@@ -252,22 +256,23 @@ module IB
 
     # Process single incoming message (blocking!)
     def process_message
+      logger.progname='IB::Connection#process_message' if logger.is_a?(Logger)
       msg_id = socket.read_int # This read blocks!
 
       # Debug:
-      log.debug "Got message #{msg_id} (#{Messages::Incoming::Classes[msg_id]})"
+      logger.debug { "Got message #{msg_id} (#{Messages::Incoming::Classes[msg_id]})"}
 
       # Create new instance of the appropriate message type,
       # and have it read the message from socket.
       # NB: Failure here usually means unsupported message type received
-      error "Got unsupported message #{msg_id}" unless Messages::Incoming::Classes[msg_id]
+      logger.error { "Got unsupported message #{msg_id}" } unless Messages::Incoming::Classes[msg_id]
       msg = Messages::Incoming::Classes[msg_id].new(socket)
 
       # Deliver message to all registered subscribers, alert if no subscribers
       @subscribe_lock.synchronize do
         subscribers[msg.class].each { |_, subscriber| subscriber.call(msg) }
       end
-      log.warn "No subscribers for message #{msg.class}!" if subscribers[msg.class].empty?
+      logger.warn { "No subscribers for message #{msg.class}!" } if subscribers[msg.class].empty?
 
       # Collect all received messages into a @received Hash
       if options[:received]
@@ -292,7 +297,7 @@ module IB
       else
         error "Only able to send outgoing IB messages", :args
       end
-      error "Not able to send messages, IB not connected!" unless connected?
+      logger.error  { "Not able to send messages, IB not connected!" } unless connected?
       message.send_to socket
     end
 

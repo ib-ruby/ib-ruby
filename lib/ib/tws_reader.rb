@@ -25,7 +25,7 @@ If the con_id is present, only con_id and currency are transmitted to the tws.
 			raise "#{items_as_string[nessesary_items]} are needed to retrieve Contract, got: #{item_values[nessesary_items].join(',')}" if item_values[nessesary_items].any?( &:nil? ) 
 			IB::Contract.new  item_attributehash[nessesary_items].merge(:sec_type=> sec_type)
 			else #if currency.present?
-#			IB::Contract.new  con_id:con_id , :currency => currency.presence || item_attributehash[nessesary_items][:currency]
+			IB::Contract.new  con_id:con_id , :exchange => exchange.presence || item_attributehash[nessesary_items][:exchange]
 		end  # if
 		## modify the Object, ie. set con_id to zero
 		if new_record?
@@ -46,20 +46,36 @@ This method can be overloaded to include a file from a different location
 			File.expand_path('../../../contract_config.yml',__FILE__ )
 		end
 =begin
-Update_contract requests ContractData from the TWS
+read_contract_from_tws (alias update_contract) requests ContractData from the TWS and
+stores/updates them in this contract_object.
 
 If the parameter »unique« is set (the default), the #yml_file is used to check the nessesary 
 query-attributes, otherwise the check is suppressed.
+ContractDetails are not saved, by default. Instead they are supposed to be adressed by 
+yielding a block.
 
-The msg-object returned by the tws is assesible via an optional block.
+The msg-object returned by the tws is asessible via an optional block.
 If many Contracts match the definition by the attributs of the IB::Contract
 the block is executed for each returned Contract
 
-A ActiveRecord::RecordNotUnique-Error is raised, if an update of attributes in the DB fails 
-The responsible DB-Index reflects the uniqueness of ["con_id", "symbol", "sec_type"]
+Example:
+	given an active-record-Model with min_tick-attribute:
+	--------------------------------------------------
+	contract = IB::Contract.find x
+        count_datasets,lth = 0
+        contract.update_contract do |msg|
+	    update_attibute :min_tic , msg.contractdetail.min_tick
+	    count_datasets +=1
+	    lth= msg.contractdetail.liquid_trading_hours
+	end
+	puts "More then one dataset specified: #{count_datasets)" if count_datasets > 1
+	puts "Invalid Attribute Combination or unknown symbol/con_id" if count_datasets.zero?
+	puts "Trading-hours: #{lth}" unless lth.zero?
+
+
 =end
-	def read_contract_from_tws unique:true
-		
+	def read_contract_from_tws unique: true, save_details: false
+
 		ib = IB::Connection.current
 		raise "NO TWS" unless ib.present?
 		to_be_saved = IB.db_backed? && !new_record?
@@ -114,10 +130,10 @@ The responsible DB-Index reflects the uniqueness of ["con_id", "symbol", "sec_ty
 					if to_be_saved 
 						update attributes_to_be_transfered[msg.contract]
 						if contract_detail.nil?
-						self.contract_detail =  msg.contract_detail
+						self.contract_detail =  msg.contract_detail 
 						else
 						contract_detail.update attributes_to_be_transfered[msg.contract_detail] ## AR4 specific
-						end
+						end if save_details
 					else
 						self.attributes =  msg.contract.attributes  # AR4 specific
 
@@ -130,17 +146,25 @@ The responsible DB-Index reflects the uniqueness of ["con_id", "symbol", "sec_ty
 		end # subscribe
 
 		### send the request !
+		begin
 		ib.send_message :RequestContractData, 
 			:id => new_record? ? message_id : id,
-			:contract => unique ? query_contract : self  rescue self  # prevents error if Ruby vers < 2.1.0
+			:contract => ( unique ? query_contract : self  rescue self )  # prevents error if Ruby vers < 2.1.0
 		# we do not rely on the received hash, we simply wait for the ContractDataEnd Event 
 		# (or 5 sec). 
 		wait_until_exitcondition[]
 		ib.unsubscribe a
+		rescue ThreadError => e
+		  puts "ERROR"
+		  puts e.inspect
+		  raise
+		end
 		
 		warn{ "NO Contract returned by TWS -->#{self.to_human} "} unless exitcondition
 		warn{ "Multible Contracts are detected, only the last is returned -->#{contract.to_human} "} if count>1
 		count>1 ? count : local_symbol # return_value
 	end # def
+
+  	alias update_contract read_contract_from_tws
 end # module
 end # module

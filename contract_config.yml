@@ -8,7 +8,6 @@
 :option:
   :currency: USD
   :exchange: SMART
-  :multiplier: 100
   :right: P
   :expiry: 
   :strike: 
@@ -16,7 +15,6 @@
 :future:
   :currency: USD
   :exchange: 
-  :multiplier: 1000
   :expiry: 
   :symbol: 
 :forex:
