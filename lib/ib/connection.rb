@@ -7,7 +7,7 @@ module IB
   # Encapsulates API connection to TWS or Gateway
   class Connection
 
-  include LogDev
+  include LogDev  ## default_logger
 
     mattr_accessor :logger  ## borrowed from active_support
     # Please note, we are realizing only the most current TWS protocol versions,
@@ -38,7 +38,7 @@ module IB
       :server_version,
       :remote_connect_time,
       :local_connect_time,
-      :client_id, # Client id of this Connection (as seen bu IB server)
+      :client_id, # Client id of this Connection (as seen by IB server)
       :next_local_id # Next valid order id
 
     alias next_order_id next_local_id
