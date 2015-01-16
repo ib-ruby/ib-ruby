@@ -1,27 +1,75 @@
 #!/usr/bin/env ruby
 #
-# This script places WFC buy order for 100 lots
+# This script ckecks the validity of the contract and then places an buy order for 100 lots
 
 require 'rubygems'
 require 'bundler/setup'
 $LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
+require 'yaml'
+require 'active_support'
 require 'ib-ruby'
 
-# First, connect to IB TWS. Arbitrary :client_id is used to identify your script
-ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS
+# Lets define a Stock (Default: Currency: USD, Exchange: SMART), and a fake one
+our_stock = IB::Stock.new( symbol:'FAST' )
+fake_stock = IB::Stock.new( symbol:'FAKE' )
+# then, connect to IB TWS
+ib = IB::Connection.new client_id: 1112 , port: 7496 # TWS
 
-# Subscribe to TWS alerts/errors and order-related messages
-ib.subscribe(:Alert, :OpenOrder, :OrderStatus) { |msg| puts msg.to_human }
+# Subscribe to TWS /errors and order-related messages
+ib.subscribe(:Alert, :ManagedAccounts, :OpenOrder, :OrderStatus) { |msg| puts msg.to_human }
+# We are using an Advisor-Account.
+# read available Accouts and use the last to place the order for
+ib.wait_for :ManagedAccounts, 5
+account = ib.received[:ManagedAccounts].first.accounts_list.split(',').last
+# Wait for the TWS to be ready
+ib.wait_for :NextValidId
 
-wfc = IB::Symbols::Stocks[:wfc]
-buy_order = IB::Order.new :total_quantity => 100,
+# define the order itself
+buy_order = IB::Order.new total_quantity: 100,
                           :limit_price => 1 + rand().round(2),
                           :action => 'BUY',
-                          :order_type => 'LMT'
-ib.wait_for :NextValidId
-ib.place_order buy_order, wfc
+                          :order_type => 'LMT',
+			  :account => account
+
+# define a lambda to perform the ordering:
+
+place_validated_contract = ->( contract ) do
+
+  contract.update_contract do |msg|
+    # contract in msg.contract
+    tws_contract =  IB::Contract.new con_id: msg.contract.con_id, exchange: msg.contract.exchange
+    ib.place_order buy_order, tws_contract
+  end
+end
+
+# the method »update_contract« validates the presence of this symbol 
+# the validated contract is provided in a block
+# only if a valid contract is returned by the tws, the block is evaluated
+# so - if falsy attributes are used in IB::Stock (or  IB::Contract) no attempt to place the order occurs
+# to perform the Order, the tws only needs ConId and Exchange from the contract
+
+
+## place the order by calling the lamba
+place_validated_contract[our_stock]
+
+
 
 ib.send_message :RequestAllOpenOrders
 
-puts "\n******** Press <Enter> to cancel... *********\n\n"
-STDIN.gets
+#puts "\n******** Press <Enter> to cancel... *********\n\n"
+#STDIN.gets
+puts "Wait 5 Sec"
+sleep 5
+puts "~"*(39)
+puts "don't forget to cancel the order manually!"
+puts "~"*(39)
+
+puts "Place Fake stock "
+
+
+place_validated_contract[fake_stock]
+
+puts "The failour is not only presented in the log."
+puts "The Contract »fake-stock» itself is invalid, i.e."
+puts "local_symbol => #{fake_stock.local_symbol}"
+
