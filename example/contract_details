@@ -6,6 +6,7 @@ require 'rubygems'
 require 'bundler/setup'
 $LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'yaml'
+require 'active_support'
 require 'ib-ruby'
 require 'factory_girl'
 
@@ -32,8 +33,8 @@ market = {"Apple - Manual" => FactoryGirl.build( :ib_contract ), # apple
 #           6 => IB::Symbols::Options[:vxx40] }  #--> osi definition is not supported
 
 # Connect to IB TWS.
-IB::Connection.new :client_id => 1112, :logger=> Logger.new(STDOUT) , :port => 7496 # TWS
-
+IB::Connection.new :client_id => 1112,  :port => 7496 # TWS
+IB::Connection.current.logger.level= 3
 market.each_pair do |id, contract|
   puts "\nRequesting contract data #{id}: #{contract.description}"
   symbol, min_tick = nil
@@ -48,7 +49,7 @@ market.each_pair do |id, contract|
   puts "Result: #{result } \t (local symbol / Nr of Contracts)"
   puts "TWS-resonse: Symbol -> #{symbol}", "Min-Tick:#{min_tick}"
   puts "Updated-Contract"
-  puts  contract.to_human
+  puts  contract.inspect #to_human
   puts "----------------------------------------------------------------------"
   # Request Contract details for the symbols we're interested in. TWS will
   # respond with ContractData messages, which will be processed by the code above.
