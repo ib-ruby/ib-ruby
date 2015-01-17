@@ -111,7 +111,13 @@ Example:
 				if msg.code==200 && msg.error_id==message_id
 					warn { "Not a valid Contract :: #{self.to_human} " }
 					# save message to local_symbol
-				 to_be_saved ? update_attribute( :local_symbol,  msg.message ) : self.local_symbol= msg.message 
+				    if to_be_saved 
+				      update_attribute( :local_symbol,  msg.message ) 
+				      # Process is part of asyncronous Communication from TWS
+				      ActiveRecord::Base.connection.close
+				      else
+				    self.local_symbol= msg.message 
+				      end
 
 					exitcondition = true
 					# alternative
@@ -134,6 +140,9 @@ Example:
 						else
 						contract_detail.update attributes_to_be_transfered[msg.contract_detail] ## AR4 specific
 						end if save_details
+						# Process is part of asyncronous Communication from TWS
+						ActiveRecord::Base.connection.close
+
 					else
 						self.attributes =  msg.contract.attributes  # AR4 specific
 
@@ -155,7 +164,7 @@ Example:
 		wait_until_exitcondition[]
 		ib.unsubscribe a
 		rescue ThreadError => e
-		  puts "ERROR"
+		  puts "TWS_reader#read_contract_from_TWS:..:ThreadERROR"
 		  puts e.inspect
 		  raise
 		end
