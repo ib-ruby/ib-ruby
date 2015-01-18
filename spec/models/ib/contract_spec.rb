@@ -164,7 +164,6 @@ let( :ford_option_3){ FactoryGirl.build(:default_option, strike: 16)}
   end #serialization
 
 
-
   describe 'tws_reader' do
 	  before { IB::Connection.new( OPTS[:connection].merge(:logger => mock_logger)) if IB::Connection.current.nil? }
 	let( :list_of_stocks )  { ["BAP","LNN","T","MSFT","GE"] }
@@ -244,4 +243,34 @@ let( :ford_option_3){ FactoryGirl.build(:default_option, strike: 16)}
 #		  end # descirbe FG
 #	  end
 	end # describe tws_reader
+
+  describe 'database inteactions' , focus:true do
+
+    context "without a given ConID" do
+    let ( :stock ){ FactoryGirl.build( :default_stock ) }
+
+    it " can be saved " do
+      expect{ stock.save}.to change{ IB::Contract.count }.by(1)
+    end
+    it " can  be saved twice " do
+      expect{ 2.times{ stock.dup.save} }.to change{ IB::Contract.count }.by 2
+    end
+
+    context "with a giben ConID" do
+    let ( :stock ){IB::Contract.new con_id: 265598  }
+
+    it " can be saved " do
+      expect{ stock.save}.to change{ IB::Contract.count }.by(1)
+    end
+    it " cannot  be saved twice " do
+    anotherstock = IB::Contract.new con_id: 265598
+      expect{ 2.times{ stock.dup.save} }.not_to change{ IB::Contract.count }
+      expect{ anotherstock.save }.to raise_error(RuntimeError)
+    end
+
+    end
+  end
+
+  end
+
 end # describe IB::Contract

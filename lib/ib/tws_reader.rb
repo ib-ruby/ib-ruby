@@ -3,11 +3,11 @@ module IB
 =begin
 Generates an IB::Contract with the required attributes to retrieve a unique contract from the TWS
 
-Background: If the tws is queried with a fully assigned IB::Contract, it fails occacionally.
-So – even update the contents, a defined set of query-parameters is to be used.
+Background: If the tws is queried with a »complete« IB::Contract, it fails occacionally.
+So – even to update its contents, a defined subset of query-parameters  have to be used.
 
 The required data-fields are stored in a yaml-file.
-If the con_id is present, only con_id and currency are transmitted to the tws.
+If the con_id is present, only con_id and exchange are transmitted to the tws.
 =end
 	def  query_contract invalid_record:true
 		## the yml presents symbol-entries
@@ -24,7 +24,7 @@ If the con_id is present, only con_id and currency are transmitted to the tws.
 
 			raise "#{items_as_string[nessesary_items]} are needed to retrieve Contract, got: #{item_values[nessesary_items].join(',')}" if item_values[nessesary_items].any?( &:nil? ) 
 			IB::Contract.new  item_attributehash[nessesary_items].merge(:sec_type=> sec_type)
-			else #if currency.present?
+			else 
 			IB::Contract.new  con_id:con_id , :exchange => exchange.presence || item_attributehash[nessesary_items][:exchange]
 		end  # if
 		## modify the Object, ie. set con_id to zero
@@ -51,12 +51,12 @@ stores/updates them in this contract_object.
 
 If the parameter »unique« is set (the default), the #yml_file is used to check the nessesary 
 query-attributes, otherwise the check is suppressed.
-ContractDetails are not saved, by default. Instead they are supposed to be adressed by 
+ContractDetails are not saved, by default. Instead they are supposed to be accesed by 
 yielding a block.
 
 The msg-object returned by the tws is asessible via an optional block.
 If many Contracts match the definition by the attributs of the IB::Contract
-the block is executed for each returned Contract
+the block is executed for each returned Contract. This can be used to retrieve Option-Chains.
 
 Example:
 	given an active-record-Model with min_tick-attribute:
@@ -71,6 +71,14 @@ Example:
 	puts "More then one dataset specified: #{count_datasets)" if count_datasets > 1
 	puts "Invalid Attribute Combination or unknown symbol/con_id" if count_datasets.zero?
 	puts "Trading-hours: #{lth}" unless lth.zero?
+
+
+To avoid deadlocks, the method is best executed in a Thread-Environment
+i.e. 
+      c = IB::Stock.new symbol: 'A'
+      t = Thread.new(c) {|contract| contract.read_contract_from_tws }
+      t.join
+
 
 
 =end
