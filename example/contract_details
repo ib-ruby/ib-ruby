@@ -6,6 +6,7 @@ require 'rubygems'
 require 'bundler/setup'
 $LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'yaml'
+require 'pp'
 require 'active_support'
 require 'ib-ruby'
 require 'factory_girl'
@@ -18,45 +19,57 @@ FactoryGirl.definition_file_paths=["../spec/factories"]
 FactoryGirl.find_definitions
 
 begin
-market = {"Apple - Manual" => FactoryGirl.build( :ib_contract ), # apple
-          "Molson Coors via Factory" => FactoryGirl.build( :ib_contract, symbol:'TAP') ,
-          "Default Option via Factory"  => FactoryGirl.build( :default_option, expiry:201503 ),
-	  "Default Stock via Factory" => FactoryGirl.build( :default_stock ),
-	  "Fastenal - manual " => IB::Stock.new( symbol:'FAST' ),
-	  "Default Future via Facotry" => FactoryGirl.build( :default_future ),
-	  "S&P Future - Manual"  => IB::Future.new( symbol:'ES', expiry:201512, multiplier:50 , :exchange => 'GLOBEX'),	
-	  "Default Forex via Factory" => FactoryGirl.build( :default_forex ),
-	  "NOK/SEK - Manual" => FactoryGirl.build( :default_forex , symbol:'NOK', currency:'SEK'),
-	  "GE-Option -Manual with multible contracts" => IB::Option.new( symbol:'GE', strike:25, expiry:201501), # multible put-options, only the last ist selected
-	  "Fake Stock via Factory"  => FactoryGirl.build( :default_stock, :symbol=>'FAKE' )  # not a valid symbol
+market = {"1. Apple via Factory" => FactoryGirl.build( :ib_contract ), # apple
+          "2. Molson Coors via Factory" => FactoryGirl.build( :ib_contract, symbol:'TAP', con_id: nil) ,
+          "3. Default Option via Factory"  => FactoryGirl.build( :default_option, expiry:201503 ),
+	  "4. Default Stock via Factory" => FactoryGirl.build( :default_stock ),
+	  "5. Fastenal - manual " => IB::Stock.new( symbol:'FAST' ),
+	  "6. Default Future via Facotry" => FactoryGirl.build( :default_future ),
+	  "7. S&P Future - Manual"  => IB::Future.new( symbol:'ES', expiry:201512,  :exchange => 'GLOBEX'),	
+	  "8. Default Forex via Factory" => FactoryGirl.build( :default_forex ),
+	  "9. NOK/SEK - Manual" => FactoryGirl.build( :default_forex , symbol:'NOK', currency:'SEK'),
+	  "10.GE-Option -Manual with multible contracts" => IB::Option.new( symbol:'GE', strike:25, expiry:201501), # multible put-options, only the last ist selected
+	  "11.Fake Stock via Factory"  => FactoryGirl.build( :default_stock, :symbol=>'FAKE' )  # not a valid symbol
 	}
-#           6 => IB::Symbols::Options[:vxx40] }  #--> osi definition is not supported
 
 # Connect to IB TWS.
 IB::Connection.new :client_id => 1112,  :port => 7496 # TWS
 IB::Connection.current.logger.level= 3
-market.each_pair do |id, contract|
-  puts "\nRequesting contract data #{id}: #{contract.description}"
-  symbol, min_tick = nil
-  result=  contract.read_contract_from_tws do |msg|
-	  # Any attribute of the contract-object is assesible, i.e.
-	  symbol=  msg.contract.present? ? msg.contract.symbol : "XXX"
-	  # In Addition, all Contract-Detail-Attributes are present 
-	  min_tick= msg.contract_detail.present? ? msg.contract_detail.min_tick : 0
-  end
+threadArray = Array.new
 
-  puts "Query #{id}-----------------------------------------------------------"
-  puts "Result: #{result } \t (local symbol / Nr of Contracts)"
-  puts "TWS-resonse: Symbol -> #{symbol}", "Min-Tick:#{min_tick}"
-  puts "Updated-Contract"
-  puts  contract.inspect #to_human
-  puts "----------------------------------------------------------------------"
-  # Request Contract details for the symbols we're interested in. TWS will
-  # respond with ContractData messages, which will be processed by the code above.
+3.times do
+  market.each_pair do |id, contract|
+    puts "\nRequesting contract data #{id}: #{contract.description}"
+
+    ## A Thread environment is only nessesary, if some other parts of the 
+    ## programm are accessing subscribed messages. This domonstrates the usage.
+
+    threadArray << Thread.new( contract)  do | contract |
+      # local vars
+      symbol, min_tick, result, con_id = nil
+      result=  contract.read_contract_from_tws do |msg|
+	# Any attribute of the contract-object is assesible, i.e.
+	con_id =  msg.contract.present? ? msg.contract.con_id : "NO CONTRACT"
+	symbol =  msg.contract.present? ? msg.contract.symbol : "XXX"
+	# In Addition, all Contract-Detail-Attributes are present 
+	min_tick= msg.contract_detail.present? ? msg.contract_detail.min_tick : 0
+      end
+      puts "Query #{id}-----------------------------------------------------------"
+      puts "Result: #{result } \t (local symbol / Nr of Contracts)"
+      puts "TWS-resonse: Symbol -> #{symbol}", "Min-Tick:#{min_tick}", "ConID:#{con_id}"
+      puts "Updated-Contract"
+      puts  contract.to_human
+      puts "----------------------------------------------------------------------"
+      # Request Contract details for the symbols we're interested in. TWS will
+      # respond with ContractData messages, which will be processed by the code above.
+
+    end # thread
+  end
 end
+threadArray.each{|t| t.join}  # wait for the threads to finish 
 rescue RuntimeError => e
-	puts "Error"
-	puts e
+  puts "Error"
+  puts e
 end
 
 =begin

@@ -7,7 +7,7 @@ module IB
   # Encapsulates API connection to TWS or Gateway
   class Connection
 
-  include LogDev  ## default_logger
+  include LogDev
 
     mattr_accessor :logger  ## borrowed from active_support
     # Please note, we are realizing only the most current TWS protocol versions,
@@ -50,6 +50,9 @@ module IB
       # A couple of locks to avoid race conditions in JRuby
       @subscribe_lock = Mutex.new
       @receive_lock = Mutex.new
+      @message_lock = Mutex.new
+
+
 
       self.logger = options[:logger].presence || default_logger
       @connected = false
@@ -140,11 +143,14 @@ module IB
           else
             error  "#{what} must represent incoming IB message class", :args 
           end
+     # @subscribers_lock.synchronize do
           message_classes.flatten.each do |message_class|
             # TODO: Fix: RuntimeError: can't add a new key into hash during iteration
             subscribers[message_class][id] = subscriber
           end
+     # end  # lock
         end
+
         id
       end
     end
@@ -154,9 +160,11 @@ module IB
       @subscribe_lock.synchronize do
         removed = []
         ids.each do |id|
+#      @subscribers_lock.synchronize do
           removed_at_id = subscribers.map { |_, subscribers| subscribers.delete id }.compact
           logger.error  "No subscribers with id #{id}"   if removed_at_id.empty?
           removed << removed_at_id
+ #     end # lock
         end
         removed.flatten
       end
@@ -298,7 +306,9 @@ module IB
         error "Only able to send outgoing IB messages", :args
       end
       logger.error  { "Not able to send messages, IB not connected!" } unless connected?
+      @message_lock.synchronize do
       message.send_to socket
+      end
     end
 
     alias dispatch send_message # Legacy alias

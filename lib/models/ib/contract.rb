@@ -97,8 +97,8 @@ module IB
       ### Extra validations
 ## Ths validation is missleading because a query with con_id and currency is valid
 ## better: create IB::Future, IB::Stock, IB::Forex and IB::Bond models
-      validates_inclusion_of :sec_type, :in => CODES[:sec_type].keys,
-      :message => "should be valid security type"
+    #  validates_inclusion_of :sec_type, :in => CODES[:sec_type].keys,
+#      :message => "should be valid security type"
 
     validates_format_of :expiry, :with => /\A\d{6}$|^\d{8}$|\A\z/,
       :message => "should be YYYYMM or YYYYMMDD"
@@ -111,11 +111,13 @@ module IB
 
     validates_numericality_of :multiplier, :strike, :allow_nil => true
 
+#    validates_uniqueness_of :con_id, :allow_nil => true  ## has to be defined in model, too
+
     def default_attributes
-      super.merge :con_id => 0,
-        :strike => 0.0,
+      super.merge :strike => 0.0,
+      #:con_id =>  0 --> then validation (s.o) is impossible
         :right => :none, # Not an option
-#        :exchange => 'SMART',  --> overload in IB::Stock, IB::Option, IB::Future, IB::Forex
+#        :exchange => 'SMART',  --> specified in IB::Stock, IB::Option, IB::Future, IB::Forex
         :include_expired => false
     end
 
