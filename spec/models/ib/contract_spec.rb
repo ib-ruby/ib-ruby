@@ -256,16 +256,16 @@ let( :ford_option_3){ FactoryGirl.build(:default_option, strike: 16)}
       expect{ 2.times{ stock.dup.save} }.to change{ IB::Contract.count }.by 2
     end
 
-    context "with a giben ConID" do
+    context "with a given ConID" do
     let ( :stock ){IB::Contract.new con_id: 265598  }
 
     it " can be saved " do
-      expect{ stock.save}.to change{ IB::Contract.count }.by(1)
+      expect{ stock.save }.to change{ IB::Contract.count }.by(1)
     end
     it " cannot  be saved twice " do
     anotherstock = IB::Contract.new con_id: 265598
       expect{ 2.times{ stock.dup.save} }.not_to change{ IB::Contract.count }
-      expect{ anotherstock.save }.to raise_error(RuntimeError)
+      expect{ anotherstock.save! }.to raise_error ActiveRecord::RecordInvalid  #:(RuntimeError)
     end
 
     end
