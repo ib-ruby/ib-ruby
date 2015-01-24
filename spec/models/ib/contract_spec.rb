@@ -1,3 +1,12 @@
+###
+# The following Error occurs frequently
+#* ib_contract - Validation failed: Con has already been taken (ActiveRecord::RecordInvalid)
+#
+# This is caused by the uniqueness-validation  of Con_id, with fails during the Initialisation of Factorys
+# 
+# just repeat the test
+
+
 require 'model_helper'
 require 'combo_helper'
 require 'contract_helper'
@@ -165,112 +174,139 @@ let( :ford_option_3){ FactoryGirl.build(:default_option, strike: 16)}
 
 
   describe 'tws_reader' do
-	  before { IB::Connection.new( OPTS[:connection].merge(:logger => mock_logger)) if IB::Connection.current.nil? }
-	let( :list_of_stocks )  { ["BAP","LNN","T","MSFT","GE"] }
+    before { IB::Connection.new( OPTS[:connection].merge(:logger => mock_logger)) if IB::Connection.current.nil? }
+    let( :list_of_stocks )  { ["BAP","LNN","T","MSFT","GE"] }
 
 
-	describe  "default Stock" do 
-	it_behaves_like  "correctly query's the tws" do  # valid contract
-		let( :contract ){ FactoryGirl.build( :con_id_contract ) }
-	end
-	end
-	describe  "User-Defined Stock" do 
-	it_behaves_like  "correctly query's the tws" do  # valid contract
-		let( :contract ){ FactoryGirl.build( :default_stock, symbol:'AAPL' ) }
-	end
-	end
+    describe  "default Stock" do 
+      it_behaves_like  "correctly query's the tws" do  # valid contract
+	let( :contract ){ FactoryGirl.build( :con_id_contract ) }
+      end
+    end
+    describe  "User-Defined Stock" do 
+      it_behaves_like  "correctly query's the tws" do  # valid contract
+	let( :contract ){ FactoryGirl.build( :default_stock, symbol:'AAPL' ) }
+      end
+    end
 
-	describe  "User-Defined Stock, saved to the DB" do 
-	it_behaves_like  "correctly query's the tws" do   # valid database-record
+    describe  "User-Defined Stock, saved to the DB" do 
+      it_behaves_like  "correctly query's the tws" do   # valid database-record
 
-		let( :contract ){ FactoryGirl.create( :default_stock, symbol:'AAPL' ) }
-	end
-	end
-	describe  "default Option"  do 
-	it_behaves_like  "correctly query's the tws" do  
-		let( :contract ){ FactoryGirl.build( :default_option ) }
-	end
-	end
+	let( :contract ){ FactoryGirl.create( :default_stock, symbol:'AAPL' ) }
+      end
+    end
+    describe  "default Option"  do 
+      it_behaves_like  "correctly query's the tws" do  
+	let( :contract ){ FactoryGirl.build( :default_option ) }
+      end
+    end
 
-	describe  "default Future"   do 
-	it_behaves_like  "correctly query's the tws" do  
-		let( :contract ){ FactoryGirl.build( :default_future ) }
-	end
-	end	
-	describe  "User defined Future"   do 
-	it_behaves_like  "correctly query's the tws" do  
-		let( :contract ){ FactoryGirl.create( :default_future, symbol:'ES', exchange:'GLOBEX', multiplier:50 ) }
-	end
-	end
-	describe "Invalid Stock-Symbol" do
-	it_behaves_like  "invalid query of tws" do  # invalid symbol
-		let( :contract ){ FactoryGirl.build( :default_stock, symbol:'AARL' ) }
-	end
-	end	
-	describe "Invalid Stock-Symbol living in the DB" do
-	it_behaves_like  "invalid query of tws" do  # invalid symbol in database-record
-		let( :contract ){ FactoryGirl.create( :default_stock, symbol:'AARL' ) }
-	end
-	end
-	describe  "User default Forex contract"  do
-	it_behaves_like  "correctly query's the tws" do  
-		let( :contract ){ IB::Symbols::Forex[:eurusd] }
-	end
-	end
+    describe  "default Future"   do 
+      it_behaves_like  "correctly query's the tws" do  
+	let( :contract ){ FactoryGirl.build( :default_future ) }
+      end
+    end	
+    describe  "User defined Future"   do 
+      it_behaves_like  "correctly query's the tws" do  
+	let( :contract ){ FactoryGirl.create( :default_future, symbol:'ES', exchange:'GLOBEX', multiplier:50 ) }
+      end
+    end
+    describe "Invalid Stock-Symbol" do
+      it_behaves_like  "invalid query of tws" do  # invalid symbol
+	let( :contract ){ FactoryGirl.build( :default_stock, symbol:'AARL' ) }
+      end
+    end	
+    describe "Invalid Stock-Symbol living in the DB" do
+      it_behaves_like  "invalid query of tws" do  # invalid symbol in database-record
+	let( :contract ){ FactoryGirl.create( :default_stock, symbol:'AARL' ) }
+      end
+    end
+    describe  "User default Forex contract", focus:true  do
+      it_behaves_like  "correctly query's the tws" do  
+	let( :contract ){ IB::Symbols::Forex[:eurusd] }
+      end
+    end
 
-	it "adds valid records to the database and updates contract_details as well" do
-		list_of_stocks.each do |stock|
-			contract= FactoryGirl.create( :default_stock, symbol:stock )
-			# validity-test:
-			expect{ contract.read_contract_from_tws }.to change{ contract.con_id }
-			expect( contract.contract_detail ).to be_a IB::ContractDetail
-			nc=  IB::Contract.find contract.id
-			expect{ nc.read_contract_from_tws }.not_to change{ nc.contract_detail }
+    it "adds valid records to the database and updates contract_details as well" do
+      list_of_stocks.each do |stock|
+	contract= FactoryGirl.create( :default_stock, symbol:stock )
+	# validity-test:
+	expect{ contract.read_contract_from_tws }.to change{ contract.con_id }
+	expect( contract.contract_detail ).to be_a IB::ContractDetail
+	nc=  IB::Contract.find contract.id
+	expect{ nc.read_contract_from_tws }.not_to change{ nc.contract_detail }
 
-		end
-		expect( IB::Contract.count).to eq list_of_stocks.size
-	end
+      end
+      expect( IB::Contract.count).to eq list_of_stocks.size
+    end
 
-	  ["15","16","17"].each do |strike|
-		it_behaves_like  "correctly query's the tws"  do
-		  	let( :contract ){ FactoryGirl.build( :default_option, strike:strike ) } #, symbol:'FAST', strike:strike, expiry:201503) }
-		  end # descirbe FG
+    ["15","16","17"].each do |strike|
+      it_behaves_like  "correctly query's the tws"  do
+	let( :contract ){ FactoryGirl.build( :default_option, strike:strike ) } #, symbol:'FAST', strike:strike, expiry:201503) }
+      end # descirbe FG
 
-	  end # loop
-#	  ["AAPL","BAP","LNN","T","MSFT","GE"].each do |stock|
-#		  describe  FactoryGirl.create( :default_stock , symbol:stock)  do
-#		  it_returns_a 'correct ib contract object after a tws-query' 
-#		  end # descirbe FG
-#	  end
-	end # describe tws_reader
+    end # loop
+    #	  ["AAPL","BAP","LNN","T","MSFT","GE"].each do |stock|
+    #		  describe  FactoryGirl.create( :default_stock , symbol:stock)  do
+    #		  it_returns_a 'correct ib contract object after a tws-query' 
+    #		  end # descirbe FG
+    #	  end
+  end # describe tws_reader
 
-  describe 'database inteactions' , focus:true do
+  describe 'database interactions' , focus:true do
 
     context "without a given ConID" do
-    let ( :stock ){ FactoryGirl.build( :default_stock ) }
+      let ( :stock ){ FactoryGirl.build( :default_stock ) }
 
-    it " can be saved " do
-      expect{ stock.save}.to change{ IB::Contract.count }.by(1)
-    end
-    it " can  be saved twice " do
-      expect{ 2.times{ stock.dup.save} }.to change{ IB::Contract.count }.by 2
-    end
+      it " can be saved " do
+	expect{ stock.save}.to change{ IB::Contract.count }.by(1)
+      end
+      it " can  be saved twice " do
+	expect{ 2.times{ stock.dup.save} }.to change{ IB::Contract.count }.by 2
+      end
+    end # context
 
-    context "with a giben ConID" do
-    let ( :stock ){IB::Contract.new con_id: 265598  }
+    context "with a given ConID" do
+      let ( :stock ){IB::Contract.new con_id: 265598  }
 
-    it " can be saved " do
-      expect{ stock.save}.to change{ IB::Contract.count }.by(1)
-    end
-    it " cannot  be saved twice " do
-    anotherstock = IB::Contract.new con_id: 265598
-      expect{ 2.times{ stock.dup.save} }.not_to change{ IB::Contract.count }
-      expect{ anotherstock.save }.to raise_error(RuntimeError)
-    end
+      it " can be saved " do
+	expect{ stock.save }.to change{ IB::Contract.count }.by(1)
+      end
+      it " cannot  be saved twice " do
+	anotherstock = IB::Contract.new con_id: 265598
+	expect{ 2.times{ stock.dup.save} }.not_to change{ IB::Contract.count }
+	expect{ anotherstock.save! }.to raise_error ActiveRecord::RecordInvalid  #:(RuntimeError)
+      end
 
-    end
+    end # context
+
   end
 
-  end
+  describe 'multithreading is supported by update_contract' , focus:true do
+    # lets define 10 stocks
+      let(:contracts) do
+	[ 'A', 'T', 'V', 'DE', 'TAP', 'AAPL', 'MSFT', 'YNDX', 'DDR', 'ZBB'].collect do |y|
+	  FactoryGirl.create( :default_stock, symbol: y )
+	end
+      end
+
+      context 'perform update_contract' do
+	it 'call the method' do
+	  threadArray =  Array.new
+	  contracts.each do |contract|
+	    threadArray << Thread.new( contract){|c| c.read_contract_from_tws save_details:true }
+	  end
+	  threadArray.each{|t| t.join}  # wait for the threads to finish 
+
+	  contracts.each do |c|
+	    expect(c.con_id).to be_a Numeric
+	    expect(c.contract_detail).to be_a IB::ContractDetail
+	  end
+
+	  
+	 end
+    end # context
+
+  end # describe
 
 end # describe IB::Contract

@@ -111,7 +111,12 @@ module IB
 
     validates_numericality_of :multiplier, :strike, :allow_nil => true
 
-#    validates_uniqueness_of :con_id, :allow_nil => true  ## has to be defined in model, too
+    begin
+    validates_uniqueness_of :con_id, :allow_nil => true  ## has to be defined in model, too
+    rescue NoMethodError
+      # supress NoMethodError when using lightweight (non-DB-Backed) Model
+      nil
+    end
 
     def default_attributes
       super.merge :strike => 0.0,

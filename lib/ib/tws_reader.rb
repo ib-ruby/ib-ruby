@@ -106,81 +106,81 @@ i.e.
 	  break if exitcondition 
 	  u+=1; sleep 0.05 
 	end
-	end
+      end
 
-	attributes_to_be_transfered = ->(obj) do
-	  obj.attributes.reject{|x,y| ["created_at","updated_at","id"].include? x }
-	end
+      attributes_to_be_transfered = ->(obj) do
+	obj.attributes.reject{|x,y| ["created_at","updated_at","id"].include? x }
+      end
 
-	# subscribe to ib-messages and describe what to do
-	a = ib.subscribe(:Alert, :ContractData,  :ContractDataEnd) do |msg| 
-	  case msg
-	  when IB::Messages::Incoming::Alert
-	    if msg.code==200 && msg.error_id==message_id
-	      ib.logger.warn { "Not a valid Contract :: #{self.to_human} " }
-	      # save message to local_symbol
-	      if to_be_saved 
-		update_attribute( :local_symbol,  msg.message ) 
-		# Process is part of asyncronous Communication from TWS
-		ActiveRecord::Base.connection.close
-	      else
-		self.local_symbol= msg.message 
-	      end
-
-	      exitcondition = true
-	      # alternative
-	      #		raise 'Not a valid Contract '
+      # subscribe to ib-messages and describe what to do
+      a = ib.subscribe(:Alert, :ContractData,  :ContractDataEnd) do |msg| 
+	case msg
+	when IB::Messages::Incoming::Alert
+	  if msg.code==200 && msg.error_id==message_id
+	    ib.logger.warn { "Not a valid Contract :: #{self.to_human} " }
+	    # save message to local_symbol
+	    if to_be_saved 
+	      update_attribute( :local_symbol,  msg.message ) 
+	      # Process is part of asyncronous Communication from TWS
+	      ActiveRecord::Base.connection.close
 	    else
-	      ib.logger.debug  { msg.to_human }
+	      self.local_symbol= msg.message 
 	    end
-	  when IB::Messages::Incoming::ContractData
-	    if msg.request_id.to_i ==  message_id
-	      # if multible contracts are present, all of them are assigned
-	      # Only the last contract is returned. However 'count' is incremented
-	      count +=1
-	      ib.logger.warn{ "Multible Contracts are detected, only the last is returned, this one is overridden -->#{self.to_human} "} if count>1
-	      ## a specified block gets the msg-object on any uniq ContractData-Event
-	      yield msg if block_given?
-	      if to_be_saved 
-		update attributes_to_be_transfered[msg.contract]
-		if contract_detail.nil?
-		  self.contract_detail =  msg.contract_detail 
-		else
-		  contract_detail.update attributes_to_be_transfered[msg.contract_detail] ## AR4 specific
-		end if save_details
-		# Process is part of asyncronous Communication from TWS
-		ActiveRecord::Base.connection.close
 
+	    exitcondition = true
+	    # alternative
+	    #		raise 'Not a valid Contract '
+	  else
+	    ib.logger.debug  { msg.to_human }
+	  end
+	when IB::Messages::Incoming::ContractData
+	  if msg.request_id.to_i ==  message_id
+	    # if multible contracts are present, all of them are assigned
+	    # Only the last contract is returned. However 'count' is incremented
+	    count +=1
+	    ib.logger.warn{ "Multible Contracts are detected, only the last is returned, this one is overridden -->#{self.to_human} "} if count>1
+	    ## a specified block gets the msg-object on any uniq ContractData-Event
+	    yield msg if block_given?
+	    if to_be_saved 
+	      update attributes_to_be_transfered[msg.contract]
+	      if contract_detail.nil?
+		self.contract_detail =  msg.contract_detail 
 	      else
-		self.attributes =  msg.contract.attributes  # AR4 specific
+		contract_detail.update attributes_to_be_transfered[msg.contract_detail] ## AR4 specific
+	      end if save_details
+	      # Process is part of asyncronous Communication from TWS
+	      ActiveRecord::Base.connection.close
 
-	      end
+	    else
+	      self.attributes =  msg.contract.attributes  # AR4 specific
+
 	    end
-	  when IB::Messages::Incoming::ContractDataEnd
-	    exitcondition = true if msg.request_id.to_i ==  message_id
+	  end
+	when IB::Messages::Incoming::ContractDataEnd
+	  exitcondition = true if msg.request_id.to_i ==  message_id
 
-	  end  # case
-	end # subscribe
+	end  # case
+      end # subscribe
 
-	### send the request !
-	begin
-	  ib.send_message :RequestContractData, 
-	    :id => new_record? ? message_id : id,
-	    :contract => ( unique ? query_contract : self  rescue self )  # prevents error if Ruby vers < 2.1.0
-	  # we do not rely on the received hash, we simply wait for the ContractDataEnd Event 
-	  # (or 5 sec). 
-	  wait_until_exitcondition[]
-	  ib.unsubscribe a
-	  ## monitor deadlocks 
-	rescue ThreadError => e
-	  puts "TWS_reader#read_contract_from_TWS:..:ThreadERROR"
-	  puts e.inspect
-	  raise
-	end
+      ### send the request !
+      begin
+	ib.send_message :RequestContractData, 
+	  :id => new_record? ? message_id : id,
+	  :contract => ( unique ? query_contract : self  rescue self )  # prevents error if Ruby vers < 2.1.0
+	# we do not rely on the received hash, we simply wait for the ContractDataEnd Event 
+	# (or 5 sec). 
+	wait_until_exitcondition[]
+	ib.unsubscribe a
+	## monitor deadlocks 
+      rescue ThreadError => e
+	puts "TWS_reader#read_contract_from_TWS:..:ThreadERROR"
+	puts e.inspect
+	raise
+      end
 
-	ib.logger.warn{ "NO Contract returned by TWS -->#{self.to_human} "} unless exitcondition
-	ib.logger.warn{ "Multible Contracts are detected, only the last is returned -->#{contract.to_human} "} if count>1
-	count>1 ? count : local_symbol # return_value
+      ib.logger.warn{ "NO Contract returned by TWS -->#{self.to_human} "} unless exitcondition
+      ib.logger.warn{ "Multible Contracts are detected, only the last is returned -->#{contract.to_human} "} if count>1
+      count>1 ? count : local_symbol # return_value
       end # def
 
       alias update_contract read_contract_from_tws
