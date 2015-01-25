@@ -9,6 +9,8 @@ module IB
                                                  [:code, :int],
                                                  [:message, :string])
       class Alert
+        alias_method :request_id, :error_id
+
         # Is it an Error message?
         def error?
           code < 1000
