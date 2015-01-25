@@ -93,6 +93,28 @@ module IB
           end
         end
 
+        # Convert an array of message class identifiers to IncomingMessage
+        # classes.  Accepts any combination of Array, symbol, or regex.
+        # Returns an array of class objects.
+        def self.resolve_message_classes(args)
+          message_classes = []
+          args = [args] unless args.is_a?(Array)
+          args.flatten.each do |what|
+            message_classes <<
+              case
+              when what.is_a?(Class) && what < Messages::Incoming::AbstractMessage
+                what
+              when what.is_a?(Symbol)
+                Messages::Incoming.const_get(what)
+              when what.is_a?(Regexp)
+                Messages::Incoming::Classes.values.find_all { |klass| klass.to_s =~ what }
+              else
+                error "#{what} must represent incoming IB message class", :args
+              end
+          end
+          message_classes.flatten
+        end
+
       end # class AbstractMessage
     end # module Incoming
   end # module Messages

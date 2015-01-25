@@ -16,10 +16,7 @@ require 'ib-ruby'
 }
 
 # Connect to IB TWS.
-ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS
-
-# Subscribe to TWS alerts/errors
-ib.subscribe(:Alert) { |msg| puts msg.to_human }
+ib = IB::Connection.new :client_id => 1112, :port => 7496 # TWS
 
 # Subscribe to HistoricalData incoming events.  The code passed in the block
 # will be executed when a message of that type is received, with the received
@@ -27,9 +24,21 @@ ib.subscribe(:Alert) { |msg| puts msg.to_human }
 #
 # Note that we have to look the ticker id of each incoming message
 # up in local memory to figure out what it's for.
-ib.subscribe(IB::Messages::Incoming::HistoricalData) do |msg|
-  puts @contracts[msg.request_id].description + ": #{msg.count} items:"
-  msg.results.each { |entry| puts "  #{entry}" }
+#
+# We also keep track of which contracts we've received messages for, and (below)
+# assume execution is complete once all contracts have received data.
+responded = []
+ib.subscribe([IB::Messages::Incoming::HistoricalData, :Alert]) do |msg|
+  if @contracts.has_key?(msg.request_id)
+    if msg.is_a?(IB::Messages::Incoming::HistoricalData)
+      puts @contracts[msg.request_id].description + ": #{msg.count} items:"
+      puts msg.to_human
+      msg.results.each { |entry| puts "  #{entry}" }
+    else
+      puts msg.to_human + " #{msg.request_id}"
+    end
+    responded << msg.request_id
+  end
 end
 
 # Now we actually request historical data for the symbols we're interested in. TWS will
@@ -46,7 +55,6 @@ end
                       :format_date => 1)
 end
 
-# IB does not send any indication when all historic data is done being delivered.
-# So we need to interrupt manually when our request is answered.
-puts "\n******** Press <Enter> to exit... *********\n\n"
-STDIN.gets
+# Assume execution is complete once we've received a message of some type for each contract.
+sleep(0.2) while responded.length < @contracts.length
+ib.disconnect
