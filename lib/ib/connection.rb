@@ -114,20 +114,6 @@ module IB
 
     ### Working with message subscribers
 
-    # Given a Class, symbol or regex, return the corresponding Incoming Message class
-    def resolve_subscription_type(what)
-      case
-        when what.is_a?(Class) && what < Messages::Incoming::AbstractMessage
-          [what]
-        when what.is_a?(Symbol)
-          [Messages::Incoming.const_get(what)]
-        when what.is_a?(Regexp)
-          Messages::Incoming::Classes.values.find_all { |klass| klass.to_s =~ what }
-        else
-          error "#{what} must represent incoming IB message class", :args
-      end
-    end
-
     # Subscribe Proc or block to specific type(s) of incoming message events.
     # Listener will be called later with received message instance as its argument.
     # Returns subscriber id to allow unsubscribing
@@ -138,18 +124,9 @@ module IB
 
         error "Need subscriber proc or block", :args unless subscriber.is_a? Proc
 
-        args.each do |what|
-          message_classes =
-          case
-          when what.is_a?(Array)
-            what.collect { |w| resolve_subscription_type(w) }
-          else
-            resolve_subscription_type(what)
-          end
-          message_classes.flatten.each do |message_class|
+        IB::Messages::Incoming::AbstractMessage.resolve_message_classes(args).each do |message_class|
             # TODO: Fix: RuntimeError: can't add a new key into hash during iteration
             subscribers[message_class][id] = subscriber
-          end
         end
         id
       end
