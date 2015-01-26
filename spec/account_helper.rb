@@ -15,7 +15,7 @@ def verify_account
   account = OPTS[:connection][:account] || OPTS[:connection][:account_name]
   raise "Please configure IB PAPER ACCOUNT in spec/spec_helper.rb" unless account
 #  @ib = IB::Connection.current.presence || IB::Connection.new( :port => 7496 ,:logger => Logger.new(STDOUT), client_id:1056)
-  @ib = IB::Connection.current.presence || IB::Connection.new( OPTS[:connection].merge(:logger => mock.logger, client_id:1056))
+  @ib = IB::Connection.current.presence || IB::Connection.new( OPTS[:connection].merge(:logger => mock_logger, client_id:1056))
 
   @ib.wait_for :ManagedAccounts, 5
 
