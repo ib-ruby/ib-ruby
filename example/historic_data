@@ -37,12 +37,13 @@ end
 
   responded = []
 # Connect to IB TWS.
+# It is safe to connect to a production-machine. 
+  #                            change host to ip of the computer, where a tws
+  #                            with marketdata-subscriptions is running
   ib = IB::Connection.new host: '172.28.50.135', :client_id => 1112 , :port => 7496 # TWS
 
-  # Subscribe to TWS alerts/errors
-  ib.subscribe(:Alert) { |msg| puts msg.to_human }
 
-  # Subscribe to HistoricalData incoming events.  The code passed in the block
+  # Subscribe to Alerts and HistoricalData incoming events.  The code passed in the block
   # will be executed when a message of that type is received, with the received
   # message as its argument. In this case, we just print out the data.
   #
