@@ -7,14 +7,14 @@ Ruby Implementation of the Interactive Brokers Trader Workstation (TWS) API v.96
 ### Changes from the stable branch
 
 
-* Rails support is not maintained
+* Only ActiveModel/ActiveRecord-Support. 
 * TWS-queries are working in an asynchronic/ multithreaded environment 
   (this is the  biggest disadvantage of the stable branch)
 * There is a wrapper IB::Contract.update_contract which allows a validation of 
   the given Contract-Attributes prior to further actions, ie data-retrieving and ordering
 *  IB::Stock, IB::Option, IB::Future and IB::Forex inherent IB::Contract
 
-* the code-base itself is
+* the code-base itself is untouched. The application is thus »production-ready« 
 
 
 
