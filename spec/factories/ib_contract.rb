@@ -31,9 +31,9 @@ FactoryGirl.define do
 		symbol 	 'GPS'
 	end
 	factory :default_future, class:IB::Future do
-		symbol 	 'ZN'
+		symbol 	 'NQ'
 		expiry  '201503'
-		exchange 'ECBOT'
+		exchange 'GLOBEX'
 	end
 	factory :default_forex, class:IB::Forex do
 		symbol 	 'EUR'

@@ -1,8 +1,25 @@
 # ib-ruby
 
 Ruby Implementation of the Interactive Brokers Trader Workstation (TWS) API v.965-967.
+# Development-Branch, Environment: Ruby 2.20, ActiveRecord 4 , MariaDB,  Rspec3/Guard-Testsuite
 
-Copyright (C) 2006-2013 Paul Legato, Wes Devauld, and Ar Vicco.
+
+### Changes from the stable branch
+
+
+* Rails support is not maintained
+* TWS-queries are working in an asynchronic/ multithreaded environment 
+  (this is the  biggest disadvantage of the stable branch)
+* There is a wrapper IB::Contract.update_contract which allows a validation of 
+  the given Contract-Attributes prior to further actions, ie data-retrieving and ordering
+*  IB::Stock, IB::Option, IB::Future and IB::Forex inherent IB::Contract
+
+* the code-base itself is
+
+
+
+
+Copyright (C) 2006-2014 Paul Legato, Wes Devauld, Ar Vicco and Hartmut Bischoff.
 
 https://github.com/ib-ruby/ib-ruby
 
@@ -40,10 +57,6 @@ contains 1/10th of code and is 500% more maintaineable than it is possible with
 other API implementations. The choice is yours.
 
 ## INSTALLATION:
-
-### From RubyGems
-
-    $ sudo gem install ib-ruby [-v version]
 
 ### From Source
 
