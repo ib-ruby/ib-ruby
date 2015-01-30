@@ -143,11 +143,9 @@ i.e.
 	    yield msg if block_given?
 	    if to_be_saved 
 	      update attributes_to_be_transfered[msg.contract]
-	      if contract_detail.nil?
-		self.contract_detail =  msg.contract_detail 
-	      else
-		contract_detail.update attributes_to_be_transfered[msg.contract_detail] ## AR4 specific
-	      end if save_details
+	      if save_details
+		self.contract_detail = IB::ContractDetails.where(:con_id => msg.contract.con_id).first_or_create  attributes_to_be_transfered[msg.contract_detail] ## AR4 specific
+	      end 
 	      # Process is part of asyncronous Communication from TWS
 	      ActiveRecord::Base.connection.close
 
@@ -165,7 +163,7 @@ i.e.
       ### send the request !
       begin
 	ib.send_message :RequestContractData, 
-	  :id => new_record? ? message_id : id,
+	  :id =>  message_id,
 	  :contract => ( unique ? query_contract : self  rescue self )  # prevents error if Ruby vers < 2.1.0
 	# we do not rely on the received hash, we simply wait for the ContractDataEnd Event 
 	# (or 5 sec). 
