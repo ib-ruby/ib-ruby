@@ -22,15 +22,15 @@ Ruby Implementation of the Interactive Brokers Trader Workstation (TWS) API v.96
     ib.subscribe(:ExecutionData) { |msg| puts "Filled: #{msg.execution}!" }
 
     contract.update_contract do |msg|
-	buy_order = IB::Order.new :total_quantity => 100, :limit_price => 21.00,
+		buy_order = IB::Order.new :total_quantity => 100, :limit_price => 21.00,
     	                               :action => :buy, :order_type => :limit
-	ib.place_order buy_order, msg.contract
+		ib.place_order buy_order, msg.contract
     end
 
     ib.wait_for :ExecutionData
     	
 ```
-
+  The order is fired only, if  the contract was successfuly validated by the TWS
 
 * the code-base itself is untouched. The application is thus »production-ready« 
 
