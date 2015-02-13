@@ -30,7 +30,7 @@ Ruby Implementation of the Interactive Brokers Trader Workstation (TWS) API v.96
     ib.wait_for :ExecutionData
     	
 ```
-  The order is fired only, if  the contract was successfuly validated by the TWS
+  The order is only fired, if  the contract was successful validated by the TWS
 
 * the code-base itself is untouched. The application is thus »production-ready« 
 
