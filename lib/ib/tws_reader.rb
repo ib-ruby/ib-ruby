@@ -25,7 +25,7 @@ If the con_id is present, only con_id and exchange are transmitted to the tws.
 		 raise "#{items_as_string[nessesary_items]} are needed to retrieve Contract, got: #{item_values[nessesary_items].join(',')}" if item_values[nessesary_items].any?( &:nil? ) 
 		 IB::Contract.new  item_attributehash[nessesary_items].merge(:sec_type=> sec_type)
 	       else 
-		 IB::Contract.new  con_id:con_id , :exchange => exchange.presence || item_attributehash[nessesary_items][:exchange]
+		 IB::Contract.new  con_id: con_id , :exchange => exchange.presence || item_attributehash[nessesary_items][:exchange]
 	       end  # if
       ## modify the Object, ie. set con_id to zero
       if new_record?
@@ -102,7 +102,7 @@ i.e.
       exitcondition, count = false, 0
 
       wait_until_exitcondition = -> do 
-	u=0; while u<100  do   # wait max 5 sec
+	u=0; while u<10000  do   # wait max 50 sec
 	  break if exitcondition 
 	  u+=1; sleep 0.05 
 	end
@@ -177,7 +177,7 @@ i.e.
       end
 
       ib.logger.warn{ "NO Contract returned by TWS -->#{self.to_human} "} unless exitcondition
-      ib.logger.warn{ "Multible Contracts are detected, only the last is returned -->#{contract.to_human} "} if count>1
+      ib.logger.warn{ "Multible Contracts are detected, only the last is returned -->#{self.to_human} "} if count>1
       count>1 ? count : local_symbol # return_value
       end # def
 
