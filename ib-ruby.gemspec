@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 Gem::Specification.new do |gem|
+  gem.required_ruby_version = '~> 2.2'
   gem.name = "ib-ruby"
   gem.version = File.open('VERSION').read.strip
   gem.summary = "Ruby Implementation of the Interactive Brokers TWS API"
