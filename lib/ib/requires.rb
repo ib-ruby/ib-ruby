@@ -3,6 +3,7 @@ require 'ib/extensions'
 require 'ib/errors'
 require 'ib/constants'
 require 'ib/connection'
+require 'ib/gateway'
 require 'ib/flex'
 
 require 'ib/models'

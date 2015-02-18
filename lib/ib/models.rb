@@ -6,6 +6,7 @@
   require 'models/ib/future'
   require 'models/ib/stock'
   require 'models/ib/forex'
+  require 'models/ib/account'
   require 'models/ib/order_state'
   require 'models/ib/order'
   require 'models/ib/combo_leg'
