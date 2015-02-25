@@ -2,24 +2,32 @@ require 'ostruct'
 require 'spec_helper'
  require 'message_helper'  # (logging)
 describe IB::Alert do
-    let( :alert_msg ) { OpenStruct.new  code: 234 , description: "This is a testmessage" , error_id: 567  }
-  context 'initiate class' do
-    it 'create a singleton' do
-      IB::Alert.logger = mock_logger
-      expect(IB::Alert).to be_a IB::Alert
-    end
-  end
+
+    before(:all){ IB::Alert.logger = mock_logger }
+    let( :alert_msg ) { OpenStruct.new  code: 234 , message: "This is a testmessage" , error_id: 567  }
   context "basics" do
     
-
+#
     it 'generates a method' do
-      IB::Alert.logger= mock_logger  #new unless IB::Alert.current.present?
-#      ia =   IB::Alert.current
-#      ias= ia.methods.size
       IB::Alert.alert_234 alert_msg 
-#      expect( ia.method.size).to be > ias
-
+      # the code should appear in the log 
+      expect( should_log /234/ ).to be_truthy
     end
+
+    it 'ignores an alert' do
+
+      IB::Alert.alert_200 "alert" 
+      expect( should_not_log /200/ ).to be_truthy
+  end
+
+    it 'logs in error' do
+      alert_msg
+      alert_msg.code = 320
+      IB::Alert.send "alert_#{alert_msg.code}", alert_msg
+      puts log_entries
+      expect( should_log /id: 567/ ).to be_truthy
+    end
+
   end
 #  context "defined resonse" do
 #    def IB::Alert.alert_625 msg
