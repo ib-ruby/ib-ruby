@@ -25,6 +25,7 @@ shared_examples_for 'a valid User' do | accounts |
     subject.account = account_id
     expect(subject.advisor?).not_to be
     expect(subject.user?).to be
+    expect(subject.print_type).to match /user/
   end # it
   end  # each
 end  # shared example
@@ -35,6 +36,7 @@ shared_examples_for 'a valid Advisor' do | accounts |
     subject.account = account_id
     expect(subject.advisor?).to be
     expect(subject.user?).not_to be
+    expect(subject.print_type).to match /advisor/
   end # it
   end  # each
 end  # shared example

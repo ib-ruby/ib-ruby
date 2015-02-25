@@ -17,7 +17,7 @@ module IB
   ## public data-queue: received,  received?, wait_for, clear_received
   ## misc:	      reader_running? 
 
-  include LogDev
+  include LogDev   # provides default_logger
 
     mattr_accessor :current
     mattr_accessor :logger  ## borrowed from active_support
@@ -82,7 +82,9 @@ module IB
 	logger.progname = "Connection#connect"
         self.next_local_id = msg.local_id
         logger.info { "Got next valid order id: #{next_local_id}." }
-	yield if block_given?
+	## this block is executed after the tws-communications are established
+	## Connection.current.open { |connection| do_nice_things }
+	yield self if block_given?
       end
 
       @socket = IBSocket.open(@host, @port)

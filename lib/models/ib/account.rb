@@ -4,14 +4,22 @@ class Account < IB::Model
   #  attr_accessible :name, :account, :connected
 
   prop :account,  # String 
-       :alias     # 
+       :name,     # 
+       :type,
+       :connected => :bool
 
 
   validates_format_of :account, :with =>  /\A[D]?[UF]{1}\d{5,7}\z/ , :message => 'should be (X)X00000'
 
+  # in tableless mode the scope is ignored
+  scope :of_ib_user_id, ->(account) { where :account => account.downcase } rescue nil
+
+
     def default_attributes
       super.merge account: 'X000000'
-      super.merge alias: ''
+      super.merge name: ''
+      super.merge type: 'Account'
+      super.merge connected: false
     end
 
   # Setze Account connected/disconnected und undate!
@@ -22,16 +30,26 @@ class Account < IB::Model
     update_attribute :connected , false
   end # disconnected!
 
+  def print_type
+      (test_environment? ? "demo_"  : "") + ( user? ? "user" : "advisor" )
+  end
+
   def advisor?
-    account =~ /[F]{1}/
+    type =~ /Advisor/ || account =~ /[F]{1}/
   end
 
   def user?
-    account =~ /[U]{1}/
+    type =~ /User/ || account =~ /[U]{1}/
   end
 
   def test_environment?
     account =~ /^[D]{1}/
   end
+
+  def == other
+     super(other) ||
+     other.is_a?(self.class) && account == other.account
+  end 
+
 end
 end

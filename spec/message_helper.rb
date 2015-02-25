@@ -11,7 +11,7 @@ def mock_logger
     logger.formatter = proc do |level, time, prog, msg|
       "#{time.strftime('%H:%M:%S.%N')} #{msg}\n"
     end
-    logger.level = Logger::INFO
+    logger.level = Logger::DEBUG
   end
 end
 

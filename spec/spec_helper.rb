@@ -1,3 +1,4 @@
+require 'active_support'
 require 'rspec'
 require 'rspec/its'
 require 'rspec/collection_matchers'
