@@ -1,5 +1,7 @@
 require 'rspec'
+require 'rspec/its'
 require 'ib'
+require 'pp'
 
 # Configure top level option indicating how the test suite should be run
 
@@ -20,9 +22,9 @@ if OPTS[:brokertron]
   }
 else
   # Connection to IB PAPER ACCOUNT
-  ACCOUNT ||= 'DU60320'
+  ACCOUNT ||= 'DU60320' # Set this to your Paper Account Number
   HOST ||= '127.0.0.1'
-  PORT ||= 7496
+  PORT ||= 4001
 
   OPTS[:connection] = {
     :account => ACCOUNT, # Your IB PAPER ACCOUNT, tests will only run against it
