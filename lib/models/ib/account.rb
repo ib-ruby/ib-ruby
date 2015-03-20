@@ -35,11 +35,11 @@ class Account < IB::Model
   end
 
   def advisor?
-    type =~ /Advisor/ || account =~ /[F]{1}/
+    type =~ /Advisor/ || account =~ /\A[D]?[F]{1}/
   end
 
   def user?
-    type =~ /User/ || account =~ /[U]{1}/
+    type =~ /User/ || account =~ /\A[D]?[U]{1}/
   end
 
   def test_environment?

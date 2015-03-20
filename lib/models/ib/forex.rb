@@ -1,4 +1,4 @@
-require 'models/ib/contract'
+#require 'models/ib/contract'
 module IB
   class Forex < Contract
     validates_format_of :sec_type, :with => /\Aforex\z/,

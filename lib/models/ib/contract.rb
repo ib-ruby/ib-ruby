@@ -279,6 +279,9 @@ module IB
   ### Now let's deal with Contract subclasses
 
   require 'models/ib/option'
+  require 'models/ib/future'
+  require 'models/ib/forex'
+  require 'models/ib/stock'
   require 'models/ib/bag'
 
   class Contract
@@ -287,6 +290,9 @@ module IB
     Subclasses = Hash.new(Contract)
     Subclasses[:bag] = IB::Bag
     Subclasses[:option] = IB::Option
+    Subclasses[:future] = IB::Future
+    Subclasses[:forex] = IB::Forex
+
 
     # This builds an appropriate Contract subclass based on its type
     def self.build opts = {}

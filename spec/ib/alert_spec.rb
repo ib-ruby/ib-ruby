@@ -24,15 +24,9 @@ describe IB::Alert do
       alert_msg
       alert_msg.code = 320
       IB::Alert.send "alert_#{alert_msg.code}", alert_msg
-      puts log_entries
       expect( should_log /id: 567/ ).to be_truthy
     end
 
   end
-#  context "defined resonse" do
-#    def IB::Alert.alert_625 msg
-#
-#    end
-#  end
 end
 

@@ -17,13 +17,13 @@ module IB
 
       ### Define short message classes in-line:
 
-      AccountValue = def_message([6, 2], [:key, :string],
-                                 [:value, :string],
-                                 [:currency, :string],
-                                 [:account_name, :string]) do
-        "<AccountValue: #{account_name}, #{key}=#{value} #{currency}>"
-      end
-
+#      AccountValue = def_message([6, 2], [:key, :string],
+#                                 [:value, :string],
+#                                 [:currency, :string],
+#                                 [:account_name, :string]) do
+#        "<AccountValue: #{account_name}, #{key}=#{value} #{currency}>"
+#      end
+#
       AccountUpdateTime = def_message 8, [:time_stamp, :string]
 
       NewsBulletins =
