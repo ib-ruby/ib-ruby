@@ -7,6 +7,7 @@ require 'ib/flex'
 
 require 'ib/models'
 require 'ib/messages'
+require 'ib/account_infos'
 require 'ib/symbols'
 require 'ib/alerts'
 require 'ib/connection'

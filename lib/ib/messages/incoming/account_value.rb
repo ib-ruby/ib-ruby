@@ -2,36 +2,17 @@ module IB
   module Messages
     module Incoming
 
-      PortfolioValue = def_message [7, 7],
-                                   [:contract, :con_id, :int],
-                                   [:contract, :symbol, :string],
-                                   [:contract, :sec_type, :string],
-                                   [:contract, :expiry, :string],
-                                   [:contract, :strike, :decimal],
-                                   [:contract, :right, :string],
-                                   [:contract, :multiplier, :string],
-                                   [:contract, :primary_exchange, :string],
-                                   [:contract, :currency, :string],
-                                   [:contract, :local_symbol, :string],
-                                   [:position, :int],
-                                   [:market_price, :decimal],
-                                   [:market_value, :decimal],
-                                   [:average_cost, :decimal],
-                                   [:unrealized_pnl, :decimal_max], # May be nil!
-                                   [:realized_pnl, :decimal_max], #   May be nil!
-                                   [:account_name, :string]
-      class PortfolioValue
+	AccountValue = def_message([6, 2], [:account_value, :key, :string],
+				           [:account_value, :value, :string],
+                                       [:account_value, :currency, :string],
+                                       [:account_name, :string])
+      class AccountValue
 
-        def contract
-          @contract = IB::Contract.build @data[:contract]
+        def account_value
+          @account_value = IB::AccountValue.new @data[:account_value]
         end
 
-        def to_human
-          "<PortfolioValue: #{contract.to_human} (#{position}): Market #{market_price}" +
-              " price #{market_value} value; PnL: #{unrealized_pnl} unrealized," +
-              " #{realized_pnl} realized; account #{account_name}>"
-        end
-      end # PortfolioValue
+      end # AccountValue
 
 
     end # module Incoming

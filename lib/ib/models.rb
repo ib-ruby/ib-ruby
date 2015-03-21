@@ -7,6 +7,7 @@
   require 'models/ib/user'
   require 'models/ib/advisor'
   require 'models/ib/account_value'
+  require 'models/ib/portfolio_value'
   require 'models/ib/order_state'
   require 'models/ib/order'
   require 'models/ib/combo_leg'

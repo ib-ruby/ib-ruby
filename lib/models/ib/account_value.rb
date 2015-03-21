@@ -1,5 +1,4 @@
 module IB
-  # This is a single data point delivered by HistoricData or RealTimeBar messages.
   # Instantiate with a Hash of attributes, to be auto-set via initialize in Model.
   class AccountValue < IB::Model
     include BaseProperties
@@ -26,9 +25,9 @@ module IB
     end
 
     def to_human
-       "#{key}=#{value} #{currency}>"
+       "<#{key}=#{value} #{currency}>"
     end
 
     alias to_s to_human
-  end # class Bar
+  end # class 
 end # module IB

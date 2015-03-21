@@ -85,6 +85,7 @@ module IB
       require 'ib/messages/incoming/next_valid_id'
       require 'ib/messages/incoming/open_order'
       require 'ib/messages/incoming/order_status'
+      require 'ib/messages/incoming/account_value'
       require 'ib/messages/incoming/portfolio_value'
       require 'ib/messages/incoming/real_time_bar'
       require 'ib/messages/incoming/scanner_data'

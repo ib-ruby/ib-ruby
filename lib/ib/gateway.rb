@@ -29,11 +29,12 @@ class Gateway
   require 'active_support'
 
  include LogDev   # provides default_logger
+ include AccountInfos  # provides Handling of Account-Data provided by the tws
   # from active-support. Add Logging at Class + Instance-Level
   mattr_accessor :logger
   # similar to the Connection-Class: current represents the active instance of Gateway
   mattr_accessor :current
-  mattr_reader :tws
+  mattr_accessor :tws
 
 
 =begin
@@ -61,7 +62,9 @@ The Advisor is always the first account
 		  host: '127.0.0.1', 
 		  subscribe_managed_accounts: true, 
 		  subscribe_alerts: true, 
+		  subscribe_account_infos: true, 
 		  connect: false, 
+		  get_account_data: false,
 		  logger: default_logger
     self.logger = logger
     logger.info { '-' * 20 +' initialize ' + '-' * 20 }
@@ -71,12 +74,13 @@ The Advisor is always the first account
     # establish Alert-framework
     IB::Alert.logger = logger
     # initialise Connection without connecting
-    tws = IB::Connection.new  connection_parameter
+    self.tws = IB::Connection.new  connection_parameter
     # prepare Advisor-User hierachie
     @accounts=Array.new
 
     initialize_managed_accounts if subscribe_managed_accounts
     initialize_alerts  if subscribe_alerts
+    initialize_account_infos if subscribe_account_infos || get_account_data
     ## apply other initialisations which should apper before the connection as block
     ## i.e. after connection order-state events are fired if an open-order is pending
     ## a possible response is best defined before the connect-attempt is done
@@ -86,7 +90,10 @@ The Advisor is always the first account
 #      subscribe_order_messages
     end
     # finally connect to the tws
-    connect() if connect
+    connect() if connect || get_account_data
+    get_account_data()  if get_account_data
+
+
   end
   ## ------------------------------------- connect ---------------------------------------------##
 =begin
@@ -136,13 +143,13 @@ Its always active. If the connection is interrupted and
   def initialize_managed_accounts
 
 
-    IB::Connection.current.subscribe(:ManagedAccounts) do |msg| 
+    tws.subscribe(:ManagedAccounts) do |msg| 
       logger.progname =  'Gateway#InitializeManagedAccounts' 
       if @accounts.empty?
 	unless IB.db_backed?
 	  # just validate the mmessage and put all together into an array
 	@accounts =  msg.accounts_list.split(',').map do |a| 
-	    account = IB::Account.new( account: a,  connected: true )
+	    account = IB::Account.new( account: a.upcase ,  connected: true )
 	    if account.save 
 		     logger.info {"new #{account.print_type} detected => #{account.account}"}
 		     account
@@ -160,7 +167,7 @@ Its always active. If the connection is interrupted and
 	  # alle Konten auf disconnected setzen
 	  advisor =  if (a= Advisor.of_ib_user_id(advisor_id)).empty?
 		       logger.info {"creating a new advisor #{advisor_id}"}
-		       Advisor.create( :account => advisor_id.downcase, :connected => true, :name => 'advisor' )
+		       Advisor.create( :account => advisor_id.upcase, :connected => true, :name => 'advisor' )
 		     else
 		       logger.info {"updating active-Advisor-Flag #{advisor_id}"}
 		       a.first.update_attribute :connected , true
@@ -169,7 +176,7 @@ Its always active. If the connection is interrupted and
 	  user_id.each do | this_user_id |
 	    if (a= advisor.users.of_ib_user_id(this_user_id)).empty?
 	      logger.info {"creating a new user #{this_user_id}"}
-	      advisor.users << User.new( :account => this_user_id.downcase, :connected => true , :name =>    "user#{this_user_id[-2 ..-1]}")
+	      advisor.users << User.new( :account => this_user_id.upcase, :connected => true , :name =>    "user#{this_user_id[-2 ..-1]}")
 	    else
 	      a.first.update_attribute :connected, true
 	      logger.info {"updating active-User-Flag #{this_user_id}"}
@@ -222,6 +229,8 @@ Its always active. If the connection is interrupted and
     end
 
   end
+
+
 end  # class
 
 end # module
