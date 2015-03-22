@@ -8,7 +8,7 @@ Ruby Implementation of the Interactive Brokers Trader Workstation (TWS) API v.96
 
 
 * Only ActiveModel/ActiveRecord-Support. 
-* A IB::Gateway is added. This enables a object-orientated view to Accounts with Positions and Contracts
+* A IB::Gateway is added. This builds an object-orientated representation of Accounts with pending and completed Orders, Positions and Contracts
 ``` ruby
     require 'ib'
     
@@ -20,8 +20,10 @@ Ruby Implementation of the Interactive Brokers Trader Workstation (TWS) API v.96
      puts account.contracts.map &:to_human 
      puts account.portfolio_values &:to_human
      (...)
+     # update Account-values
+     IB::Gateway.current.get_account_data
  ``` 
-* To Query the TWS manual, the IB::Connection-Object is always available via IB::Gateway.tws, eg.
+* To Query the TWS manualy, the IB::Connection-Object is always available via IB::Gateway.tws, eg.
 ```ruby
    IB::Gateway.tws.send_message(...)
    IB::Gateway.tws.subscribe(...)
