@@ -1,38 +1,54 @@
 # ib-ruby
 
 Ruby Implementation of the Interactive Brokers Trader Workstation (TWS) API v.965-967.
-# Development-Branch, Environment: Ruby 2.20, ActiveRecord 4 , MariaDB,  Rspec3/Guard-Testsuite
+# Development-Branch, Environment: Ruby 2.20, ActiveModel,  Rspec3/Guard-Testsuite
 
 
 ### Changes from the stable branch
 
 
 * Only ActiveModel/ActiveRecord-Support. 
-* TWS-queries are working in an asynchronic/ multithreaded environment 
-  (this is the  biggest disadvantage of the stable branch)
+* A IB::Gateway is added. This enables a object-orientated view to Accounts with Positions and Contracts
+``` ruby
+    require 'ib'
+    
+    IB::Gateway.new get_account_data:true  # connects to the TWS by default
+    accounts = IB::Gateway.current.active_accounts
+    accounts.each.do |account|
+     puts account.simple_account_data_scan('AccountCode')
+     puts account.simple_account_data_scan('TotalCashValue')
+     puts account.contracts.map &:to_human 
+     puts account.portfolio_values &:to_human
+     (...)
+ ``` 
+* To Query the TWS manual, the IB::Connection-Object is always available via IB::Gateway.tws, eg.
+```ruby
+   IB::Gateway.tws.send_message(...)
+   IB::Gateway.tws.subscribe(...)
+```
+However, the old way to access the TWS by initializing IB::Connection is still supported. There is even an Object IB::Connection.current, witch points to IB::Gateway.tws
+
+* TWS-queries are working in an asynchronic/ multithreaded environment and can be used with FA-Accounts with multible active and independently managed User-Accounts
 * IB::Stock, IB::Option, IB::Future and IB::Forex inherent IB::Contract
 * There is a wrapper IB::Contract.update_contract which allows a validation of 
   the given Contract-Attributes prior to further actions, ie data-retrieving and ordering
 ``` ruby
     require 'ib'
 
-    ib = IB::Connection.new port: 7496
+    IB::Gateway.new  connect:true
     contract = IB::Stock.new symbol: 'RRD'
-    ib.subscribe(:OpenOrder) { |msg| puts "Placed: #{msg.order}!" }
-    ib.subscribe(:ExecutionData) { |msg| puts "Filled: #{msg.execution}!" }
+    IB::Gateway.tws.subscribe(:OpenOrder) { |msg| puts "Placed: #{msg.order}!" }
+    IB::Gateway.tws.subscribe(:ExecutionData) { |msg| puts "Filled: #{msg.execution}!" }
 
     contract.update_contract do |msg|
 		buy_order = IB::Order.new :total_quantity => 100, :limit_price => 21.00,
     	                               :action => :buy, :order_type => :limit
-		ib.place_order buy_order, msg.contract
+		IB::Gateway.tws.place_order buy_order, msg.contract
     end
 
-    ib.wait_for :ExecutionData
-    	
 ```
-  The order is fired only, if  the contract was successfuly validated by the TWS
+  The order is fired only, if  the contract was successfully validated by the TWS
 
-* the code-base itself is untouched. The application is thus »production-ready« 
 
 
 
@@ -157,41 +173,12 @@ fundamental data, request options calculations, place, list, and cancel orders.
 You may also want to look into `spec/integration` directory for more scenarios,
 use cases and examples of handling IB messages.
 
-## RAILS INTEGRATION:
 
-This gem has two operating modes: standalone and Rails-engine. If you require it in a
-Rails environment, it loads Rails engine automatically. Otherwise, it does not load any
-Rails integration.
-
-To add ib-ruby to your Rails 3 project, follow these steps:
-
-Add to your Gemfile:
-``` ruby
-gem 'ib-ruby', '~>0.9'
-```
-Add the require to your config/application.rb:
-``` ruby
-require File.expand_path('../boot', __FILE__)
-require 'rails/all'
-require 'ib'
-if defined?(Bundler)
-```
-Now run:
-
-    $ bundle install
-    $ rake ib:install:migrations
-    $ rake db:migrate
-
-This will install ib-ruby gem and copy its migrations into your Rails apps migrations.
-
-You can now use or modify IB models, develop controllers and views for them in your Rails app.
 
 ## DB BACKEND:
 
-Even if you don't use Rails, you can still take advantage of its data persistance layer
-(ActiveRecord ORM). In order to use data persistance, you have to set up the database
+If you want to take advantage of data persistance layer ActiveRecord ORM, you have to set up the database
 (SQLite recommended for simplicity) and run migrations located at gems 'db/migrate' folder.
-It is recommended that you use a gem like [standalone_migrations](https://github.com/thuss/standalone-migrations) for this.
 
 You further need to:
 ``` ruby
@@ -200,11 +187,9 @@ You further need to:
     require 'ib'
 ```
 Only require 'ib' AFTER you've connected to DB, otherwise your Models will not
-inherit from ActiveRecord::Base and won't be persistent. If you are using Rails,
-you don't need IB::DB.connect part, Rails will take care of it for you.
+inherit from ActiveRecord::Base and won't be persistent. 
 
-Now, all your IB Models are just ActiveRecords and you can save them to DB just
-like you would with Rails models.
+Now, all your IB Models are just ActiveRecords and you can save them to the DB.
 
 ## RUNNING TESTS:
 
@@ -212,22 +197,6 @@ The gem comes with a spec suit that may be used to test ib-ruby compatibility wi
 specific TWS/Gateway installation. Please read 'spec/Readme.md' for more details about
 running specs.
 
-## RUBY VERSION COMPATIBILITY:
-
-The library is continuously tested with JRuby 1.6.7 (ruby-1.8.7-p357-compatible mode) and
-JRuby head (ruby-1.9.3-p203-compatible mode). It is not JRuby-specific though, as it is currently used in a some MRI Ruby based projects. If there are any problems in any mode
-for either JRuby or MRI, please report an [issue](https://github.com/ib-ruby/ib-ruby/issues/new)
-and we will work on it.
-
-Please keep in mind that when using Ruby 1.8.7, you need to either explicitly:
-``` ruby
-    require 'rubygems'
-    require 'ib'
-```
-
-or set the environment variable "RUBYOPT" to "-rubygems":
-
-    set RUBYOPT=-rubygems
 
 ## CONTRIBUTING:
 
