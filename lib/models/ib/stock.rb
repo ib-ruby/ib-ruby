@@ -7,6 +7,9 @@ module IB
       super.merge :sec_type => :stock, currency:'USD', exchange:'SMART'
     end
 
+    def to_human
+      "<Stock: " + [symbol,  currency].join(" ") + ">"
+    end
   end
   end
 

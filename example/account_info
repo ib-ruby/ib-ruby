@@ -15,7 +15,7 @@ accounts = IB::Gateway.current.active_accounts
 puts ""
 accounts.each do |account|
   puts "Contracts ------------------> #{account.account } <----------------------"
-  puts account.contracts.map &:to_human 
+  puts account.contracts.map( &:to_human ).join( "\n" )
   puts "-----------------"
 
 end

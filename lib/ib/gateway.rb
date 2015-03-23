@@ -223,7 +223,8 @@ Its always active. If the connection is interrupted and
       if IB.db_backed?
       	Account.update_all :connected => false
       else
-	@accounts.each{|y| y.update_attribute :connected,  false }
+#	@accounts.each{|y| y.update_attribute :connected,  false }
+	@accounts = []
       end
       logger.info "Connection closed"
     end

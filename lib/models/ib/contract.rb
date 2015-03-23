@@ -291,6 +291,7 @@ module IB
     Subclasses[:bag] = IB::Bag
     Subclasses[:option] = IB::Option
     Subclasses[:future] = IB::Future
+    Subclasses[:stock] = IB::Stock
     Subclasses[:forex] = IB::Forex
 
 

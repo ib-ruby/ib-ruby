@@ -6,6 +6,9 @@ module IB
     def default_attributes
       super.merge :sec_type => :future, currency:'USD'
     end
+    def to_human
+      "<Future: " + [symbol, expiry, currency].join(" ") + ">"
+    end
 
   end
   end
