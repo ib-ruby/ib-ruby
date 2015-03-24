@@ -58,7 +58,7 @@ an Array of account_id and IB::Account-Objects.
       if account.is_a? IB::Account
 	# reset account  (works only with tabelless models)
 	account.portfolio_values, account.account_values, account.contracts, account.orders = []
-	tws.send_message :RequestAccountData, :subscribe: true, :account_code: account.account
+	tws.send_message :RequestAccountData, subscribe: true, account_code: account.account
 	sleep 1
       else
 	logger.error{ "Invalid Account specified :#{accounts.inspect}" }
