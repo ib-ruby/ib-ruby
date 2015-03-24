@@ -30,6 +30,7 @@ class Gateway
 
  include LogDev   # provides default_logger
  include AccountInfos  # provides Handling of Account-Data provided by the tws
+ include OrderHandling 
   # from active-support. Add Logging at Class + Instance-Level
   mattr_accessor :logger
   # similar to the Connection-Class: current represents the active instance of Gateway
@@ -51,6 +52,15 @@ If only one Account is transmitted,  User and Advisor are identical.
     end
   end
 =begin
+ForSelectAccount provides  an Account-Object-Environment 
+(with AccountValues, Portfolio-Values, Contracts and Orders)
+to deal with in the specifed block
+=end
+  def for_selected_account account_id
+    sa =  @accounts.detect{|x| x.account == account_id }
+    yield sa if block_given? && sa.is_a?( IB::Account )
+  end
+=begin
 The Advisor is always the first account
 (returns nil if the array is not initialized, eg not connected)
 =end
@@ -62,7 +72,8 @@ The Advisor is always the first account
 		  host: '127.0.0.1', 
 		  subscribe_managed_accounts: true, 
 		  subscribe_alerts: true, 
-		  subscribe_account_infos: true, 
+		  subscribe_account_infos: true,
+		  subscribe_order_messages: true, 
 		  connect: false, 
 		  get_account_data: false,
 		  logger: default_logger
@@ -81,17 +92,18 @@ The Advisor is always the first account
     initialize_managed_accounts if subscribe_managed_accounts
     initialize_alerts  if subscribe_alerts
     initialize_account_infos if subscribe_account_infos || get_account_data
+    initialize_order_handling if subscribe_order_messages || get_account_data
     ## apply other initialisations which should apper before the connection as block
     ## i.e. after connection order-state events are fired if an open-order is pending
     ## a possible response is best defined before the connect-attempt is done
     if block_given? 
       yield self, tws
-    else
-#      subscribe_order_messages
+    
     end
     # finally connect to the tws
     connect() if connect || get_account_data
     get_account_data()  if get_account_data
+#    request_open_orders() if request_open_orders || get_account_data 
 
 
   end
@@ -235,3 +247,19 @@ Its always active. If the connection is interrupted and
 end  # class
 
 end # module
+
+# provide  AR4- ActiveRelation-methods to Array-Class
+class Array
+  def first_or_create item, condition=nil
+    if condition.present?
+      detect{|x| x[condition] == item[condition]} 
+    else
+      detect{|x| x==item}
+    end || self.push( item )
+  end
+
+  def where list_of_conditions
+    detect
+
+  end
+end

@@ -17,6 +17,7 @@ class Account < IB::Model
   has_many :account_values
   has_many :portfolio_values
   has_many :contracts
+  has_many :orders
 
     def default_attributes
       super.merge account: 'X000000'

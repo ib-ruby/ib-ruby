@@ -106,11 +106,27 @@ describe IB::Gateway do
 
 	it "portfolio-positions" do
 	  subject.portfolio_values.each {|x| expect( x  ).to be_a IB::PortfolioValue }
-
-
 	end
 
     end
+
+    context 'OpenOrder-Handling' do
+      it 'manual sending message and analyse the response' do
+	## Important: Place an Order in the specified Account!!
+	tws = IB::Gateway.current.tws
+	IB::Gateway.current.for_selected_account("DU167349") do | account |
+	  expect( account.orders ).to be_empty
+          expect{ tws.send_message :RequestAllOpenOrders; sleep 1 }.to change{ account.contracts.size }.by(1)
+	  expect( account.contracts.size ).to eq 1
+	  expect( account.contracts.first.orders.size ).to eq 1
+	  expect( account.orders ).not_to be_empty
+	  expect( account.orders.first.contract ).to eq account.contracts.first
+	  expect( account.orders ).to eq account.contracts.first.orders
+	end
+#pp	IB::Connection.current.received
+	
+      end # it
+    end #context
   end
 
 end
