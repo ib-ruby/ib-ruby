@@ -21,7 +21,7 @@ module OrderHandling
 	    # first update the contracts
 	     if this_account.contracts.is_a?(Array)
 	       msg.contract.orders << msg.order
-	     c= this_account.contracts.first_or_create msg.contract, msg.contract.con_id
+	     c= this_account.contracts.first_or_create msg.contract, :con_id
 	     else
 	       this_account.contracts.where(con_id: msg.contract.con_id).first_or_create do |new_contract|
 		 new_contract.attributes.merge msg_contract.attributes
@@ -31,7 +31,7 @@ module OrderHandling
 	     
 	     if this_account.orders.is_a?(Array)
 	       msg.order.contract = msg.contract
-	       this_account.orders.first_or_create msg.order, msg.order.perm_id
+	       this_account.orders.first_or_create msg.order, :perm_id
 
 	     else
 	      this_account.orders.where( perm_id: msg.order.perm_id ).first_or_create do | new_order |
