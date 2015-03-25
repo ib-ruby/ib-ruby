@@ -380,12 +380,19 @@ module IB
 
     def to_human
       "<Order: " + ((order_ref && order_ref != '') ? "#{order_ref} " : '') +
-        "#{self[:order_type]} #{self[:tif]} #{side} #{quantity} " +
+        "#{short_order_type} #{short_tif} #{side} #{quantity} " +
         (limit_price ? "@ #{limit_price} " : '') + "#{status} " +
         ((aux_price && aux_price != 0) ? "/#{aux_price}" : '') +
         "##{local_id}/#{perm_id} from #{client_id}" +
         (account ? "/#{account}" : '') +
         (commission ? " fee #{commission}" : '') + ">"
+    end
+
+    def short_tif
+      self[:tif]
+    end
+    def short_order_type
+      self[:order_type]
     end
   end # class Order
 end # module IB
