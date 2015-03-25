@@ -17,8 +17,8 @@ Independently IB::Alert.alert_#{nnn} should be defined for a proper response to 
 and system-messages
   
 
-The Connection to the TWS is realized throught IB::Connection. Thus IB::Connection.current is
-available and still points to the active IB::Connection.  
+The Connection to the TWS is realized throught IB::Connection. Instead of the previous
+Singleton IB::Connection.current now IB::Gateway.tws points to the active Connection.
 However, to support asynchronic access, the :recieved-Array of the Connection-Class is not active.
 The Array is easily confused, if used in production mode with a FA-Account.
 IB::Conncetion.wait_for(message) is not available. 
@@ -70,36 +70,30 @@ The Advisor is always the first account
 
   def initialize  port: 7496, 
 		  host: '127.0.0.1', 
+		  client_id: nil,
 		  subscribe_managed_accounts: true, 
 		  subscribe_alerts: true, 
 		  subscribe_account_infos: true,
 		  subscribe_order_messages: true, 
 		  connect: false, 
 		  get_account_data: false,
+		  serial_array: false, 
 		  logger: default_logger
     self.logger = logger
     logger.info { '-' * 20 +' initialize ' + '-' * 20 }
     logger.tap{|l| l.progname =  'Gateway#Initialize' }
-    @connection_parameter = { recieved: false, port: port, host: host, connect: false, logger: logger }
+    @connection_parameter = { received: serial_array, port: port, host: host, connect: false, logger: logger }
+    @gateway_parameter = { s_m_a: subscribe_managed_accounts, 
+			   s_a: subscribe_alerts,
+			   s_a_i: subscribe_account_infos, 
+			   s_o_m: subscribe_order_messages,
+			    g_a_d: get_account_data }
+    @connection_parameter[:client_id] = client_id if client_id.present?
     Gateway.current = self
     # establish Alert-framework
     IB::Alert.logger = logger
     # initialise Connection without connecting
-    self.tws = IB::Connection.new  @connection_parameter
-    # prepare Advisor-User hierachie
-    @accounts=Array.new
-
-    initialize_managed_accounts if subscribe_managed_accounts
-    initialize_alerts  if subscribe_alerts
-    initialize_account_infos if subscribe_account_infos || get_account_data
-    initialize_order_handling if subscribe_order_messages || get_account_data
-    ## apply other initialisations which should apper before the connection as block
-    ## i.e. after connection order-state events are fired if an open-order is pending
-    ## a possible response is best defined before the connect-attempt is done
-    if block_given? 
-      yield self, tws
-    
-    end
+    prepare_connection
     # finally connect to the tws
     connect() if connect || get_account_data
     get_account_data()  if get_account_data
@@ -107,6 +101,33 @@ The Advisor is always the first account
 
 
   end
+
+  def change_host host:'localhost', port:7496, client_id:nil
+    @connection_parameter[:client_id] = client_id if client_id.present?
+    @connection_parameter[:host] = host if host.present?
+    @connection_parameter[:port] = port if port.present?
+    
+  end
+
+  def prepare_connection
+    tws.disconnect if tws.is_a? IB::Connection
+    self.tws = IB::Connection.new  @connection_parameter
+    # prepare Advisor-User hierachie
+    @accounts=Array.new
+
+    initialize_managed_accounts if @gateway_parameter[:s_m_a]
+    initialize_alerts  if  @gateway_parameter[:s_a]
+    initialize_account_infos if @gateway_parameter[:s_a_i] || @gateway_parameter[:g_a_d]
+    initialize_order_handling if@gateway_parameter[:s_o_m] || @gateway_parameter[:g_a_d] 
+    ## apply other initialisations which should apper before the connection as block
+    ## i.e. after connection order-state events are fired if an open-order is pending
+    ## a possible response is best defined before the connect-attempt is done
+    if block_given? 
+      yield self, tws
+    
+    end
+  end
+
   ## ------------------------------------- connect ---------------------------------------------##
 =begin
 Zentrale Methode 
@@ -121,7 +142,7 @@ Weiterhin meldet sich die Anwendung zur Auswertung von Messages der TWS an.
     logger.progname =  'Gateway#connect' 
     begin
       tws_ready =  false
-      IB::Connection.current.connect { tws_ready =  true } 
+      tws.connect { tws_ready =  true } 
     rescue  Errno::ECONNREFUSED => e
       i+=1
       if i < maximal_count_of_retry
@@ -213,7 +234,7 @@ Its always active. If the connection is interrupted and
 
   def initialize_alerts
 
-    IB::Connection.current.subscribe(:Alert) do |msg| 
+    tws.subscribe(:Alert) do |msg| 
       logger.progname = 'Gateway#Alerts'
       logger.debug " ----------------#{msg.code}-----"
       # delegate anything to IB::Alert
@@ -223,7 +244,7 @@ Its always active. If the connection is interrupted and
 
   def reconnect
     logger.progname = 'Gateway#reconnect'
-    unless IB::Connection.current.nil?
+    if tws.present?
       disconnect
       sleep 1
     end
@@ -233,9 +254,8 @@ Its always active. If the connection is interrupted and
 
   def disconnect
     logger.progname = 'Gateway#disconnect'
-    unless IB::Connection.current.nil?
-      IB::Connection.current.disconnect 
-      #IB::Connection.current=nil
+    if tws.present?
+      tws.disconnect 
       #	@imap_accounts.each{|account,imap| imap.stop }
       if IB.db_backed?
       	Account.update_all :connected => false

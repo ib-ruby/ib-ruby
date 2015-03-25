@@ -19,7 +19,7 @@ module IB
 
   include LogDev   # provides default_logger
 
-    mattr_accessor :current
+  #  mattr_accessor :current
     mattr_accessor :logger  ## borrowed from active_support
     # Please note, we are realizing only the most current TWS protocol versions,
     # thus improving performance at the expense of backwards compatibility.
@@ -68,7 +68,7 @@ module IB
       self.next_local_id = nil
 
       open() if connect
-      Connection.current = self
+  #    Connection.current = self
     end
 
     ### Working with connection
@@ -83,7 +83,6 @@ module IB
         self.next_local_id = msg.local_id
         logger.info { "Got next valid order id: #{next_local_id}." }
 	## this block is executed after the tws-communications are established
-	## Connection.current.open { |connection| do_nice_things }
 	yield self if block_given?
       end
 

@@ -3,6 +3,10 @@ require 'message_helper'
 require 'account_helper'
 require 'connection_helper'
 
+# enter a second host with a running tws 
+# or nil to omit the test of switching to another host
+SECOND_HOST= 'beta'
+
 describe IB::Gateway do
   after(:all){ IB::Gateway.current.disconnect if IB::Gateway.current.present? }
   before(:all) do
@@ -13,17 +17,11 @@ describe IB::Gateway do
       puts "no active Gateway detected"
     end
 
-    if IB::Connection.current.present?
-      IB::Connection.current.disconnect
-      IB::Connection =  nil
-    else
-      puts "no active Connection Object"
-    end
   end
 
   context "#initialize" do
     it 'without any parameter' do
-      IB::Gateway.new logger: mock_logger #  {|gw| puts "test" }
+      IB::Gateway.new :serial_array=> true, logger: mock_logger #  {|gw| puts "test" }
       expect( IB::Gateway.current ).to be_a IB::Gateway 
       expect( IB::Gateway.current.advisor).not_to be 
       expect( IB::Gateway.current.active_accounts).to be_empty
@@ -127,6 +125,23 @@ describe IB::Gateway do
 	
       end # it
     end #context
+
+    context "switch to another host" do
+      it "change accounts" do
+	if SECOND_HOST.present?
+	  igc=  IB::Gateway.current
+	  old_advisor =  igc.advisor
+	  old_users = igc.active_accounts
+
+	  igc.change_host host: SECOND_HOST
+	  igc.prepare_connection
+	  igc.connect
+
+	  expect( igc.advisor ).not_to eq old_advisor
+	  expect( igc.active_accounts).not_to eq old_users
+	end
+      end
+    end
   end
 
 end
