@@ -80,12 +80,12 @@ The Advisor is always the first account
     self.logger = logger
     logger.info { '-' * 20 +' initialize ' + '-' * 20 }
     logger.tap{|l| l.progname =  'Gateway#Initialize' }
-    connection_parameter = { recieved: false, port: port, host: host, connect: false, logger: logger }
+    @connection_parameter = { recieved: false, port: port, host: host, connect: false, logger: logger }
     Gateway.current = self
     # establish Alert-framework
     IB::Alert.logger = logger
     # initialise Connection without connecting
-    self.tws = IB::Connection.new  connection_parameter
+    self.tws = IB::Connection.new  @connection_parameter
     # prepare Advisor-User hierachie
     @accounts=Array.new
 
@@ -136,6 +136,12 @@ Weiterhin meldet sich die Anwendung zur Auswertung von Messages der TWS an.
 	logger.info { "Giving up!!" }
 	Kernel.exit(false)
       end
+    rescue Errno::ECONNRESET => e
+      logger.info 'Connection refused ... re-establishing'
+      self.tws = IB::Connection.new  @connection_parameter
+      retry
+    end
+
     end # begin - rescue
     # let NextValidId-Event appear
     loop do
