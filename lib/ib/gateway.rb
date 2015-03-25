@@ -142,7 +142,6 @@ Weiterhin meldet sich die Anwendung zur Auswertung von Messages der TWS an.
       retry
     end
 
-    end # begin - rescue
     # let NextValidId-Event appear
     loop do
       break if tws_ready
