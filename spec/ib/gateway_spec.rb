@@ -5,7 +5,23 @@ require 'connection_helper'
 
 # enter a second host with a running tws 
 # or nil to omit the test of switching to another host
-SECOND_HOST= 'beta'
+SECOND_HOST= 'beta' # with running tws
+EXISTING_HOST = 'server' # without running tws
+NONEXISTING_HOST =  '172.28.50.253' # adress valid, no host present
+INVALID_HOST =  'tunixtgut' # cannot be translated into a valid ip-address
+
+RSpec.shared_examples_for 'invalid connection' do | host |
+	  igc=  IB::Gateway.current
+	  if igc.present?
+
+	    igc.change_host host: host
+	    igc.prepare_connection
+	    igc.connect(1)
+
+	    expect( igc.advisor ).not_to be
+	  end
+
+ end
 
 describe IB::Gateway do
   after(:all){ IB::Gateway.current.disconnect if IB::Gateway.current.present? }
@@ -141,7 +157,9 @@ describe IB::Gateway do
 	  expect( igc.active_accounts).not_to eq old_users
 	end
       end
+      [ EXISTING_HOST, NONEXISTING_HOST ,INVALID_HOST].each do |host|
+	it_should_behave_like 'invalid connection' , host   if host.present?
+      end
     end
   end
-
 end

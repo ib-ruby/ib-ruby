@@ -95,10 +95,14 @@ The Advisor is always the first account
     # initialise Connection without connecting
     prepare_connection
     # finally connect to the tws
-    connect() if connect || get_account_data
-    get_account_data()  if get_account_data
+    if connect || get_account_data
+    if connect(100)  # tries to connect for about 2h
+     get_account_data()  if get_account_data
 #    request_open_orders() if request_open_orders || get_account_data 
-
+    else
+      @accounts=[]   # definitivley reset @accounts
+    end
+    end
 
   end
 
@@ -155,12 +159,20 @@ Weiterhin meldet sich die Anwendung zur Auswertung von Messages der TWS an.
 	retry
       else
 	logger.info { "Giving up!!" }
-	Kernel.exit(false)
+	#Kernel.exit(false)
+	return false
       end
     rescue Errno::ECONNRESET => e
       logger.info 'Connection refused ... re-establishing'
       self.tws = IB::Connection.new  @connection_parameter
       retry
+    rescue Errno::EHOSTUNREACH => e
+      logger.error 'Cannot connect to specified host'
+      logger.error  e
+      return false
+    rescue SocketError => e
+      logger.error 'Wrong Adress, connection not possible'
+      return false
     end
 
     # let NextValidId-Event appear
@@ -283,8 +295,4 @@ class Array
     end || self.push( item )
   end
 
-  def where list_of_conditions
-    detect
-
-  end
 end
