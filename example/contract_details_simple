@@ -18,12 +18,12 @@ if  RUBY_VERSION.to_i < 2
   puts " Ruby 2.x needed "
   exit
 end
-IB::Connection.new  :recieved=> false, :client_id => 1112,  :port => 7496 # TWS
-if IB::Connection.current.nil?
+IB::Gateway.new   :client_id => 1112,  :connect => true,  :port => 7496 # TWS
+if IB::Gateway.tws.nil?
   puts "No TWS"
   exit
 end
-IB::Connection.current.logger.level= 3
+IB::Gateway.logger.level= 3
 
 market = {"1. Apple	 " =>  IB::Stock.new(  symbol: 'AAPL') ,
           "2. BASF	 " =>  IB::Stock.new(  symbol: 'BAS', currency: 'EUR'  ) ,
@@ -46,10 +46,9 @@ market.each_pair do |id, contract|
   symbol,con_id,min_tick=0
   result=  contract.read_contract_from_tws do |msg|
     # Any attribute of the contract-object is assesible, i.e.
-    symbol= msg.contract.present? ? msg.contract.symbol : "XXX"
-    con_id= msg.contract.present? ? msg.contract.con_id : "NO CONID"
+    symboli, con_id =   msg.contract.symbol,  msg.contract.con_id
     # In Addition, all Contract-Detail-Attributes are present 
-    min_tick= msg.contract_detail.present? ? msg.contract_detail.min_tick : 0
+    min_tick =  msg.contract_detail.min_tick 
     puts "Query #{id}-----------------------------------------------------------"
     puts "TWS-resonse: Symbol -> #{symbol}", "Min-Tick:#{min_tick}, ConId:#{con_id}"
   end
@@ -60,26 +59,4 @@ market.each_pair do |id, contract|
   # respond with ContractData messages, which will be processed by the code above.
 
 end
-IB::Connection.current.disconnect
-sleep 1
-=begin
-Requesting contract data : EURUSD
-TWS-Response:
-<Contract: {"symbol"=>"EUR", "sec_type"=>"CASH", "expiry"=>"", "strike"=>0.0,
-"right"=>"", "exchange"=>"IDEALPRO", "currency"=>"USD",
-"local_symbol"=>"EUR.USD", "con_id"=>12087792, "multiplier"=>0,
-"primary_exchange"=>"", "created_at"=>2015-01-03 16:26:26 +0100,
-"updated_at"=>2015-01-03 16:26:26 +0100, "include_expired"=>false} >
- . . . . . . . . . ContractDetails. . . . . . . . . . . . . . 
- {"market_name"=>"EUR.USD", "trading_class"=>"EUR.USD", "min_tick"=>5.0e-05,
- "order_types"=>"ACTIVETIM,ADJUST,ALERT,ALGO,ALLOC,AVGCOST,BASKET,COND,CONDORDER,DAY,DEACT,DEACTDIS,DEACTEOD,GAT,GTC,GTD,GTT,HID,IOC,LIT,LMT,MIT,MKT,NONALGO,OCA,REL,SCALE,SCALERST,STP,STPLMT,TRAIL,TRAILLIT,TRAILLMT,TRAILMIT,WHATIF,",
- "valid_exchanges"=>"IDEALPRO", "price_magnifier"=>1, "under_con_id"=>0,
- "long_name"=>"European Monetary Union Euro", "contract_month"=>"",
- "industry"=>"", "category"=>"", "subcategory"=>"", "time_zone"=>"EST5EDT",
- "trading_hours"=>"20150103:CLOSED;20150105:1715-1700",
- "liquid_hours"=>"20150103:CLOSED;20150105:1715-1700", "ev_rule"=>0.0,
- "ev_multiplier"=>"", "sec_id_list"=>{}, "created_at"=>2015-01-03 16:26:26
- +0100, "updated_at"=>2015-01-03 16:26:26 +0100, "coupon"=>0.0,
- "callable"=>false, "puttable"=>false, "convertible"=>false,
- "next_option_partial"=>false}
-=end
+IB::Gateway.current.disconnect
