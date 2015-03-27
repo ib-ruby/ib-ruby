@@ -1,0 +1,133 @@
+#!/usr/bin/env ruby
+#
+# This script downloads historic data for specific symbols from IB
+# The Query is executed asynchon
+
+require 'rubygems'
+require 'bundler/setup'
+require 'active_support'
+require 'yaml'
+$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
+require 'ib-ruby'
+
+TWS= 'beta:7496' # or 'localhost'  
+print_ohlc = ->(obj) do
+  print obj.time  + " >>  "+
+    "%8.3f \t" % obj.open +
+    "%8.3f \t" % obj.high + 
+    "%8.3f \t" % obj.low  +
+    "%8.3f \t||" % obj.close +
+    "%8d \n" % obj.volume 
+end
+print_ohlc_title = -> do 
+  print " ##  "+ "%8s  \t" % "open" + 
+    "%8s  \t" % "high" +
+    "%8s  \t" % "low" +
+    "%8s  \t||" % "close" +
+    "%8s  \n" % "volume" 
+  puts "-"*100
+end
+# Connect to IB TWS.
+IB::Gateway.new host: TWS , connect:true
+if ( ib = IB::Gateway.tws).present?
+
+  # define the contracts and assign them to the advisor
+  IB::Gateway.current.advisor.contracts  <<   IB::Stock.new( symbol:'T' )
+  IB::Gateway.current.advisor.contracts  <<   IB::Future.new( symbol:'ES', exchange: 'GLOBEX' ,
+							     expiry:'201512', :multiplier => 50)
+  # ---------------------------------------------------------------- change to a valid expiry 
+  #               IB::Forex.new( :symbol => 'AUD', :currency  =>'USD') =>[]
+  # No historical data for GBP/CASH@IDEALPRO
+
+
+
+  # Subscribe to HistoricalData incoming events.  The code passed in the block
+  # will be executed when a message of that type is received, with the received
+  # message as its argument. In this case, we just print out the data.
+  #
+  # Note that we have to look the ticker id of each incoming message
+  # up in local memory to figure out what it's for.
+  ib.subscribe(IB::Messages::Incoming::HistoricalData) do |msg|
+  puts  IB::Gateway.current.advisor.contracts.find{|x| x.con_id == msg.request_id}.local_symbol + ": #{msg.count} items:" 
+    msg.results.each { |entry| print_ohlc[entry] }
+  end
+
+  # Now we actually request historical data for the symbols we're interested in. TWS will
+  # respond with a HistoricalData message, which will be processed by the code above.
+  IB::Gateway.current.advisor.contracts.each do | contract |
+    # first: verify the contracts. Only if the attributes yield a valid IB::Contract perform the 
+    # query for historical data
+    contract.update_contract  do | msg |
+
+    ib.send_message IB::Messages::Outgoing::RequestHistoricalData.new(
+      :request_id => msg.contract.con_id,
+      :contract => msg.contract,
+      :end_date_time => Time.now.to_ib,
+      :duration => '3 D', #    ?
+      :bar_size => '1 hour', #  IB::BAR_SIZES.key(:hour)?
+      :what_to_show => :trades,
+      :use_rth => 1,
+      :format_date => 1)
+  end # update_contract
+  end #  each-loop
+
+  # IB does not send any indication when all historic data is done being delivered.
+  # So we need to interrupt manually when our request is answered.
+  puts "\n******** Press <Enter> to exit... *********\n\n"
+  STDIN.gets
+
+else
+  puts 'No TWS'
+end
+
+__END__
+
+ESZ5: 24 items:
+  20150325  14:30:00 >>  2065.000   2065.000  2065.000	2065.000  ||       1 
+20150325  15:00:00 >>  2065.000	  2065.000  2065.000  2065.000	||       0 
+20150325  16:00:00 >>  2066.000	  2066.000  2065.000  2065.000	||       4 
+20150325  17:00:00 >>  2055.000	  2055.000  2049.500  2049.500	||       4 
+20150325  18:00:00 >>  2049.500	  2049.500  2049.500  2049.500	||       0 
+20150325  19:00:00 >>  2049.000	  2049.000  2049.000  2049.000	||       1 
+20150325  20:00:00 >>  2048.000	  2048.000  2040.250  2040.250	||       5 
+20150325  21:00:00 >>  2040.250	  2040.250  2040.250  2040.250	||       0 
+20150326  14:30:00 >>  2032.000	  2032.000  2032.000  2032.000	||       0 
+20150326  15:00:00 >>  2026.750	  2026.750  2025.000  2025.000	||       6 
+20150326  16:00:00 >>  2025.000	  2025.000  2025.000  2025.000	||       0 
+20150326  17:00:00 >>  2025.000	  2025.000  2025.000  2025.000	||       0 
+20150326  18:00:00 >>  2025.000	  2025.000  2025.000  2025.000	||       0 
+20150326  19:00:00 >>  2042.000	  2042.000  2035.750  2035.750	||       4 
+20150326  20:00:00 >>  2035.750	  2035.750  2035.750  2035.750	||       0 
+20150326  21:00:00 >>  2035.750	  2035.750  2035.750  2035.750	||       0 
+20150327  14:30:00 >>  2034.000	  2034.000  2034.000  2034.000	||       0 
+20150327  15:00:00 >>  2034.000	  2034.000  2034.000  2034.000	||       0 
+20150327  16:00:00 >>  2034.000	  2034.000  2034.000  2034.000	||       0 
+20150327  17:00:00 >>  2034.000	  2034.000  2034.000  2034.000	||       0 
+20150327  18:00:00 >>  2034.000	  2034.000  2034.000  2034.000	||       0 
+20150327  19:00:00 >>  2034.000	  2034.000  2034.000  2034.000	||       0 
+20150327  20:00:00 >>  2037.250	  2040.500  2037.250  2038.250	||       7 
+20150327  21:00:00 >>  2038.250	  2038.250  2038.250  2038.250	||       0 
+T: 21 items:
+  20150325  14:30:00 >>    33.020     33.090    32.930	  32.960  ||   25731 
+20150325  15:00:00 >>    32.960	    33.110    32.950    33.070	||   19507 
+20150325  16:00:00 >>    33.070	    33.110    32.900    32.920	||   23555 
+20150325  17:00:00 >>    32.930	    32.960    32.860    32.950	||   25393 
+20150325  18:00:00 >>    32.950	    33.000    32.850    32.920	||   22381 
+20150325  19:00:00 >>    32.910	    32.920    32.810    32.820	||   28055 
+20150325  20:00:00 >>    32.820	    32.840    32.620    32.630	||   94396 
+20150326  14:30:00 >>    32.630	    32.810    32.610    32.680	||   31368 
+20150326  15:00:00 >>    32.680	    32.990    32.670    32.950	||   52466 
+20150326  16:00:00 >>    32.940	    33.070    32.870    33.040	||   32947 
+20150326  17:00:00 >>    33.050	    33.130    33.000    33.100	||   30205 
+20150326  18:00:00 >>    33.100	    33.110    32.910    33.070	||   28093 
+20150326  19:00:00 >>    33.080	    33.080    32.920    32.930	||   30293 
+20150326  20:00:00 >>    32.930	    32.960    32.820    32.830	||   57189 
+20150327  14:30:00 >>    32.940	    32.950    32.770    32.790	||   23575 
+20150327  15:00:00 >>    32.790	    32.890    32.740    32.790	||   21942 
+20150327  16:00:00 >>    32.800	    32.800    32.710    32.740	||   16791 
+20150327  17:00:00 >>    32.740	    32.770    32.700    32.750	||   18043 
+20150327  18:00:00 >>    32.750	    32.770    32.710    32.770	||   14201 
+20150327  19:00:00 >>    32.760	    32.780    32.710    32.740	||   16385 
+20150327  20:00:00 >>    32.740	    32.780    32.700    32.730	||   39539 
+
+
