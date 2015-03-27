@@ -11,29 +11,30 @@ require 'ib-ruby'
 require 'xmlsimple'
 require 'pp'
 
-ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS
+IB::Gateway.new  connect:true, host: 'beta:7496'
+if ( ib = IB::Gateway.tws).present? 
+  ib.subscribe(:Alert) { |msg| puts msg.to_human }
 
-ib.subscribe(:Alert) { |msg| puts msg.to_human }
+  # Fundamental Data will arrive in XML format, we need to parse it
+  ib.subscribe(:FundamentalData) { |msg| @xml = XmlSimple.xml_in(msg.xml, :ForceArray => false) }
 
-# Fundamental Data will arrive in XML format, we need to parse it
-ib.subscribe(:FundamentalData) { |msg| @xml = XmlSimple.xml_in(msg.data, :ForceArray => false) }
+  ibm = IB::Stock.new  :symbol => 'IBM'
+  ibm.update_contract
 
-ibm = IB::Contract.new :symbol => 'IBM',
-                       :exchange => 'NYSE',
-                       :currency => 'USD',
-                       :sec_type => 'STK'
+  # Request Fundamental Data for IBM. Possible report types:
+  #     'estimates' - Estimates
+  #     'finstat'   - Financial statements
+  #     'snapshot' - Summary
+  ib.send_message :RequestFundamentalData,
+    :id => 10,
+    :contract => ibm,
+    :report_type => 'snapshot'
 
-# Request Fundamental Data for IBM. Possible report types:
-#     'estimates' - Estimates
-#     'finstat'   - Financial statements
-#     'snapshot' - Summary
-ib.send_message :RequestFundamentalData,
-                :id => 10,
-                :contract => ibm,
-                :report_type => 'snapshot'
+  # Needs some time to receive and parse XML. Standard timeout of 1 sec is just too low.
+  ib.wait_for(30) { @xml}
 
-# Needs some time to receive and parse XML. Standard timeout of 1 sec is just too low.
-ib.wait_for(30) { @xml}
-
-# Now just extract and use all the fundamental data you needed
-pp @xml
+  # Now just extract and use all the fundamental data you needed
+  pp @xml
+else
+  puts "No TWS!"
+end
