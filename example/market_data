@@ -7,36 +7,50 @@ require 'bundler/setup'
 $LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
 
-# Definition of what we want market data for.  We have to keep track of what ticker id
-# corresponds to what symbol ourselves, because the ticks don't include any other
-# identifying information. The choice of ticker ids is, as far as I can tell, arbitrary.
-# (note: the forex symbols used here MUST be defined in lib/ib/symbols/forex.rb)
-@market = {123 => IB::Symbols::Forex[:gbpusd],
-           456 => IB::Symbols::Forex[:eurusd],
-           789 => IB::Symbols::Forex[:usdcad]}
+TWS= 'beta:7496' # or 'localhost'  
 
-# First, connect to IB TWS.
-ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS
 
-## Subscribe to TWS alerts/errors
-ib.subscribe(:Alert) { |msg| puts msg.to_human }
+IB::Gateway.new host: TWS , connect:true
 
-# Subscribe to TickerPrice and TickerSize events.  The code passed in the block will
-# be executed when a message of that type is received, with the received message as its
-# argument. In this case, we just print out the tick. NB: The description field is not
-# from IB TWS. It is defined locally in forex.rb, and is just arbitrary text.
-ib.subscribe(:TickPrice, :TickSize) do |msg|
-  puts @market[msg.ticker_id].description + ": " + msg.to_human
+if ( ib = IB::Gateway.tws).present?
+
+  # define the contracts and assign them to the advisor
+  IB::Gateway.current.advisor.contracts  <<   IB::Forex.new( symbol:'GBP', currency:'USD' )
+  IB::Gateway.current.advisor.contracts  <<   IB::Future.new( symbol:'ES', exchange: 'GLOBEX' ,
+							     expiry:'201512', :multiplier => 50)
+
+  # First, connect to IB TWS.
+
+
+  # Subscribe to TickerPrice and TickerSize events.  The code passed in the block will
+  # be executed when a message of that type is received, with the received message as its
+  # argument. In this case, we just print out the tick.
+
+  ib.subscribe(:TickPrice, :TickSize, :TickString) do |msg|
+    puts msg.inspect
+    puts msg.ticker_id
+    #IB::Gateway.current.advisor.contracts.map{|x| x,con_id}.join(' | ')
+    puts IB::Gateway.current.advisor.contracts.find{|x| x.con_id == msg.ticker_id}.local_symbol + ": " + msg.to_human
+  end
+
+  # Now we actually request market data for the symbols we're interested in.
+  IB::Gateway.current.advisor.contracts.each do | contract|
+    contract.update_contract do |msg|
+      ib.send_message :RequestMarketData, :ticker_id => msg.contract.con_id, :contract => msg.contract
+    end
+  end
+
+  puts "\nSubscribed to market data"
+  puts "\n******** Press <Enter> to cancel... *********\n\n"
+  STDIN.gets
+  puts "Cancelling market data subscription.."
+
+  IB::Gateway.current.advisor.contracts.each do | contract|
+    ib.send_message :CancelMarketData, :id => contract.con_id 
+  end
+
+  IB::Gateway.current.disconnect
+
+else
+  puts 'No TWS'
 end
-
-# Now we actually request market data for the symbols we're interested in.
-@market.each_pair do |id, contract|
-  ib.send_message :RequestMarketData, :ticker_id => id, :contract => contract
-end
-
-puts "\nSubscribed to market data"
-puts "\n******** Press <Enter> to cancel... *********\n\n"
-STDIN.gets
-puts "Cancelling market data subscription.."
-
-@market.each_pair { |id, _| ib.send_message :CancelMarketData, :id => id }
