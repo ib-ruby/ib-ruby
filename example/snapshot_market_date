@@ -17,13 +17,13 @@ class Snapshot
 	def print_results
 		@prices.each do |x,y|
 			STDOUT.print "	#{@contracts[x][:display_text] } \t" +
-				y.collect{|x,y| "#{x}: #{y}"}.join(" \n\t\t\t ") +" \n"
+				y.map{|x,y| "#{x}: #{y}"}.join(" \n\t\t\t ") +" \n"
 		end
 	end
 
 
 	def process
-		ib =  IB::Connection.current
+		ib =  IB::Gateway.tws
 		@count =  @contracts.size
 		unless ib.nil?
 			ib.subscribe(:Alert, :TickPrice,:TickSize,:TickString,:TickGeneric,:TickSnapshotEnd) do |msg|
@@ -78,20 +78,17 @@ require 'bundler/setup'
 $LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
 
-# Set log level
-log.level = Logger::FATAL
-#
 # # Connect to IB TWS
-IB::Connection.new :client_id => 1112 , :port => 7496 # TWS
+IB::Gateway.new  connect:true , host: 'beta:7496' # TWS
 
 s = Snapshot.new
 s.add_contract 2, {:con_id => 269120, :exchange => 'SMART'}, 'Fastenal'
 s.add_contract 4, {:symbol => 'IBM', :sec_type=> :stock, :exchange => 'SMART', :currency => 'USD'}, 'IBM'
 s.add_contract 9, {sec_type: "CASH", currency: "USD", exchange: "IDEALPRO",symbol: "EUR"}, "EUR/USD"
 s.process
-
-puts "\n******** Press <Enter> to cancel... *********\n\n"
+sleep 1
+puts "\n******** Press <Enter> to repeat output *********\n\n"
 STDIN.gets
 
-puts "Once again, the Snapshot-Data"
+puts "The Snapshot-Data are still present in the Snapshot-Object"
 s.print_results
