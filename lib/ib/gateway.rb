@@ -106,6 +106,9 @@ The Advisor is always the first account
 
   end
 
+  def get_host
+    "#{@connection_parameter[:host]}: #{@connection_parameter[:port] }"
+  end
   def change_host host:'localhost', port:7496, client_id:nil
     @connection_parameter[:client_id] = client_id if client_id.present?
     @connection_parameter[:host] = host if host.present?
