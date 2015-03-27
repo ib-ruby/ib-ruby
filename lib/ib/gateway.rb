@@ -69,7 +69,7 @@ The Advisor is always the first account
   end
 
   def initialize  port: 7496, 
-		  host: '127.0.0.1', 
+		  host: '127.0.0.1',   # 'localhost:4001' is also accepted
 		  client_id: nil,
 		  subscribe_managed_accounts: true, 
 		  subscribe_alerts: true, 
@@ -79,6 +79,7 @@ The Advisor is always the first account
 		  get_account_data: false,
 		  serial_array: false, 
 		  logger: default_logger
+    host, port = (host+':'+port.to_s).split(':') 
     self.logger = logger
     logger.info { '-' * 20 +' initialize ' + '-' * 20 }
     logger.tap{|l| l.progname =  'Gateway#Initialize' }
