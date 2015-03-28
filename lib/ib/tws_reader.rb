@@ -84,7 +84,7 @@ i.e.
 =end
     def read_contract_from_tws unique: true, save_details: false
 
-      ib = IB::Connection.current
+      ib = IB::Gateway.tws
       raise "NO TWS" unless ib.present?
       to_be_saved = IB.db_backed? && !new_record?
 

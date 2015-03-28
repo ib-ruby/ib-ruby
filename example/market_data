@@ -29,7 +29,6 @@ if ( ib = IB::Gateway.tws).present?
   ib.subscribe(:TickPrice, :TickSize, :TickString) do |msg|
     puts msg.inspect
     puts msg.ticker_id
-    #IB::Gateway.current.advisor.contracts.map{|x| x,con_id}.join(' | ')
     puts IB::Gateway.current.advisor.contracts.find{|x| x.con_id == msg.ticker_id}.local_symbol + ": " + msg.to_human
   end
 

@@ -71,5 +71,15 @@ class Account < IB::Model
       end
     end
   end
+
+
+  def place_order contract,  order
+    order.account =  account
+    contract.update_contract do | msg |
+      #  con_id and exchange fully qualify a contract, no need to transmit other data
+      tws_contract =  IB::Contract.new con_id: msg.contract.con_id, exchange: msg.contract.exchange
+      IB::Gateway.tws.place_order order, msg_contract
+    end
+  end
 end
 end
