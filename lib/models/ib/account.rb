@@ -9,7 +9,7 @@ class Account < IB::Model
        :connected => :bool
 
 
-  validates_format_of :account, :with =>  /\A[D]?[UF]{1}\d{5,7}\z/ , :message => 'should be (X)X00000'
+  validates_format_of :account, :with =>  /\A[D]?[UF]{1}\d{5,8}\z/ , :message => 'should be (X)X00000'
 
   # in tableless mode the scope is ignored
   scope :of_ib_user_id, ->(account) { where :account => account.downcase } rescue nil
@@ -70,6 +70,15 @@ class Account < IB::Model
 	account_values.where( ['key like %', search_key] )
       end
     end
+  end
+
+  def open_orders
+   orders.map{|y| y.status == 'submitted' || y.status== 'presubmitted'}.compact
+  end
+
+  def finished_orders
+    orders.map{|y| s.status == 'executed' }.compact
+
   end
 
 

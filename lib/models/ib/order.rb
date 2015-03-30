@@ -227,6 +227,9 @@ module IB
     serialize :algo_params, HashWithIndifferentAccess
     serialize :combo_params, HashWithIndifferentAccess
 
+    # Order is always placed for an account. Here, we explicitly set this link.
+    belongs_to :account
+
     # Order is always placed for a contract. Here, we explicitly set this link.
     belongs_to :contract
 
