@@ -108,7 +108,7 @@ describe IB::Gateway do
 	sleep 2
       end
       subject {  IB::Gateway.current.active_accounts.first }
-	its( :account_values){ is_expected.to have_at_least(10).account_values }
+	its( :account_values ){ is_expected.to have_at_least(10).account_values }
 	its( :portfolio_values ){ is_expected.to have_at_least(1).portfolio_value }
 
 	it "#simple_account_data_scan" do
@@ -124,7 +124,7 @@ describe IB::Gateway do
 
     end
 
-    context 'OpenOrder-Handling' do
+    context 'OpenOrder-Handling' , focus:true do
       it 'manual sending message and analyse the response' do
 	## Important: Place an Order in the specified Account!!
 	tws = IB::Gateway.current.tws
@@ -136,6 +136,10 @@ describe IB::Gateway do
 	  expect( account.orders ).not_to be_empty
 	  expect( account.orders.first.contract ).to eq account.contracts.first
 	  expect( account.orders ).to eq account.contracts.first.orders
+	  # also the OrderState-Status should be updated and have Status submitted
+	  expect( account.orders.last.order_states).not_to be_empty
+	  expect( account.orders.last.submitted?).to be
+	  expect( account.contracts.first.orders.first.submitted? ).to be
 	end
 #pp	IB::Connection.current.received
 	

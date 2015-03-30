@@ -56,6 +56,10 @@ ForSelectAccount provides  an Account-Object-Environment
 (with AccountValues, Portfolio-Values, Contracts and Orders)
 to deal with in the specifed block
 =end
+
+  def for_active_accounts &b
+    active_accounts.each{|y| for_selected_account y.account,  &b }
+  end
   def for_selected_account account_id
     sa =  @accounts.detect{|x| x.account == account_id }
     yield sa if block_given? && sa.is_a?( IB::Account )
@@ -97,12 +101,12 @@ The Advisor is always the first account
     prepare_connection
     # finally connect to the tws
     if connect || get_account_data
-    if connect(100)  # tries to connect for about 2h
-     get_account_data()  if get_account_data
-#    request_open_orders() if request_open_orders || get_account_data 
-    else
-      @accounts=[]   # definitivley reset @accounts
-    end
+      if connect(100)  # tries to connect for about 2h
+	get_account_data()  if get_account_data
+	#    request_open_orders() if request_open_orders || get_account_data 
+      else
+	@accounts=[]   # definitivley reset @accounts
+      end
     end
 
   end
@@ -118,12 +122,20 @@ The Advisor is always the first account
     
   end
 
+  def update_local_order order
+    @local_orders.update_or_create order, :local_id
+  end
+  
+  
+
   def prepare_connection
     tws.disconnect if tws.is_a? IB::Connection
     self.tws = IB::Connection.new  @connection_parameter
-    # prepare Advisor-User hierachie
-    @accounts=Array.new
+    # the accounts-array keeps any account tranmitted first after connecting 
+    # the local_orders-Array keeps any recent order, that has a positive local_id
+    @accounts = @local_orders = Array.new
 
+    # prepare Advisor-User hierachie
     initialize_managed_accounts if @gateway_parameter[:s_m_a]
     initialize_alerts  if  @gateway_parameter[:s_a]
     initialize_account_infos if @gateway_parameter[:s_a_i] || @gateway_parameter[:g_a_d]
