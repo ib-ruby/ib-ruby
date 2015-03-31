@@ -32,6 +32,7 @@ They identify the order by local_id and perm_id
       logger.progname = 'Gateway#order_handling'
       case msg
       when IB::Messages::Incoming::CommissionReport
+	# Commission-Reports are not assigned to a order -  
 	logger.info "CommissionReport -------#{msg.exec_id} :...:C: #{msg.commission} :...:P/L: #{msg.realized_pnl}-"
       when IB::Messages::Incoming::OrderStatus
 
