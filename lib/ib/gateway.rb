@@ -179,6 +179,10 @@ Weiterhin meldet sich die Anwendung zur Auswertung von Messages der TWS an.
 	#Kernel.exit(false)
 	return false
       end
+    rescue Errno::EPIPE => e
+      logger.info 'Connection interrupted ... start again'
+      self.tws = IB::Connection.new  @connection_parameter.merge( connect:true )
+      
     rescue Errno::ECONNRESET => e
       logger.info 'Connection refused ... re-establishing'
       self.tws = IB::Connection.new  @connection_parameter
