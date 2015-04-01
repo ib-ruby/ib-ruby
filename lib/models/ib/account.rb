@@ -85,7 +85,7 @@ class Account < IB::Model
   def place_order  order:, contract: nil
     order.contract =  contract if order.contract.nil?
     order.account =  account
-    if o.contract.nil?
+    if order.contract.nil?
       IB::Gateway.logger.error {"place order --> No Contract specified .::. #{order.to_human}"}
     else
       result = order.contract.update_contract do | msg |
