@@ -87,13 +87,12 @@ The Advisor is always the first account
     self.logger = logger
     logger.info { '-' * 20 +' initialize ' + '-' * 20 }
     logger.tap{|l| l.progname =  'Gateway#Initialize' }
-    @connection_parameter = { received: serial_array, port: port, host: host, connect: false, logger: logger }
+    @connection_parameter = { received: serial_array, port: port, host: host, connect: false, logger: logger, client_id: client_id }
     @gateway_parameter = { s_m_a: subscribe_managed_accounts, 
 			   s_a: subscribe_alerts,
 			   s_a_i: subscribe_account_infos, 
 			   s_o_m: subscribe_order_messages,
 			    g_a_d: get_account_data }
-    @connection_parameter[:client_id] = client_id if client_id.present?
     Gateway.current = self
     # establish Alert-framework
     IB::Alert.logger = logger
@@ -114,7 +113,9 @@ The Advisor is always the first account
   def get_host
     "#{@connection_parameter[:host]}: #{@connection_parameter[:port] }"
   end
-  def change_host host:'localhost', port:7496, client_id:nil
+  def change_host host: @connection_parameter[:host], 
+		  port: @connection_parameter[:port],
+		  client_id: @connection_parameter[:client_id].presence || nil
     host, port = (host+':'+port.to_s).split(':') 
     @connection_parameter[:client_id] = client_id if client_id.present?
     @connection_parameter[:host] = host 

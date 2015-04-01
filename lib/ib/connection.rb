@@ -29,6 +29,7 @@ module IB
 
     attr_accessor  :socket #   Socket to IB server (TWS or Gateway)
     attr_accessor  :next_local_id # Next valid order id 
+    attr_accessor  :client_id 
     alias next_order_id next_local_id
     alias next_order_id= next_local_id=
 
@@ -48,8 +49,11 @@ module IB
     # convert parameters into instance-variables and assign them
     method(__method__).parameters.each do |type, k|
       next unless type == :key
-      if k == :logger
+      case k
+      when :logger
 	self.logger = logger  
+#      when :client_id
+#	self.client_id = client_id
       else
 	v = eval(k.to_s)
 	instance_variable_set("@#{k}", v) unless v.nil?
@@ -100,6 +104,7 @@ module IB
       # Sending (arbitrary) client ID to identify subsequent communications.
       # The client with a client_id of 0 can manage the TWS-owned open orders.
       # Other clients can only manage their own open orders.
+      puts "connect client_id: #{@client_id}"
       socket.write_data @client_id
 
       @connected = true
