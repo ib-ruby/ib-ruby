@@ -92,7 +92,7 @@ class Account < IB::Model
 	#  con_id and exchange fully qualify a contract, no need to transmit other data
 	contracts.update_or_create msg.contract, 'con_id'
 	tws_contract =  IB::Contract.new con_id: msg.contract.con_id, exchange: msg.contract.exchange
-	IB::Gateway.tws.place_order order, tws_contract
+	IB::Gateway.current.place_order order, tws_contract
       end 
       unless result.is_a? IB::Contract
 	IB::Gateway.logger.error {"place order --> Invalid Contract specified .::. #{order.to_human}"}

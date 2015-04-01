@@ -97,6 +97,6 @@ They identify the order by local_id and perm_id
   end # def subscribe
 
     def request_open_orders
-      tws.send_message :RequestAllOpenOrders
+      send_message :RequestAllOpenOrders
     end
   end # module

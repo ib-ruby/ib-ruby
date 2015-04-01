@@ -41,7 +41,7 @@ responded = []
 # It is safe to connect to a production-machine. 
 #                            change host to ip of the computer, where a tws
 #                            with marketdata-subscriptions is running
-IB::Gateway.new  connect: true , host: 'beta:7496' # TWS
+IB::Gateway.new  connect: true ,  client_id: 1289 , host: 'beta:7496' # TWS
 
 if ( ib= IB::Gateway.tws).present? 
 
@@ -74,7 +74,7 @@ if ( ib= IB::Gateway.tws).present?
      puts request_id
     contract.update_contract  do | msg|
 
-    ib.send_message IB::Messages::Outgoing::RequestHistoricalData.new(
+    IB::Gateway.current.send_message IB::Messages::Outgoing::RequestHistoricalData.new(
       :request_id => request_id,
       :contract => msg.contract,
       :end_date_time => Time.now.to_ib,

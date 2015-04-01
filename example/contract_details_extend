@@ -1,0 +1,80 @@
+#!/usr/bin/env ruby
+#
+# This script gets details for specific contract from IB
+
+require 'rubygems'
+require 'bundler/setup'
+$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
+require 'yaml'
+require 'pp'
+require 'active_support'
+require 'ib-ruby'
+# This example 
+# Definition of what we want market data for.  We have to keep track of what ticker id
+# corresponds to what symbol ourselves, because the ticks don't include any other
+# identifying infoormation. The choice of ticker ids is, as far as I can tell, arbitrary.
+
+
+begin
+market = {"1. Apple " =>  IB::Stock.new( symbol: 'AAPL') ,
+          "2. BASF  " =>  IB::Stock.new( symbol: 'BAS', currency: 'EUR'  ) ,
+          "3. DSB   " =>  IB::Stock.new( symbol: 'D05', currency: 'SGD', exchange: 'SGX'  ) ,
+	  "7. S&P Future"  => IB::Future.new( symbol:'ES', expiry:201512, :exchange => 'GLOBEX'),	
+	  "9. NOK/SEK" => IB::Forex.new( symbol:'NOK', currency:'SEK'),
+	  "10. GE-Option with multible contracts" => IB::Option.new( symbol:'GE', strike:25, expiry:201512), #  put+call-options, only the last is selected
+	  "11. Fake Stock "  => IB::Stock.new( :symbol=>'FAKE' )  # not a valid symbol
+	}
+
+# Connect to IB TWS.
+ib= IB::Gateway.new  connect: true, :client_id => 1112,  :port => 7496 # TWS
+ib.logger.level= 3
+market.each_pair do |id, contract|
+  puts "\nRequesting contract data #{id}: #{contract.description}"
+  result = nil
+
+  ## A Thread environment is only nessesary, if some other parts of the 
+  ## programm are accessing subscribed messages. This domonstrates the usage.
+
+  symbol,con_id,min_tick=0
+  result=  contract.read_contract_from_tws do |msg|
+    # Any attribute of the contract-object is assesible, i.e.
+    symbol= msg.contract.present? ? msg.contract.symbol : "XXX"
+    con_id= msg.contract.present? ? msg.contract.con_id : "NO CONID"
+    # In Addition, all Contract-Detail-Attributes are present 
+    min_tick= msg.contract_detail.present? ? msg.contract_detail.min_tick : 0
+    puts "Query #{id}-----------------------------------------------------------"
+    puts "TWS-resonse: Symbol -> #{symbol}", "Min-Tick:#{min_tick}, ConId:#{con_id}"
+  end
+  puts "Result: #{result } \t\t (local symbol / Nr of Contracts)"
+  puts "Updated-Contract  \t #{contract.to_human}"
+  puts "----------------------------------------------------------------------"
+  # Request Contract details for the symbols we're interested in. TWS will
+  # respond with ContractData messages, which will be processed by the code above.
+
+end
+rescue RuntimeError => e
+	puts "Error"
+	puts e
+end
+
+=begin
+Requesting contract data 7: EURUSD
+TWS-Response:
+<Contract: {"symbol"=>"EUR", "sec_type"=>"CASH", "expiry"=>"", "strike"=>0.0,
+"right"=>"", "exchange"=>"IDEALPRO", "currency"=>"USD",
+"local_symbol"=>"EUR.USD", "con_id"=>12087792, "multiplier"=>0,
+"primary_exchange"=>"", "created_at"=>2015-01-03 16:26:26 +0100,
+"updated_at"=>2015-01-03 16:26:26 +0100, "include_expired"=>false} >
+ . . . . . . . . . ContractDetails. . . . . . . . . . . . . . 
+ {"market_name"=>"EUR.USD", "trading_class"=>"EUR.USD", "min_tick"=>5.0e-05,
+ "order_types"=>"ACTIVETIM,ADJUST,ALERT,ALGO,ALLOC,AVGCOST,BASKET,COND,CONDORDER,DAY,DEACT,DEACTDIS,DEACTEOD,GAT,GTC,GTD,GTT,HID,IOC,LIT,LMT,MIT,MKT,NONALGO,OCA,REL,SCALE,SCALERST,STP,STPLMT,TRAIL,TRAILLIT,TRAILLMT,TRAILMIT,WHATIF,",
+ "valid_exchanges"=>"IDEALPRO", "price_magnifier"=>1, "under_con_id"=>0,
+ "long_name"=>"European Monetary Union Euro", "contract_month"=>"",
+ "industry"=>"", "category"=>"", "subcategory"=>"", "time_zone"=>"EST5EDT",
+ "trading_hours"=>"20150103:CLOSED;20150105:1715-1700",
+ "liquid_hours"=>"20150103:CLOSED;20150105:1715-1700", "ev_rule"=>0.0,
+ "ev_multiplier"=>"", "sec_id_list"=>{}, "created_at"=>2015-01-03 16:26:26
+ +0100, "updated_at"=>2015-01-03 16:26:26 +0100, "coupon"=>0.0,
+ "callable"=>false, "puttable"=>false, "convertible"=>false,
+ "next_option_partial"=>false}
+=end

@@ -2,17 +2,32 @@
 #
 # Your script description here...
 
-require 'rubygems'
 require 'bundler/setup'
 $LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
 
-# First, connect to IB TWS. Arbitrary :client_id is used to identify your script
-ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS
+TWS= 'beta:7496' # or 'localhost'  
+#
+# First, connect to IB TWS. 
+IB::Gateway.new host: TWS , connect:true
+if ( ib = IB::Gateway.tws).present?
 
-# Subscribe to TWS alerts/errors
-ib.subscribe(:Alert) { |msg| puts msg.to_human }
+  ## Users are available as
+  # IB::Gateway.current.advisor --> a IB::Account
+  # IB::Gateway.current.active_accounts --> an Array of IB::Accounts
+  # IB::Accounts have many Contracts, Orders,  AccountValues and PortfolioValues
+  # IB::Accounts can trade and keep track of all actions
+  #
+  # There contracts and account_values/ portfolio_values are present
+  # A single Account can accessed  with
+  #  IB::Gateway.current.for_selected_account('account_id') do | acccount|
+  #    do funny things here
+  #  end
+
 
 # Put your code here
 # ...
+else
+  puts 'No TWS'
+end
 

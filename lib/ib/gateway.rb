@@ -127,7 +127,52 @@ The Advisor is always the first account
     @local_orders.update_or_create order, :local_id
   end
   
-  
+=begin
+Proxy for Connection#SendMessage
+allows reconnection if a socket_error occurs
+=end
+
+  def send_message what, *args
+    logger.tap{|l| l.progname =  'Gateway#SendMessage' }
+    begin
+    tws.send_message what, *args
+    rescue Errno::EPIPE 
+      logger.info 'Connection interrupted ... start again'
+      prepare_connection ; connect
+      retry
+    rescue Errno::ECONNRESET => e
+      logger.info 'Connection refused ... re-establishing'
+      prepare_connection ; connect
+      retry
+    end
+  end
+
+=begin
+The code to translate the wrappers into a message 
+is copied from connection
+=end
+
+  def cancel_order *local_ids
+
+     local_ids.each do |local_id|
+         send_message :CancelOrder, :local_id => local_id.to_i
+     end
+
+  end
+
+=begin
+ModifyOrder, PlaceOrder
+hold an exact copy of the code of connection
+instead of a connection object a gateway-instance is used to connect, which provides Gateway#SendMessage
+=end
+    def modify_order order, contract
+      order.modify contract, self
+    end
+
+    def place_order order, contract
+       order.place contract, self  if order.is_a? IB::Order
+    end
+
 
   def prepare_connection
     tws.disconnect if tws.is_a? IB::Connection
@@ -180,14 +225,6 @@ Weiterhin meldet sich die Anwendung zur Auswertung von Messages der TWS an.
 	#Kernel.exit(false)
 	return false
       end
-    rescue Errno::EPIPE => e
-      logger.info 'Connection interrupted ... start again'
-      self.tws = IB::Connection.new  @connection_parameter.merge( connect:true )
-      
-    rescue Errno::ECONNRESET => e
-      logger.info 'Connection refused ... re-establishing'
-      self.tws = IB::Connection.new  @connection_parameter
-      retry
     rescue Errno::EHOSTUNREACH => e
       logger.error 'Cannot connect to specified host'
       logger.error  e

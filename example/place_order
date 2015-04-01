@@ -12,7 +12,7 @@ TWS= 'localhost'  # 'beta:7496' # or 'localhost:4001'
 
 
 # Connect to IB TWS.
-IB::Gateway.new host: TWS , connect:true
+IB::Gateway.new host: TWS , connect:true, :client_id => 1123, logger: Logger.new( '/dev/null' )
 if ( ib = IB::Gateway.tws).present?
 
   # Lets define a Stock (Default: ncy: USD, Exchange: SMART), and a fake one
@@ -28,13 +28,6 @@ if ( ib = IB::Gateway.tws).present?
   # where to perform the Action
   account = IB::Gateway.current.active_accounts.last
   
-  # simple anonymous output method
-  # All successfully placed orders are kept with there actual status in the orders-array of the account
-  monitor_output = -> do
-    puts "Wait 5 Sec"
-    sleep 5
-    account.orders.each{|x| puts x.to_human }
-  end
   # the method »update_contract« validates the presence of this symbol 
   # the validated contract is provided in a block
   # only if a valid contract is returned by the tws, the block is evaluated
@@ -43,26 +36,27 @@ if ( ib = IB::Gateway.tws).present?
 
 
   ## place the order on the last detected account
-  account.place_order our_stock, buy_order
+  account.place_order order: buy_order, contract: our_stock
+  
+  puts "placed #{buy_order.to_human} at #{our_stock.to_human} "
 
+  account.place_order contract: fake_stock, order: buy_order
+  puts "placed #{buy_order.to_human} at #{fake_stock.to_human} "
   ## send RequestMessage to the TWS, IB::Gateway tracks it into the order-array of the account
-  IB::Gateway.tws.send_message :RequestAllOpenOrders   
+  #
+  puts "requesting pending orders "
+  IB::Gateway.current.send_message :RequestAllOpenOrders   
+   sleep 5
 
-  monitor_output[]
-
+    puts "This is a list of pending Orders "
+    puts '-'*(100)
+    account.orders.each{|x| puts "#{x.contract.to_human}  --> #{x.to_human}" }
 
   puts "~"*(39)
   puts "don't forget to cancel the order manually!"
   puts "~"*(39)
+  puts "Notice that no attempt to send an invalid Order was made"
 
-  puts "Place Fake stock "
-  account.place_order fake_stock, buy_order
-
-  monitor_output[]
-
-  puts "Nothing is transmitted to the tws."
-  puts "The Contract »fake-stock» itself is invalid, i.e."
-  puts "local_symbol => #{fake_stock.local_symbol}"
 
 else
   puts 'No TWS'

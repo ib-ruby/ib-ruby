@@ -28,7 +28,7 @@ print_ohlc_title = -> do
   puts "-"*100
 end
 # Connect to IB TWS.
-IB::Gateway.new host: TWS , connect:true
+IB::Gateway.new host: TWS , connect:true, client_id: 1343
 if ( ib = IB::Gateway.tws).present?
 
   # define the contracts and assign them to the advisor
@@ -59,7 +59,7 @@ if ( ib = IB::Gateway.tws).present?
     # query for historical data
     contract.update_contract  do | msg |
 
-    ib.send_message IB::Messages::Outgoing::RequestHistoricalData.new(
+    IB::Gateway.current.send_message IB::Messages::Outgoing::RequestHistoricalData.new(
       :request_id => msg.contract.con_id,
       :contract => msg.contract,
       :end_date_time => Time.now.to_ib,

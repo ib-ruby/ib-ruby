@@ -332,10 +332,11 @@ module IB
 
     # Placement
     def place contract, connection
-      error "Unable to place order, next_local_id not known" unless connection.next_local_id
-      self.client_id = connection.client_id
-      self.local_id = connection.next_local_id
-      connection.next_local_id += 1
+      real_connection = connection.is_a?( IB::Gateway ) ? connection.tws : connection
+      error "Unable to place order, next_local_id not known" unless real_connection.next_local_id
+      self.client_id = real_connection.client_id
+      self.local_id =  real_connection.next_local_id
+	real_connection.next_local_id += 1
       self.placed_at = Time.now
       modify contract, connection, self.placed_at
     end

@@ -30,7 +30,7 @@ module AccountInfos
 	logger.progname = 'AccountDataStorage#account_download_end'
 	account = valid_account[ msg.account_name ]
 	logger.info { "#{account.name} => Count of AccountValues: #{account.account_values.size} "  }
-	tws.send_message :RequestAccountData, subscribe: false, account_code: account.account
+	send_message :RequestAccountData, subscribe: false, account_code: account.account
 	       # 	account.send_account_data
 	       #	@active_subscription=false
       when IB::Messages::Incoming::PortfolioValue
@@ -53,13 +53,18 @@ an Array of account_id and IB::Account-Objects.
     logger.progname = 'Gateway#get_account_data'
     accounts =   active_accounts if accounts == :all
     accounts = [accounts] unless  accounts.is_a? Array
-    accounts.each do | account |
-      account =  active_accounts.find{|x| x.account == account } unless account.is_a? IB::Account
+    accounts.each do | a |
+      account = if a.is_a? IB::Account
+	  active_accounts.find{|x| x == a } 
+		else
+	  active_accounts.find{|x| x.account == a } 
+		end
+
       if account.is_a? IB::Account
 	# reset account  (works only with tabelless models)
 	account.portfolio_values, account.account_values, account.contracts, account.orders = []
-	tws.send_message :RequestAccountData, subscribe: true, account_code: account.account
-	sleep 1
+	send_message :RequestAccountData, subscribe: true, account_code: account.account
+	sleep 2
       else
 	logger.error{ "Invalid Account specified :#{accounts.inspect}" }
       end

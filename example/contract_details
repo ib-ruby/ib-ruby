@@ -25,12 +25,11 @@ market = {"1. Apple via Stock " => IB::Stock.new( symbol: 'AAPL') ,
 	}
 
 # Connect to IB TWS.
-IB::Gateway.new  connect: true, host: 'localhost:7496' # TWS
+IB::Gateway.new  connect: true, client_id: 1201, host: 'localhost:7496' # TWS
 IB::Gateway.current.logger.level= 3
 threadArray = Array.new
 
 #3.times do
-  puts "Within the loop:"
   market.each_pair do |id, contract|
     
     puts "Requesting contract data #{id}: #{contract.description}"
@@ -42,7 +41,7 @@ threadArray = Array.new
     threadArray << Thread.new( contract)  do | contract |
       # local vars
       symbol, min_tick, result, con_id = nil
-      result=  contract.read_contract_from_tws do |msg|
+      result=  contract.update_contract do |msg|
 	# Any attribute of the contract-object is assesible, i.e.
 	con_id =   msg.contract.con_id 
 	symbol =   msg.contract.symbol 

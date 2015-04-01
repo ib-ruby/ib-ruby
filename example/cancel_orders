@@ -12,9 +12,9 @@ require 'ib-ruby'
 # First, connect to IB TWS.
 IB::Gateway.new  :port => 7496, :connect=> true , :client_id => 998 # TWS
 
-if ( ib = IB::Gateway.tws).present?
+if ( ib = IB::Gateway.current).present?
   # Subscribe to TWS alerts/errors and order-related messages
-  ib.subscribe( :OpenOrder, :OrderStatus, :OpenOrderEnd ) { |msg| puts msg.to_human }
+  ib.tws.subscribe( :OpenOrder, :OrderStatus, :OpenOrderEnd ) { |msg| puts msg.to_human }
 
   if ARGV.empty?
     ib.send_message :RequestGlobalCancel

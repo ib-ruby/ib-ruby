@@ -23,6 +23,23 @@ RSpec.shared_examples_for 'invalid connection' do | host |
 
  end
 
+RSpec.shared_examples_for 'fully_initialized_account' do 
+	its( :account_values ){ is_expected.to have_at_least(10).account_values }
+	its( :portfolio_values ){ is_expected.to have_at_least(1).portfolio_value }
+
+	it "#simple_account_data_scan" do
+	  subject.account_values.each {|y| expect( y ).to be_a IB::AccountValue }
+	  expect( subject.simple_account_data_scan( 'AccountReady' )).to have(1).account_value
+	  expect( subject.simple_account_data_scan( 'StockMarketValue' )).to have_at_least(2).account_values
+	  expect( subject.simple_account_data_scan( 'StockMarketValue', 'USD' )).to have(1).account_value
+	end
+
+	it "portfolio-positions" do
+	  subject.portfolio_values.each {|x| expect( x  ).to be_a IB::PortfolioValue }
+	end
+
+end
+
 describe IB::Gateway do
   after(:all){ IB::Gateway.current.disconnect if IB::Gateway.current.present? }
   before(:all) do
@@ -37,7 +54,7 @@ describe IB::Gateway do
 
   context "#initialize" do
     it 'without any parameter' do
-      IB::Gateway.new :serial_array=> true, logger: mock_logger #  {|gw| puts "test" }
+      IB::Gateway.new :serial_array=> true, logger: mock_logger, client_id:1034 #  {|gw| puts "test" }
       expect( IB::Gateway.current ).to be_a IB::Gateway 
       expect( IB::Gateway.current.advisor).not_to be 
       expect( IB::Gateway.current.active_accounts).to be_empty
@@ -94,43 +111,13 @@ describe IB::Gateway do
       subject { IB::Gateway.tws }
       it_behaves_like 'Connected Connection' 
     end
-
-
-    context 'query Account_data' do
-      before(:all) do
-	account_id = IB::Gateway.current.active_accounts.first.account
-	Ib::Gateway.tws.send_message :RequestAccountData, :subscribe => true, :account_code => account_id
-
-      end
-      it "perform the request" do
-	expect( IB::Gateway.current.active_accounts.first).to be_a IB::Account 
-
-	sleep 2
-      end
-      subject {  IB::Gateway.current.active_accounts.first }
-	its( :account_values ){ is_expected.to have_at_least(10).account_values }
-	its( :portfolio_values ){ is_expected.to have_at_least(1).portfolio_value }
-
-	it "#simple_account_data_scan" do
-	subject.account_values.each {|y| expect( y ).to be_a IB::AccountValue }
-	expect( subject.simple_account_data_scan( 'AccountReady' )).to have(1).account_value
-	expect( subject.simple_account_data_scan( 'StockMarketValue' )).to have_at_least(2).account_values
-	expect( subject.simple_account_data_scan( 'StockMarketValue', 'USD' )).to have(1).account_value
-      end
-
-	it "portfolio-positions" do
-	  subject.portfolio_values.each {|x| expect( x  ).to be_a IB::PortfolioValue }
-	end
-
-    end
-
-    context 'OpenOrder-Handling' , focus:true do
+    context 'OpenOrder-Handling'  do
       it 'manual sending message and analyse the response' do
-	## Important: Place an Order in the specified Account!!
-	tws = IB::Gateway.current.tws
+	## Important: Place one Order in the specified Account!!
+	gw = IB::Gateway.current
 	IB::Gateway.current.for_selected_account("DU167349") do | account |
 	  expect( account.orders ).to be_empty
-          expect{ tws.send_message :RequestAllOpenOrders; sleep 1 }.to change{ account.contracts.size }.by(1)
+          expect{ gw.send_message :RequestAllOpenOrders; sleep 1 }.to change{ account.contracts.size }.by(1)
 	  expect( account.contracts.size ).to eq 1
 	  expect( account.contracts.first.orders.size ).to eq 1
 	  expect( account.orders ).not_to be_empty
@@ -141,6 +128,24 @@ describe IB::Gateway do
 	  expect( account.orders.last.submitted?).to be
 	  expect( account.contracts.first.orders.first.submitted? ).to be
 	end
+
+
+    end
+
+    context 'query Account_data' do
+
+      let( :gw ){ IB::Gateway.current }
+      it "perform the request" do
+	gw.for_active_accounts do |account|
+	  expect{ gw.get_account_data( accounts: account) }.to change { account.account_values }
+	end
+      end
+      context IB::Gateway.current do
+
+	subject {  IB::Gateway.current.active_accounts.last }
+	it_behaves_like 'fully_initialized_account'
+      end
+
 #pp	IB::Connection.current.received
 	
       end # it

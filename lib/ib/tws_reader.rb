@@ -162,7 +162,7 @@ i.e.
 
       ### send the request !
       begin
-	ib.send_message :RequestContractData, 
+	IB::Gateway.current.send_message :RequestContractData, 
 	  :id =>  message_id,
 	  :contract => ( unique ? query_contract : self  rescue self )  # prevents error if Ruby vers < 2.1.0
 	# we do not rely on the received hash, we simply wait for the ContractDataEnd Event 
