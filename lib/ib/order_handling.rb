@@ -43,7 +43,7 @@ They identify the order by local_id and perm_id
 		o.order_states << msg.order_state
 	end
 	    
-	logger.info {  "Order State not assigned-- #{msg.order_state.inspect} ----------" } if success.nil?
+	logger.info {  "Order State not assigned-- #{msg.order_state.to_human} ----------" } if success.nil?
 
       when IB::Messages::Incoming::OpenOrder
 	#puts  "Order  --- #{msg.order.inspect} ----------" 
@@ -90,7 +90,7 @@ They identify the order by local_id and perm_id
 	  end  # branch
 	end # block
 
-	logger.info {  "Execution-Record not assigned-- #{msg.execution.inspect} ----------" } if success.nil?
+	logger.info {  "Execution-Record not assigned-- #{msg.execution.ito_human} ----------" } if success.nil?
 
 	end  # case msg.code
     end # do

@@ -74,7 +74,7 @@ The Advisor is always the first account
 
   def initialize  port: 7496, 
 		  host: '127.0.0.1',   # 'localhost:4001' is also accepted
-		  client_id: nil,
+		  client_id:  random_id
 		  subscribe_managed_accounts: true, 
 		  subscribe_alerts: true, 
 		  subscribe_account_infos: true,
@@ -115,9 +115,9 @@ The Advisor is always the first account
   end
   def change_host host: @connection_parameter[:host], 
 		  port: @connection_parameter[:port],
-		  client_id: @connection_parameter[:client_id].presence || nil
+		  client_id: @connection_parameter[:client_id]
     host, port = (host+':'+port.to_s).split(':') 
-    @connection_parameter[:client_id] = client_id if client_id.present?
+    @connection_parameter[:client_id] = client_id 
     @connection_parameter[:host] = host 
     @connection_parameter[:port] = port 
     
@@ -360,6 +360,9 @@ class Array
     self  # always returns the array 
   end
 
+  def random_id
+    rand 99999
+  end
 end
 __END__
 2.2.0 :008 > b = [ IB::Stock.new(symbol:'A'), IB::Stock.new(symbol:'T') ]

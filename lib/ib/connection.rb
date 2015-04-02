@@ -104,7 +104,6 @@ module IB
       # Sending (arbitrary) client ID to identify subsequent communications.
       # The client with a client_id of 0 can manage the TWS-owned open orders.
       # Other clients can only manage their own open orders.
-      puts "connect client_id: #{@client_id}"
       socket.write_data @client_id
 
       @connected = true
