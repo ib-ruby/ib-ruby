@@ -339,6 +339,9 @@ Its always active. If the connection is interrupted and
 
   end
 
+  def random_id
+    rand 99999
+  end
 
 end  # class
 
@@ -360,9 +363,6 @@ class Array
     self  # always returns the array 
   end
 
-  def random_id
-    rand 99999
-  end
 end
 __END__
 2.2.0 :008 > b = [ IB::Stock.new(symbol:'A'), IB::Stock.new(symbol:'T') ]
