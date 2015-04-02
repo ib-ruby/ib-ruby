@@ -10,7 +10,7 @@ require 'ib-ruby'
 TWS= 'beta:7496' # or 'localhost'  
 
 
-IB::Gateway.new host: TWS , connect:true
+IB::Gateway.new host: TWS , connect:true, client_id:1134, logger: Logger.new('/dev/null')
 
 if ( ib = IB::Gateway.tws).present?
 
@@ -27,9 +27,7 @@ if ( ib = IB::Gateway.tws).present?
   # argument. In this case, we just print out the tick.
 
   ib.subscribe(:TickPrice, :TickSize, :TickString) do |msg|
-    puts msg.inspect
-    puts msg.ticker_id
-    puts IB::Gateway.current.advisor.contracts.find{|x| x.con_id == msg.ticker_id}.local_symbol + ": " + msg.to_human
+    puts IB::Gateway.current.advisor.contracts.find{|x| x.con_id == msg.ticker_id}.local_symbol + ": " + msg.to_human + "\t (press enter to cancel)"
   end
 
   # Now we actually request market data for the symbols we're interested in.
@@ -39,8 +37,6 @@ if ( ib = IB::Gateway.tws).present?
     end
   end
 
-  puts "\nSubscribed to market data"
-  puts "\n******** Press <Enter> to cancel... *********\n\n"
   STDIN.gets
   puts "Cancelling market data subscription.."
 
@@ -49,6 +45,7 @@ if ( ib = IB::Gateway.tws).present?
   end
 
   IB::Gateway.current.disconnect
+  puts "Disconnected!"
 
 else
   puts 'No TWS'

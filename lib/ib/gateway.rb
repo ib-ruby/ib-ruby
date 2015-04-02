@@ -74,7 +74,7 @@ The Advisor is always the first account
 
   def initialize  port: 7496, 
 		  host: '127.0.0.1',   # 'localhost:4001' is also accepted
-		  client_id:  random_id
+		  client_id:  random_id,
 		  subscribe_managed_accounts: true, 
 		  subscribe_alerts: true, 
 		  subscribe_account_infos: true,

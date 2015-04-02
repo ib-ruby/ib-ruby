@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 #
 # This script places GOOG option butterfly combo order
+# ### not adapted to Gateway
 
 require 'rubygems'
 require 'bundler/setup'
@@ -42,7 +43,7 @@ end
 @ib.wait_for :NextValidId
 
 # Create multi-legged option Combo using utility method above
-combo = butterfly 'GOOG', '201301', 'CALL', 500, 510, 520
+combo = butterfly 'TAP', '201501', 'CALL', 70, 72.5, 75
 
 # Create Order stub
 order = IB::Order.new :total_quantity => 10, # 10 butterflies

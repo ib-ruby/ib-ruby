@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 #
 # This script subscribes to market data for a list of Options
-
+### not adapted to IB::Gateway
 require 'rubygems'
 require 'bundler/setup'
 $LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
