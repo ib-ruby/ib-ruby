@@ -8,10 +8,13 @@ shared_examples_for 'Connected Connection' do
   it_behaves_like 'Connected Connection without receiver'
 
   it 'keeps received messages in Hash by default' do
-    subject.received.should be_a Hash
-    subject.received[:NextValidId].should_not be_empty
-    subject.received[:NextValidId].should have_exactly(1).message
+    expect(subject.received).to be_a Hash
   end
+
+  it 'has received a :NextValidId' do
+    expect(subject.received[:NextValidId]).not_to be_empty
+  end
+
 end
 
 shared_examples_for 'Connected Connection without receiver' do
@@ -21,7 +24,7 @@ shared_examples_for 'Connected Connection without receiver' do
   its(:reader) { should be_a Thread }
   its(:server_version) { should be_an Integer }
   its(:client_version) { should be_an Integer }
-  its(:subscribers) { should have_at_least(1).item } # :NextValidId and empty Hashes
+  its(:subscribers) { is_expected.not_to be_empty } # :NextValidId and empty Hashes
   its(:next_local_id) { should be_a Fixnum } # Not before :NextValidId arrives
 end
 
