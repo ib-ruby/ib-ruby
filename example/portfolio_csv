@@ -25,7 +25,7 @@ require 'ib-ruby'
 TWS= 'beta:7496' # or 'localhost'  
 
 # Output CSV headers
-Headers = %w (Account
+Header = %w( Account
 	      Symbol
 	      SecType
 	      Expiry
@@ -58,7 +58,7 @@ module IB
 	    pv.contract.local_symbol,
 	    pv.position,
 	    pv.market_price,
-	    pv..market_value,
+	    pv.market_value,
 	    pv.average_cost,
 	    pv.unrealized_pnl,
 	    pv.realized_pnl
@@ -74,13 +74,14 @@ end # module
 
 
 #
-# First, connect to IB TWS. 
-IB::Gateway.new host: TWS , connect:true
+# First, connect to IB TWS. Suppress any Logging-Informations
+IB::Gateway.new host: TWS , connect:true, :logger=> Logger.new('/dev/null') 
 if IB::Gateway.tws.present?
+puts "\n\n************** Communication to #{IB::Gateway.current.get_host} activated *********************\n\n"
   ## activate the defined subscription
   IB::Gateway.current.portfolio_csv
   # Print the Header
-  puts HEADER.map {|val| "\"#{val}\""}.join(",") }
+  puts Header.map {|val| "\"#{val}\""}.join(",") 
 
   ## Perform the query
   IB::Gateway.current.get_account_data
@@ -88,10 +89,11 @@ if IB::Gateway.tws.present?
 # wait for the query to approach
 sleep 2
 
-puts "\n\n************** Press <Enter> to disconnect *********************\n\n"
-STDIN.gets
+#puts "\n\n************** Press <Enter> to disconnect *********************\n\n"
+#STDIN.gets
   
 IB::Gateway.current.disconnect
+puts "\n\n************** Communication terminated *********************\n\n"
 
 else
   puts 'No TWS'
