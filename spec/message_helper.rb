@@ -1,6 +1,7 @@
 require 'spec_helper'
 require 'thread'
 require 'stringio'
+require 'rspec/expectations'
 
 ## Logger helpers
 
@@ -19,17 +20,24 @@ def log_entries
   @stdout && @stdout.string.split(/\n/)
 end
 
-def should_log *patterns
-  patterns.each do |pattern|
-    log_entries.any? { |entry| entry =~ pattern }.should be_true
-  end
-end
+# Not using these helpers just use match directly instead e.g.:
+#        it { log_entries.any? { |entry| expect(entry).to match(/No subscribers for message .*:Alert!/) }}
 
-def should_not_log *patterns
-  patterns.each do |pattern|
-    log_entries.any? { |entry| entry =~ pattern }.should be_false
-  end
-end
+#def should_log *patterns
+#  patterns.each do |pattern|
+    #old should entry
+    #log_entries.any? { |entry| entry =~ pattern }.should be_true
+#    log_entries.any? { |entry| pp (entry =~ pattern); expect(entry =~ pattern).to be_true }
+#  end
+#end
+
+#def should_not_log *patterns
+#  patterns.each do |pattern|
+#    log_entries.any? { |entry| pp (entry =~ pattern); expect(entry =~ pattern).to be_false }
+#    #old should entry
+#    #log_entries.any? { |entry| entry =~ pattern }.should be_false
+#  end
+#end
 
 ## Connection helpers
 
