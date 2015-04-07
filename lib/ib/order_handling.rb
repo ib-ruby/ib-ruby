@@ -4,7 +4,7 @@ UpdateOrderDependingObject
 
 Generic method which enables operations on the order-Object,
 which is associated to OrderState, Execution, CommissionReport 
-Events fireded by the tws.
+Events fired by the tws.
 They identify the order by local_id and perm_id
 =end
   def update_order_dependent_object order_dependent_object
@@ -90,7 +90,7 @@ They identify the order by local_id and perm_id
 	  end  # branch
 	end # block
 
-	logger.info {  "Execution-Record not assigned-- #{msg.execution.ito_human} ----------" } if success.nil?
+	logger.info {  "Execution-Record not assigned-- #{msg.execution.to_human} ----------" } if success.nil?
 
 	end  # case msg.code
     end # do
