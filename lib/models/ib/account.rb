@@ -88,10 +88,10 @@ the associated Orderrecord is returned
 =end
     # somtimes (order_ref) IB::Order-fields are stings!  
     # Therefor the comparism has to be done explicity ba converting to integer
-    def locate_order local_id: nil, perm_id: nil, invest_order_id: nil
+    def locate_order local_id: nil, perm_id: nil, order_ref: nil
       search_option= [ local_id.present? ? [:local_id , local_id] : nil ,
 		       perm_id.present? ? [:perm_id, perm_id] : nil,
-		       invest_order_id.present? ? [:order_ref , invest_order_id ] : nil ].compact.first
+		       invest_order_id.present? ? [:order_ref , order_ref ] : nil ].compact.first
       orders.detect{|x| x[search_option.first].to_i == search_option.last.to_i }
     end
       
