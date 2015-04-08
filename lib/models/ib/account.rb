@@ -140,7 +140,7 @@ The modification itself is done in the provided block.
     order = locate_order perm_id: perm_id, local_id: local_id, invest_order_id: invest_order_id
     if order.is_a? IB::Order
      order = yield order  # specify modifications in the block
-     IB::Gateway.current.modify_order order 
+     IB::Gateway.current.modify_order order, order.contract 
       
     end
   end
