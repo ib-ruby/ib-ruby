@@ -165,6 +165,9 @@ is copied from connection
 ModifyOrder, PlaceOrder
 hold an exact copy of the code of connection
 instead of a connection object a gateway-instance is used to connect, which provides Gateway#SendMessage
+
+
+for interal use. To place an Order properly, use Account#ModifyOrder
 =end
     def modify_order order, contract=nil
       order.modify contract.presence || order.contract, self

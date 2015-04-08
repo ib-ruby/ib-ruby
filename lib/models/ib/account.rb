@@ -102,7 +102,7 @@ requires an IB::Order as parameter.
 If attached, the associated IB::Contract is used to specify the tws-command
 The associated Contract overtakes a parallel specified one
 
-The method validates the contract and returns a IB::Orderrecord
+The method validates the contract and returns the local_id of the submitted order
 
 
 =end
@@ -123,10 +123,27 @@ The method validates the contract and returns a IB::Orderrecord
       unless result.is_a? IB::Contract
 	IB::Gateway.logger.error {"place order --> Invalid Contract specified .::. #{order.to_human}"}
       end
-      locate_order local_id: local_id  # return_value
+      local_id  # return_value
 
     end # branch
-  end # place order
+  end # place 
+
+
+=begin
+Account#ModifyOrder
+
+The order is specified indirectly via local_id or invest_order_id
+The modification itself is done in the provided block.
+=end
+
+  def modify_order perm_id:nil, local_id: nil, invest_order_id: nil, &b
+    order = locate_order perm_id: perm_id, local_id: local_id, invest_order_id: invest_order_id
+    if order.is_a? IB::Order
+     order = yield order  # specify modifications in the block
+     IB::Gateway.current.modify_order order 
+      
+    end
+  end
   
 end # class
 
