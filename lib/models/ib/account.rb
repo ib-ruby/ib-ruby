@@ -82,7 +82,7 @@ class Account < IB::Model
   end
 =begin
 Account#LocateOrder
-given any key of local_id, perm_id and invest_order_id
+given any key of local_id, perm_id and order_ref
 (If multible keys are specified, only the first ist used for the searching )
 the associated Orderrecord is returned
 =end
@@ -91,7 +91,7 @@ the associated Orderrecord is returned
     def locate_order local_id: nil, perm_id: nil, order_ref: nil
       search_option= [ local_id.present? ? [:local_id , local_id] : nil ,
 		       perm_id.present? ? [:perm_id, perm_id] : nil,
-		       invest_order_id.present? ? [:order_ref , order_ref ] : nil ].compact.first
+		       order_ref.present? ? [:order_ref , order_ref ] : nil ].compact.first
       orders.detect{|x| x[search_option.first].to_i == search_option.last.to_i }
     end
       
@@ -132,12 +132,12 @@ The method validates the contract and returns the local_id of the submitted orde
 =begin
 Account#ModifyOrder
 
-The order is specified indirectly via local_id or invest_order_id
+The order is specified indirectly via local_id or order_ref
 The modification itself is done in the provided block.
 =end
 
-  def modify_order perm_id:nil, local_id: nil, invest_order_id: nil, &b
-    order = locate_order perm_id: perm_id, local_id: local_id, invest_order_id: invest_order_id
+  def modify_order perm_id:nil, local_id: nil, order_ref: nil, &b
+    order = locate_order perm_id: perm_id, local_id: local_id, order_ref: order_ref
     if order.is_a? IB::Order
      order = yield order  # specify modifications in the block
      IB::Gateway.current.modify_order order, order.contract 
