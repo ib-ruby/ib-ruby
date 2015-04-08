@@ -54,11 +54,12 @@ If only one Account is transmitted,  User and Advisor are identical.
 =begin
 ForSelectAccount provides  an Account-Object-Environment 
 (with AccountValues, Portfolio-Values, Contracts and Orders)
-to deal with in the specifed block
+to deal with in the specifed block.
+It returns an Array of the return-values of the block
 =end
 
   def for_active_accounts &b
-    active_accounts.each{|y| for_selected_account y.account,  &b }
+    active_accounts.map{|y| for_selected_account y.account,  &b }
   end
   def for_selected_account account_id
     sa =  @accounts.detect{|x| x.account == account_id }
