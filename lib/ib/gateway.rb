@@ -170,7 +170,8 @@ instead of a connection object a gateway-instance is used to connect, which prov
 for interal use. To place an Order properly, use Account#ModifyOrder
 =end
     def modify_order order, contract=nil
-      order.modify contract.presence || order.contract, self
+      use_contract = order.contract.is_a?( IB::Contract ) ? order.contract : contract
+      order.modify use_contract, self  if contract.is_a?( IB::Contract )
     end
 =begin
 Gateway#PlaceOrder
