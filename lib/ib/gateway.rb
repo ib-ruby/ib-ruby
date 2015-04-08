@@ -166,10 +166,14 @@ ModifyOrder, PlaceOrder
 hold an exact copy of the code of connection
 instead of a connection object a gateway-instance is used to connect, which provides Gateway#SendMessage
 =end
-    def modify_order order, contract
-      order.modify contract, self
+    def modify_order order, contract=nil
+      order.modify contract.presence || order.contract, self
     end
+=begin
+Gateway#PlaceOrder
 
+for interal use. To place an Order properly, use Account#PlaceOrder
+=end
     def place_order order, contract
        order.place contract, self  if order.is_a? IB::Order
     end

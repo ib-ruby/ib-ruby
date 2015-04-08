@@ -80,7 +80,32 @@ class Account < IB::Model
     orders.map{|y| s.status == 'executed' }.compact
 
   end
+=begin
+Account#LocateOrder
+given any key of local_id, perm_id and invest_order_id
+(If multible keys are specified, only the first ist used for the searching )
+the associated Orderrecord is returned
+=end
+    # somtimes (order_ref) IB::Order-fields are stings!  
+    # Therefor the comparism has to be done explicity ba converting to integer
+    def locate_order local_id: nil, perm_id: nil, invest_order_id: nil
+      search_option= [ local_id.present? ? [:local_id , local_id] : nil ,
+		       perm_id.present? ? [:perm_id, perm_id] : nil,
+		       invest_order_id.present? ? [:order_ref , invest_order_id ] : nil ].compact.first
+      orders.detect{|x| x[search_option.first].to_i == search_option.last.to_i }
+    end
+      
 
+=begin
+Account#PlaceOrder
+requires an IB::Order as parameter. 
+If attached, the associated IB::Contract is used to specify the tws-command
+The associated Contract overtakes a parallel specified one
+
+The method validates the contract and returns a IB::Orderrecord
+
+
+=end
 
   def place_order  order:, contract: nil
     order.contract =  contract if order.contract.nil?
@@ -92,13 +117,16 @@ class Account < IB::Model
 	#  con_id and exchange fully qualify a contract, no need to transmit other data
 	contracts.update_or_create msg.contract, 'con_id'
 	tws_contract =  IB::Contract.new con_id: msg.contract.con_id, exchange: msg.contract.exchange
-	IB::Gateway.current.place_order order, tws_contract
+	local_id = IB::Gateway.current.place_order order, tws_contract
       end 
       unless result.is_a? IB::Contract
 	IB::Gateway.logger.error {"place order --> Invalid Contract specified .::. #{order.to_human}"}
       end
+      locate_order local_id: local_id  # return_value
 
     end # branch
   end # place order
-end
-end
+  
+end # class
+
+end # module
