@@ -110,6 +110,7 @@ The method validates the contract and returns a IB::Orderrecord
   def place_order  order:, contract: nil
     order.contract =  contract if order.contract.nil?
     order.account =  account
+    local_id =  nil
     if order.contract.nil?
       IB::Gateway.logger.error {"place order --> No Contract specified .::. #{order.to_human}"}
     else
