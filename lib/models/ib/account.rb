@@ -155,8 +155,7 @@ Second: The order can be provided as parameter as well. Then only this
   def modify_order perm_id: nil, local_id: nil, order_ref: nil, order:nil, &b
 
     IB::Gateway.logger.progname 'Gateway#modify_order'
-    if order.nil?
-    order = locate_order perm_id: perm_id, local_id: local_id, order_ref: order_ref
+    order = locate_order perm_id: perm_id, local_id: local_id, order_ref: order_ref if order.nil?
     if order.is_a? IB::Order
      order = yield order if block_given?  # specify modifications in the block
     end
