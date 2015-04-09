@@ -110,13 +110,14 @@ Limit- and Aux-Prices are adjusted to Min-Tick, if auto_adjust is specified
 
   def place_order  order:, contract: nil, auto_adjust: true
     # adjust the orderprice to  min-tick
+      logger.progname =  'Account#PlaceOrder' 
     adjust = ->(a,b){ a=BigDecimal.new(a,5); b=BigDecimal.new(b,5); o=a.divmod(b); o.last.zero? ? a : a-o.last }
 
     order.contract =  contract if order.contract.nil?
     order.account =  account
     local_id =  nil
     if order.contract.nil?
-      IB::Gateway.logger.error {"place order --> No Contract specified .::. #{order.to_human}"}
+      IB::Gateway.logger.error {"No Contract specified .::. #{order.to_human}"}
     else
       result = order.contract.update_contract do | msg |
 	if auto_adjust
@@ -129,7 +130,7 @@ Limit- and Aux-Prices are adjusted to Min-Tick, if auto_adjust is specified
 	local_id = IB::Gateway.current.place_order order, tws_contract
       end 
       unless result.is_a? IB::Contract
-	IB::Gateway.logger.error {"place order --> Invalid Contract specified .::. #{order.to_human}"}
+	IB::Gateway.logger.error {"Invalid Contract specified .::. #{order.to_human}"}
       end
       local_id  # return_value
 
@@ -139,25 +140,31 @@ Limit- and Aux-Prices are adjusted to Min-Tick, if auto_adjust is specified
 
 =begin
 Account#ModifyOrder
+operates in two modi:
 
-The order is specified indirectly via local_id or order_ref
-The modification itself is done in the provided block.
+First: The order is specified indirectly via local_id or order_ref
+  Then the modification itself is done in the provided block.
+  The original order is modified
+  Important: The Block has to return the modified IB::Order
 
-Important: The Block has to return the modified IB::Order
+Second: The order can be provided as parameter as well. Then only this 
+  will be used. The block is now optional. 
+  Important: The OrderRecord must provide a valid Contract.
 =end
 
-  def modify_order perm_id: nil, local_id: nil, order_ref: nil, &b
+  def modify_order perm_id: nil, local_id: nil, order_ref: nil, order:nil, &b
 
-    logger.progname 'Gateway#modify_order'
+    IB::Gateway.logger.progname 'Gateway#modify_order'
+    if order.nil?
     order = locate_order perm_id: perm_id, local_id: local_id, order_ref: order_ref
     if order.is_a? IB::Order
-     order = yield order  # specify modifications in the block
-     if order.is_a? IB::Order
+     order = yield order if block_given?  # specify modifications in the block
+    end
+    if order.is_a? IB::Order
        IB::Gateway.current.modify_order order, order.contract 
      else
-       logger.error{ " The Block does not return an IB::Order-Object, instead: #{order.inspect} " }
+       IB::Gateway.logger.error{ " No IB::Order provided. Instead: #{order.inspect}" }
      end  
-    end
   end
   
 end # class

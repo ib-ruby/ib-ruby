@@ -23,6 +23,7 @@ They identify the order by local_id and perm_id
     ## perform the block if the order is assigned and the argument is valid
     if order.present? && order_dependent_object.save
       yield order
+      true # return_value
     else
       nil # return_value
     end
@@ -95,8 +96,64 @@ They identify the order by local_id and perm_id
 	end  # case msg.code
     end # do
   end # def subscribe
+=begin
+Gateway#RequestOpenOrders  aliased as UpdateOrders
+
+Resets the order-array for each account first.
+Requests all open (eg. pending)  orders from the tws 
+
+=end
 
     def request_open_orders
+      for_active_accounts{| account | account.orders=[] }
       send_message :RequestAllOpenOrders
     end
+
+    alias update_orders request_open_orders 
   end # module
+
+
+
+
+
+module IB
+  class Alert
+
+    def self.alert_202 msg
+      #
+      order = IB::Gateway.current.for_active_accounts do | account |
+	account.locate_order( local_id: msg.error_id )
+      end.compact.first
+      if order.present?
+	order.order_states << IB::OrderState.new( status:'Deleted' )
+      else
+	IB::Gateway.logger.error{"Alert 202: The deleted order was not registered: local_id #{msg.error_id}"} 
+      end
+    end
+    class << self
+      def add_orderstate_alert  *codes
+	codes.each do |n|
+	  class_eval <<-EOD
+	   def self.alert_#{n} msg
+	      IB::Gateway.logger.error{ msg.to_human }
+
+	       if msg.error_id.present? && msg.error_id > 0
+		order = IB::Gateway.current.for_active_accounts do | account |
+		account.locate_order( local_id: msg.error_id )
+		end.compact.first
+		if order.present?
+		  order.order_states << IB::OrderState.new( status: 'Rejected' ,
+						  warning_text: msg.message,
+						  local_id: msg.error_id ) 	
+		end
+	      end	# branch
+	    end		# def
+	  EOD
+	end # loop
+      end # def
+    end
+    add_orderstate_alert 105, 329
+
+  end  # class
+
+end  # module
