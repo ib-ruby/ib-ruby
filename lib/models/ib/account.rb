@@ -110,7 +110,7 @@ Limit- and Aux-Prices are adjusted to Min-Tick, if auto_adjust is specified
 
   def place_order  order:, contract: nil, auto_adjust: true
     # adjust the orderprice to  min-tick
-      logger.progname =  'Account#PlaceOrder' 
+      IB::Gateway.logger.progname =  'Account#PlaceOrder' 
     adjust = ->(a,b){ a=BigDecimal.new(a,5); b=BigDecimal.new(b,5); o=a.divmod(b); o.last.zero? ? a : a-o.last }
 
     order.contract =  contract if order.contract.nil?
