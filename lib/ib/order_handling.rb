@@ -9,7 +9,7 @@ They identify the order by local_id and perm_id
 =end
   def update_order_dependent_object order_dependent_object
     order = nil
-    if order_dependent_object.local_id.zero?
+    if order_dependent_object.local_id.blank?
       success =  nil
       for_active_accounts do |a|
 	if success.nil?
@@ -18,10 +18,11 @@ They identify the order by local_id and perm_id
       end
       logger.info { "Unable to update OrderState. Only PermId is given and no corresponding Order found. Perm_id: #{order_stat.perm_id} "} if success.nil?
     else
-      order= @local_orders.detect{|x| x.local_id == order_state.local_id }
+      order= for_active_accounts{ |a| a.locate_order( local_id: order_state.local_id )}.compact.first
+     # old version :: order=  @local_orders.detect{|x| x.local_id == order_state.local_id }
     end
     ## perform the block if the order is assigned and the argument is valid
-    if order.present? && order_dependent_object.save
+    if order.present?  #&& order_dependent_object.save
       yield order
       true # return_value
     else
