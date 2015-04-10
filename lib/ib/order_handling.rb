@@ -8,18 +8,12 @@ Events fired by the tws.
 They identify the order by local_id and perm_id
 =end
   def update_order_dependent_object order_dependent_object
-    order = nil
+      get_order= ->(field){  for_active_accounts{ |a| o=a.locate_order( field => order_dependent_object.local_id)}.compact.first }
+#possible enhancement for get_order: break(o) if o.is_a?(IB::Order) , but this returns a object instead of an array ... needs some consideration
     if order_dependent_object.local_id.blank?
-      success =  nil
-      for_active_accounts do |a|
-	if success.nil?
-	  success =  true if order = a.orders.detect{|x| x.perm_id == order_dependent_object.perm_id }
-	end
-      end
-      logger.info { "Unable to update OrderState. Only PermId is given and no corresponding Order found. Perm_id: #{order_stat.perm_id} "} if success.nil?
+      order = get_order[:perm_id]
     else
-      order= for_active_accounts{ |a| a.locate_order( local_id: order_state.local_id )}.compact.first
-     # old version :: order=  @local_orders.detect{|x| x.local_id == order_state.local_id }
+      order= get_order[:local_id]
     end
     ## perform the block if the order is assigned and the argument is valid
     if order.present?  #&& order_dependent_object.save
