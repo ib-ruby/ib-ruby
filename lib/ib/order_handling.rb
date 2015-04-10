@@ -125,12 +125,26 @@ module IB
 	account.locate_order( local_id: msg.error_id )
       end.compact.first
       if order.present?
-	order.order_states << IB::OrderState.new( status:'Deleted' )
+	order.order_states << IB::OrderState.new( status:'Cancelled' )
       else
 	IB::Gateway.logger.error{"Alert 202: The deleted order was not registered: local_id #{msg.error_id}"} 
       end
     end
     class << self
+=begin
+IB::Alert#AddOrderstateAlert
+
+The OrderState-Record is used to record the history of the order.
+If selected Alert-Messages appear, they are added added to the Order.OrderState-Array.
+The last Status is available as Order.order_state, all states are accessible by Order.order_states
+
+The TWS-Message-text is stored to the »warning-text«-field.
+The Status is always »rejected«. 
+If the first OrderState-object of a Order is »rejected«, the order is not placed at all.
+Otherwise only the last action is not applied and the order is unchanged.
+
+ToDo:: Encapsulate the order-State operation in Mutex as its not threadsafe ie. delegate it to connection.
+=end
       def add_orderstate_alert  *codes
 	codes.each do |n|
 	  class_eval <<-EOD
@@ -143,7 +157,7 @@ module IB
 		end.compact.first
 		if order.present?
 		  order.order_states << IB::OrderState.new( status: 'Rejected' ,
-						  warning_text: msg.message,
+						  warning_text: '#{n}: '+  msg.message,
 						  local_id: msg.error_id ) 	
 		end
 	      end	# branch
@@ -152,7 +166,12 @@ module IB
 	end # loop
       end # def
     end
-    add_orderstate_alert 105, 329
+    add_orderstate_alert  103,  # duplicate order
+			  201,  # deleted object
+			  105,  # Order being modified does not match original order
+			  462,  # Cannot change to the new Time in Force:GTD
+			  329   # Cannot change to the new order type:STP
+
 
   end  # class
 

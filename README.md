@@ -3,7 +3,30 @@
 Ruby Implementation of the Interactive Brokers Trader Workstation (TWS) API v.965-967.
 # Development-Branch, Environment: Ruby 2.20, ActiveModel,  Rspec3/Guard-Testsuite
 
+The hole TWS-Environment is accessible through Ruby-Objects.
 
+IB::Gateway is the root. It manages a list of TWS-Users. 
+An Advisor, who manages a list of contract-queries
+and ActiveAccounts, where AccountValues, PortfolioValues and Orders are linked.
+
+Whenever queries are send to the TWS, the response is stored in the object-tree
+and can then read out with standard Array-Methods.
+
+Thus ib-ruby supports the following workflow
+
+* Application sends Request 
+* IB::Gateway transmits to the TWS
+* TWS-Response is stored in Object-Tree
+* Application gets Response
+* Application reads the evaluated response from Object-Tree
+
+All time-critical operations are encapsulated in IB::Connection, which itself is
+managed by IB::Gateway. IB::Gateway takes care of interrupted connections to the TWS
+and tolerates the daily reset of the TWS, and thus enables a 24/7-operation-mode.
+
+However, ib-ruby offers a simple translation of ruby-queries to tws-socket-codes and
+offers the pure TWS-response as well. The usage of the object-tree is optional.
+Any code for previous versions of the programm should work.
 ### Changes from the stable branch
 
 
