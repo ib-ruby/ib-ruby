@@ -167,7 +167,18 @@ ToDo:: Encapsulate the order-State operation in Mutex as its not threadsafe ie. 
 			  462,  # Cannot change to the new Time in Force:GTD
 			  329   # Cannot change to the new order type:STP
 
-
   end  # class
 
+
+  class Order
+    def auto_adjust
+    adjust_price = ->(a,b){ a=BigDecimal.new(a,5); b=BigDecimal.new(b,5); o=a.divmod(b); o.last.zero? ? a : a-o.last }
+
+    contract.verify if  contract.contract_detail.blank?
+
+    self.limit_price= adjust_price.call(limit_price, contract.contract_detail.min_tick) unless limit_price.zero?
+    self.aux_price= adjust_price.call(aux_price, contract.contract_detail.min_tick) unless aux_price.zero?
+	  
+    end
+  end
 end  # module

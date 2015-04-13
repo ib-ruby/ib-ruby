@@ -110,31 +110,23 @@ Limit- and Aux-Prices are adjusted to Min-Tick, if auto_adjust is specified
 
   def place_order  order:, contract: nil, auto_adjust: true
     # adjust the orderprice to  min-tick
-      IB::Gateway.logger.progname =  'Account#PlaceOrder' 
-    adjust = ->(a,b){ a=BigDecimal.new(a,5); b=BigDecimal.new(b,5); o=a.divmod(b); o.last.zero? ? a : a-o.last }
+    IB::Gateway.logger.progname =  'Account#PlaceOrder' 
 
     order.contract =  contract if order.contract.nil?
-    order.account =  account
+    order.contract.verify if  order.contract.con_id.blank?
+    order.account =  account  # assign the account_id to the account-field of IB::Order
     local_id =  nil
-    if order.contract.nil?
+    if order.contract.nil? || order.contract.con_id.blank?
       IB::Gateway.logger.error {"No Contract specified .::. #{order.to_human}"}
     else
-      result = order.contract.update_contract do | msg |
-	if auto_adjust
-	  order.limit_price= adjust.call(order.limit_price, msg.contract_details.min_tick) unless order.limit_price.zero?
-	  order.aux_price= adjust.call(order.aux_price, msg.contract_details.min_tick) unless order.aux_price.zero?
-	end
-	contracts.update_or_create msg.contract, 'con_id'
-	#  con_id and exchange fully qualify a contract, no need to transmit other data
-	tws_contract =  IB::Contract.new con_id: msg.contract.con_id, exchange: msg.contract.exchange
-	local_id = IB::Gateway.current.place_order order, tws_contract
-      end 
-      unless result.is_a? IB::Contract
-	IB::Gateway.logger.error {"Invalid Contract specified .::. #{order.to_human}"}
-      end
-      local_id  # return_value
+      order.auto_adjust if auto_adjust
+      c=  order.contract
+      #  con_id and exchange fully qualify a contract, no need to transmit other data
+      tws_contract =  IB::Contract.new con_id: c.con_id, exchange: c.exchange
+      local_id = IB::Gateway.current.place_order order, tws_contract
+    end 
+    local_id  # return_value
 
-    end # branch
   end # place 
 
 

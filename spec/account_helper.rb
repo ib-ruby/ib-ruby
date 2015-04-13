@@ -2,31 +2,14 @@ require 'message_helper'
 
 # Make sure integration tests are only run against the pre-configured PAPER ACCOUNT
 def verify_account
-  return OPTS[:account_verified] if OPTS[:account_verified]
 
-  puts
-  puts 'WARNING: MAKE SURE TO RUN INTEGRATION TESTS AGAINST IB PAPER ACCOUNT ONLY!'
-  puts 'WARNING: FINANCIAL LOSSES MAY RESULT IF YOU RUN TESTS WITH REAL IB ACCOUNT!'
-  puts 'WARNING: YOU HAVE BEEN WARNED!'
-  puts
-  puts 'Configure your connection to IB PAPER ACCOUNT in spec/spec_helper.rb'
-  puts
+ @gw = IB::Gateway.current.presence || IB::Gateway.new( OPTS[:connection].merge(logger: mock_logger, client_id:1056, connect:true, serial_array: true))
 
-  account = OPTS[:connection][:account] || OPTS[:connection][:account_name]
-  raise "Please configure IB PAPER ACCOUNT in spec/spec_helper.rb" unless account
-#  @ib = IB::Connection.current.presence || IB::Connection.new( :port => 7496 ,:logger => Logger.new(STDOUT), client_id:1056)
-  @ib = IB::Connection.current.presence || IB::Connection.new( OPTS[:connection].merge(:logger => mock_logger, client_id:1056))
+  @ib=  @gw.tws
+  account =  @gw.active_accounts.last
 
-  @ib.wait_for :ManagedAccounts, 5
+  raise "Unable to verify IB PAPER ACCOUNT" unless account.test_environment?
 
-  raise "Unable to verify IB PAPER ACCOUNT" unless @ib.received?(:ManagedAccounts)
-
-  # recieved is an array of accounts, found in the accounts_list
-  received = @ib.received[:ManagedAccounts].first.accounts_list.split(',')
-  # we check, if the account is on the list
-  raise "Connected to wrong account #{received}, expected #{account}" unless received.include?(account)
-
-#close_connection
   OPTS[:account_verified] = true
 end
 
@@ -35,7 +18,7 @@ end
 shared_examples_for 'Valid account data request' do
 
   context "received :AccountUpdateTime message" do
-    subject { IB::Connection.current.received[:AccountUpdateTime].first }
+    subject { IB::Gateway.tws.received[:AccountUpdateTime].first }
 
     it { should be_an IB::Messages::Incoming::AccountUpdateTime }
     its(:data) { should be_a Hash }
@@ -57,7 +40,7 @@ shared_examples_for 'Valid account data request' do
   end
 
   context "received :PortfolioValue message" do
-    subject { IB::Connection.current.received[:PortfolioValue].first }
+    subject { IB::Gateway.tws.received[:PortfolioValue].first }
 
     it { should be_an IB::Messages::Incoming::PortfolioValue }
     its(:contract) { should be_a IB::Contract }
@@ -73,7 +56,7 @@ shared_examples_for 'Valid account data request' do
   end
 
   context "received :AccountDownloadEnd message" do
-    subject { IB::Connection.current.received[:AccountDownloadEnd].first }
+    subject { IB::Gateway.tws.received[:AccountDownloadEnd].first }
 
     it { should be_an IB::Messages::Incoming::AccountDownloadEnd }
     its(:data) { should be_a Hash }

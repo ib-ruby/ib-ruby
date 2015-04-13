@@ -40,6 +40,46 @@ RSpec.shared_examples_for 'fully_initialized_account' do
 
 end
 
+describe Array do
+
+      before( :all ) do
+	IB::Gateway.new :serial_array=> true, logger: mock_logger, client_id:1034, connect: true #  {|gw| puts "test" }
+      end
+
+      after(:all){ IB::Gateway.current.disconnect if IB::Gateway.current.present? }
+
+      context "verify new methods", focus: true  do
+	let( :gw ){ IB::Gateway.current }
+	let( :stock ) {  IB::Stock.new( :con_id => 6327, :symbol => "D" ) }
+	it "add stock to advisors contract array" do
+	  expect( gw.advisor.contracts ).to be_empty
+	  expect{ gw.advisor.contracts.update_or_create( stock, 'con_id') }.to change{ gw.advisor.contracts.size }.by(1)
+	  expect( gw.advisor.contracts.last ).to eq stock
+	end
+
+	it "update the contract_information " do
+	  stoc_dup = IB::Stock.new( :con_id => 6327, :symbol => "C" ) 
+	  expect{ gw.advisor.contracts.update_or_create( stoc_dup, 'con_id') }.not_to change{ gw.advisor.contracts.size }
+	  expect( gw.advisor.contracts.last ).to eq stoc_dup
+	  stock.update_attribute :symbol,'b'
+	  expect{ gw.advisor.contracts.update_or_create( stock, 'con_id') }.to change{ gw.advisor.contracts.last.symbol }
+
+	  expect{ gw.advisor.contracts.update_or_create( stoc_dup, 'con_id') }.to change{ gw.advisor.contracts.first.symbol }
+
+	end
+	it "update tws-informations" do
+	  stock.update_contract do |tws| 
+	    expect{ gw.advisor.contracts.update_or_create( tws.contract, 'con_id')}.not_to change {gw.advisor.contracts.size }
+	  end
+	end
+
+
+
+      end
+end
+
+
+
 describe IB::Gateway do
   after(:all){ IB::Gateway.current.disconnect if IB::Gateway.current.present? }
   before(:all) do

@@ -8,36 +8,36 @@ describe IB::Connection do
   # Expose protected methods as public methods.
   before(:each){ IB::Connection.send(:public, *IB::Connection.protected_instance_methods)  }
 
-  before(:all){ IB::Connection.new port:7496, logger: mock_logger }
-  after(:all){ IB::Connection.current.disconnect } 
+  before(:all){ verify_account }
+  after(:all){ IB::Gateway.current.disconnect } 
 
   context 'instantiated and connected' , focus: true do
-    subject {IB::Connection.current }
+    subject {IB::Gateway.tws }
     it_behaves_like 'Connected Connection without receiver' 
   end
 
   context 'connected and operable' , focus:true do
-    before(:all) { IB::Connection.current.wait_for :NextValidId, 2 }
-    subject { IB::Connection.current }
+    before(:all) { IB::Gateway.tws.wait_for :NextValidId, 2 }
+    subject {IB::Gateway.tws }
     it_behaves_like 'Connected Connection' 
   end
 
 
   describe '#send_message', 'sending messages' , focus:true  do
     it 'allows 3 signatures representing IB::Messages::Outgoing'  do
-      expect { IB::Connection.current.send_message :RequestOpenOrders }.to_not raise_error
-      expect { IB::Connection.current.send_message IB::Messages::Outgoing::RequestOpenOrders }.to_not raise_error
-      expect { IB::Connection.current.send_message IB::Messages::Outgoing::RequestOpenOrders.new }.to_not raise_error
+      expect { IB::Gateway.current.send_message :RequestOpenOrders }.to_not raise_error
+      expect { IB::Gateway.current.send_message IB::Messages::Outgoing::RequestOpenOrders }.to_not raise_error
+      expect { IB::Gateway.current.send_message IB::Messages::Outgoing::RequestOpenOrders.new }.to_not raise_error
     end
 
     it 'has legacy #dispatch alias'do
-      expect { IB::Connection.current.dispatch :RequestOpenOrders }.to_not raise_error
+      expect { IB::Gateway.tws.dispatch :RequestOpenOrders }.to_not raise_error
     end
   end
 
   let( :subscriber ) { Proc.new {} }
   let( :subscriber_id ) do
-    ib = IB::Connection.current
+    ib = IB::Gateway.tws
     {  first: ib.subscribe(IB::Messages::Incoming::OrderStatus) do |msg|
       log msg.to_human
     end ,
@@ -49,7 +49,7 @@ describe IB::Connection do
     describe '#subscribe', focus:true  do
 
       it 'adds (multiple) subscribers, returning subscription id' do
-	ib = IB::Connection.current
+	ib = IB::Gateway.tws
 	[[ subscriber_id[:first], IB::Messages::Incoming::OrderStatus ],
   [ subscriber_id[ :second], IB::Messages::Incoming::OpenOrder  ],
   [ subscriber_id[ :second], IB::Messages::Incoming::PortfolioValue ],
@@ -68,12 +68,12 @@ describe IB::Connection do
 	it{ subscriber_id.values.each{ |v| expect(v).to be_an Integer }}
 
 	it "unsubscribe from Message-Classes" do
-	  IB::Connection.current.subscribers.keys.each do |message|
-	    imio = IB::Connection.current.subscribers[message]
+	  IB::Gateway.tws.subscribers.keys.each do |message|
+	    imio = IB::Gateway.tws.subscribers[message]
 	    unless imio.empty?
 	    expect( imio ).to have_at_least(1).items
 	    imio.keys.each do |y|
-	      IB::Connection.current.unsubscribe y
+	      IB::Gateway.tws.unsubscribe y
 	    end
 	    expect( imio ).to be_empty
 	    end
@@ -84,15 +84,15 @@ describe IB::Connection do
 
       before(:all) do
 	## if the advisor-account is used here, the test fails because PortfolioValueData are missing
-	IB::Connection.current.send_message :RequestAccountData,  :account_code => OPTS[:connection][:user]
-	IB::Connection.current.wait_for :AccountDownloadEnd, 3
+	IB::Gateway.current.send_message :RequestAccountData,  :account_code => OPTS[:connection][:user]
+	IB::Gateway.tws.wait_for :AccountDownloadEnd, 3
       end
 
-      after(:all) { IB::Connection.current.send_message :RequestAccountData, :subscribe => false }
+      after(:all) { IB::Gateway.current.send_message :RequestAccountData, :subscribe => false }
 
       it 'receives subscribed message types and processes them in subscriber callback' do
 	[:AccountValue, :PortfolioValue, :AccountDownloadEnd, :AccountUpdateTime].each do |x|
-	  expect( IB::Connection.current.received[ x ] ).not_to be_empty
+	  expect( IB::Gateway.tws.received[ x ] ).not_to be_empty
 	end
       end
 
@@ -108,16 +108,16 @@ describe IB::Connection do
 		      IB::Messages::Incoming::AccountValue ]  }
 
     it 'returns empty array if nonsence is provided', focus:true do
-      expect( IB::Connection.current.unsubscribe 'nonsense' ).to be_empty
-      expect( IB::Connection.current.unsubscribe rand(9999999)).to be_empty
+      expect( IB::Gateway.current.unsubscribe 'nonsense' ).to be_empty
+      expect( IB::Gateway.current.unsubscribe rand(9999999)).to be_empty
     end
     it 'removes all subscribers at given id or ids'  do
       messages.each do |message_class|
 	  puts "Message_class"
 	  puts message_class.inspect
-  	 puts IB::Connection.current.subscribers[message_class].inspect
+  	 puts IB::Gateway.tws.subscribers[message_class].inspect
 	[:first,:second].each do |key|
-	  expect(IB::Connection.current.subscribers[message_class]).not_to have_key( subscriber_id[ key ] )
+	  expect(IB::Gateway.tws.subscribers[message_class]).not_to have_key( subscriber_id[ key ] )
 	end
       end
     end
