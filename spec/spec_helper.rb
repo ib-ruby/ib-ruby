@@ -38,9 +38,6 @@ else
   # read from connect.yml
 
   OPTS[:connection] = read_yml[:gateway]
-  OPTS[:connection][:account] = read_yml[:advisor]
-  OPTS[:connection][:advisor] = read_yml[:advisor]
-  OPTS[:connection][:user] = read_yml[:user]
   
 end
  

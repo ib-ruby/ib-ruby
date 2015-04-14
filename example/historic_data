@@ -72,11 +72,11 @@ if ( ib= IB::Gateway.tws).present?
     # first: verify the contracts. Perform the query for historical data 
     # only if the attributes yield a valid IB::Contract 
      puts request_id
-    contract.update_contract  do | msg|
+    contract.verify  do | contract |
 
     IB::Gateway.current.send_message IB::Messages::Outgoing::RequestHistoricalData.new(
       :request_id => request_id,
-      :contract => msg.contract,
+      :contract => contract,
       :end_date_time => Time.now.to_ib,
       :duration => '3 D', #    ?
       :bar_size => '1 hour', #  IB::BAR_SIZES.key(:hour)?

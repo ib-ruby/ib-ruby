@@ -142,6 +142,9 @@ First: The order is specified indirectly via local_id or order_ref
 Second: The order can be provided as parameter as well. Then only this 
   will be used. The block is now optional. 
   Important: The OrderRecord must provide a valid Contract.
+
+ModifyOrder in the simple version does not adjust the given prices to tick-limits.
+This has to be done manualy in the proviede block
 =end
 
   def modify_order perm_id: nil, local_id: nil, order_ref: nil, order:nil, &b

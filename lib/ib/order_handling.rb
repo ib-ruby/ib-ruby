@@ -144,17 +144,19 @@ ToDo:: Encapsulate the order-State operation in Mutex as its not threadsafe ie. 
 	codes.each do |n|
 	  class_eval <<-EOD
 	   def self.alert_#{n} msg
-	      IB::Gateway.logger.error{ msg.to_human }
 
-	       if msg.error_id.present? && msg.error_id > 0
+	       if msg.error_id.present?
 		order = IB::Gateway.current.for_active_accounts do | account |
-		account.locate_order( local_id: msg.error_id )
-		end.compact.first
+		    account.locate_order( local_id: msg.error_id )
+		  end.compact.first
 		if order.present?
 		  order.order_states << IB::OrderState.new( status: 'Rejected' ,
 						  warning_text: '#{n}: '+  msg.message,
 						  local_id: msg.error_id ) 	
-		end
+
+	      IB::Gateway.logger.error{  msg.to_human  }
+		end	# order present?
+
 	      end	# branch
 	    end		# def
 	  EOD

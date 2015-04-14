@@ -21,7 +21,7 @@ market = {"1. Apple " =>  IB::Stock.new( symbol: 'AAPL') ,
           "3. DSB   " =>  IB::Stock.new( symbol: 'D05', currency: 'SGD', exchange: 'SGX'  ) ,
 	  "7. S&P Future"  => IB::Future.new( symbol:'ES', expiry:201512, :exchange => 'GLOBEX'),	
 	  "9. NOK/SEK" => IB::Forex.new( symbol:'NOK', currency:'SEK'),
-	  "10. GE-Option with multible contracts" => IB::Option.new( symbol:'GE', strike:25, expiry:201512), #  put+call-options, only the last is selected
+	  "10. GE-Option with multible contracts" => IB::Option.new( symbol:'GE', strike:40, expiry:201612), #  put+call-options, only the last is selected
 	  "11. Fake Stock "  => IB::Stock.new( :symbol=>'FAKE' )  # not a valid symbol
 	}
 
@@ -36,12 +36,12 @@ market.each_pair do |id, contract|
   ## programm are accessing subscribed messages. This domonstrates the usage.
 
   symbol,con_id,min_tick=0
-  result=  contract.read_contract_from_tws do |msg|
+  result=  contract.verify do | contract |
     # Any attribute of the contract-object is assesible, i.e.
-    symbol= msg.contract.present? ? msg.contract.symbol : "XXX"
-    con_id= msg.contract.present? ? msg.contract.con_id : "NO CONID"
+    symbol = contract.symbol
+    con_id=  contract.con_id 
     # In Addition, all Contract-Detail-Attributes are present 
-    min_tick= msg.contract_detail.present? ? msg.contract_detail.min_tick : 0
+    min_tick=  contract.contract_detail.min_tick 
     puts "Query #{id}-----------------------------------------------------------"
     puts "TWS-resonse: Symbol -> #{symbol}", "Min-Tick:#{min_tick}, ConId:#{con_id}"
   end

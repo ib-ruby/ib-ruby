@@ -5,7 +5,7 @@
 require 'rubygems'
 require 'bundler/setup'
 $LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
-#require 'active_support'
+require 'yaml'
 require 'ib-ruby'
 
 # Definition of what we want market data for.  We have to keep track of what ticker id
@@ -17,10 +17,10 @@ begin
 market = {"1. Apple via Stock " => IB::Stock.new( symbol: 'AAPL') ,
           "2. Molson Coors " => IB::Stock.new( symbol: 'TAP', currency:'USD' ),
           "3. TAP-Oil " => IB::Stock.new( symbol: 'TAP', currency:'AUD' ),
-          "4. GE Option "  => IB::Option.new( symbol:'GE', strike:25, expiry:20151218),
+          "4. GE Option "  => IB::Option.new( symbol:'GE', strike:25, expiry:201612),
 	  "5. S&P Future " => IB::Future.new( symbol:'ES', expiry:201512,  :exchange => 'GLOBEX'),	
 	  "6. NOK/SEK " =>  IB::Forex.new(  symbol:'NOK', currency:'SEK'),
-	  "7.GE-Option - with multible contracts " => IB::Option.new( symbol:'GE', strike:25, expiry:201512) # multible put-options, only the last ist selected
+	  "7.GE-Option - with multible contracts " => IB::Option.new( right: :put, symbol:'GE',  expiry:201512) # multible put-options, only the last ist selected
 #	  "11.Fake Stock "  => IB::Contract.new( :symbol=>'FAKE' )  # not a valid symbol
 	}
 
@@ -41,12 +41,12 @@ threadArray = Array.new
     threadArray << Thread.new( contract)  do | contract |
       # local vars
       symbol, min_tick, result, con_id = nil
-      result=  contract.update_contract do |msg|
+      result=  contract.verify do |contract|
 	# Any attribute of the contract-object is assesible, i.e.
-	con_id =   msg.contract.con_id 
-	symbol =   msg.contract.symbol 
+	con_id =   contract.con_id 
+	symbol =   contract.symbol 
 	# In Addition, all Contract-Detail-Attributes are present 
-	min_tick=  msg.contract_detail.min_tick 
+	min_tick=  contract.contract_detail.min_tick 
       puts "Query #{id}-----------------------------------------------------------"
       puts "Result: #{result } \t (local symbol / Nr of Contracts)"
       puts "TWS-resonse: Symbol -> #{symbol}", "Min-Tick:#{min_tick}", "ConID:#{con_id}"
