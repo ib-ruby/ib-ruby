@@ -80,9 +80,9 @@ They identify the order by local_id and perm_id
 	  logger.progname = 'Gateway#order_handling::ExecutionData '
 	  o.executions << msg.execution 
 	  if  msg.execution.cumulative_quantity.to_i == o.quantity.abs
-	    logger.info{ "#{o.account.account} --> #{o.contract.symbol}: Execution completed" }
+	    logger.info{ "#{o.account} --> #{o.contract.symbol}: Execution completed" }
 	  else
-	    logger.debug{ "#{o.account.account} --> #{o.contract.symbol}: Execution not completed (#{msg.execution.cumulative_quantity.to_i}/#{o.quantity.abs})" }
+	    logger.debug{ "#{o.account} --> #{o.contract.symbol}: Execution not completed (#{msg.execution.cumulative_quantity.to_i}/#{o.quantity.abs})" }
 	  end  # branch
 	end # block
 
