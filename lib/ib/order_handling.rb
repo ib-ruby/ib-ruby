@@ -178,8 +178,8 @@ ToDo:: Encapsulate the order-State operation in Mutex as its not threadsafe ie. 
 
     contract.verify if  contract.contract_detail.blank?
 
-    self.limit_price= adjust_price.call(limit_price, contract.contract_detail.min_tick) unless limit_price.zero?
-    self.aux_price= adjust_price.call(aux_price, contract.contract_detail.min_tick) unless aux_price.zero?
+    self.limit_price= adjust_price.call(limit_price.to_f, contract.contract_detail.min_tick) unless limit_price.to_f.zero?
+    self.aux_price= adjust_price.call(aux_price.to_f, contract.contract_detail.min_tick) unless aux_price.to_f.zero?
 	  
     end
   end
