@@ -142,13 +142,13 @@ Limit- and Aux-Prices are adjusted to Min-Tick, if auto_adjust is specified
 Account#ModifyOrder
 operates in two modi:
 
-First: The order is specified indirectly via local_id or order_ref
-  Then the modification itself is done in the provided block.
-  The original order is modified
+First: The order is specified  via local_id, perm_id or order_ref.
+  It is checked, whether the order is still modificable.
+  Then the Order ist provided through  the block. Any modification is done there. 
   Important: The Block has to return the modified IB::Order
 
-Second: The order can be provided as parameter as well. Then only this 
-  will be used. The block is now optional. 
+Second: The order can be provided as parameter as well. This will be used
+without further checking. The block is now optional. 
   Important: The OrderRecord must provide a valid Contract.
 
 ModifyOrder in the simple version does not adjust the given prices to tick-limits.
@@ -158,14 +158,17 @@ This has to be done manualy in the proviede block
   def modify_order perm_id: nil, local_id: nil, order_ref: nil, order:nil, &b
 
     IB::Gateway.logger.tap{ |l| l.progname = "Account #{account}#modify_order"}
-    order = locate_order perm_id: perm_id, local_id: local_id, order_ref: order_ref if order.nil?
+    order = locate_order(  perm_id: perm_id, 
+			  local_id: local_id, 
+			  status: /ubmitted/ ,
+			  order_ref: order_ref ) if order.nil?
     if order.is_a? IB::Order
      order = yield order if block_given?  # specify modifications in the block
     end
     if order.is_a? IB::Order
        IB::Gateway.current.modify_order order, order.contract 
      else
-       IB::Gateway.logger.error{ " No IB::Order provided. Instead: #{order.inspect}" }
+       IB::Gateway.logger.error{ " No suitable IB::Order provided/detected. Instead: #{order.inspect}" }
      end  
   end
   
