@@ -11,6 +11,7 @@ describe IB::Option,
          :props => {:symbol => 'AAPL',
                     :expiry => '201301',
                     :strike => 600.5,
+                    :exchange => 'SMART',
                     :right => :put,
          },
 
@@ -50,7 +51,7 @@ describe IB::Option,
 
 	it_behaves_like 'Model with invalid defaults'
 
-	context  FactoryGirl.build( :default_option )  do
+	context  FactoryGirl.build( :default_option ).query_contract  do
 		#					   it_behaves_like 'Self-equal Model'
 		it_behaves_like 'Contract'
 

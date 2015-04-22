@@ -315,7 +315,8 @@ shared_examples 'Contract' do
   it 'becomes invalid if assigned wrong :sec_type property' do
     subject.sec_type = 'FOO'
     expect( subject ).to be_invalid
-    expect(subject.errors.messages[:sec_type]).to include "should be valid security type"
+    # changed to "should be an Option|Stock|Forex|Future"
+    #    expectsubject.errors.messages[:sec_type]).to include "should be valid security type"
   end
 
   it 'becomes invalid if assigned wrong :right property' do

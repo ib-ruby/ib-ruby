@@ -4,15 +4,15 @@
 # $ example/portfolio_csv [account] > portfolio.csv
 
 =begin
-The Gateway provides a method: »get_account_data«, which takes the Accounts we are interested for
+The Gateway provides a method: »get_account_data«, which takes the Accounts we are interested in
 as argument.
 The result is stored in IB::Gateway.current.active_accounts and there in account_values and portfolio_values.
-We just have to extract the informations we are interested in.
+We just have to extract the informations and display them.
 
 The arrays are filled in the background. When the transfer from the TWS is complete, the »AccountDownloadEnd«-
-Event is fired. Thus we catch this and  get our informations.
+Event is fired.
 
-Therefore wie  extended the Gateway by a method called »portfolio_csv» which is active as long as 
+The Gateway is extended by a method called »portfolio_csv» which is active as long as 
 the Gateway is running. Every call of Gateway#GetAccountData leads to the output of the specified csv-data
 =end
 
@@ -46,7 +46,7 @@ module IB
       tws.subscribe( :AccountDownloadEnd )  do | msg |
 	for_selected_account( msg.account_name ) do | account |
 	# account is an IB::Account which has_many account_values and portfolio_values
-	csv = account.portfolio_values.map do | pv |
+	  csv = account.portfolio_values.map do | pv |
 
 	  [ account.account,
 	    pv.contract.symbol,
@@ -89,8 +89,6 @@ puts "\n\n************** Communication to #{IB::Gateway.current.get_host} activa
 # wait for the query to approach
 sleep 2
 
-#puts "\n\n************** Press <Enter> to disconnect *********************\n\n"
-#STDIN.gets
   
 IB::Gateway.current.disconnect
 puts "\n\n************** Communication terminated *********************\n\n"

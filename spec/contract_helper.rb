@@ -14,10 +14,15 @@ shared_examples_for "correctly query's the tws" do
 			end
 		end
 		it "verify does intitialize con_id and contract_detail " do
-			contract.verify
-			expect( contract.con_id ).not_to be_zero
-			expect( contract.contract_detail).to be_a IB::ContractDetail
+			contract.verify do | c |
+			expect( c.con_id ).not_to be_zero
+			expect( c.contract_detail).to be_a IB::ContractDetail
+			end
 		end 
+
+		it "verify returns a number" do
+		  expect( contract.verify ).to be > 0
+		end
 
 		
 end
@@ -27,6 +32,10 @@ shared_examples_for "invalid query of tws"  do
 		  IB::Gateway.logger =  mock_logger
 		  contract.verify
 		expect(  should_log /Not a valid Contract/ ).to be_truthy
+		end
+
+		it "returns zero" do
+		  expect( contract.verify ).to be_zero
 		end
 		
 end

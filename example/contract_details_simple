@@ -37,19 +37,23 @@ market = {"1. Apple	 " =>  IB::Stock.new(  symbol: 'AAPL') ,
 
 # Connect to IB TWS.
 market.each_pair do |id, contract|
-  puts "\nRequesting contract data #{id}: #{contract.description}"
+  puts '*'*(49)
+  puts "\nRequesting contract data #{id}: #{contract.description} \n"
   result = nil
 
   ## A Thread environment is only nessesary, if some other parts of the 
   ## programm are accessing subscribed messages. This domonstrates the usage.
 
   symbol,con_id,min_tick=0
-  contract.verify
+  count= contract.verify
     # Any attribute of the contract-object is assesible, i.e.
     # In Addition, all Contract-Detail-Attributes are present 
-    puts "Query #{id}-----------------------------------------------------------"
-    puts "TWS-resonse: Symbol -> #{contract.symbol}", "Min-Tick:#{contract.contract_detail.min_tick}, ConId:#{contract.con_id}"
-  puts "Updated-Contract  \t #{contract.to_human}"
+    puts "\n\n#{count} Contract(s) verified"
+    unless count.zero?
+      puts "Query #{id}"
+      puts "TWS-resonse: Symbol -> #{contract.symbol}", "Min-Tick:#{contract.contract_detail.min_tick}, ConId:#{contract.con_id}"
+      puts "Updated-Contract  \t #{contract.to_human}"
+    end
   puts "-"*25
   # Request Contract details for the symbols we're interested in. TWS will
   # respond with ContractData messages, which will be processed by the code above.

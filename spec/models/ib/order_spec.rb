@@ -28,7 +28,7 @@ describe IB::Order,
    :not_held => true),
 
   # TODO: :presents => { Object => "Formatted"}
-  :human => "<Order: Test MIT GTC buy 100 0.1 New #23/173276893 from 1111>",
+  :human => "<Order: Test MIT GTC buy 100 @ 0.1 New #23/173276893 from 1111>",
 
   :errors => {:side =>["should be buy/sell/short"]},
 

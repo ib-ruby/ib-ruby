@@ -3,14 +3,18 @@ require 'integration_helper'
 describe 'Request Historic Data', :connected => true, :integration => true do
 
   CORRECT_OPTS = {:id => 567,
-                  :contract =>  FactoryGirl.build( :default_stock,  :symbol => 'T' ),
+                  :contract =>  IB::Stock.new( symbol: 'T').query_contract,
                   :end_date_time => Time.now.to_ib,
                   :duration => '5 D',
                   :bar_size => '15 mins',
                   :data_type => :trades,
                   :format_date => 1}
   before(:all) do
-    verify_account
+    # use a tws where the appropiate permissions exist
+    gw = IB::Gateway.current.presence || IB::Gateway.new( OPTS[:connection].merge(logger: mock_logger, client_id:1056, connect:true, serial_array: true, host: 'beta'))
+    gw.connect if !gw.tws.connected?
+    @ib=gw.tws
+    #verify_account
     ## use Connection from verify-Account
 #    @ib = IB::Connection.new OPTS[:connection].merge( host: '172.28.50.135')
       @ib.subscribe(:Alert) { |msg| puts msg.to_human }

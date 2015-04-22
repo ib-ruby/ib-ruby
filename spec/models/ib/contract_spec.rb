@@ -78,8 +78,8 @@ describe IB::Contract  ,
   context 'testing for Contract type (sec_type)' , focus:true do
 
     it 'correctly defines Contract type (sec_type) for Option contract' do
-      [IB::Contract.new(:sec_type => :option),
-       IB::Contract.new(:sec_type => 'OPT'),
+      [IB::Contract.build(:sec_type => :option),
+       IB::Contract.build(:sec_type => 'OPT'),
        IB::Option.new
       ].each do |contract|
         expect( contract).not_to be_bag
@@ -197,6 +197,11 @@ let( :ford_option_3){ FactoryGirl.build(:default_option, strike: 16)}
 	let( :contract ){ IB::Future.new symbol: 'NQ', exchange: 'GLOBEX' , expiry: 201606 , multiplier:50 }
       end
     end	
+    describe "Invalid Contract-Specification" do
+      it_behaves_like  "invalid query of tws" do  # invalid symbol
+	let( :contract ){ IB::Contract.new symbol:'AARL'  }
+      end
+    end	
     describe "Invalid Stock-Symbol" do
       it_behaves_like  "invalid query of tws" do  # invalid symbol
 	let( :contract ){ IB::Stock.new symbol:'AARL'  }
@@ -204,7 +209,7 @@ let( :ford_option_3){ FactoryGirl.build(:default_option, strike: 16)}
     end	
     describe  "a Forex contract", focus:true  do
       it_behaves_like  "correctly query's the tws" do  
-	let( :contract ){ IB::Symbols::Forex[:eurusd] }
+	let( :contract ){ IB::Forex.new symbol:'EUR', currency:'USD' }
       end
     end
 

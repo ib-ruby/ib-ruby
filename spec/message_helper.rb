@@ -37,7 +37,7 @@ end
 def clean_connection
   if OPTS[:verbose]
     #puts @received.map { |type, msg| [" #{type}:", msg.map(&:to_human)] } if @received
-    puts @ib.received.map { |type, msg| [" #{type}:", msg.map(&:to_human)] }
+    puts IB::Gateway.tws.received.map { |type, msg| [" #{type}:", msg.map(&:to_human)] }
     puts " Logs:", log_entries if @stdout
   end
   @stdout.string = '' if @stdout
@@ -46,7 +46,9 @@ def clean_connection
 end
 
 def close_connection
-  @ib.cancel_order @local_id_placed if @ib && @local_id_placed
-  @ib.close if @ib
-  clean_connection
+  if IB::Gateway.current.present?
+    IB::Gateway.current.cancel_order @local_id_placed if  @local_id_placed
+    IB::Gateway.current.disconnect if IB::Gateway.current.present?
+    clean_connection
+  end
 end

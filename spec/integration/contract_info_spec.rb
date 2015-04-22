@@ -2,11 +2,9 @@ require 'integration_helper'
 
 describe "Request Contract Info", :connected => true, :integration => true do
 
-  before(:all) do
-    verify_account
-  end
+  before(:all) { verify_account }
 
- # after(:all) { close_connection }
+ after(:all) { close_connection }
 
   context "Request Stock data" do
 
@@ -60,36 +58,28 @@ describe "Request Contract Info", :connected => true, :integration => true do
   end # Stock
 
   context "Request Option contract data" do
-
     before(:all) do
-      @contract = FactoryGirl.build( :default_option )
-      @contract= @contract.query_contract # read_contract_from_tws
-#                                :right => :call, :strike => 500
-      @ib.send_message :RequestContractData, :id => 123, :contract => @contract
-      @ib.wait_for :ContractDataEnd, 5 # sec
+     @contract= IB::Option.new( symbol:'F', strike:15, right: :put, expiry:'201509' ) 
+     @contract.verify
     end
+
+
 
     after(:all) { clean_connection } # Clear logs and message collector
 
-    subject { @ib.received[:ContractData].first }
+    subject { @contract }
 
-    it { @ib.received[:ContractData].should have_exactly(1).contract_data }
-    it { @ib.received[:ContractDataEnd].should have_exactly(1).contract_data_end }
-
-    it 'receives Contract Data for requested contract' do
-      expect( subject.request_id).to eq 123
-      expect( subject.contract).to be_valid
-    end
+    it { expect( @contract ).to be_a IB::Option }
+    it {  expect( @contract ).to be_valid }
 
     it 'receives Contract Data with extended fields' do
-      contract = subject.contract
-      detail = subject.contract_detail
+      detail = @contract.contract_detail
 
-      expect( contract.symbol).to eq 'F'
-      expect( contract.local_symbol).to eq 'F     150320P00015000'
-      expect( contract.expiry).to eq '20150320'
-      expect( contract.exchange).to eq 'SMART'
-      expect( contract.con_id).to  be_an Integer
+      expect( @contract.symbol).to eq 'F'
+      expect( @contract.local_symbol).to eq 'F     150918P00015000'
+      expect( @contract.expiry).to eq '20150918'
+      expect( @contract.exchange).to eq 'SMART'
+      expect( @contract.con_id).to  be_an Integer
 
       expect( detail.market_name).to  eq 'F'
       expect( detail.trading_class).to  eq 'F'
@@ -126,7 +116,6 @@ describe "Request Contract Info", :connected => true, :integration => true do
 
     it 'receives Contract Data for requested contract' do
       subject.request_id.should == 135
-      subject.contract.should == @contract
       subject.contract.should be_valid
     end
 
@@ -172,7 +161,6 @@ describe "Request Contract Info", :connected => true, :integration => true do
 
     it 'receives Contract Data for requested contract' do
       expect( subject.request_id).to eq 147
-      expect( subject.contract).to eq @contract
       expect( subject.contract).to be_valid
     end
 

@@ -41,14 +41,14 @@ describe 'Attached Orders', :connected => true, :integration => true do
         :limit_price => limit_price,
         :tif => tif,
         :transmit => false,
-	:account  => OPTS[:connection][:account]
+	:account  => OPTS[:connection][:user]
 
         @ib.wait_for :OpenOrder, :OrderStatus, 2
       end
 
       after(:all) { close_connection }
 
-      it 'does not transmit original Order before attach'  do
+      it 'does not transmit original Order before attach' , focus:true  do
         @ib.received[:OpenOrder].should have_exactly(0).order_message
         @ib.received[:OrderStatus].should have_exactly(0).status_message
       end
@@ -62,7 +62,7 @@ describe 'Attached Orders', :connected => true, :integration => true do
           :tif => tif,
           :order_type => attach_type,
           :parent_id => @local_id_placed,
-	  :account => OPTS[:connection][:account]
+	  :account => OPTS[:connection][:user]
 
           @local_id_attached = @ib.place_order @attached_order, @contract
           @local_id_after = @ib.next_local_id

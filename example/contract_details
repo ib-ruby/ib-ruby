@@ -20,8 +20,8 @@ market = {"1. Apple via Stock " => IB::Stock.new( symbol: 'AAPL') ,
           "4. GE Option "  => IB::Option.new( symbol:'GE', strike:25, expiry:201612),
 	  "5. S&P Future " => IB::Future.new( symbol:'ES', expiry:201512,  :exchange => 'GLOBEX'),	
 	  "6. NOK/SEK " =>  IB::Forex.new(  symbol:'NOK', currency:'SEK'),
-	  "7.GE-Option - with multible contracts " => IB::Option.new( right: :put, symbol:'GE',  expiry:201512) # multible put-options, only the last ist selected
-#	  "11.Fake Stock "  => IB::Contract.new( :symbol=>'FAKE' )  # not a valid symbol
+	  "7.GE-Option - with multible contracts " => IB::Option.new( right: :put, symbol:'GE',  expiry:201512), # multible put-options, only the last ist selected
+	  "11.Fake Stock "  => IB::Contract.new( :symbol=>'FAKE' )  # not a valid symbol
 	}
 
 # Connect to IB TWS.
@@ -56,12 +56,13 @@ threadArray = Array.new
   end
 #end
 threadArray.each{|t| t.join}  # wait for the threads to finish 
-puts "Threaded Enviroment closed."
+puts "\n\nThreaded Enviroment closed."
 puts "Here are the results"
 market.each_pair do | id, contract |
       print id
       puts contract.to_human
-      puts  contract.to_s
+      puts contract.to_s
+      puts contract.contract_detail.to_human if contract.contract_detail.present?
       puts " ... "
 end
 rescue RuntimeError => e
