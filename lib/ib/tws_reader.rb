@@ -8,12 +8,15 @@ end
 Generates an IB::Contract with the required attributes to retrieve a unique contract from the TWS
 
 Background: If the tws is queried with a »complete« IB::Contract, it fails occacionally.
-So – even to update its contents, a defined subset of query-parameters  have to be used.
+So – even to update its contents, a defined subset of query-parameters  has to be used.
 
-The required data-fields are stored in a yaml-file.
-If the con_id is present, only con_id and exchange are transmitted to the tws.
+The required data-fields are stored in a yaml-file and fetched by #YmlFile.
 
-If Attributes are missing, a IB::VerifyError is fired,
+If con_id is present, only con_id and exchange are transmitted to the tws.
+Otherwise a IB::Stock, IB::Option, IB::Future or IB::Forex-Object with nessesay attributes
+to query the tws is build (and returned)
+
+If Attributes are missing, an IB::VerifyError is fired,
 This can be trapped with 
   rescue IB::VerifyError do ...
 =end
@@ -38,13 +41,13 @@ This can be trapped with
 	       else 
 		 IB::Contract.new  con_id: con_id , :exchange => exchange.presence || item_attributehash[nessesary_items][:exchange].presence || 'SMART'
 	       end  # if
-      ## modify the Object, ie. set con_id to zero
-      if new_record?
-	self.con_id=0
-      else
-	update_attribute( :con_id,  0 )
-      end if invalid_record
-      ret_var
+      ## modify the Object, ie. set con_id to zero if the record is still invalid
+#      if new_record?
+#	self.con_id=0
+#      else
+#	update_attribute( :con_id,  0 )
+#      end if invalid_record
+#      ret_var
 
 
 
@@ -59,22 +62,22 @@ This method can be overloaded to include a file from a different location
 =begin
 IB::Contract#Verify 
 
-verifies the contract as specified in the attributes.
+verifies the contract as specified in the attributes. Modifies the Contract-Object and
+returns the number of contracts retured by the TWS.
 
 The attributes are completed/updated by quering the tws
-If the query is not successfull, nothing is upated.
-If multible contracts are specified, the attributes from the last one that is
-returned by the tws are used.
+If the query is not successfull, nothing is upated and zero is returned.
+If multible contracts are specified, the object becomes the last one.
+The count of queried contracts is returned.
 
-The method accepts a block. The queried contract is assessible there.
-If multible contracts are specified, the block is executed with any of these contracts.
+The method accepts a block. The  TWS-contract-Object  is assessible there.
+If multible contracts are specified, the block is executed with each of these contracts.
 
-The method returns the number of successfully queried contracts.
+A successful (simple) verification the Contract looks works as follows:
 
-After a successful verification the Contract looks as following:
-
-s = IB::Stock.new symbol:"A"  --> <IB::Stock:0x007f3de81a4398 
-		  @attributes= {"symbol"=>"A", "sec_type"=>"STK", "currency"=>"USD", "exchange"=>"SMART"}> 
+s = IB::Stock.new symbol:"A"  
+s --> <IB::Stock:0x007f3de81a4398 
+	  @attributes= {"symbol"=>"A", "sec_type"=>"STK", "currency"=>"USD", "exchange"=>"SMART"}> 
 s.verify   --> 1
 s --> <IB::Stock:0x007f3de81a4398
       @attributes={"symbol"=>"A",  "updated_at"=>2015-04-17 19:20:00 +0200,
@@ -106,6 +109,14 @@ s --> <IB::Stock:0x007f3de81a4398
       # define loacl vars which are updated within the query-block
       exitcondition, count , queried_contract = false, 0, nil
 
+      # currently the tws-request is suppressed only if the contract_detail-record is present
+      tws_request_not_nessesary = contract_detail.present? && contract_detail.is_a? IB::ContractDetail
+
+      
+
+
+
+
       wait_until_exitcondition = -> do 
 	u=0; while u<10000  do   # wait max 50 sec
 	  break if exitcondition 
@@ -113,47 +124,55 @@ s --> <IB::Stock:0x007f3de81a4398
 	end
       end
 
-      # subscribe to ib-messages and describe what to do
-      a = ib.subscribe(:Alert, :ContractData,  :ContractDataEnd) do |msg| 
-	case msg
-	when IB::Messages::Incoming::Alert
-	  if msg.code==200 && msg.error_id==message_id
-	    IB::Gateway.logger.error { "Not a valid Contract :: #{self.to_human} " }
-	    exitcondition = true
-	  end
-	when IB::Messages::Incoming::ContractData
-	  if msg.request_id.to_i ==  message_id
-	    # if multible contracts are present, all of them are assigned
-	    # Only the last contract is returned.  'count' is incremented
-	    count +=1
-	    IB::Gateway.logger.warn{ "Multible Contracts are detected, only the last is returned, this one is overridden -->#{queried_contract.to_human} "} if count>1
-	    ## a specified block gets the contract_object on any uniq ContractData-Event
-	    yield msg.contract if block_given?
-	    queried_contract = msg.contract  # used by the logger in case of mulible contracts
-	    self.attributes = msg.contract.attributes
-	    self.contract_detail = msg.contract_detail unless msg.contract_detail.nil?
-	  end
-	when IB::Messages::Incoming::ContractDataEnd
-	  exitcondition = true if msg.request_id.to_i ==  message_id
 
-	end  # case
-      end # subscribe
-
-      ### send the request !
-      contract_to_be_queried =  con_id.present? ? self : query_contract  
-      # if no con_id is present,  the given attributes are checked by query_contract
-      if contract_to_be_queried.present?   # is nil if query_contract fails
-	IB::Gateway.current.send_message :RequestContractData, 
-	  :id =>  message_id,
-	  :contract => contract_to_be_queried 
-	wait_until_exitcondition[]
-	ib.unsubscribe a
-
-	IB::Gateway.logger.error { "NO Contract returned by TWS -->#{self.to_human} "} unless exitcondition
-
-	IB::Gateway.logger.error { "Multible Contracts are detected, only the last is returned -->#{queried_contract.to_human} "} if count>1
+      if tws_request_not_nessesary
+	yield self if block_given?
+	count = 1
+      
       else
-	IB::Gateway.logger.error { "Not a valid Contract-spezification, #{self.to_human}" }
+
+	# subscribe to ib-messages and describe what to do
+	a = ib.subscribe(:Alert, :ContractData,  :ContractDataEnd) do |msg| 
+	  case msg
+	  when IB::Messages::Incoming::Alert
+	    if msg.code==200 && msg.error_id==message_id
+	      IB::Gateway.logger.error { "Not a valid Contract :: #{self.to_human} " }
+	      exitcondition = true
+	    end
+	  when IB::Messages::Incoming::ContractData
+	    if msg.request_id.to_i ==  message_id
+	      # if multible contracts are present, all of them are assigned
+	      # Only the last contract is saved in self;  'count' is incremented
+	      count +=1
+	      IB::Gateway.logger.warn{ "Multible Contracts are detected, only the last is returned, this one is overridden -->#{queried_contract.to_human} "} if count>1
+	      ## a specified block gets the contract_object on any uniq ContractData-Event
+	      yield msg.contract if block_given?
+	      queried_contract = msg.contract  # used by the logger in case of mulible contracts
+	      self.attributes = msg.contract.attributes
+	      self.contract_detail = msg.contract_detail unless msg.contract_detail.nil?
+	    end
+	  when IB::Messages::Incoming::ContractDataEnd
+	    exitcondition = true if msg.request_id.to_i ==  message_id
+
+	  end  # case
+	end # subscribe
+
+	### send the request !
+	contract_to_be_queried =  con_id.present? ? self : query_contract  
+	# if no con_id is present,  the given attributes are checked by query_contract
+	if contract_to_be_queried.present?   # is nil if query_contract fails
+	  IB::Gateway.current.send_message :RequestContractData, 
+	    :id =>  message_id,
+	    :contract => contract_to_be_queried 
+	  wait_until_exitcondition[]
+	  ib.unsubscribe a
+
+	  IB::Gateway.logger.error { "NO Contract returned by TWS -->#{self.to_human} "} unless exitcondition
+
+	  IB::Gateway.logger.error { "Multible Contracts are detected, only the last is returned -->#{queried_contract.to_human} "} if count>1
+	else
+	  IB::Gateway.logger.error { "Not a valid Contract-spezification, #{self.to_human}" }
+	end
       end
       count # return_value
       #queried_contract # return_value
