@@ -110,12 +110,7 @@ s --> <IB::Stock:0x007f3de81a4398
       exitcondition, count , queried_contract = false, 0, nil
 
       # currently the tws-request is suppressed only if the contract_detail-record is present
-      tws_request_not_nessesary = contract_detail.present? && contract_detail.is_a? IB::ContractDetail
-
-      
-
-
-
+      tws_request_not_nessesary = contract_detail.present? && contract_detail.is_a?( IB::ContractDetail )
 
       wait_until_exitcondition = -> do 
 	u=0; while u<10000  do   # wait max 50 sec
@@ -123,7 +118,6 @@ s --> <IB::Stock:0x007f3de81a4398
 	  u+=1; sleep 0.05 
 	end
       end
-
 
       if tws_request_not_nessesary
 	yield self if block_given?
@@ -135,12 +129,12 @@ s --> <IB::Stock:0x007f3de81a4398
 	a = ib.subscribe(:Alert, :ContractData,  :ContractDataEnd) do |msg| 
 	  case msg
 	  when IB::Messages::Incoming::Alert
-	    if msg.code==200 && msg.error_id==message_id
+	    if msg.code == 200 && msg.error_id == message_id
 	      IB::Gateway.logger.error { "Not a valid Contract :: #{self.to_human} " }
 	      exitcondition = true
 	    end
 	  when IB::Messages::Incoming::ContractData
-	    if msg.request_id.to_i ==  message_id
+	    if msg.request_id.to_i == message_id
 	      # if multible contracts are present, all of them are assigned
 	      # Only the last contract is saved in self;  'count' is incremented
 	      count +=1
