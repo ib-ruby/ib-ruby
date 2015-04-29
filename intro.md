@@ -5,47 +5,48 @@ It mirrors most of the information covered by the tws as Active-Model-Objects.
 
 ### Connect to the TWS
 
-Assuming, the TWS is running and API-Connections are enabled,  just call IB::Gateway to connect i.e.
+Assuming, the TWS ( FA-Account,»Friends and Family«,  is needed ) is running 
+and API-Connections are enabled,  just instantiate IB::Gateway to connect i.e.
 
 ```
-gw = IB::Gateway.new connect: true, host: 'localhost:7496' 
+gw = IB::Gateway.new connect: true, host: 'localhost:7496' , client_id: 1001
 ```
 
-The Connection-Object, which provides the status and recieves subscriptions of TWS-Messages is
+The Connection-Object, which provides the status and recieves subscriptions of TWS-Messages, is
 always present as 
 
 ```
-tws = IB::Connection.tws 
+  tws = IB::Connection.tws 
 or
-tws =  gw.tws
+  tws =  gw.tws
 
 ```
 The Gateway acts as a Proxy to the Connection-Object and provides a simple Security-Layer.
-The method »connect« waits approx. 1 hour  for the TWS to start. Gateway reconnects automatically if the 
-transmission was interrupted. It is even possible to switch from one TWS in the network to another
+The method »connect« waits approx. 1 hour  for the TWS to start. IB::Gateway reconnects automatically if the 
+transmission was interrupted. It is even possible to switch from one TWS to another
 
 ```
-       gw.change_host host:  'new_host'  
-       gw.prepare_connection
-       gw.connect
+  gw.change_host host:  'new_host:new_port'  
+  gw.prepare_connection
+  gw.connect
 ```
 
 
 ### Read Account-Date
 
-If you open the TWS you get a nice overview of all account-positions, the distribution of 
+If you open the TWS-GUI you get a nice overview of all account-positions, the distribution of 
 currencies, margin-using, leverage and other account-measures.
 
 These informations are transmitted by the API, too. 
 One can send a message to the tws and simply wait for the response.
 
-The Gateway handles anything in the background and provides essential account-informations
+The Gateway handles anything in the background and provides essential account-data
 in a structured manner:
 
 
 ```
-gw = IB::Gateway.new connect: true, host: 'localhost:7496', get_account_data: true
-gw.request_open_orders
+  gw.get_account_data
+  gw.request_open_orders
 
 Gateway
   --- Account 
@@ -54,27 +55,28 @@ Gateway
 	--- Orders
 
 ```
-The Gatway provides an array of active Accounts. One is a Advisor-Account. Several tasks
+IB::Gateway provides an array of active Accounts. One is a Advisor-Account. Several tasks
 are delegated to the accounts. An Advisor cannot submit an order for himself. An ordonary User
 can only place orders for himself. 
 
-The TWS sends data arbitrarily. Ib-Ruby has to process them concurrently. Someone has to take care
+The TWS sends data arbitrarily. Ib-ruby has to process them concurrently. Someone has to take care
 of possible data-collistions. Therefor its not advisable to access the TWS-Data directly.
-IB::Gateway provides wrapper-nethods for a save access:
+IB::Gateway provides wrapper-nethods 
 ```
  gw.for_active_accounts do |account |   ... end
  gw.for_selected_account( ib_account_id ) do |account|  ... end
 ```
-However, Advisor and Users can be accessed through
+However, Advisor and Users are directly available through
 ```
  gw.advisor	       --> Account-Object
  gw.active_accounts[n] --> Account-Object 
- gw.active_accounts    --> Array 	
+ gw.active_accounts    --> Array of user-accounts 	
 ```
 
 
 
-PortfolioValues represent the Portfolio of the specified Account. Each PortfolioValue is an ActiveModel
+PortfolioValues represent the portfolio-positions of the specified Account. 
+Each PortfolioValue is an ActiveModel
 and has the following structure, 
 
 ```
@@ -84,7 +86,7 @@ IB::PortfolioValue:
     contract: (IB::Contract),
     created_at: (date_time), updated_at: (date_time)
 ```
-As usual, the attributes are accessible through  PortfolioValue[:attribute], PortfolioValue['attribute']
+As usual, attributes are accessible through  PortfolioValue[:attribute], PortfolioValue['attribute']
 or PortfolioValue.attribute and even PortfolioValue.call(attribute)
  
 AccountValues prepresent any property of the Account, as displayed in the Account-Window of the TWS.
@@ -99,7 +101,7 @@ IB::AccountValue:
 
 There is a simple method: IB::Account#SimpleAccountDateScan to select one or a group of 
 AccountValues: IB::Account#simple_account_data_scan search_key, search_currency 
-The parameter »search_key« is treated as a regular-expression, the parameter currency is optional.
+The parameter »search_key« is treated as a regular-expression, the parameter »currency« is optional.
 Most AccountValue-Keys are split into the currencies present in the account.
 To retrieve an ordered list  this snipplet helps
 
@@ -116,8 +118,9 @@ To retrieve an ordered list  this snipplet helps
 ```
 
 Open (pending) Orders are retrieved by »gw.request_open_orders«. IB::Gateway, in this case the module
-OrderHandling (lib(ib/order_handling.rb) updates the »orders«-Array of each Account. 
-The Account#orders-Array concists of IB::Order-Entries:
+OrderHandling (in ib/order_handling.rb) updates the »orders«-Array of each Account. 
+The Account#orders-Array consists of IB::Order-Entries:
+
 
 ```
 IB::Order: local_id: (integer), side: "B/S", quantity: (integer), 
