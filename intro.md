@@ -1,7 +1,7 @@
 ##  ib-ruby – An Introduction
 
 Ib-ruby is a pure ruby implementation to access the IB-TWS-API.
-It mirrors most of the information covered by the tws as Active-Model-Objects.
+It mirrors most of the information provided by the tws as Active-Model-Objects.
 
 ### Connect to the TWS
 
