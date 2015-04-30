@@ -63,7 +63,7 @@ class Account < IB::Model
 	account_values.find_all{|x| x.key.match( search_key ) }
       end
 
-    else
+    else  # not tested!!
       if search_currency.present?
 	account_values.where( ['key like %', search_key] ).where( currency: search_currency )
       else  # any currency
@@ -83,18 +83,17 @@ class Account < IB::Model
 =begin
 Account#LocateOrder
 given any key of local_id, perm_id and order_ref
-(If multible keys are specified, only the first ist used for the searching )
+(If multible keys are specified, only the first is used for the searching )
 and an optional status, which can be a string or a regexp ( status: /mitted/ matches Submitted and Presubmitted) 
 
 The fist associated Orderrecord is returned
+
 =end
-    # somtimes (order_ref) IB::Order-fields are stings!  
-    # Therefor the comparism  is performed after conversion to integer
     def locate_order local_id: nil, perm_id: nil, order_ref: nil, status: nil
       search_option= [ local_id.present? ? [:local_id , local_id] : nil ,
 		       perm_id.present? ? [:perm_id, perm_id] : nil,
 		       order_ref.present? ? [:order_ref , order_ref ] : nil ].compact.first
-      matched_items =  orders.find_all{|x| x[search_option.first].to_i == search_option.last.to_i }
+      matched_items =  search_option.nil? ? orders : orders.find_all{|x| x[search_option.first].to_i == search_option.last.to_i }
       if status.present?
 	status = Regexp.new(status) unless status.is_a? Regexp
 	matched_items.detect{|x| x.order_state.status =~ status }

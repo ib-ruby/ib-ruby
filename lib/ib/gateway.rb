@@ -36,7 +36,7 @@ class Gateway
   # similar to the Connection-Class: current represents the active instance of Gateway
   mattr_accessor :current
   mattr_accessor :tws
-
+  
 
 =begin
 ActiveAccounts returns a list of Account-Objects 
@@ -63,7 +63,9 @@ It returns an Array of the return-values of the block
   end
   def for_selected_account account_id
     sa =  @accounts.detect{|x| x.account == account_id }
-    yield sa if block_given? && sa.is_a?( IB::Account )
+    @account_lock.synchronize do
+      yield sa if block_given? && sa.is_a?( IB::Account )
+    end
   end
 =begin
 The Advisor is always the first account
@@ -89,6 +91,7 @@ The Advisor is always the first account
     logger.info { '-' * 20 +' initialize ' + '-' * 20 }
     logger.tap{|l| l.progname =  'Gateway#Initialize' }
     @connection_parameter = { received: serial_array, port: port, host: host, connect: false, logger: logger, client_id: client_id }
+    @account_lock = Mutex.new
     @gateway_parameter = { s_m_a: subscribe_managed_accounts, 
 			   s_a: subscribe_alerts,
 			   s_a_i: subscribe_account_infos, 
@@ -170,7 +173,9 @@ instead of a connection object a gateway-instance is used to connect, which prov
 for interal use. To place an Order properly, use Account#ModifyOrder
 =end
     def modify_order order, contract
+    @account_lock.synchronize do
       order.modify contract, self  if contract.is_a?( IB::Contract )
+    end
     end
 =begin
 Gateway#PlaceOrder
@@ -178,7 +183,9 @@ Gateway#PlaceOrder
 for interal use. To place an Order properly, use Account#PlaceOrder
 =end
     def place_order order, contract
+    @account_lock.synchronize do
        order.place contract, self  if order.is_a? IB::Order
+    end
     end
 
 

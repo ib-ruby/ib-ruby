@@ -6,22 +6,17 @@ Generic method which enables operations on the order-Object,
 which is associated to OrderState, Execution, CommissionReport 
 Events fired by the tws.
 They identify the order by local_id and perm_id
+Everything is carried out in a mutex-synchonized environment
 =end
   def update_order_dependent_object order_dependent_object
-      get_order= ->(field){  for_active_accounts{ |a| o=a.locate_order( field => order_dependent_object.local_id)}.compact.first }
-#possible enhancement for get_order: break(o) if o.is_a?(IB::Order) , but this returns a object instead of an array ... needs some consideration
-    if order_dependent_object.local_id.blank?
-      order = get_order[:perm_id]
-    else
-      order= get_order[:local_id]
-    end
-    ## perform the block if the order is assigned and the argument is valid
-    if order.present?  #&& order_dependent_object.save
-      yield order
-      true # return_value
-    else
-      nil # return_value
-    end
+	for_active_accounts do  | a | 
+	  order = if order_dependent_object.local_id.present?
+		    a.locate_order( :local_id => order_dependent_object.local_id)
+		  else
+		    a.locate_order( :perm_id => order_dependent_object.perm_id)
+		  end
+	  yield order if order.present?
+	end 
   end
   def initialize_order_handling
     tws.subscribe( :CommissionReport, :ExecutionData, :OrderStatus, :OpenOrder, :OpenOrderEnd ) do |msg| 
@@ -45,9 +40,10 @@ They identify the order by local_id and perm_id
 	#puts  "Order  --- #{msg.order.inspect} ----------" 
 	   for_selected_account(msg.order.account) do | this_account |
 	    # first update the contracts
+	     #
 	     if this_account.contracts.is_a?(Array)
 	       msg.contract.orders.update_or_create msg.order, :perm_id
-	     c= this_account.contracts.first_or_create msg.contract, :con_id
+	       this_account.contracts.first_or_create msg.contract, :con_id
 	     else
 	       this_account.contracts.where(con_id: msg.contract.con_id).first_or_create do |new_contract|
 		 new_contract.attributes.merge msg_contract.attributes
@@ -115,15 +111,16 @@ module IB
   class Alert
 
     def self.alert_202 msg
-      #
-      order = IB::Gateway.current.for_active_accounts do | account |
-	account.locate_order( local_id: msg.error_id )
-      end.compact.first
-      if order.present?
-	order.order_states << IB::OrderState.new( status:'Cancelled' )
-      else
-	IB::Gateway.logger.error{"Alert 202: The deleted order was not registered: local_id #{msg.error_id}"} 
+	# do anything in a secure mutex-synchronized-environment
+      any_order = IB::Gateway.current.for_active_accounts do | account |
+	order= account.locate_order( local_id: msg.error_id )
+	order.order_states << IB::OrderState.new( status:'Cancelled' ) if order.present?
+	order # return_value
       end
+      if any_order.compact.empty? 
+	IB::Gateway.logger.error{"Alert 202: The deleted order was not registered: local_id #{msg.error_id}"}
+      end
+
     end
     class << self
 =begin
@@ -146,19 +143,18 @@ ToDo:: Encapsulate the order-State operation in Mutex as its not threadsafe ie. 
 	   def self.alert_#{n} msg
 
 	       if msg.error_id.present?
-		order = IB::Gateway.current.for_active_accounts do | account |
-		    account.locate_order( local_id: msg.error_id )
-		  end.compact.first
-		if order.present?
-		  order.order_states << IB::OrderState.new( status: 'Rejected' ,
+		IB::Gateway.current.for_active_accounts do | account |
+		    order= account.locate_order( local_id: msg.error_id )
+		    if order.present?
+		      order.order_states << IB::OrderState.new( status: 'Rejected' ,
 						  warning_text: '#{n}: '+  msg.message,
 						  local_id: msg.error_id ) 	
 
-	      IB::Gateway.logger.error{  msg.to_human  }
-		end	# order present?
-
-	      end	# branch
-	    end		# def
+		      IB::Gateway.logger.error{  msg.to_human  }
+		    end	# order present?
+		 end	# mutex-environment
+		end	# branch
+	      end	# def
 	  EOD
 	end # loop
       end # def
