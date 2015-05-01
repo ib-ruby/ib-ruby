@@ -72,14 +72,6 @@ class Account < IB::Model
     end
   end
 
-  def open_orders
-   orders.map{|y| y.status == 'submitted' || y.status== 'presubmitted'}.compact
-  end
-
-  def finished_orders
-    orders.map{|y| s.status == 'executed' }.compact
-
-  end
 =begin
 Account#LocateOrder
 given any key of local_id, perm_id and order_ref
@@ -124,6 +116,7 @@ Limit- and Aux-Prices are adjusted to Min-Tick, if auto_adjust is specified
     order.contract.verify if  order.contract.con_id.blank?
     order.account =  account  # assign the account_id to the account-field of IB::Order
     local_id =  nil
+    self.orders.update_or_create order, :order_ref
     if order.contract.nil? || order.contract.con_id.blank?
       IB::Gateway.logger.error {"No Contract specified .::. #{order.to_human}"}
     else
