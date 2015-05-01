@@ -114,7 +114,9 @@ module IB
 	# do anything in a secure mutex-synchronized-environment
       any_order = IB::Gateway.current.for_active_accounts do | account |
 	order= account.locate_order( local_id: msg.error_id )
-	order.order_states << IB::OrderState.new( status:'Cancelled' ) if order.present?
+	if order.present? && ( order.order_state.status != 'Cancelled' )
+	  order.order_states << IB::OrderState.new( status:'Cancelled' ) 
+	end
 	order # return_value
       end
       if any_order.compact.empty? 
@@ -135,7 +137,6 @@ The Status is always »rejected«.
 If the first OrderState-object of a Order is »rejected«, the order is not placed at all.
 Otherwise only the last action is not applied and the order is unchanged.
 
-ToDo:: Encapsulate the order-State operation in Mutex as its not threadsafe ie. delegate it to connection.
 =end
       def add_orderstate_alert  *codes
 	codes.each do |n|
@@ -145,7 +146,7 @@ ToDo:: Encapsulate the order-State operation in Mutex as its not threadsafe ie. 
 	       if msg.error_id.present?
 		IB::Gateway.current.for_active_accounts do | account |
 		    order= account.locate_order( local_id: msg.error_id )
-		    if order.present?
+		    if order.present? && ( order.order_state.status != 'Rejected' )
 		      order.order_states << IB::OrderState.new( status: 'Rejected' ,
 						  warning_text: '#{n}: '+  msg.message,
 						  local_id: msg.error_id ) 	
