@@ -26,7 +26,7 @@ and also
 ```
 The Gateway acts as a Proxy to the Connection-Object and provides a simple Security-Layer.
 The method »connect« without an argument waits approx. 1 hour for the TWS to connect to.
-It tries to connect every 60 seconds. The argument detemines the count of repetitions.
+Every 60 seconds it tries to establish a connection. The argument determines the count of repetitions.
 IB::Gateway reconnects automatically if the transmission was interrupted. 
 It is even possible to switch from one TWS to another
 
@@ -52,15 +52,16 @@ in a structured manner:
 ```
   gw.get_account_data
   gw.request_open_orders
-
-Gateway
-  ---> Account 
-        ---> PortfolioValues
-	---> AccountValues
-	---> Orders
-	---> Contracts
-
 ```
+leads to
+
+ * Gateway 
+  * Account 
+   * -> PortfolioValues
+   * -> AccountValues
+   * -> Orders
+   * -> Contracts
+
 IB::Gateway provides an array of active Accounts. One is a Advisor-Account. 
 Several tasks are delegated to the accounts. 
 An Advisor cannot submit an order for himself. 
@@ -73,7 +74,7 @@ IB::Gateway provides thread safe wrapper-nethods
  gw.for_active_accounts do |account |   ... end
  gw.for_selected_account( ib_account_id ) do |account|  ... end
 ```
-However, if you know what you are doing and no interference with TWS-Messages are expected
+However, if you know what you are doing and no interference with TWS-Messages is expected,
 Advisor and Users are directly available through
 ```
  gw.advisor	       --> Account-Object
@@ -107,8 +108,8 @@ IB::AccountValue:
     created_at: (date_time), updated_at: (date_time)
 ```
 
-There is a simple method: IB::Account#SimpleAccountDateScan to select one or a group of 
-AccountValues: IB::Account#simple_account_data_scan search_key, search_currency 
+There is a simple method: *IB::Account#SimpleAccountDateScan* to select one or a group of 
+AccountValues: *IB::Account#simple_account_data_scan* search_key, search_currency 
 The parameter »search_key« is treated as a regular-expression, the parameter »currency« is optional.
 Most AccountValue-Keys are split into the currencies present in the account.
 To retrieve an ordered list  this snipplet helps
@@ -125,7 +126,7 @@ To retrieve an ordered list  this snipplet helps
      => [["682343", "BASE"], ["1829", "AUD"], ["629503", "EUR"], ["-23081", "JPY"], ["56692", "USD"]]
 ```
 
-Open (pending) Orders are retrieved by *»gw.request_open_orders«*. IB::Gateway, in this case the module
+Open (pending) Orders are retrieved by *gw.request_open_orders*. IB::Gateway, in this case the module
 OrderHandling (in ib/order_handling.rb) updates the »orders«-Array of each Account. 
 The Account#orders-Array consists of IB::Order-Entries:
 
@@ -145,7 +146,7 @@ IB::Order: local_id: (integer), side: "B/S", quantity: (integer),
 ```
 If an order gets filled while IB::Gateway is active, the IB::Account#Orders-Entries are updated.
 
-
+[Continue](integration.md)
 
 
 
