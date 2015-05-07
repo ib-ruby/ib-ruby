@@ -304,6 +304,8 @@ module IB
       msg = Messages::Incoming::Classes[msg_id].new(socket)
 
       # Deliver message to all registered subscribers, alert if no subscribers
+      # Ruby 2.0 and above: Hashes are ordered. 
+      # Thus first declared subscribers of  a class are executed first 
       @subscribe_lock.synchronize do
         subscribers[msg.class].each { |_, subscriber| subscriber.call(msg) }
       end

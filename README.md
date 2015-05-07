@@ -46,17 +46,28 @@ An Example
 ``` ruby
     require 'ib'
     
-    IB::Gateway.new get_account_data:true  # connects to the TWS by default
-    accounts = IB::Gateway.current.active_accounts
-    accounts.each.do |account|
+    gw= IB::Gateway.new get_account_data:true  # connects to the TWS by default
+    accounts = gw.active_accounts
+    accounts.each do |account|
      puts account.simple_account_data_scan('AccountCode')
      puts account.simple_account_data_scan('TotalCashValue')
      puts account.contracts.map &:to_human 
      puts account.portfolio_values &:to_human
-     (...)
-     # update Account-values
-     IB::Gateway.current.get_account_data
+    end
+    gw.disconnect
  ``` 
+ leads to
+ ```
+ <AccountCode=DU167348 >
+ <TotalCashValue=601740.49 EUR>
+ <TotalCashValue-C=29290.41 EUR>
+ <TotalCashValue-S=572450.08 EUR>
+ <Stock: BLUE EUR>
+ <Stock: CBA AUD>
+ <Stock: CIEN USD>
+ <PortfolioValue: <Stock: BLUE EUR> (720): Market 25.3299999 price 18237.6 value; PnL: 1934.31 unrealized, 0.0 realized;>
+ <PortfolioValue: <Stock: CBA AUD> (1004): Market 83.1100006 price 83442.44 value; PnL: 3761.55 unrealized, 0.0 realized;
+ ```
 * To Query the TWS manualy, the IB::Connection-Object is always available via IB::Gateway.tws, eg.
 ```ruby
    IB::Gateway.tws.send_message(...)
@@ -65,27 +76,6 @@ An Example
 The previous way to access the TWS by initializing IB::Connection is still supported. 
 IB::Connection.current is replaced by IB::Gateway.tws
 
-* TWS-queries are working in an asynchronic/ multithreaded environment
-* There is a wrapper IB::Contract.verify which offers a validation of 
-  the given Contract-Attributes prior to further actions, ie data-retrieving and ordering.
-* Although Connection#place_order still works, its advisable to use the save place_order method
-  of IB::Account
-``` ruby
-
-    gw= IB::Gateway.new  connect:true
-    contract = IB::Stock.new symbol: 'RRD'
-    buy_order = IB::Order.new total_quantity: 100, limit_price: 21.00,
-    	                               action: :buy, :order_type: :limit, 
-				       tif: 'GTC'
-    IB::Gateway.tws.subscribe(:OpenOrder) { |msg| puts "Placed: #{msg.order}!" }
-    IB::Gateway.tws.subscribe(:ExecutionData) { |msg| puts "Filled: #{msg.execution}!" }
-    
-    local_id= gw.for_selected_account( 'U123456' ) do |account|
-	account.place_order order: buy_order, contract: contract
-    end
-
-```
-  The order is fired only, if  the contract was successfully validated by the TWS
 
 
 

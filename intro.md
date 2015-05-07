@@ -146,6 +146,55 @@ IB::Order: local_id: (integer), side: "B/S", quantity: (integer),
 ```
 If an order gets filled while IB::Gateway is active, the IB::Account#Orders-Entries are updated.
 
+
+## Place, modify and delete Order
+
+To place an Order, one has to specify the IB::Contract and has to define the IB::Order itself.
+Contracts are best identified by their *con_id*.
+To place an order in as secure manner, first the contract has to be verified. 
+Therfor we have *IB::Contract#Verify* 
+
+``` Ruby
+  contract = IB::Stock.new symbol: 'RRD'
+  --> #<IB::Stock:0x00000002bb1eb0 @attributes={"symbol"=>"RRD",  "right"=>"", "include_expired"=>false, 
+		"sec_type"=>"STK", "currency"=>"USD", "exchange"=>"SMART"}> 
+  contract.verify
+  --> 1
+  contract --> #<IB::Stock:0x00000002bb1eb0 @attributes={"symbol"=>"RRD",
+		 "right"=>"", "include_expired"=>false, "sec_type"=>"STK",
+		 "currency"=>"USD", "exchange"=>"SMART", "expiry"=>"", "strike"=>0.0,
+		 "local_symbol"=>"RRD", "con_id"=>6507, "multiplier"=>0,
+		 "primary_exchange"=>"NASDAQ"},
+	        @contract_detail=#<IB::ContractDetail:0x00000002c128c8 (...)
+
+```
+  *IB::Contract#Verify* returns the number of detected contracts and updates the object itself.
+  
+  *IB::Account#PlaceOrder* verifies the Contract-Record befor trying to place the order.
+  After the order is transmitted to the TWS several status messages are send. They are 
+  captured by Gateway#OrderHandling, where the IB::Model-Objects are updated.
+  Therefor a thread-safe solution of the complete order-process is immanent. 
+  
+  
+ Although *IB::Connection#PlaceOrder* still works, its advisable to use the save *place_order* method
+  of IB::Account
+``` ruby
+
+    gw= IB::Gateway.new  connect:true
+    contract = IB::Stock.new symbol: 'RRD'
+    buy_order = IB::Order.new total_quantity: 100, limit_price: 21.00,
+    	                               action: :buy, :order_type: :limit, 
+				       tif: 'GTC'
+    IB::Gateway.tws.subscribe( :OpenOrder     ) { |msg| puts "Placed: #{msg.order}!"     }
+    IB::Gateway.tws.subscribe( :ExecutionData ) { |msg| puts "Filled: #{msg.execution}!" }
+    
+    local_id= gw.for_selected_account( 'U123456' ) do |account|
+	account.place_order order: buy_order, contract: contract
+    end
+
+```
+  The order is fired only, if  the contract was successfully validated by the TWS
+
 [Continue](integration.md)
 
 
