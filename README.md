@@ -1,7 +1,7 @@
 # ib-ruby
 
 Ruby Implementation of the Interactive Brokers Trader Workstation (TWS) API v.965-967.
-## Development-Branch, Environment: Ruby 2.20, ActiveModel,  Rspec3/Guard-Testsuite
+## Development-Branch, Environment: Ruby 2.2, ActiveModel,  Rspec3/Guard-Testsuite
 
 The hole TWS-Environment is accessible through Ruby-Objects.
 
@@ -26,7 +26,7 @@ and tolerates the daily reset of the TWS, and thus enables a 24/7-operation-mode
 
 However, ib-ruby offers a simple translation of ruby-queries to tws-socket-codes and
 offers the pure TWS-response as well. The usage of the object-tree is optional.
-Any code for previous versions of the programm should work.
+Any code for previous versions of the program should work.
 
 For more details refer to the [introduction](intro.md)
 and for programming hints the [integration](integration.md) section.
@@ -44,9 +44,7 @@ by the TWS is realized.
 
 An Example
 ``` ruby
-    require 'ib'
-    
-    gw= IB::Gateway.new get_account_data:true  # connects to the TWS by default
+    gw = IB::Gateway.new get_account_data:true  # connects to the TWS by default
     accounts = gw.active_accounts
     accounts.each do |account|
      puts account.simple_account_data_scan('AccountCode')
@@ -74,14 +72,15 @@ An Example
    IB::Gateway.tws.subscribe(...)
 ```
 The previous way to access the TWS by initializing IB::Connection is still supported. 
-IB::Connection.current is replaced by IB::Gateway.tws
+
+IB::Gateway.tws replaces IB::Connection.current 
 
 
 
 
 
 
-Copyright (C) 2006-2014 Paul Legato, Wes Devauld, Ar Vicco and Hartmut Bischoff.
+Copyright (C) 2006-2015 Paul Legato, Wes Devauld, Ar Vicco and Hartmut Bischoff.
 
 https://github.com/ib-ruby/ib-ruby
 
