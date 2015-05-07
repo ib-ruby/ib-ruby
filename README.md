@@ -20,7 +20,7 @@ Thus ib-ruby supports the following workflow
 * Application gets Response
 * Application reads the evaluated response from Object-Tree
 
-All time-critical operations are encapsulated in IB::Connection, which itself is
+Time-critical operations are encapsulated in IB::Connection, which itself is
 managed by IB::Gateway. IB::Gateway takes care of interrupted connections to the TWS
 and tolerates the daily reset of the TWS, and thus enables a 24/7-operation-mode.
 
@@ -63,7 +63,7 @@ An Example
    IB::Gateway.tws.subscribe(...)
 ```
 The previous way to access the TWS by initializing IB::Connection is still supported. 
-There is even an Object IB::Connection.current, witch points to IB::Gateway.tws
+IB::Connection.current is replaced by IB::Gateway.tws
 
 * TWS-queries are working in an asynchronic/ multithreaded environment
 * There is a wrapper IB::Contract.verify which offers a validation of 
