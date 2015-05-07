@@ -3,25 +3,29 @@ module IB
 The  Gateway-Class defines anything which has to be done before a connection can be established.
 The Default Skeleton can easily be substituted by customized actions
 
-The IB::Gateway can be used in two different modes
-(1) IB::Gateway.new( connect:true ) do | gateway |
-  { subscribe to Messages and define the response  }
-  # This is declared before a connect-attempt is made 
-  # The method waits until the connection is ready
+The IB::Gateway can be used in three modes
+(1) IB::Gateway.new( connect:true, --other arguments-- ) do | gateway |
+  ** subscribe to Messages and define the response  **
+  # This block is executed before a connect-attempt is made 
     end
 (2) gw = IB:Gateway.new
-    {subscribe to Messages }
+    ** subscribe to Messages **
     gw.connect
+(3) IB::Gateway.new connect:true, host: 'localhost' ....
 
 Independently IB::Alert.alert_#{nnn} should be defined for a proper response to warnings, error-
-and system-messages
+and system-messages. 
   
 
 The Connection to the TWS is realized throught IB::Connection. Instead of the previous
-Singleton IB::Connection.current now IB::Gateway.tws points to the active Connection.
+Singleton IB::Connection.current
+now IB::Gateway.tws points to the active Connection.
 However, to support asynchronic access, the :recieved-Array of the Connection-Class is not active.
 The Array is easily confused, if used in production mode with a FA-Account.
-IB::Conncetion.wait_for(message) is not available. 
+IB::Conncetion.wait_for(message) is not available until the programm is called with
+IB::Connection.new  serial_array: false, (...)
+
+
 
 =end
 

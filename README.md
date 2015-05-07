@@ -1,7 +1,7 @@
 # ib-ruby
 
 Ruby Implementation of the Interactive Brokers Trader Workstation (TWS) API v.965-967.
-# Development-Branch, Environment: Ruby 2.20, ActiveModel,  Rspec3/Guard-Testsuite
+## Development-Branch, Environment: Ruby 2.20, ActiveModel,  Rspec3/Guard-Testsuite
 
 The hole TWS-Environment is accessible through Ruby-Objects.
 
@@ -27,11 +27,22 @@ and tolerates the daily reset of the TWS, and thus enables a 24/7-operation-mode
 However, ib-ruby offers a simple translation of ruby-queries to tws-socket-codes and
 offers the pure TWS-response as well. The usage of the object-tree is optional.
 Any code for previous versions of the programm should work.
+
+For more details refer to the [introduction](intro.md)
+and for programming hints the [integration](integration.md) section.
+
 ### Changes from the stable branch
 
 
-* Only ActiveModel/ActiveRecord-Support. 
-* A IB::Gateway is added. This builds an object-orientated representation of Accounts with pending and completed Orders, Positions and Contracts
+* Only ActiveModel-Support. 
+* Alert-Messages are handled by IB::Alerts
+* IB::Stock, IB::Future, IB::Forex are derived from IB::Contract
+* IB::Account model added, where contracts, orders, positions and AccountValues are present
+* IB::Gateway builds an object-orientated representation of Accounts with pending and completed 
+Orders, Positions and Contracts. A thread-safe access to objects which are updated concurrently 
+by the TWS is realized.
+
+An Example
 ``` ruby
     require 'ib'
     
@@ -51,24 +62,26 @@ Any code for previous versions of the programm should work.
    IB::Gateway.tws.send_message(...)
    IB::Gateway.tws.subscribe(...)
 ```
-However, the old way to access the TWS by initializing IB::Connection is still supported. There is even an Object IB::Connection.current, witch points to IB::Gateway.tws
+The previous way to access the TWS by initializing IB::Connection is still supported. 
+There is even an Object IB::Connection.current, witch points to IB::Gateway.tws
 
-* TWS-queries are working in an asynchronic/ multithreaded environment and can be used with FA-Accounts with multible active and independently managed User-Accounts
-* IB::Stock, IB::Option, IB::Future and IB::Forex inherent IB::Contract
-* There is a wrapper IB::Contract.update_contract which allows a validation of 
-  the given Contract-Attributes prior to further actions, ie data-retrieving and ordering
+* TWS-queries are working in an asynchronic/ multithreaded environment
+* There is a wrapper IB::Contract.verify which offers a validation of 
+  the given Contract-Attributes prior to further actions, ie data-retrieving and ordering.
+* Although Connection#place_order still works, its advisable to use the save place_order method
+  of IB::Account
 ``` ruby
-    require 'ib'
 
-    IB::Gateway.new  connect:true
+    gw= IB::Gateway.new  connect:true
     contract = IB::Stock.new symbol: 'RRD'
+    buy_order = IB::Order.new total_quantity: 100, limit_price: 21.00,
+    	                               action: :buy, :order_type: :limit, 
+				       tif: 'GTC'
     IB::Gateway.tws.subscribe(:OpenOrder) { |msg| puts "Placed: #{msg.order}!" }
     IB::Gateway.tws.subscribe(:ExecutionData) { |msg| puts "Filled: #{msg.execution}!" }
-
-    contract.update_contract do |msg|
-		buy_order = IB::Order.new :total_quantity => 100, :limit_price => 21.00,
-    	                               :action => :buy, :order_type => :limit
-		IB::Gateway.tws.place_order buy_order, msg.contract
+    
+    local_id= gw.for_selected_account( 'U123456' ) do |account|
+	account.place_order order: buy_order, contract: contract
     end
 
 ```

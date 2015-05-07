@@ -1,15 +1,16 @@
-##  ib-ruby – An Introduction
+##  ib-ruby –  Introduction to the Gateway
 
 Ib-ruby is a pure ruby implementation to access the IB-TWS-API.
-It mirrors most of the information provided by the tws as Active-Model-Objects.
+It mirrors most of the information provided by the TWS as Active-Model-Objects.
 
 ### Connect to the TWS
 
-Assuming, the TWS ( FA-Account,»Friends and Family«,  is needed ) is running 
+Assuming, the TWS ( FA-Account, aka »Friends and Family«,  is needed ) is running 
 and API-Connections are enabled,  just instantiate IB::Gateway to connect i.e.
 
 ```
 gw = IB::Gateway.new connect: true, host: 'localhost:7496' , client_id: 1001
+# for possible argumets look into lib/ib/gateway.rb 
 ```
 
 The Connection-Object, which provides the status and recieves subscriptions of TWS-Messages, is
@@ -18,12 +19,16 @@ always present as
 ```
   tws = IB::Connection.tws 
 or
-  tws =  gw.tws
+  tws = gw.tws
+and also
+  tws = IB::Connction.current.tws
 
 ```
 The Gateway acts as a Proxy to the Connection-Object and provides a simple Security-Layer.
-The method »connect« waits approx. 1 hour  for the TWS to start. IB::Gateway reconnects automatically if the 
-transmission was interrupted. It is even possible to switch from one TWS to another
+The method »connect« without an argument waits approx. 1 hour for the TWS to connect to.
+It tries to connect every 60 seconds. The argument detemines the count of repetitions.
+IB::Gateway reconnects automatically if the transmission was interrupted. 
+It is even possible to switch from one TWS to another
 
 ```
   gw.change_host host:  'new_host:new_port'  
@@ -32,12 +37,12 @@ transmission was interrupted. It is even possible to switch from one TWS to anot
 ```
 
 
-### Read Account-Date
+### Read Account-Data
 
 If you open the TWS-GUI you get a nice overview of all account-positions, the distribution of 
 currencies, margin-using, leverage and other account-measures.
 
-These informations are transmitted by the API, too. 
+These informations are available through the API, too. 
 One can send a message to the tws and simply wait for the response.
 
 The Gateway handles anything in the background and provides essential account-data
@@ -49,24 +54,27 @@ in a structured manner:
   gw.request_open_orders
 
 Gateway
-  --- Account 
-        --- PortfolioValues
-	--- AccountValues
-	--- Orders
+  ---> Account 
+        ---> PortfolioValues
+	---> AccountValues
+	---> Orders
+	---> Contracts
 
 ```
-IB::Gateway provides an array of active Accounts. One is a Advisor-Account. Several tasks
-are delegated to the accounts. An Advisor cannot submit an order for himself. An ordonary User
-can only place orders for himself. 
+IB::Gateway provides an array of active Accounts. One is a Advisor-Account. 
+Several tasks are delegated to the accounts. 
+An Advisor cannot submit an order for himself. 
+A User can only place orders for himself. 
 
 The TWS sends data arbitrarily. Ib-ruby has to process them concurrently. Someone has to take care
 of possible data-collistions. Therefor its not advisable to access the TWS-Data directly.
-IB::Gateway provides wrapper-nethods 
+IB::Gateway provides thread safe wrapper-nethods 
 ```
  gw.for_active_accounts do |account |   ... end
  gw.for_selected_account( ib_account_id ) do |account|  ... end
 ```
-However, Advisor and Users are directly available through
+However, if you know what you are doing and no interference with TWS-Messages are expected
+Advisor and Users are directly available through
 ```
  gw.advisor	       --> Account-Object
  gw.active_accounts[n] --> Account-Object 
@@ -117,7 +125,7 @@ To retrieve an ordered list  this snipplet helps
      => [["682343", "BASE"], ["1829", "AUD"], ["629503", "EUR"], ["-23081", "JPY"], ["56692", "USD"]]
 ```
 
-Open (pending) Orders are retrieved by »gw.request_open_orders«. IB::Gateway, in this case the module
+Open (pending) Orders are retrieved by *»gw.request_open_orders«*. IB::Gateway, in this case the module
 OrderHandling (in ib/order_handling.rb) updates the »orders«-Array of each Account. 
 The Account#orders-Array consists of IB::Order-Entries:
 
