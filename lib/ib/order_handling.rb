@@ -154,7 +154,7 @@ Otherwise only the last action is not applied and the order is unchanged.
 		    order= account.locate_order( local_id: msg.error_id )
 		    if order.present? && ( order.order_state.status != 'Rejected' )
 		      order.order_states.update_or_create(  IB::OrderState.new( status: 'Rejected' ,
-						  perm_id: order.perm_id, local_id: order.local_id,
+						  perm_id: order.perm_id, 
 						  warning_text: '#{n}: '+  msg.message,
 						  local_id: msg.error_id ), :status ) 	
 
