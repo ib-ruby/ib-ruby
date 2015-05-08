@@ -31,7 +31,7 @@ Everything is carried out in a mutex-synchonized environment
 	# There is no reference to a contract or an account
       
 	success= update_order_dependent_object( msg.order_state) do |o|
-		o.order_states << msg.order_state
+		o.order_states.update_or_create msg.order_state, :status 
 	end
 	    
 	logger.info {  "Order State not assigned-- #{msg.order_state.to_human} ----------" } if success.nil?
@@ -45,7 +45,7 @@ Everything is carried out in a mutex-synchonized environment
 	       msg.contract.orders.update_or_create msg.order, :perm_id
 	       this_account.contracts.first_or_create msg.contract, :con_id
 	     else
-	       this_account.contracts.where(con_id: msg.contract.con_id).first_or_create do |new_contract|
+	       this_account.contracts.where( con_id: msg.contract.con_id ).first_or_create do |new_contract|
 		 new_contract.attributes.merge msg_contract.attributes
 	       end
 	     end
@@ -77,6 +77,8 @@ Everything is carried out in a mutex-synchonized environment
 	  o.executions << msg.execution 
 	  if  msg.execution.cumulative_quantity.to_i == o.quantity.abs
 	    logger.info{ "#{o.account} --> #{o.contract.symbol}: Execution completed" }
+	    o.order_states.first_or_create(  IB::OrderState.new( perm_id: o.perm_id, local_id: o.local_id,
+						   status: 'Filled' ),  :status )
 	  else
 	    logger.debug{ "#{o.account} --> #{o.contract.symbol}: Execution not completed (#{msg.execution.cumulative_quantity.to_i}/#{o.quantity.abs})" }
 	  end  # branch
