@@ -117,7 +117,11 @@ module IB
       any_order = IB::Gateway.current.for_active_accounts do | account |
 	order= account.locate_order( local_id: msg.error_id )
 	if order.present? && ( order.order_state.status != 'Cancelled' )
-	  order.order_states << IB::OrderState.new( status:'Cancelled' ) 
+	  order.order_states.update_or_create( IB::OrderState.new( status: 'Cancelled', 
+								  perm_id: order.perm_id, 
+								  local_id: order.local_id  ) ,
+								  :status )
+
 	end
 	order # return_value
       end
@@ -149,9 +153,10 @@ Otherwise only the last action is not applied and the order is unchanged.
 		IB::Gateway.current.for_active_accounts do | account |
 		    order= account.locate_order( local_id: msg.error_id )
 		    if order.present? && ( order.order_state.status != 'Rejected' )
-		      order.order_states << IB::OrderState.new( status: 'Rejected' ,
+		      order.order_states.update_or_create(  IB::OrderState.new( status: 'Rejected' ,
+						  perm_id: order.perm_id, local_id: order.local_id,
 						  warning_text: '#{n}: '+  msg.message,
-						  local_id: msg.error_id ) 	
+						  local_id: msg.error_id ), :status ) 	
 
 		      IB::Gateway.logger.error{  msg.to_human  }
 		    end	# order present?
