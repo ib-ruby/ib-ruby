@@ -1,7 +1,7 @@
 # ib-ruby
 
 Ruby Implementation of the Interactive Brokers Trader Workstation (TWS) API v.965-967.
-## Development-Branch, Environment: Ruby 2.2, ActiveModel,  Rspec3/Guard-Testsuite
+## Gateway-Branch, Environment: Ruby 2.2, ActiveModel,  Rspec3/Guard-Testsuite
 
 The hole TWS-Environment is accessible through Ruby-Objects.
 
