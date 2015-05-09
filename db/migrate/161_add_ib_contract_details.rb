@@ -8,7 +8,7 @@ class AddIbContractDetails < ActiveRecord::Migration
       t.string :trading_class # The trading class name for this contract.
       t.float :min_tick # double: The minimum price tick.
       t.integer :price_magnifier # int: Z on LIFFE is reported in index points not GBP.
-      t.string :order_types #       The list of valid order types for this contract.
+      t.string :order_types  , :limit 300 #       The list of valid order types for this contract.
       t.string :valid_exchanges #   The list of exchanges this contract is traded on.
       t.integer :under_con_id # int: The underlying contract ID.
       t.string :long_name #         Descriptive name of the asset.

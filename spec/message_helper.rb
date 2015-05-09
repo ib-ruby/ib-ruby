@@ -12,7 +12,7 @@ def mock_logger
     logger.formatter = proc do |level, time, prog, msg|
       "#{time.strftime('%H:%M:%S.%N')} #{msg}\n"
     end
-    logger.level = Logger::INFO
+    logger.level = Logger::DEBUG
   end
 end
 
@@ -20,32 +20,27 @@ def log_entries
   @stdout && @stdout.string.split(/\n/)
 end
 
-# Not using these helpers just use match directly instead e.g.:
+# Alternatively  just use match directly instead e.g.:
 #        it { log_entries.any? { |entry| expect(entry).to match(/No subscribers for message .*:Alert!/) }}
 
-#def should_log *patterns
-#  patterns.each do |pattern|
-    #old should entry
-    #log_entries.any? { |entry| entry =~ pattern }.should be_true
-#    log_entries.any? { |entry| pp (entry =~ pattern); expect(entry =~ pattern).to be_true }
-#  end
-#end
+def should_log *patterns
+  patterns.each do |pattern|
+   expect( log_entries.any? { |entry| entry =~ pattern }).to be_truthy
+  end
+end
 
-#def should_not_log *patterns
-#  patterns.each do |pattern|
-#    log_entries.any? { |entry| pp (entry =~ pattern); expect(entry =~ pattern).to be_false }
-#    #old should entry
-#    #log_entries.any? { |entry| entry =~ pattern }.should be_false
-#  end
-#end
-
+def should_not_log *patterns
+  patterns.each do |pattern|
+    expect( log_entries.any? { |entry| entry =~ pattern }).to be_falsey
+  end
+end
 ## Connection helpers
 
 # Clear logs and message collector. Output may be silenced.
 def clean_connection
   if OPTS[:verbose]
     #puts @received.map { |type, msg| [" #{type}:", msg.map(&:to_human)] } if @received
-    puts @ib.received.map { |type, msg| [" #{type}:", msg.map(&:to_human)] }
+    puts IB::Gateway.tws.received.map { |type, msg| [" #{type}:", msg.map(&:to_human)] }
     puts " Logs:", log_entries if @stdout
   end
   @stdout.string = '' if @stdout
@@ -54,7 +49,9 @@ def clean_connection
 end
 
 def close_connection
-  @ib.cancel_order @local_id_placed if @ib && @local_id_placed
-  @ib.close if @ib
-  clean_connection
+  if IB::Gateway.current.present?
+    IB::Gateway.current.cancel_order @local_id_placed if  @local_id_placed
+    IB::Gateway.current.disconnect if IB::Gateway.current.present?
+    clean_connection
+  end
 end

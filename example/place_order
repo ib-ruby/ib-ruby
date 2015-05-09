@@ -1,27 +1,63 @@
 #!/usr/bin/env ruby
 #
-# This script places WFC buy order for 100 lots
+# This script ckecks the validity of the contract and then places an buy order for 100 lots
 
-require 'rubygems'
 require 'bundler/setup'
 $LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
+require 'active_support'
 require 'ib-ruby'
 
-# First, connect to IB TWS. Arbitrary :client_id is used to identify your script
-ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS
+# Location of the TWS/Gateway
+TWS= 'localhost'  # 'beta:7496' # or 'localhost:4001'  
 
-# Subscribe to TWS alerts/errors and order-related messages
-ib.subscribe(:Alert, :OpenOrder, :OrderStatus) { |msg| puts msg.to_human }
 
-wfc = IB::Symbols::Stocks[:wfc]
-buy_order = IB::Order.new :total_quantity => 100,
-                          :limit_price => 1 + rand().round(2),
-                          :action => 'BUY',
-                          :order_type => 'LMT'
-ib.wait_for :NextValidId
-ib.place_order buy_order, wfc
+# Connect to IB TWS.
+IB::Gateway.new host: TWS , connect:true, :client_id => 1123, logger: Logger.new( '/dev/null' )
+if ( ib = IB::Gateway.tws).present?
 
-ib.send_message :RequestAllOpenOrders
+  # Lets define a Stock (Default: ncy: USD, Exchange: SMART), and a fake one
+  our_stock = IB::Stock.new( symbol:'FAST' )
+  fake_stock = IB::Stock.new( symbol:'FAKE' )
 
-puts "\n******** Press <Enter> to cancel... *********\n\n"
-STDIN.gets
+  # define the order itself
+  buy_order = IB::Order.new total_quantity: 100,
+    :limit_price => 1 + rand().round(2),
+    :action => 'BUY',
+    :order_type => 'LMT'
+
+  # where to perform the Action
+  account = IB::Gateway.current.active_accounts.last
+  
+  # the method »update_contract« validates the presence of this symbol 
+  # the validated contract is provided in a block
+  # only if a valid contract is returned by the tws, the block is evaluated
+  # so - if falsy attributes are used in IB::Stock (or  IB::Contract) no attempt to place the order occurs
+  # to perform the Order, the tws only needs ConId and Exchange from the contract
+
+
+  ## place the order on the last detected account
+  account.place_order order: buy_order, contract: our_stock
+  
+  puts "placed #{buy_order.to_human} at #{our_stock.to_human} "
+
+  account.place_order contract: fake_stock, order: buy_order
+  puts "placed #{buy_order.to_human} at #{fake_stock.to_human} "
+  ## send RequestMessage to the TWS, IB::Gateway tracks it into the order-array of the account
+  #
+  puts "requesting pending orders "
+  IB::Gateway.current.send_message :RequestAllOpenOrders   
+   sleep 5
+
+    puts "This is a list of pending Orders "
+    puts '-'*(100)
+    account.orders.each{|x| puts "#{x.contract.to_human}  --> #{x.to_human}" }
+
+  puts "~"*(39)
+  puts "don't forget to cancel the order manually!"
+  puts "~"*(39)
+  puts "Notice that no attempt to send an invalid Order was made"
+
+
+else
+  puts 'No TWS'
+end

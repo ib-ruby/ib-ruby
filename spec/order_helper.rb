@@ -13,8 +13,8 @@ shared_examples_for 'Placed Order' do
     end
 
     it 'changes client`s next_local_id' do
-      @local_id_placed.should == @local_id_before
-      @ib.next_local_id.should be >= @local_id_before
+       @local_id_placed.should eq @local_id_before
+       @ib.next_local_id.should > @local_id_before
     end
 
     it 'receives all appropriate response messages' do
@@ -219,5 +219,5 @@ def order_should_be status, order=@order
   msg.should_not be_nil
   msg.should be_an IB::Messages::Incoming::OpenOrder
   msg.order.should == order
-  msg.contract.should == @contract
+   msg.contract.should == @contract if @contract.present?
 end

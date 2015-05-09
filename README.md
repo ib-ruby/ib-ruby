@@ -1,8 +1,86 @@
 # ib-ruby
 
 Ruby Implementation of the Interactive Brokers Trader Workstation (TWS) API v.965-967.
+## Development-Branch, Environment: Ruby 2.2, ActiveModel,  Rspec3/Guard-Testsuite
 
-Copyright (C) 2006-2013 Paul Legato, Wes Devauld, and Ar Vicco.
+The hole TWS-Environment is accessible through Ruby-Objects.
+
+IB::Gateway is the root. It manages a list of TWS-Users. 
+An Advisor, who manages a list of contract-queries
+and ActiveAccounts, where AccountValues, PortfolioValues and Orders are linked.
+
+Whenever queries are send to the TWS, the response is stored in the object-tree
+and can then read out with standard Array-Methods.
+
+Thus ib-ruby supports the following workflow
+
+* Application sends Request 
+* IB::Gateway transmits to the TWS
+* TWS-Response is stored in Object-Tree
+* Application gets Response
+* Application reads the evaluated response from Object-Tree
+
+Time-critical operations are encapsulated in IB::Connection, which itself is
+managed by IB::Gateway. IB::Gateway takes care of interrupted connections to the TWS
+and tolerates the daily reset of the TWS, and thus enables a 24/7-operation-mode.
+
+However, ib-ruby offers a simple translation of ruby-queries to tws-socket-codes and
+offers the pure TWS-response as well. The usage of the object-tree is optional.
+Any code for previous versions of the program should work.
+
+For more details refer to the [introduction](intro.md)
+and for programming hints the [integration](integration.md) section.
+
+### Changes from the stable branch
+
+
+* Only ActiveModel-Support. 
+* Alert-Messages are handled by IB::Alerts
+* IB::Stock, IB::Future, IB::Forex are derived from IB::Contract
+* IB::Account model added, where contracts, orders, positions and AccountValues are present
+* IB::Gateway builds an object-orientated representation of Accounts with pending and completed 
+Orders, Positions and Contracts. A thread-safe access to objects which are updated concurrently 
+by the TWS is realized.
+
+An Example
+``` ruby
+    gw = IB::Gateway.new get_account_data:true  # connects to the TWS by default
+    accounts = gw.active_accounts
+    accounts.each do |account|
+     puts account.simple_account_data_scan('AccountCode')
+     puts account.simple_account_data_scan('TotalCashValue')
+     puts account.contracts.map &:to_human 
+     puts account.portfolio_values &:to_human
+    end
+    gw.disconnect
+ ``` 
+ leads to
+ ```
+ <AccountCode=DU167348 >
+ <TotalCashValue=601740.49 EUR>
+ <TotalCashValue-C=29290.41 EUR>
+ <TotalCashValue-S=572450.08 EUR>
+ <Stock: BLUE EUR>
+ <Stock: CBA AUD>
+ <Stock: CIEN USD>
+ <PortfolioValue: <Stock: BLUE EUR> (720): Market 25.3299999 price 18237.6 value; PnL: 1934.31 unrealized, 0.0 realized;>
+ <PortfolioValue: <Stock: CBA AUD> (1004): Market 83.1100006 price 83442.44 value; PnL: 3761.55 unrealized, 0.0 realized;
+ ```
+* To Query the TWS manualy, the IB::Connection-Object is always available via IB::Gateway.tws, eg.
+```ruby
+   IB::Gateway.tws.send_message(...)
+   IB::Gateway.tws.subscribe(...)
+```
+The previous way to access the TWS by initializing IB::Connection is still supported. 
+
+IB::Gateway.tws replaces IB::Connection.current 
+
+
+
+
+
+
+Copyright (C) 2006-2015 Paul Legato, Wes Devauld, Ar Vicco and Hartmut Bischoff.
 
 https://github.com/ib-ruby/ib-ruby
 
@@ -40,10 +118,6 @@ contains 1/10th of code and is 500% more maintaineable than it is possible with
 other API implementations. The choice is yours.
 
 ## INSTALLATION:
-
-### From RubyGems
-
-    $ sudo gem install ib-ruby [-v version]
 
 ### From Source
 
@@ -126,41 +200,12 @@ fundamental data, request options calculations, place, list, and cancel orders.
 You may also want to look into `spec/integration` directory for more scenarios,
 use cases and examples of handling IB messages.
 
-## RAILS INTEGRATION:
 
-This gem has two operating modes: standalone and Rails-engine. If you require it in a
-Rails environment, it loads Rails engine automatically. Otherwise, it does not load any
-Rails integration.
-
-To add ib-ruby to your Rails 3 project, follow these steps:
-
-Add to your Gemfile:
-``` ruby
-gem 'ib-ruby', '~>0.9'
-```
-Add the require to your config/application.rb:
-``` ruby
-require File.expand_path('../boot', __FILE__)
-require 'rails/all'
-require 'ib'
-if defined?(Bundler)
-```
-Now run:
-
-    $ bundle install
-    $ rake ib:install:migrations
-    $ rake db:migrate
-
-This will install ib-ruby gem and copy its migrations into your Rails apps migrations.
-
-You can now use or modify IB models, develop controllers and views for them in your Rails app.
 
 ## DB BACKEND:
 
-Even if you don't use Rails, you can still take advantage of its data persistance layer
-(ActiveRecord ORM). In order to use data persistance, you have to set up the database
+If you want to take advantage of data persistance layer ActiveRecord ORM, you have to set up the database
 (SQLite recommended for simplicity) and run migrations located at gems 'db/migrate' folder.
-It is recommended that you use a gem like [standalone_migrations](https://github.com/thuss/standalone-migrations) for this.
 
 You further need to:
 ``` ruby
@@ -169,11 +214,9 @@ You further need to:
     require 'ib'
 ```
 Only require 'ib' AFTER you've connected to DB, otherwise your Models will not
-inherit from ActiveRecord::Base and won't be persistent. If you are using Rails,
-you don't need IB::DB.connect part, Rails will take care of it for you.
+inherit from ActiveRecord::Base and won't be persistent. 
 
-Now, all your IB Models are just ActiveRecords and you can save them to DB just
-like you would with Rails models.
+Now, all your IB Models are just ActiveRecords and you can save them to the DB.
 
 ## RUNNING TESTS:
 
@@ -181,22 +224,6 @@ The gem comes with a spec suit that may be used to test ib-ruby compatibility wi
 specific TWS/Gateway installation. Please read 'spec/Readme.md' for more details about
 running specs.
 
-## RUBY VERSION COMPATIBILITY:
-
-The library is continuously tested with JRuby 1.6.7 (ruby-1.8.7-p357-compatible mode) and
-JRuby head (ruby-1.9.3-p203-compatible mode). It is not JRuby-specific though, as it is currently used in a some MRI Ruby based projects. If there are any problems in any mode
-for either JRuby or MRI, please report an [issue](https://github.com/ib-ruby/ib-ruby/issues/new)
-and we will work on it.
-
-Please keep in mind that when using Ruby 1.8.7, you need to either explicitly:
-``` ruby
-    require 'rubygems'
-    require 'ib'
-```
-
-or set the environment variable "RUBYOPT" to "-rubygems":
-
-    set RUBYOPT=-rubygems
 
 ## CONTRIBUTING:
 

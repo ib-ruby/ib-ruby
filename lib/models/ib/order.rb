@@ -227,6 +227,10 @@ module IB
     serialize :algo_params, HashWithIndifferentAccess
     serialize :combo_params, HashWithIndifferentAccess
 
+#    # Order is always placed for an account. Here, we explicitly set this link.
+#    belongs_to :account
+    #    :account is reserved for the account_id
+
     # Order is always placed for a contract. Here, we explicitly set this link.
     belongs_to :contract
 
@@ -328,10 +332,11 @@ module IB
 
     # Placement
     def place contract, connection
-      error "Unable to place order, next_local_id not known" unless connection.next_local_id
-      self.client_id = connection.client_id
-      self.local_id = connection.next_local_id
-      connection.next_local_id += 1
+      real_connection = connection.is_a?( IB::Gateway ) ? connection.tws : connection
+      error "Unable to place order, next_local_id not known" unless real_connection.next_local_id
+      self.client_id = real_connection.client_id
+      self.local_id =  real_connection.next_local_id
+	real_connection.next_local_id += 1
       self.placed_at = Time.now
       modify contract, connection, self.placed_at
     end
@@ -380,12 +385,19 @@ module IB
 
     def to_human
       "<Order: " + ((order_ref && order_ref != '') ? "#{order_ref} " : '') +
-        "#{self[:order_type]} #{self[:tif]} #{side} #{quantity} " +
-        (limit_price ? "#{limit_price} " : '') + "#{status} " +
+        "#{short_order_type} #{short_tif} #{side} #{quantity} " +
+        (limit_price ? "@ #{limit_price} " : '') + "#{status} " +
         ((aux_price && aux_price != 0) ? "/#{aux_price}" : '') +
         "##{local_id}/#{perm_id} from #{client_id}" +
         (account ? "/#{account}" : '') +
         (commission ? " fee #{commission}" : '') + ">"
+    end
+
+    def short_tif
+      self[:tif]
+    end
+    def short_order_type
+      self[:order_type]
     end
   end # class Order
 end # module IB

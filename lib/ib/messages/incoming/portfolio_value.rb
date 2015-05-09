@@ -1,4 +1,4 @@
-module IB
+module  IB
   module Messages
     module Incoming
 
@@ -31,6 +31,18 @@ module IB
               " price #{market_value} value; PnL: #{unrealized_pnl} unrealized," +
               " #{realized_pnl} realized; account #{account_name}>"
         end
+
+	def portfolio_value
+	  @portfolio_value =  IB::PortfolioValue.new  position: @data[:position], 
+						      market_price: @data[:market_price],
+						     market_value: @data[:market_value],
+						     average_cost: @data[:average_cost],
+						     unrealized_pnl: @data[:unrealized_pnl],
+						     realized_pnl: @data[:realized_pnl],
+						      contract: contract
+
+
+	end
       end # PortfolioValue
 
 

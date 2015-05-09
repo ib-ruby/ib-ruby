@@ -1,10 +1,13 @@
 require 'models/ib/contract_detail'
 require 'models/ib/underlying'
+require 'ib/tws_reader'
 
 module IB
   class Contract < IB::Model
     include BaseProperties
-
+    include TWS_Reader
+   
+#    has_many :ib_assets
     # Fields are Strings unless noted otherwise
     prop :con_id, # int: The unique contract identifier.
       :currency, # Only needed if there is an ambiguity, e.g. when SMART exchange
@@ -92,8 +95,10 @@ module IB
 
 
       ### Extra validations
-      validates_inclusion_of :sec_type, :in => CODES[:sec_type].keys,
-      :message => "should be valid security type"
+## Ths validation is missleading because a query with con_id and currency is valid
+## better: create IB::Future, IB::Stock, IB::Forex and IB::Bond models
+    #  validates_inclusion_of :sec_type, :in => CODES[:sec_type].keys,
+#      :message => "should be valid security type"
 
     validates_format_of :expiry, :with => /\A\d{6}$|^\d{8}$|\A\z/,
       :message => "should be YYYYMM or YYYYMMDD"
@@ -106,11 +111,18 @@ module IB
 
     validates_numericality_of :multiplier, :strike, :allow_nil => true
 
+    begin
+    validates_uniqueness_of :con_id, :allow_nil => true  ## has to be defined in model, too
+    rescue NoMethodError
+      # supress NoMethodError when using lightweight (non-DB-Backed) Model
+      nil
+    end
+
     def default_attributes
-      super.merge :con_id => 0,
-        :strike => 0.0,
+      super.merge :strike => 0.0,
+      #:con_id =>  0 --> then validation (s.o) is impossible
         :right => :none, # Not an option
-        :exchange => 'SMART',
+#        :exchange => 'SMART',  --> specified in IB::Stock, IB::Option, IB::Future, IB::Forex
         :include_expired => false
     end
 
@@ -219,10 +231,12 @@ module IB
     end
 
     def to_s
-      "<Contract: " + instance_variables.map do |key|
-        value = send(key[1..-1])
-        " #{key}=#{value}" unless value.nil? || value == '' || value == 0
-      end.compact.join(',') + " >"
+	    "<Contract: #{attributes.inspect} >"
+#      "<Contract: " + instance_variables.map do |key|
+#	      value = send(key[1..-1]) rescue 'U-N-K-N-O-W-N'
+#        " #{key}=#{value}" unless value.nil? || value == '' || value == 0
+#      end.compact.join(',') + " >"
+
     end
 
     def to_human
@@ -265,6 +279,9 @@ module IB
   ### Now let's deal with Contract subclasses
 
   require 'models/ib/option'
+  require 'models/ib/future'
+  require 'models/ib/forex'
+  require 'models/ib/stock'
   require 'models/ib/bag'
 
   class Contract
@@ -273,6 +290,10 @@ module IB
     Subclasses = Hash.new(Contract)
     Subclasses[:bag] = IB::Bag
     Subclasses[:option] = IB::Option
+    Subclasses[:future] = IB::Future
+    Subclasses[:stock] = IB::Stock
+    Subclasses[:forex] = IB::Forex
+
 
     # This builds an appropriate Contract subclass based on its type
     def self.build opts = {}

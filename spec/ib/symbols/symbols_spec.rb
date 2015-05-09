@@ -17,10 +17,10 @@ describe IB::Symbols do
     wfc.should be_an IB::Contract
     wfc.sec_type.should == :option
     wfc.symbol.should == "WFC"
-    wfc.expiry.should == "201301"
+    wfc.expiry.should == "201501"
     wfc.right.should == :call
     wfc.strike.should == 20
-    wfc.description.should == "Wells Fargo 20 Call 2013-01"
+    wfc.description.should == "Wells Fargo 20 Call 2015-01"
   end
 
   it 'references pre-defined IB forex Contracts' do

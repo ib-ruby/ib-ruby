@@ -85,5 +85,9 @@ module IB
       message_class
     end
 
+    def self.response_to_subscription
+      # prototype, to be redefined in MessageClass
+    end
+
   end # module Messages
 end # module IB

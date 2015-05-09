@@ -5,42 +5,157 @@
 require 'rubygems'
 require 'bundler/setup'
 $LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
+require 'yaml'
 require 'ib-ruby'
 
 # Definition of what we want market data for.  We have to keep track of what ticker id
 # corresponds to what symbol ourselves, because the ticks don't include any other
-# identifying information. The choice of ticker ids is, as far as I can tell, arbitrary.
-@market = {0 => IB::Symbols::Stocks[:wfc],
-           1 => IB::Symbols::Stocks[:vxx],
-           2 => IB::Symbols::Futures[:vix],
-           3 => IB::Symbols::Futures[:ym],
-           4 => IB::Symbols::Options[:wfc20],
-           5 => IB::Symbols::Options[:vix20],
-           6 => IB::Symbols::Options[:vxx40],
-           7 => IB::Symbols::Forex[:eurusd],
-           # 8 => IB::Symbols::Bonds[:wag],
-           9 => IB::Symbols::Stocks[:wrong]}
+# identifying infoormation. The choice of ticker ids is, as far as I can tell, arbitrary.
+
+
+begin
+market = {"1. Apple via Stock " => IB::Stock.new( symbol: 'AAPL') ,
+          "2. Molson Coors " => IB::Stock.new( symbol: 'TAP', currency:'USD' ),
+          "3. TAP-Oil " => IB::Stock.new( symbol: 'TAP', currency:'AUD' ),
+          "4. GE Option "  => IB::Option.new( symbol:'GE', strike:25, expiry:201612),
+	  "5. S&P Future " => IB::Future.new( symbol:'ES', expiry:201512,  :exchange => 'GLOBEX'),	
+	  "6. NOK/SEK " =>  IB::Forex.new(  symbol:'NOK', currency:'SEK'),
+	  "7.GE-Option - with multible contracts " => IB::Option.new( right: :put, symbol:'GE',  expiry:201512), # multible put-options, only the last ist selected
+	  "11.Fake Stock "  => IB::Contract.new( :symbol=>'FAKE' )  # not a valid symbol
+	}
 
 # Connect to IB TWS.
-ib = IB::Connection.new :client_id => 1112, :port => 7496 # TWS
-ib.wait_for :NextValidOrderId
+IB::Gateway.new  connect: true, client_id: 1201, host: 'localhost:7496' # TWS
+IB::Gateway.current.logger.level= 3
+threadArray = Array.new
 
-# Subscribe to TWS alerts/errors and contract data end marker
-ib.subscribe(:Alert, :ContractDataEnd) { |msg| puts msg.to_human }
+#3.times do
+  market.each_pair do |id, contract|
+    
+    puts "Requesting contract data #{id}: #{contract.description}"
 
-# Now, subscribe to ContractData incoming events.  The code passed in the block
-# will be executed when a message of that type is received, with the received
-# message as its argument. In this case, we just print out the data.
-ib.subscribe(:ContractData, :BondContractData) { |msg| puts(msg.contract.inspect + "\n")}
+    ## A Thread environment is only nessesary, if some other parts of the 
+    ## programm are accessing subscribed messages. This domonstrates the usage.
 
-@market.each_pair do |id, contract|
-  puts "\nRequesting contract data #{id}: #{contract.description}"
+    puts "Output within the threaded Environment"
+    threadArray << Thread.new( contract)  do | contract |
+      # local vars
+      symbol, min_tick, result, con_id = nil
+      result=  contract.verify do |contract|
+	# Any attribute of the contract-object is assesible, i.e.
+	con_id =   contract.con_id 
+	symbol =   contract.symbol 
+	# In Addition, all Contract-Detail-Attributes are present 
+	min_tick=  contract.contract_detail.min_tick 
+      puts "Query #{id}-----------------------------------------------------------"
+      puts "Result: #{result } \t (local symbol / Nr of Contracts)"
+      puts "TWS-resonse: Symbol -> #{symbol}", "Min-Tick:#{min_tick}", "ConID:#{con_id}"
+      end
 
-  # Request Contract details for the symbols we're interested in. TWS will
-  # respond with ContractData messages, which will be processed by the code above.
-  ib.send_message :RequestContractData, :id => id, :contract => contract
-
-  # Wait for IB to respond to our request
-  ib.wait_for :ContractDataEnd, 5 #sec
-  ib.clear_received :ContractDataEnd
+    end # thread
+  end
+#end
+threadArray.each{|t| t.join}  # wait for the threads to finish 
+puts "\n\nThreaded Enviroment closed."
+puts "Here are the results"
+market.each_pair do | id, contract |
+      print id
+      puts contract.to_human
+      puts contract.to_s
+      puts contract.contract_detail.to_human if contract.contract_detail.present?
+      puts " ... "
 end
+rescue RuntimeError => e
+  puts "Error"
+  puts e
+end
+
+
+__END__
+Requesting contract data 1. Apple via Stock : 
+  Output within the threaded Environment
+Requesting contract data 2. Molson Coors : 
+  Output within the threaded Environment
+Requesting contract data 3. TAP-Oil : 
+  Output within the threaded Environment
+Requesting contract data 4. GE Option : 
+  Output within the threaded Environment
+Requesting contract data 5. S&P Future : 
+  Output within the threaded Environment
+Requesting contract data 6. NOK/SEK : 
+  Output within the threaded Environment
+Requesting contract data 7.GE-Option - with multible contracts : 
+  Output within the threaded Environment
+Query 2. Molson Coors -----------------------------------------------------------
+  Result:    (local symbol / Nr of Contracts)
+TWS-resonse: Symbol -> TAP
+Min-Tick:0.01
+ConID:33191300
+Query 3. TAP-Oil -----------------------------------------------------------
+  Result:    (local symbol / Nr of Contracts)
+TWS-resonse: Symbol -> TAP
+Min-Tick:0.001
+ConID:13349717
+Query 5. S&P Future -----------------------------------------------------------
+  Result:    (local symbol / Nr of Contracts)
+TWS-resonse: Symbol -> ES
+Min-Tick:0.25
+ConID:167205842
+Query 6. NOK/SEK -----------------------------------------------------------
+  Result:    (local symbol / Nr of Contracts)
+TWS-resonse: Symbol -> NOK
+Min-Tick:5.0e-05
+ConID:28027113
+Query 1. Apple via Stock -----------------------------------------------------------
+  Result:    (local symbol / Nr of Contracts)
+TWS-resonse: Symbol -> AAPL
+Min-Tick:0.01
+ConID:265598
+Query 7.GE-Option - with multible contracts -----------------------------------------------------------
+  Result:    (local symbol / Nr of Contracts)
+TWS-resonse: Symbol -> GE
+Min-Tick:0.01
+ConID:184656501
+Query 7.GE-Option - with multible contracts -----------------------------------------------------------
+  Result:    (local symbol / Nr of Contracts)
+TWS-resonse: Symbol -> GE
+Min-Tick:0.01
+ConID:184656569
+Query 7.GE-Option - with multible contracts -----------------------------------------------------------
+  Result:    (local symbol / Nr of Contracts)
+TWS-resonse: Symbol -> GE
+Min-Tick:0.01
+Query 4. GE Option -----------------------------------------------------------
+  Result:    (local symbol / Nr of Contracts)
+TWS-resonse: Symbol -> GE
+Min-Tick:0.01
+ConID:184656501
+Query 4. GE Option -----------------------------------------------------------
+  Result:    (local symbol / Nr of Contracts)
+TWS-resonse: Symbol -> GE
+Min-Tick:0.01
+ConID:184656569
+Query 4. GE Option -----------------------------------------------------------
+Threaded Enviroment closed.
+  Here are the results
+1. Apple via Stock <Stock: AAPL USD>
+<Contract: {"symbol"=>"AAPL", "created_at"=>2015-03-27 20:58:50 +0100, "updated_at"=>2015-03-27 20:58:50 +0100, "right"=>"", "include_expired"=>false, "sec_type"=>"STK", "currency"=>"USD", "exchange"=>"SMART", "expiry"=>"", "strike"=>0.0, "local_symbol"=>"AAPL", "con_id"=>265598, "multiplier"=>0, "primary_exchange"=>"NASDAQ"} >
+ ... 
+   2. Molson Coors <Stock: TAP USD>
+ <Contract: {"symbol"=>"TAP", "currency"=>"USD", "created_at"=>2015-03-27 20:58:50 +0100, "updated_at"=>2015-03-27 20:58:50 +0100, "right"=>"", "include_expired"=>false, "sec_type"=>"STK", "exchange"=>"SMART", "expiry"=>"", "strike"=>0.0, "local_symbol"=>"TAP", "con_id"=>33191300, "multiplier"=>0, "primary_exchange"=>"NYSE"} >
+  ... 
+    3. TAP-Oil <Stock: TAP AUD>
+  <Contract: {"symbol"=>"TAP", "currency"=>"AUD", "created_at"=>2015-03-27 20:58:50 +0100, "updated_at"=>2015-03-27 20:58:50 +0100, "right"=>"", "include_expired"=>false, "sec_type"=>"STK", "exchange"=>"SMART", "expiry"=>"", "strike"=>0.0, "local_symbol"=>"TAP", "con_id"=>13349717, "multiplier"=>0, "primary_exchange"=>"ASX"} >
+   ... 
+     4. GE Option <Option: GE 20151218 put 25.0 GEMINI USD>
+   <Contract: {"symbol"=>"GE", "strike"=>25.0, "expiry"=>"20151218", "created_at"=>2015-03-27 20:58:50 +0100, "updated_at"=>2015-03-27 20:58:50 +0100, "right"=>"P", "include_expired"=>false, "sec_type"=>"OPT", "exchange"=>"GEMINI", "currency"=>"USD", "local_symbol"=>"GE    151218P00025000", "con_id"=>184656569, "multiplier"=>100, "primary_exchange"=>""} >
+    ... 
+      5. S&P Future <Future: ES 20151218 USD>
+    <Contract: {"symbol"=>"ES", "expiry"=>"20151218", "exchange"=>"GLOBEX", "created_at"=>2015-03-27 20:58:50 +0100, "updated_at"=>2015-03-27 20:58:50 +0100, "right"=>"", "include_expired"=>false, "sec_type"=>"FUT", "currency"=>"USD", "strike"=>0.0, "local_symbol"=>"ESZ5", "con_id"=>167205842, "multiplier"=>50, "primary_exchange"=>""} >
+     ... 
+       6. NOK/SEK <Contract: NOK forex IDEALPRO SEK>
+     <Contract: {"symbol"=>"NOK", "currency"=>"SEK", "created_at"=>2015-03-27 20:58:50 +0100, "updated_at"=>2015-03-27 20:58:50 +0100, "right"=>"", "include_expired"=>false, "sec_type"=>"CASH", "exchange"=>"IDEALPRO", "expiry"=>"", "strike"=>0.0, "local_symbol"=>"NOK.SEK", "con_id"=>28027113, "multiplier"=>0, "primary_exchange"=>""} >
+      ... 
+	7.GE-Option - with multible contracts <Option: GE 20151218 put 25.0 GEMINI USD>
+      <Contract: {"symbol"=>"GE", "strike"=>25.0, "expiry"=>"20151218", "created_at"=>2015-03-27 20:58:50 +0100, "updated_at"=>2015-03-27 20:58:50 +0100, "right"=>"P", "include_expired"=>false, "sec_type"=>"OPT", "exchange"=>"GEMINI", "currency"=>"USD", "local_symbol"=>"GE    151218P00025000", "con_id"=>184656569, "multiplier"=>100, "primary_exchange"=>""} >
+

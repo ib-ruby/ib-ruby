@@ -3,15 +3,21 @@ require 'integration_helper'
 describe 'Request Historic Data', :connected => true, :integration => true do
 
   CORRECT_OPTS = {:id => 567,
-                  :contract => IB::Symbols::Stocks[:wfc],
+                  :contract =>  IB::Stock.new( symbol: 'T').query_contract,
                   :end_date_time => Time.now.to_ib,
                   :duration => '5 D',
                   :bar_size => '15 mins',
                   :data_type => :trades,
                   :format_date => 1}
   before(:all) do
-    verify_account
-    @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
+    # use a tws where the appropiate permissions exist
+    gw = IB::Gateway.current.presence || IB::Gateway.new( OPTS[:connection].merge(logger: mock_logger, client_id:1056, connect:true, serial_array: true, host: 'beta'))
+    gw.connect if !gw.tws.connected?
+    @ib=gw.tws
+    #verify_account
+    ## use Connection from verify-Account
+#    @ib = IB::Connection.new OPTS[:connection].merge( host: '172.28.50.135')
+      @ib.subscribe(:Alert) { |msg| puts msg.to_human }
   end
 
   after(:all) do
@@ -42,28 +48,28 @@ describe 'Request Historic Data', :connected => true, :integration => true do
 
     subject { @ib.received[:HistoricalData].last }
 
-    it { @ib.received[:HistoricalData].should have_at_least(1).historic_data }
+    it { expect( @ib.received[:HistoricalData]).to have_at_least(1).historic_data }
 
     it { should be_an IB::Messages::Incoming::HistoricalData }
-    its(:request_id) { should == 567 }
-    its(:count) { should be_an Integer }
-    its(:start_date) { should =~ /\d{8} *\d\d:\d\d:\d\d/ } # "20120302  22:46:42"
-    its(:end_date) { should =~ /\d{8} *\d\d:\d\d:\d\d/ }
-    its(:to_human) { should =~ /HistoricalData/ }
+    its(:request_id) { is_expected.to eq 567 }
+    its(:count) { is_expected.to be_an Integer }
+    its(:start_date) { is_expected.to match /\d{8} *\d\d:\d\d:\d\d/ } # "20120302  22:46:42"
+    its(:end_date) { is_expected.to match /\d{8} *\d\d:\d\d:\d\d/ }
+    its(:to_human) { is_expected.to match /HistoricalData/ }
 
     it 'has results Array with returned historic data' do
-      subject.results.should be_an Array
-      subject.results.size.should == subject.count
+      expect( subject.results).to be_an Array
+      expect( subject.results.size).to eq subject.count
       subject.results.each do |bar|
-        bar.should be_an IB::Bar
-        bar.time.should =~ /\d{8} *\d\d:\d\d:\d\d/
-        bar.open.should be_a Float
-        bar.high.should be_a Float
-        bar.low.should be_a Float
-        bar.close.should be_a Float
-        bar.wap.should be_a Float
-        bar.trades.should be_an Integer
-        bar.volume.should be_an Integer
+        expect( bar).to be_an IB::Bar
+        expect( bar.time).to match /\d{8} *\d\d:\d\d:\d\d/
+        expect( bar.open).to be_a Float
+        expect( bar.high).to be_a Float
+        expect( bar.low).to  be_a Float
+        expect( bar.close).to be_a Float
+        expect( bar.wap).to be_a Float
+        expect( bar.trades).to be_an Integer
+        expect( bar.volume).to be_an Integer
       end
     end
   end

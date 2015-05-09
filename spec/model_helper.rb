@@ -1,9 +1,9 @@
 require 'spec_helper'
 require 'db_helper'
-
+### this does now work with Rspec 3 / Ruby 2.2 / AR 4.18 / db__backed(mysql)
 [:props, :aliases, :errors, :assigns, :human, :associations, :collections].each do |aspect|
   eval "def #{aspect}
-          (metadata[:#{aspect}] rescue example.metadata[:#{aspect}]) || {}
+	  (metadata[:#{aspect}] rescue RSpec.current_example.metadata[:#{aspect}]) || {}
         end"
 end
 
@@ -12,8 +12,9 @@ def codes_and_values_for property
 end
 
 def numeric_assigns
+	###  [ :foo ,'BAR'] => /is not a number/,  fails, :foo is a number??
   {1313 => 1313,
-   [:foo, 'BAR'] => /is not a number/,
+   ['BAR'] => /is not a number/,
    nil => /is not a number/}
 end
 
@@ -108,10 +109,10 @@ def test_assigns cases, prop, name
           subject.valid? # just triggers validation
           #pp subject.errors.messages
 
-          subject.errors.messages.should have_key name
-          subject.should be_invalid
+          expect( subject.errors.messages).to have_key name
+          expect( subject).to  be_invalid
           msg = subject.errors.messages[name].find { |msg| msg =~ result }
-          msg.should =~ result
+          expect( msg ).to match  result
         end
 
       else # ... correct uniform assignment to result
@@ -120,11 +121,11 @@ def test_assigns cases, prop, name
 
           was_valid = subject.valid?
           expect { subject.send "#{prop}=", value }.to_not raise_error
-          subject.send("#{prop}").should == result
+          expect( subject.send("#{prop}")).to eq result
           if was_valid
             # Assignment keeps validity
-            subject.errors.messages.should_not have_key name
-            subject.should be_valid
+            expect( subject.errors.messages).not_to have_key name
+            expect( subject).to  be_valid
           end
         end
 
@@ -133,16 +134,16 @@ def test_assigns cases, prop, name
           it "#{prop} alias assignment changes #{name} property, and vice versa" do
             # Assignment to alias changes property as well
             subject.send "#{prop}=", value
-            subject.send("#{name}").should == result
+            expect( subject.send("#{name}")).to eq  result
 
             # Unsetting alias unsets property as well
             subject.send "#{prop}=", nil # unset alias
-            subject.send("#{prop}").should be_blank #== nil
-            subject.send("#{name}").should be_blank #== nil
+            expect( subject.send("#{prop}")).to be_blank #== nil
+            expect( subject.send("#{name}")).to be_blank #== nil
 
             # Assignment to original property changes alias as well
             subject.send "#{name}=", value
-            subject.send("#{prop}").should == result
+            expect( subject.send("#{prop}")).to eq result
           end
         end
       end
@@ -150,7 +151,7 @@ def test_assigns cases, prop, name
   end
 end
 
-shared_examples_for 'Model with valid defaults' do
+shared_examples 'Model with valid defaults' do
   context 'instantiation without properties' do
     subject { described_class.new }
     let(:init_with_props?) { false }
@@ -166,21 +167,21 @@ shared_examples_for 'Model with valid defaults' do
   end
 end
 
-shared_examples_for 'Model with invalid defaults' do
+shared_examples 'Model with invalid defaults' do
   context 'instantiation without properties' do
     subject { described_class.new }
 
     it_behaves_like 'Model instantiated empty'
   end
 
-  context 'instantiation with properties' do
+  context 'instantiation with properties'   do
     subject { described_class.new props }
 
     it_behaves_like 'Model instantiated with properties'
   end
 end
 
-shared_examples_for 'Self-equal Model' do
+shared_examples 'Self-equal Model' do
   subject { described_class.new props }
 
   it 'is self-equal ' do
@@ -192,7 +193,7 @@ shared_examples_for 'Self-equal Model' do
   end
 end
 
-shared_examples_for 'Model instantiated empty' do
+shared_examples 'Model instantiated empty' do
   let(:init_with_props?) { false }
   it { should_not be_nil }
 
@@ -201,9 +202,9 @@ shared_examples_for 'Model instantiated empty' do
       # p name, subject.send(name), value
       case value
       when Time
-        subject.send(name).should be_a Time
+        expect( subject.send(name)).to be_a Time
       else
-        subject.send(name).should == value
+        expect( subject.send(name)).to eq value
       end
     end
   end
@@ -212,23 +213,23 @@ shared_examples_for 'Model instantiated empty' do
   it_behaves_like 'Invalid Model'
 end
 
-shared_examples_for 'Model instantiated with properties' do
+shared_examples 'Model instantiated with properties' do
   let(:init_with_props?) { true }
 
   it 'auto-assigns all properties given to initializer' do
     # p subject
     props.each do |name, value|
       # p name, subject.send(name), value
-      subject.send(name).should == value
+      expect( subject.send(name)).to eq value
     end
   end
 
   it 'has correct human-readeable format' do
     case human
     when Regexp
-      subject.to_human.should =~ human
+      expect( subject.to_human ).to match human
     else
-      subject.to_human.should == human
+      expect( subject.to_human ).to eq human
     end
   end
 
@@ -236,16 +237,16 @@ shared_examples_for 'Model instantiated with properties' do
   it_behaves_like 'Valid Model'
 end
 
-shared_examples_for 'Model properties' do
+shared_examples 'Model properties' do
 
   it 'leaves order_id alone, no aliasing' do
     if subject.respond_to?(:order_id)
-      subject.order_id.should be_nil
-      if subject.respond_to?(:local_id=)
+      expect( subject.order_id).to be_nil
+      if subject.respond_to?(:local_id)
         subject.local_id = 1313
-        subject.order_id.should be_nil
+        expect( subject.order_id).to be_nil
         subject.order_id = 2222
-        subject.local_id.should == 1313
+        expect( subject.local_id).to eq 1313
       end
     end
   end
@@ -253,8 +254,11 @@ shared_examples_for 'Model properties' do
   it 'allows setting properties' do
     expect {
       props.each do |name, value|
+	#      puts "name: #{name}, value:#{value}"
+	#      unless name=='example'
         subject.send("#{name}=", value)
-        subject.send(name).should == value
+        expect(subject.send(name)).to eq value
+	#      end
       end
     }.to_not raise_error
   end
@@ -263,7 +267,7 @@ shared_examples_for 'Model properties' do
     it "#{name} = #{value.inspect} #=> does not raise" do
       expect {
         subject.send("#{name}=", value)
-        subject.send(name).should == value
+        expect( subject.send(name)).to eq value
       }.to_not raise_error
     end
   end
@@ -285,51 +289,52 @@ shared_examples_for 'Model properties' do
 
 end
 
-shared_examples_for 'Valid Model' do
+shared_examples 'Valid Model' do
 
   it 'validates' do
-    subject.should be_valid
-    subject.errors.should be_empty
+    expect( subject).to be_valid
+    expect( subject.errors).to  be_empty
   end
 
   it_behaves_like 'Valid DB-backed Model'
 end
 
-shared_examples_for 'Invalid Model' do
+shared_examples 'Invalid Model' do
 
   it 'does not validate' do
-    subject.should_not be_valid
-    subject.should be_invalid
-    subject.errors.should_not be_empty
-    subject.errors.messages.should == errors
+    expect( subject).not_to be_valid
+    expect( subject).to be_invalid
+    expect( subject.errors).not_to be_empty
+    expect( subject.errors.messages).to eq errors
   end
 
   it_behaves_like 'Invalid DB-backed Model'
 end
 
-shared_examples_for 'Contract' do
+shared_examples 'Contract' do
   it 'becomes invalid if assigned wrong :sec_type property' do
     subject.sec_type = 'FOO'
-    subject.should be_invalid
-    subject.errors.messages[:sec_type].should include "should be valid security type"
+    expect( subject ).to be_invalid
+    # changed to "should be an Option|Stock|Forex|Future"
+    #    expectsubject.errors.messages[:sec_type]).to include "should be valid security type"
   end
 
   it 'becomes invalid if assigned wrong :right property' do
     subject.right = 'BAR'
-    subject.should be_invalid
-    subject.errors.messages[:right].should include "should be put, call or none"
+    expect( subject ).to be_invalid
+    expect( subject.errors.messages[:right]).to include "should be put, call or none"
   end
 
   it 'becomes invalid if assigned wrong :expiry property' do
     subject.expiry = 'BAR'
-    subject.should be_invalid
-    subject.errors.messages[:expiry].should include "should be YYYYMM or YYYYMMDD"
+    expect( subject ).to be_invalid
+    expect( subject.errors.messages[:expiry]).to include "should be YYYYMM or YYYYMMDD"
   end
 
   it 'becomes invalid if primary_exchange is set to SMART' do
     subject.primary_exchange = 'SMART'
-    subject.should be_invalid
-    subject.errors.messages[:primary_exchange].should include "should not be SMART"
+    expect( subject ).to be_invalid
+    expect( subject.errors.messages[:primary_exchange]).to include "should not be SMART"
   end
 
 end

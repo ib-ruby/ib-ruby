@@ -17,13 +17,13 @@ module IB
 
       ### Define short message classes in-line:
 
-      AccountValue = def_message([6, 2], [:key, :string],
-                                 [:value, :string],
-                                 [:currency, :string],
-                                 [:account_name, :string]) do
-        "<AccountValue: #{account_name}, #{key}=#{value} #{currency}>"
-      end
-
+#      AccountValue = def_message([6, 2], [:key, :string],
+#                                 [:value, :string],
+#                                 [:currency, :string],
+#                                 [:account_name, :string]) do
+#        "<AccountValue: #{account_name}, #{key}=#{value} #{currency}>"
+#      end
+#
       AccountUpdateTime = def_message 8, [:time_stamp, :string]
 
       NewsBulletins =
@@ -85,6 +85,7 @@ module IB
       require 'ib/messages/incoming/next_valid_id'
       require 'ib/messages/incoming/open_order'
       require 'ib/messages/incoming/order_status'
+      require 'ib/messages/incoming/account_value'
       require 'ib/messages/incoming/portfolio_value'
       require 'ib/messages/incoming/real_time_bar'
       require 'ib/messages/incoming/scanner_data'

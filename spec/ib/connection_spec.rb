@@ -1,12 +1,28 @@
+### needs cleaning ####
 require 'message_helper'
 require 'account_helper'
+require 'connection_helper'
 
-shared_examples_for 'Connected Connection' do
+describe IB::Connection do
+ 
+  # Expose protected methods as public methods.
+  before(:each){ IB::Connection.send(:public, *IB::Connection.protected_instance_methods)  }
 
-  subject { @ib }
+  before(:all){ verify_account }
+  after(:all){ IB::Gateway.current.disconnect } 
 
-  it_behaves_like 'Connected Connection without receiver'
+###<<<<<<< HEAD  -- to be checked
+  context 'instantiated and connected' , focus: true do
+    subject {IB::Gateway.tws }
+    it_behaves_like 'Connected Connection without receiver' 
+  end
 
+  context 'connected and operable' , focus:true do
+    before(:all) { IB::Gateway.tws.wait_for :NextValidId, 2 }
+    subject {IB::Gateway.tws }
+    it_behaves_like 'Connected Connection' 
+  end
+###=======
   it 'keeps received messages in Hash by default' do
     expect(subject.received).to be_a Hash
   end
@@ -40,40 +56,51 @@ def create_connection opts={}
 
   @subscriber = proc { |msg| @received[msg.message_type] << msg }
 end
+###>>>>>>> upstream/gateway
 
-describe IB::Connection do
 
-  context 'instantiated with default options', :connected => true do
-    before(:all) do
-      create_connection
-      @ib.wait_for :NextValidId
+  describe '#send_message', 'sending messages' , focus:true  do
+    it 'allows 3 signatures representing IB::Messages::Outgoing'  do
+      expect { IB::Gateway.current.send_message :RequestOpenOrders }.to_not raise_error
+      expect { IB::Gateway.current.send_message IB::Messages::Outgoing::RequestOpenOrders }.to_not raise_error
+      expect { IB::Gateway.current.send_message IB::Messages::Outgoing::RequestOpenOrders.new }.to_not raise_error
     end
 
-    after(:all) { close_connection }
-
-    it_behaves_like 'Connected Connection'
-
-    describe '#send_message', 'sending messages' do
-      it 'allows 3 signatures representing IB::Messages::Outgoing' do
-        expect { @ib.send_message :RequestOpenOrders }.to_not raise_error
-
-        expect { @ib.send_message IB::Messages::Outgoing::RequestOpenOrders
-        }.to_not raise_error
-
-        expect { @ib.send_message IB::Messages::Outgoing::RequestOpenOrders.new
-        }.to_not raise_error
-      end
-
-      it 'has legacy #dispatch alias' do
-        expect { @ib.dispatch :RequestOpenOrders }.to_not raise_error
-      end
+    it 'has legacy #dispatch alias'do
+      expect { IB::Gateway.tws.dispatch :RequestOpenOrders }.to_not raise_error
     end
+  end
 
-    context "subscriptions" do
-      before(:all) do
-        @id = {} # Moving id between contexts. Feels dirty.
+  let( :subscriber ) { Proc.new {} }
+  let( :subscriber_id ) do
+    ib = IB::Gateway.tws
+    {  first: ib.subscribe(IB::Messages::Incoming::OrderStatus) do |msg|
+      log msg.to_human
+    end ,
+    second: ib.subscribe( /Value/, :OpenOrder, subscriber),
+    third:  ib.subscribe( /Account/, &subscriber) 
+    }
+  end
+  context "subscriptions" do
+    describe '#subscribe', focus:true  do
+
+      it 'adds (multiple) subscribers, returning subscription id' do
+	ib = IB::Gateway.tws
+	[[ subscriber_id[:first], IB::Messages::Incoming::OrderStatus ],
+  [ subscriber_id[ :second], IB::Messages::Incoming::OpenOrder  ],
+  [ subscriber_id[ :second], IB::Messages::Incoming::PortfolioValue ],
+  [ subscriber_id[ :second], IB::Messages::Incoming::AccountValue ], # as /Value/
+  [ subscriber_id[ :third ], IB::Messages::Incoming::AccountValue ], #  as /Account/
+  [ subscriber_id[ :third ], IB::Messages::Incoming::AccountDownloadEnd ],
+  [ subscriber_id[ :third ], IB::Messages::Incoming::AccountUpdateTime ],
+	].each do |(subscriber_id, message_class)|
+	  expect( ib.subscribers).to have_key(message_class)
+	  expect( ib.subscribers[message_class]).to have_key(subscriber_id)
+	end
       end
 
+##<<<<<<< HEAD
+##=======
       describe '#subscribe' do
         after(:all) { clean_connection }
 
@@ -156,16 +183,52 @@ describe IB::Connection do
           expect { @ib.unsubscribe rand(9999999) }.to raise_error /No subscribers with id/
         end
       end
+###>>>>>>> upstream/gateway
 
-      context 'when unsubscribed' do
+	## subscriber_id's	
+	it{ subscriber_id.values.each{ |v| expect(v).to be_an Integer }}
 
-        before(:all) do
-          @ib.send_message :RequestAccountData
-          @ib.wait_for { !@received[:AccountDownloadEnd].empty? }
-        end
+	it "unsubscribe from Message-Classes" do
+	  IB::Gateway.tws.subscribers.keys.each do |message|
+	    imio = IB::Gateway.tws.subscribers[message]
+	    unless imio.empty?
+	    expect( imio ).to have_at_least(1).items
+	    imio.keys.each do |y|
+	      IB::Gateway.tws.unsubscribe y
+	    end
+	    expect( imio ).to be_empty
+	    end
+	  end
+	end
+    end # describe
+    context 'when subscribed' , focus:true do
 
-        after(:all) { @ib.send_message :RequestAccountData, :subscribe => false }
+      before(:all) do
+	## if the advisor-account is used here, the test fails because PortfolioValueData are missing
+	IB::Gateway.current.send_message :RequestAccountData,  :account_code => OPTS[:connection][:user]
+	IB::Gateway.tws.wait_for :AccountDownloadEnd, 3
+      end
 
+      after(:all) { IB::Gateway.current.send_message :RequestAccountData, :subscribe => false }
+
+###<<<<<<< HEAD
+      it 'receives subscribed message types and processes them in subscriber callback' do
+	[:AccountValue, :PortfolioValue, :AccountDownloadEnd, :AccountUpdateTime].each do |x|
+	  expect( IB::Gateway.tws.received[ x ] ).not_to be_empty
+	end
+      end
+
+      it_behaves_like 'Valid account data request'
+    end  # context 'when subscribed'
+  end # describe #subscribe 
+	#
+  describe '#unsubscribe' do
+
+    let( :messages ){[IB::Messages::Incoming::OrderStatus,
+		      IB::Messages::Incoming::OpenOrder,
+		      IB::Messages::Incoming::PortfolioValue,
+		      IB::Messages::Incoming::AccountValue ]  }
+###=======
         it 'receives subscribed message types still subscribed' do
           expect(@received[:AccountValue]).not_to be_empty
           expect(@received[:AccountUpdateTime]).not_to be_empty
@@ -181,67 +244,47 @@ describe IB::Connection do
         it { log_entries.any? { |entry| expect(entry).not_to match(/No subscribers for message .*:AccountValue/) }}
       end # when subscribed
     end # subscriptions
+###>>>>>>> upstream/gateway
 
-    describe '#connect' do
-      it 'raises on another connection attempt' do
-        expect { @ib.connect }.to raise_error /Already connected/
+    it 'returns empty array if nonsence is provided', focus:true do
+      expect( IB::Gateway.current.unsubscribe 'nonsense' ).to be_empty
+      expect( IB::Gateway.current.unsubscribe rand(9999999)).to be_empty
+    end
+    it 'removes all subscribers at given id or ids'  do
+      messages.each do |message_class|
+	  puts "Message_class"
+	  puts message_class.inspect
+  	 puts IB::Gateway.tws.subscribers[message_class].inspect
+	[:first,:second].each do |key|
+	  expect(IB::Gateway.tws.subscribers[message_class]).not_to have_key( subscriber_id[ key ] )
+	end
       end
     end
-  end # connected
 
-  context 'instantiated passing :connect => false' do
-    before(:all) { create_connection :connect => false,
-                                     :reader => false }
-    subject { @ib }
 
-    it { should_not be_nil }
-    it { should_not be_connected }
-    its(:reader) { should be_nil }
-    its(:server_version) { should be_nil }
-    its(:client_version) { should be_nil }
-    its(:received) { should be_empty }
-    its(:subscribers) { should be_empty }
-    its(:next_local_id) { should be_nil }
 
-    describe 'connecting idle conection' do
-      before(:all) do
-        @ib.connect
-        @ib.start_reader
-        @ib.wait_for :NextValidId
-      end
-      after(:all) { close_connection }
+  end
 
-      it_behaves_like 'Connected Connection'
-    end
-
-  end # not connected
-
-  context 'instantiated passing :received => false' do
-    before(:all) { create_connection :connect => false,
-                                     :reader => false,
-                                     :received => false }
-    subject { @ib }
-
-    it { should_not be_nil }
-    it { should_not be_connected }
-    its(:reader) { should be_nil }
-    its(:server_version) { should be_nil }
-    its(:client_version) { should be_nil }
-    its(:received) { should be_empty }
-    its(:subscribers) { should be_empty }
-    its(:next_local_id) { should be_nil }
-
-    describe 'connecting idle conection' do
-      before(:all) do
-        @ib.connect
-        @ib.start_reader
-        @ib.wait_for 1 # ib.received not supposed to work!
-      end
-      after(:all) { close_connection }
-
-      it_behaves_like 'Connected Connection without receiver'
-    end
-
-  end # not connected
-
+#	context 'when unsubscribed' do
+#
+#	  before(:all) do
+#	    @ib.send_message :RequestAccountData
+#	    @ib.wait_for { !@ib.received[:AccountDownloadEnd].empty? }
+#	  end
+#
+#	  after(:all) { @ib.send_message :RequestAccountData, :subscribe => false }
+#
+#	  it 'receives subscribed message types still subscribed' do
+#	    [:AccountValue,	:AccountUpdateTime, :AccountDownloadEnd].each do  |sy|
+#	      expect( @ib.received[sy]).not_to be_empty
+#	    end
+#	  end
+#
+#	  #        it 'does not receive unsubscribed message types' do
+#	  #         @ib.received[:PortfolioValue].should be_empty
+#	  #       end
+#
+#	  it { should_log /No subscribers for message .*:PortfolioValue/ }
+#	  it { should_not_log /No subscribers for message .*:AccountValue/ }
+#	end # when subscribed
 end # describe IB::Connection

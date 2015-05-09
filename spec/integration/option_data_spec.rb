@@ -1,14 +1,17 @@
 require 'integration_helper'
 
-describe 'Request Market Data for Options', :if => :us_trading_hours,
+describe 'Request Market Data for Options', #:if => :us_trading_hours,
          :connected => true, :integration => true do
 
   before(:all) do
-    verify_account
-    @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
+    gw = IB::Gateway.current.presence || IB::Gateway.new( OPTS[:connection].merge(logger: mock_logger, client_id:1056, connect:true, serial_array: true, host:'beta'))
+    gw.connect if !gw.tws.connected?
+    gw.get_account_data 
+    @ib=gw.tws
 
     @ib.send_message :RequestMarketData, :id => 456,
-                     :contract => IB::Symbols::Options[:aapl500]
+                     :contract => IB::Option.new( symbol:'DPW', exchange:'DTB', expiry:'201506', 
+						  strike: 30, right: :put, currency:'EUR' )
     @ib.wait_for :TickPrice, :TickSize, :TickString, :TickOption, 5 # sec
   end
 

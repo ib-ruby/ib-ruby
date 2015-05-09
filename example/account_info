@@ -8,26 +8,26 @@ require 'bundler/setup'
 $LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
 
-# Set log level
-log.level = Logger::FATAL
+# Start the Gateway and initialize the active-accounts
+IB::Gateway.new get_account_data:true
 
-# Connect to IB TWS
-ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS
+accounts = IB::Gateway.current.active_accounts
+puts ""
+accounts.each do |account|
+  puts "Contracts ------------------> #{account.account } <----------------------"
+  puts account.contracts.map( &:to_human ).join( "\n" )
+  puts "-----------------"
 
-# Only for Advisor accounts: you need to provide account_code such as U666777
-account_code = ARGV[0] || ''
+end
+accounts.each do |account|
+  puts "Portfolio_values ------------> #{account.account } <----------------------"
+  puts account.portfolio_values.map &:to_human
+  puts "-----------------"
+end
 
-# Subscribe to TWS alerts/errors and account-related messages
-# that TWS sends in response to account data request
-ib.subscribe(:Alert, :AccountValue,
-             :PortfolioValue, :AccountUpdateTime) { |msg| puts msg.to_human }
+accounts.each do |account|
+  puts "Account_values ------------> #{account.account } <----------------------"
+  puts account.account_values.map{|x| x.to_human if x.value.present? && !x.value.to_i.zero? }.compact  
+  puts "-----------------"
 
-ib.send_message :RequestAccountData, :subscribe => true, :account_code => account_code
-
-puts "\nSubscribing to IB account data"
-puts "\n******** Press <Enter> to cancel... *********\n\n"
-STDIN.gets
-puts "Cancelling account data subscription.."
-
-ib.send_message :RequestAccountData, :subscribe => false
-sleep 2
+end

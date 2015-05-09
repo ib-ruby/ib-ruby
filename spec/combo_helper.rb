@@ -1,6 +1,12 @@
 require 'integration_helper'
 
-# Define butterfly
+
+
+
+
+
+
+# Define butterfly ## ancient method
 def butterfly symbol, expiry, right, *strikes
   raise 'Unable to create butterfly, no connection' unless @ib && @ib.connected?
 

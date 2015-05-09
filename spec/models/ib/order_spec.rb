@@ -1,8 +1,11 @@
 require 'model_helper'
+require 'message_helper'
 
+## :props has to be a HashWithIndifferentAccess.
+#Otherwise the seralization (IB::Order.new(props.merge(serializable_props))) fails
 describe IB::Order,
-  :props =>
-  {:local_id => 23,
+  :props => HashWithIndifferentAccess.new(
+  :local_id => 23,
    :order_ref => 'Test',
    :client_id => 1111,
    :perm_id => 173276893,
@@ -22,10 +25,10 @@ describe IB::Order,
    :transmit => false,
    :outside_rth => true,
    :what_if => true,
-   :not_held => true},
+   :not_held => true),
 
   # TODO: :presents => { Object => "Formatted"}
-  :human => "<Order: Test MIT GTC buy 100 0.1 New #23/173276893 from 1111>",
+  :human => "<Order: Test MIT GTC buy 100 @ 0.1 New #23/173276893 from 1111>",
 
   :errors => {:side =>["should be buy/sell/short"]},
 
@@ -86,56 +89,57 @@ describe IB::Order,
   it_behaves_like 'Self-equal Model'
   it_behaves_like 'Model with invalid defaults'
 
+  if OPTS[:db]
   context 'Order associations' do
     after(:all) { DatabaseCleaner.clean if IB.db_backed? }
 
     subject { IB::Order.new props }
 
     it 'has order_states collection' do
-      subject.order_states.should_not be_nil
-      subject.order_states.should be_an Array # lies, it's more like association proxy
+      expect( subject.order_states ).not_to be_nil
+      expect( subject.order_states ).to be_an ActiveRecord::Associations::CollectionProxy
     end
 
     it 'has at least one (initial, New) OrderState' do
-      subject.order_states.should have_exactly(1).state
+      expect( subject.order_states).to have_exactly(1).state
       last_state = subject.order_states.last
-      last_state.should be_an IB::OrderState
-      last_state.status.should == 'New'
+      expect( last_state).to be_an IB::OrderState
+      expect( last_state.status ).to eq 'New'
       subject.save
-      last_state.order.should == subject if IB.db_backed?
+      expect( last_state.order).to eq subject if IB.db_backed?
     end
 
     it 'has abbreviated accessor to last (current) OrderState' do
-      subject.order_state.should == subject.order_states.last
+      expect( subject.order_state ).to eq subject.order_states.last
     end
 
     it 'has extra accessors to OrderState properties' do
-      subject.order_state.should_not be_nil
+      expect( subject.order_state ).not_to be_nil
 
-      subject.status.should == 'New'
-      subject.commission.should be_nil
-      subject.commission_currency.should be_nil
-      subject.min_commission.should be_nil
-      subject.max_commission.should be_nil
-      subject.warning_text.should be_nil
-      subject.init_margin.should be_nil
-      subject.maint_margin.should be_nil
-      subject.equity_with_loan.should be_nil
+      expect( subject.status ).to eq 'New'
+      expect( subject.commission ).to be_nil
+      expect( subject.commission_currency ).to be_nil
+       expect( subject.min_commission ).to be_nil
+       expect( subject.max_commission ).to be_nil
+       expect( subject.warning_text ).to be_nil
+       expect( subject.init_margin ).to be_nil
+       expect( subject.maint_margin ).to be_nil
+       expect( subject.equity_with_loan ).to be_nil
       # Properties arriving via OrderStatus message
-      subject.filled.should == 0
-      subject.remaining.should == 0
-      subject.price.should == 0
-      subject.last_fill_price.should == 0
-      subject.average_price.should == 0
-      subject.average_fill_price.should == 0
-      subject.why_held.should be_nil
+       expect( subject.filled ).to eq 0
+       expect( subject.remaining ).to eq 0 
+       expect( subject.price ).to eq 0 
+       expect( subject.last_fill_price ).to eq 0 
+       expect( subject.average_price ).to eq 0 
+       expect( subject.average_fill_price ).to eq 0
+       expect( subject.why_held ).to be_nil
       # Testing Order state
-      subject.should be_new
-      subject.should_not be_submitted
-      subject.should_not be_pending
-      subject.should be_active
-      subject.should_not be_inactive
-      subject.should_not be_complete_fill
+       expect( subject ).to be_new
+       expect( subject ).not_to be_submitted
+       expect( subject ).not_to be_pending
+       expect( subject ).to be_active
+       expect( subject ).not_to be_inactive
+       expect( subject ).not_to be_complete_fill
     end
 
     context 'update Order state by ' do
@@ -144,21 +148,21 @@ describe IB::Order,
         subject.order_states << IB::OrderState.new(:status => :Foo)
         subject.order_states.push IB::OrderState.new :status => :Bar
 
-        subject.status.should == 'Bar'
+        expect( subject.status).to eq 'Bar'
         subject.save
-        subject.order_states.should have_exactly(3).states
-        subject.order_states.first.order.should == subject if IB.db_backed?
+        expect( subject.order_states ).to have_exactly(3).states
+        expect( subject.order_states.first.order ).to eq subject if IB.db_backed?
       end
 
       it 'or simply assigning to order_state accessor' do
         subject.order_state = :Foo
         subject.order_state = IB::OrderState.new :status => :Bar
 
-        subject.status.should == 'Bar'
-        subject.order_states.should have_exactly(3).states
+        expect( subject.status).to eq 'Bar'
+        expect( subject.order_states ).to have_exactly(3).states
       end
     end
-
+  end
   end
 
   context 'equality' do
@@ -174,8 +178,7 @@ describe IB::Order,
       order2 = IB::Order.new :total_quantity => 100,
         :limit_price => 2,
         :action => 'BUY'
-      order1.should_not == order2
-      order2.should_not == order1
+      expect( order1 ).not_to eq order2
     end
 
     it 'is not equal for Orders with different total_quantity' do
@@ -186,8 +189,7 @@ describe IB::Order,
       order2 = IB::Order.new :total_quantity => 100,
         :action => 'BUY',
         :limit_price => 1
-      order1.should_not == order2
-      order2.should_not == order1
+      expect( order1 ).not_to eq order2
     end
 
     it 'is not equal for Orders with different action/side' do
@@ -198,8 +200,7 @@ describe IB::Order,
       order2 = IB::Order.new :quantity => 100,
         :action => 'BUY',
         :limit_price => 1
-      order1.should_not == order2
-      order2.should_not == order1
+      expect( order1 ).not_to eq order2
     end
 
     it 'is not equal for Orders with different order_type' do
@@ -212,8 +213,7 @@ describe IB::Order,
         :action => 'BUY',
         :limit_price => 1,
         :order_type => 'MKT'
-      order1.should_not == order2
-      order2.should_not == order1
+      expect( order1 ).not_to eq order2
     end
   end
 
@@ -232,24 +232,25 @@ describe IB::Order,
         :leg_prices => [1,2,3],
       }
     end
-
-    subject { IB::Order.new(props.merge(serializable_props)) }
+## this approach is only straightforward, if the tests are executed sequentielly
+    let( :serializable_order) { IB::Order.new(props.merge(serializable_props)) }
 
     after(:all) { DatabaseCleaner.clean if IB::DB }
 
     it 'is saved to DB with serializable_props' do
-      subject.save.should be_true
+      expect( serializable_order.save ).to be_truthy
     end
 
     it 'is loaded from DB with serializable_props' do
-      models = described_class.find(:all)
-      models.should have_exactly(1).model
+#	    serializable_order.save
+      models = described_class.all
+      expect( models).to  have_exactly(1).model
       order = models.first
-      order.algo_strategy.should == serializable_props[:algo_strategy]
-      order.algo_params.should == serializable_props[:algo_params]
-      order.combo_params.should == serializable_props[:combo_params]
-      order.leg_prices.should == serializable_props[:leg_prices]
-      p order.combo_params
+      expect( order.algo_strategy).to eq serializable_props[:algo_strategy]
+      expect( order.algo_params).to eq serializable_props[:algo_params]
+      expect( order.combo_params ).to eq serializable_props[:combo_params]
+      expect( order.leg_prices ).to eq serializable_props[:leg_prices]
+      #p order.combo_params
     end
   end # DB
 

@@ -10,18 +10,23 @@ $LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
 
 # First, connect to IB TWS.
-ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS
+IB::Gateway.new  :port => 7496, :connect=> true , :client_id => 998 # TWS
 
-# Subscribe to TWS alerts/errors and order-related messages
-ib.subscribe(:Alert, :OpenOrder, :OrderStatus, :OpenOrderEnd) { |msg| puts msg.to_human }
+if ( ib = IB::Gateway.current).present?
+  # Subscribe to TWS alerts/errors and order-related messages
+  ib.tws.subscribe( :OpenOrder, :OrderStatus, :OpenOrderEnd ) { |msg| puts msg.to_human }
 
-if ARGV.empty?
-  ib.send_message :RequestGlobalCancel
+  if ARGV.empty?
+    ib.send_message :RequestGlobalCancel
+  else
+    # Will only work for Orders placed under the same :client_id
+    ib.cancel_order *ARGV
+  end
+
+  ib.send_message :RequestAllOpenOrders
+
+  sleep 3
+
 else
-  # Will only work for Orders placed under the same :client_id
-  ib.cancel_order *ARGV
+  puts "Not Connected"
 end
-
-ib.send_message :RequestAllOpenOrders
-
-sleep 3

@@ -1,0 +1,62 @@
+#!/usr/bin/env ruby
+#
+# This script gets details for specific contract from IB
+
+require 'rubygems'
+require 'bundler/setup'
+$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
+require 'yaml'
+require 'pp'
+require 'active_support'
+require 'ib-ruby'
+# This example 
+# Definition of what we want market data for.  We have to keep track of what ticker id
+# corresponds to what symbol ourselves, because the ticks don't include any other
+# identifying infoormation. The choice of ticker ids is, as far as I can tell, arbitrary.
+
+if  RUBY_VERSION.to_i < 2
+  puts " Ruby 2.x needed "
+  exit
+end
+IB::Gateway.new   :client_id => 1112,  :connect => true,  :port => 7496 # TWS
+if IB::Gateway.tws.nil?
+  puts "No TWS"
+  exit
+end
+IB::Gateway.logger.level= 3
+
+market = {"1. Apple	 " =>  IB::Stock.new(  symbol: 'AAPL') ,
+          "2. BASF	 " =>  IB::Stock.new(  symbol: 'BAS', currency: 'EUR'  ) ,
+          "3. DSB	 " =>  IB::Stock.new(  symbol: 'D05', currency: 'SGD', exchange: 'SGX'  ) ,
+	  "7. S&P Future " =>  IB::Future.new( symbol: 'ES',  expiry:201512,   exchange: 'GLOBEX'),	
+	  "9. NOK/SEK	 " =>  IB::Forex.new(  symbol: 'NOK', currency:'SEK'),
+	  "10. GE-Option " =>  IB::Option.new( symbol: 'GE',  strike:25,       expiry:201512), #  put+call-options, only the last is selected
+	  "11. Fake Stock" =>  IB::Stock.new( :symbol=>'FAKE' )  # not a valid symbol
+
+	}
+
+# Connect to IB TWS.
+market.each_pair do |id, contract|
+  puts '*'*(49)
+  puts "\nRequesting contract data #{id}: #{contract.description} \n"
+  result = nil
+
+  ## A Thread environment is only nessesary, if some other parts of the 
+  ## programm are accessing subscribed messages. This domonstrates the usage.
+
+  symbol,con_id,min_tick=0
+  count= contract.verify
+    # Any attribute of the contract-object is assesible, i.e.
+    # In Addition, all Contract-Detail-Attributes are present 
+    puts "\n\n#{count} Contract(s) verified"
+    unless count.zero?
+      puts "Query #{id}"
+      puts "TWS-resonse: Symbol -> #{contract.symbol}", "Min-Tick:#{contract.contract_detail.min_tick}, ConId:#{contract.con_id}"
+      puts "Updated-Contract  \t #{contract.to_human}"
+    end
+  puts "-"*25
+  # Request Contract details for the symbols we're interested in. TWS will
+  # respond with ContractData messages, which will be processed by the code above.
+
+end
+IB::Gateway.current.disconnect

@@ -3,65 +3,96 @@
 # This script exports your IB portfolio in a CSV format. Usage:
 # $ example/portfolio_csv [account] > portfolio.csv
 
-require 'rubygems'
+=begin
+The Gateway provides a method: »get_account_data«, which takes the Accounts we are interested in
+as argument.
+The result is stored in IB::Gateway.current.active_accounts and there in account_values and portfolio_values.
+We just have to extract the informations and display them.
+
+The arrays are filled in the background. When the transfer from the TWS is complete, the »AccountDownloadEnd«-
+Event is fired.
+
+The Gateway is extended by a method called »portfolio_csv» which is active as long as 
+the Gateway is running. Every call of Gateway#GetAccountData leads to the output of the specified csv-data
+=end
+
+
 require 'bundler/setup'
 $LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
 
-# Only for Advisors: you need to provide account id such as U666777
-account = ARGV[0] || ''
-
-# Get rid of logging verbosity
-log.level = Logger::FATAL
-
-# Connect to IB TWS
-ib = IB::Connection.new :client_id => 1112, :port => 7496 # TWS
-
-# Redirect TWS alerts/errors to STDERR to keep output file clean
-ib.subscribe(:Alert) { |msg| STDERR.puts msg.to_human }
-
-# Silently ignore account-related messages other than :PortfolioValue
-ib.subscribe(:AccountUpdateTime, :AccountValue, :ManagedAccounts, :AccountDownloadEnd) {}
+# specify the tws to connect
+TWS= 'beta:7496' # or 'localhost'  
 
 # Output CSV headers
-puts %w[Symbol
-        SecType
-        Expiry
-        Strike
-        Right
-        Currency
-        LocalSymbol
-        Position
-        MarketPrice
-        MarketValue
-        AvgCost
-        UnrealizedPNL
-        RealizedPNL
-        Acct].map {|val| "\"#{val}\""}.join(",")
+Header = %w( Account
+	      Symbol
+	      SecType
+	      Expiry
+	      Strike
+	      Right
+	      Currency
+	      LocalSymbol
+	      Position
+	      MarketPrice
+	      MarketValue
+	      AvgCost
+	      UnrealizedPNL
+	      RealizedPNL )
+# define the Output 
+module IB
+  class Gateway
+    def portfolio_csv
+      tws.subscribe( :AccountDownloadEnd )  do | msg |
+	for_selected_account( msg.account_name ) do | account |
+	# account is an IB::Account which has_many account_values and portfolio_values
+	  csv = account.portfolio_values.map do | pv |
 
-# Output each portfolio position as a single line in CSV format
-ib.subscribe(:PortfolioValue) do |msg|
-  contract = msg.contract
-  csv = [ contract.symbol,
-          IB::CODES[:sec_type][contract.sec_type],
-          contract.expiry,
-          contract.strike == 0 ? "" : contract.strike,
-          contract.right == :none ? "" : contract.right,
-          contract.currency,
-          contract.local_symbol,
-          msg.position,
-          msg.market_price,
-          msg.market_value,
-          msg.average_cost,
-          msg.unrealized_pnl,
-          msg.realized_pnl,
-          msg.account_name
-        ].map {|val| "\"#{val}\""}.join(",")
-   puts csv
+	  [ account.account,
+	    pv.contract.symbol,
+	    IB::CODES[:sec_type][pv.contract.sec_type],
+	    pv.contract.expiry,
+	    pv.contract.strike == 0 ? "" : pv.contract.strike,
+	    pv.contract.right == :none ? "" : pv.contract.right,
+	    pv.contract.currency,
+	    pv.contract.local_symbol,
+	    pv.position,
+	    pv.market_price,
+	    pv.market_value,
+	    pv.average_cost,
+	    pv.unrealized_pnl,
+	    pv.realized_pnl
+	  ] 
+	end
+	csv.each{|l| puts l.map {|val| "\"#{val}\""}.join(",") }
+      end  # for selected account
+
+      end  # subscribe
+    end  # def
+  end  # class
+end # module
+
+
+#
+# First, connect to IB TWS. Suppress any Logging-Informations
+IB::Gateway.new host: TWS , connect:true, :logger=> Logger.new('/dev/null') 
+if IB::Gateway.tws.present?
+puts "\n\n************** Communication to #{IB::Gateway.current.get_host} activated *********************\n\n"
+  ## activate the defined subscription
+  IB::Gateway.current.portfolio_csv
+  # Print the Header
+  puts Header.map {|val| "\"#{val}\""}.join(",") 
+
+  ## Perform the query
+  IB::Gateway.current.get_account_data
+
+# wait for the query to approach
+sleep 2
+
+  
+IB::Gateway.current.disconnect
+puts "\n\n************** Communication terminated *********************\n\n"
+
+else
+  puts 'No TWS'
 end
-
-# Request account data, wait for its end, unsubscribe
-ib.send_message :RequestAccountData, :subscribe => true, :account_code => account
-ib.wait_for :AccountDownloadEnd, 30
-ib.send_message :RequestAccountData, :subscribe => false, :account_code => account
-sleep 0.5

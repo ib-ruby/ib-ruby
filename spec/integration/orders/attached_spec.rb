@@ -5,7 +5,7 @@ def define_contracts
   @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
   @contracts = {
     :stock => IB::Symbols::Stocks[:wfc],
-    :butterfly => butterfly('GOOG', '201301', 'CALL', 500, 510, 520)
+    :butterfly => butterfly('TAP', '201501', 'CALL', 70, 72.5, 75)
   }
   close_connection
 end
@@ -40,14 +40,15 @@ describe 'Attached Orders', :connected => true, :integration => true do
         :total_quantity => qty,
         :limit_price => limit_price,
         :tif => tif,
-        :transmit => false
+        :transmit => false,
+	:account  => OPTS[:connection][:user]
 
         @ib.wait_for :OpenOrder, :OrderStatus, 2
       end
 
       after(:all) { close_connection }
 
-      it 'does not transmit original Order before attach' do
+      it 'does not transmit original Order before attach' , focus:true  do
         @ib.received[:OpenOrder].should have_exactly(0).order_message
         @ib.received[:OrderStatus].should have_exactly(0).status_message
       end
@@ -60,7 +61,8 @@ describe 'Attached Orders', :connected => true, :integration => true do
           :side => :sell,
           :tif => tif,
           :order_type => attach_type,
-          :parent_id => @local_id_placed
+          :parent_id => @local_id_placed,
+	  :account => OPTS[:connection][:user]
 
           @local_id_attached = @ib.place_order @attached_order, @contract
           @local_id_after = @ib.next_local_id

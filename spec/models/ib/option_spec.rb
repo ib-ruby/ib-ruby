@@ -1,5 +1,6 @@
 require 'model_helper'
-
+require 'message_helper'
+## no tws-connection required
 describe IB::Option,
          :human => "<Option: AAPL 201301 put 600.5 SMART >",
 
@@ -10,6 +11,7 @@ describe IB::Option,
          :props => {:symbol => 'AAPL',
                     :expiry => '201301',
                     :strike => 600.5,
+                    :exchange => 'SMART',
                     :right => :put,
          },
 
@@ -47,54 +49,50 @@ describe IB::Option,
              :strike => {[0, -30.0] => /must be greater than 0/},
          } do # AKA IB::Option
 
-  it_behaves_like 'Self-equal Model'
-  it_behaves_like 'Model with invalid defaults'
+	it_behaves_like 'Model with invalid defaults'
 
-  context 'properly initiated' do
-    subject { IB::Option.new props }
-    it_behaves_like 'Contract'
+	context  FactoryGirl.build( :default_option ).query_contract  do
+		#					   it_behaves_like 'Self-equal Model'
+		it_behaves_like 'Contract'
 
-    it 'has extra osi accessor, aliasing :local_symbol' do
-      subject.osi = 'FOO'
-      subject.local_symbol.should == 'FOO'
-      subject.local_symbol = 'bar'
-      subject.osi.should == 'bar'
-    end
-  end
+		it 'has extra osi accessor, aliasing :local_symbol' do
+			expect { subject.osi= 'FOO' }.to change {subject.local_symbol }.from( '' ).to( "FOO" )
+			expect( subject).not_to be_valid
+		end
+		it 'correctly validates OSI symbol' do
+			subject.osi= "AAPL  130119C00500000"
 
-  it 'correctly defines Contract type (sec_type) for Option contract' do
-    [IB::Contract.new(:sec_type => :option),
-     IB::Contract.new(:sec_type => 'OPT'),
-     IB::Option.new
-    ].each do |contract|
-      contract.should_not be_bag
-      contract.should_not be_bond
-      contract.should_not be_stock
-      contract.should be_option
-    end
-  end
+			expect( subject.local_symbol).to eq "AAPL  130119C00500000"
+			expect( subject).to be_valid
+		end
+	end
 
-  it 'correctly validates OSI symbol' do
-    o = IB::Option.new props
-    o.should be_valid
-    o.local_symbol = "AAPL  130119C00500000"
-    o.should be_valid
-  end
+	it 'correctly defines Contract type (sec_type) for Option contract'   do
+		[FactoryGirl.build( :ib_contract, :sec_type => :option),
+		FactoryGirl.build( :ib_contract, :sec_type => 'OPT'),
+		FactoryGirl.build( :default_option ) ].each do |contract|
+	   expect( contract).not_to be_bag
+	   expect( contract).not_to be_bond
+	   expect( contract).not_to be_stock
+	   expect( contract).to be_option
+	   expect( contract).to be_valid
+   end
+	end
 
-  context '.from_osi class builder' do
-    subject { IB::Option.from_osi 'AAPL130119C00500000' }
 
-    it 'builds a valid Option contract from OSI code' do
-      subject.should be_an IB::Option
-      subject.should be_valid
-      subject.symbol.should == 'AAPL'
-      subject.expiry.should == '130118' # <- NB: Change in date!
-      subject.right.should == :call
-      subject.strike.should == 500
-      #subject.osi.should == 'AAPL  130119C00500000'
-    end
+	context IB::Option.from_osi( 'AAPL130119C00500000' ) do
 
-    it_behaves_like 'Contract'
-  end
+		it 'builds a valid Option contract from OSI code' do
+			expect( subject).to be_option
+			expect( subject).to be_valid
+			expect( subject.symbol).to eq 'AAPL'
+			expect( subject.expiry).to eq '130118' # <- NB: Change in date!
+			expect( subject.right).to eq :call
+			expect( subject.strike).to eq 500
+			#subject.osi.should == 'AAPL  130119C00500000'
+		end
 
-end # describe IB::Contract
+		it_behaves_like 'Contract'
+	end
+
+		 end # describe 
