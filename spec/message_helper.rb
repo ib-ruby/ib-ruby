@@ -1,6 +1,7 @@
 require 'spec_helper'
 require 'thread'
 require 'stringio'
+require 'rspec/expectations'
 
 ## Logger helpers
 
@@ -19,6 +20,9 @@ def log_entries
   @stdout && @stdout.string.split(/\n/)
 end
 
+# Alternatively  just use match directly instead e.g.:
+#        it { log_entries.any? { |entry| expect(entry).to match(/No subscribers for message .*:Alert!/) }}
+
 def should_log *patterns
   patterns.each do |pattern|
    expect( log_entries.any? { |entry| entry =~ pattern }).to be_truthy
@@ -30,7 +34,6 @@ def should_not_log *patterns
     expect( log_entries.any? { |entry| entry =~ pattern }).to be_falsey
   end
 end
-
 ## Connection helpers
 
 # Clear logs and message collector. Output may be silenced.
