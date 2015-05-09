@@ -13,6 +13,10 @@ You've been warned.
 
 This code is not sanctioned or supported by Interactive Brokers.
 
+##ANNOUNCE:
+Checkout Branch »Gateway«  for support of FA-(aka Friends & Family)-Accounts.
+Its a release-candidate for Version 0.9.3
+
 ## SUMMARY:
 
 This is a pure Ruby implementation of Interactive Brokers API. It is NOT a wrapper
