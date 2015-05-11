@@ -6,40 +6,161 @@ require 'rubygems'
 require 'bundler/setup'
 $LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
+require 'yaml'
 
-# Definition of what we want market data for.  We have to keep track of what ticker id
-# corresponds to what symbol ourselves, because the ticks don't include any other
-# identifying information. The choice of ticker ids is, as far as I can tell, arbitrary.
-@market = {1 => IB::Symbols::Options[:wfc20],
-           2 => IB::Symbols::Options[:z50],
-           3 => IB::Symbols::Options[:spy75],
-           4 => IB::Symbols::Options[:spy100]}
+## Adjust !!
+EXPIRY= '201506' # valid for contracts with monthly option executions
 
-# First, connect to IB TWS. Arbitrary :client_id is used to identify your script
-ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS
 
-## Subscribe to TWS alerts/errors
-ib.subscribe(:Alert) { |msg| puts msg.to_human }
+# First, connect to IB TWS. Arbitrary :client_id is used to identify the script
+# Marketdata subscriptions are nessesary
+# data are only queried, thus  a  tws used for real trading is safe
+TWS= 'beta:7496' # or 'localhost'  
+# We ignore logged output.
+# If something goes wrong just delete the logger argument
+IB::Gateway.new host: TWS , connect:true, logger: Logger.new("/dev/null")
+if ( ib = IB::Gateway.tws).present?
+# Definition of what we want market data for. 
+# First we define an array of general option-descriptions
+# In a second step we validate the contract.
+# For each verified contract a hash-entry is created which will be later subject to a market-data-subscription
 
-# Subscribe to Ticker... events.  The code passed in the block will be executed when
-# any message of that type is received, with the received message as its argument.
-# In this case, we just print out the tick.
-#
-# (N.B. The description field is not from IB TWS. It is defined
-#  locally in forex.rb, and is just arbitrary text.)
-ib.subscribe(:TickPrice, :TickSize, :TickOption, :TickString) do |msg|
-  what = @market[msg.ticker_id].description || @market[msg.ticker_id].osi
-  puts "#{msg.ticker_id}: #{what}: #{msg.to_human}"
+  options = [IB::Option.new( symbol: 'RRD', strike: 20, expiry: EXPIRY, right: :put),
+	     IB::Option.new( symbol: 'Z',   strike: 50, expiry: EXPIRY, right: :put, exchange: 'SMART'),
+	     IB::Option.new( symbol: 'SPY', strike: 75, expiry: EXPIRY, right: :call, exchange: 'SMART'), # all ( 4 or 5 weekly) call- contracts in the EXPIRY-Month
+	     IB::Option.new( symbol: 'SPY', strike: 100, expiry: '2016',  exchange: 'SMART'),   # all available contracts (put+call) in 2016 
+	     IB::Option.new( symbol: 'DPW', strike: 29, expiry: EXPIRY, currency:'EUR', right: :put, exchange: 'DTB' )
+  ]
+
+  market = Hash.new
+  options.each do |x| 
+    x.verify do |contract| 
+      market[rand(999)] = contract
+      puts "Added Contract #{contract.to_human} "
+    end
+  end
+
+
+  # simplify things by defining some lambda's
+  outstr= ->( item ) { if item.nil? then "--" else  sprintf("%g" , item)  end }
+  print_tickoption= ->( msg) do
+	    puts "impl.Vola: #{ outstr[ msg.implied_volatility ]} \t dividend: #{ outstr[ msg.pv_dividend ]}  " 
+	    puts "\t\tGreeks\t delta:  #{  outstr[ msg.delta ] } \t gamma: #{ outstr[ msg.gamma ]} \t vega: #{ outstr[ msg.vega ] } \t theta:  #{ outstr[ msg.theta ] }" 
+  end
+  # Subscribe to Ticker... events.  The code passed in the block will be executed when
+  # any message of that type is received, with the received message as its argument.
+  # In this case, we just print out the tick.
+  #
+
+  ib.subscribe(:TickPrice, :TickSize, :TickOption, :TickString) do |msg|
+     print  "#{msg.created_at.strftime("%d.%m.(%X)")}: #{market[msg.ticker_id].local_symbol} \t"
+     case msg
+          when IB::Messages::Incoming::TickOption
+	    unless msg.implied_volatility.nil?
+	      print_tickoption[msg]
+	    else
+	      puts ""
+	    end
+	  else
+	    puts msg.to_human
+     end
+  end
+
+  # Now we actually request market data for the symbols we're interested in.
+  market.each_pair do |id, contract|
+      ib.send_message :RequestMarketData, :ticker_id => id, :contract => contract
+  end
+
+  puts "\nSubscribed to market data"
+  puts "\n******** Press <Enter> to cancel... *********\n\n"
+  STDIN.gets
+  puts "Cancelling market data subscription.."
+
+  market.each_pair { |id, contract| ib.send_message :CancelMarketData, :id => id }
 end
 
-# Now we actually request market data for the symbols we're interested in.
-@market.each_pair do |id, contract|
-  ib.send_message :RequestMarketData, :ticker_id => id, :contract => contract
-end
+=begin
+Expected output
+Added Contract <Option: RRD 20150619 put 20.0 SMART USD> 
+Added Contract <Option: Z 20150619 put 50.0 SMART USD> 
+Added Contract <Option: SPY 20150630 call 75.0 SMART USD> 
+Added Contract <Option: SPY 20151218 call 100.0 SMART USD> 
+Added Contract <Option: SPY 20151218 put 100.0 SMART USD> 
+Added Contract <Option: SPY 20150619 call 100.0 SMART USD> 
+Added Contract <Option: SPY 20150619 put 100.0 SMART USD> 
+Added Contract <Option: SPY 20150619 call 100.0 SMART USD> 
+Added Contract <Option: SPY 20150619 put 100.0 SMART USD> 
+Added Contract <Option: SPY 20160115 call 100.0 SMART USD> 
+Added Contract <Option: SPY 20160115 put 100.0 SMART USD> 
+Added Contract <Option: SPY 20161216 call 100.0 SMART USD> 
+Added Contract <Option: SPY 20161216 put 100.0 SMART USD> 
+Added Contract <Option: SPY 20161216 call 100.0 SMART USD> 
+Added Contract <Option: SPY 20161216 put 100.0 SMART USD> 
+Added Contract <Option: SPY 20160617 call 100.0 SMART USD> 
+Added Contract <Option: SPY 20160617 put 100.0 SMART USD> 
+Added Contract <Option: SPY 20150918 call 100.0 SMART USD> 
+(...)
+Subscribed to market data
+11.05.(10:03:29): P DPW  JUN 15  2900  impl.Vola: 0.273786	 dividend: 0.850096  
+  Greeks   delta:  -0.500798   gamma: 0.155233   vega: 0.0376639   theta:  -0.0134041
+11.05.(10:03:29): P DPW  JUN 15  2900   <TickPrice close_price: price 1.0, size 0, can_auto_execute 0 >
+11.05.(10:03:29): P DPW  JUN 15  2900   <TickPrice bid_price: price 1.07, size 50, can_auto_execute 1 >
+11.05.(10:03:29): P DPW  JUN 15  2900   <TickPrice ask_price: price 1.1, size 50, can_auto_execute 1 >
+11.05.(10:03:29): P DPW  JUN 15  2900   <TickSize bid_size: size 50 >
+11.05.(10:03:29): P DPW  JUN 15  2900   <TickSize ask_size: size 50 >
+11.05.(10:03:29): RRD   150619P00020000	<TickPrice close_price: price 2.4, size 0, can_auto_execute 0 >
+11.05.(10:03:29): RRD   150619P00020000	<TickPrice bid_price: price -1.0, size 0, can_auto_execute 1 >
+11.05.(10:03:29): RRD   150619P00020000	<TickPrice ask_price: price -1.0, size 0, can_auto_execute 1 >
+11.05.(10:03:29): SPY   150619C00075000	<TickPrice close_price: price 136.39, size 0, can_auto_execute 0 >
+11.05.(10:03:29): Z     150619P00050000	<TickPrice close_price: price 0.0, size 0, can_auto_execute 0 >
+11.05.(10:03:29): SPY   150630C00075000	<TickPrice close_price: price 136.39, size 0, can_auto_execute 0 >
+11.05.(10:03:29): SPY   150619C00075000	<TickPrice bid_price: price -1.0, size 0, can_auto_execute 1 >
+11.05.(10:03:29): SPY   150619C00075000	<TickPrice ask_price: price -1.0, size 0, can_auto_execute 1 >
+11.05.(10:03:29): Z     150619P00050000	<TickPrice bid_price: price -1.0, size 0, can_auto_execute 1 >
+11.05.(10:03:29): Z     150619P00050000	<TickPrice ask_price: price -1.0, size 0, can_auto_execute 1 >
+11.05.(10:03:29): SPY   150630C00075000	<TickPrice bid_price: price -1.0, size 0, can_auto_execute 1 >
+11.05.(10:03:29): SPY   150630C00075000	<TickPrice ask_price: price -1.0, size 0, can_auto_execute 1 >
+11.05.(10:03:29): P DPW  JUN 15  2900   <TickPrice open_tick: price 1.13, size 0, can_auto_execute 0 >
+11.05.(10:03:29): SPY   160617P00100000	<TickPrice close_price: price 0.38, size 0, can_auto_execute 0 >
+11.05.(10:03:29): SPY7  150619P00100000	<TickPrice close_price: price 0.0, size 0, can_auto_execute 0 >
+11.05.(10:03:29): SPY   160115P00100000	<TickPrice close_price: price 0.09, size 0, can_auto_execute 0 >
+11.05.(10:03:29): SPY   160115C00100000	<TickPrice close_price: price 111.42, size 0, can_auto_execute 0 >
+11.05.(10:03:29): SPY   151219C00100000	<TickPrice close_price: price 111.4, size 0, can_auto_execute 0 >
+11.05.(10:03:29): SPY7  161216P00100000	<TickPrice close_price: price 0.0, size 0, can_auto_execute 0 >
+11.05.(10:03:29): SPY   160617C00100000	<TickPrice close_price: price 111.43, size 0, can_auto_execute 0 >
+11.05.(10:03:29): SPY7  150619C00100000	<TickPrice close_price: price 111.34, size 0, can_auto_execute 0 >
+11.05.(10:03:29): SPY   161216P00100000	<TickPrice close_price: price 0.83, size 0, can_auto_execute 0 >
+11.05.(10:03:29): SPY   151219P00100000	<TickPrice close_price: price 0.07, size 0, can_auto_execute 0 >
+11.05.(10:03:29): SPY   150619C00100000	<TickPrice close_price: price 111.39, size 0, can_auto_execute 0 >
+11.05.(10:03:29): SPY   150619P00100000	<TickPrice close_price: price 0.0, size 0, can_auto_execute 0 >
+11.05.(10:03:29): SPY7  161216C00100000	<TickPrice close_price: price 111.36, size 0, can_auto_execute 0 >
+11.05.(10:03:29): SPY   161216C00100000	<TickPrice close_price: price 111.43, size 0, can_auto_execute 0 >
+11.05.(10:03:29): SPY   160617P00100000	<TickPrice bid_price: price -1.0, size 0, can_auto_execute 1 >
+(..)
+11.05.(10:03:29): SPY   170317P00100000	<TickPrice bid_price: price -1.0, size 0, can_auto_execute 1 >
+11.05.(10:03:29): SPY   170317P00100000	<TickPrice ask_price: price -1.0, size 0, can_auto_execute 1 >
+11.05.(10:03:29): P DPW  JUN 15  2900   impl.Vola: 0.267257    dividend: 0.850096  
+	  Greeks   delta:  -0.500121   gamma: 0.159018	 vega: 0.0376721   theta:  -0.013095
+11.05.(10:03:29): P DPW  JUN 15  2900	  impl.Vola: 0.267257	 dividend: 0.850096  
+	  Greeks   delta:  -0.500121   gamma: 0.159018   vega: 0.0376721   theta:  -0.013095
+11.05.(10:03:29): P DPW  JUN 15  2900   impl.Vola: 0.27522   dividend: 0.850096  
+	  Greeks   delta:  -0.499092   gamma: 0.154435	 vega: 0.0376701   theta:  -0.0134837
+11.05.(10:03:29): P DPW  JUN 15  2900	  
+11.05.(10:03:30): P DPW  JUN 15  2900	  impl.Vola: 0.267257	 dividend: 0.850096  
+	  Greeks   delta:  -0.502463   gamma: 0.159005   vega: 0.0376616   theta:  -0.0130809
+11.05.(10:03:30): P DPW  JUN 15  2900   impl.Vola: 0.265106    dividend: 0.850096  
+          Greeks   delta:  -0.502765   gamma: 0.160288	 vega: 0.0376622   theta:  -0.012976
+11.05.(10:03:30): P DPW  JUN 15  2900	  impl.Vola: 0.273072	 dividend: 0.850096  
+	  Greeks   delta:  -0.501658   gamma: 0.155635   vega: 0.0376602   theta:  -0.0133647
+11.05.(10:03:30): P DPW  JUN 15  2900   
+11.05.(10:03:32): SPY   160115P00100000	<TickSize last_size: size 0 >
+11.05.(10:03:32): SPY   160115P00100000	<TickString last_timestamp: value 0 >
+11.05.(10:03:32): SPY   161216P00100000	<TickSize last_size: size 0 >
+11.05.(10:03:32): SPY   161216P00100000	<TickString last_timestamp: value 0 >
+11.05.(10:03:32): SPY   171215C00100000	<TickSize last_size: size 0 >
+11.05.(10:03:32): SPY   171215C00100000	<TickString last_timestamp: value 0 >
+11.05.(10:03:32): SPY   171215P00100000	<TickSize last_size: size 0 >
+11.05.(10:03:32): SPY   171215P00100000	<TickString last_timestamp: value 0 >
 
-puts "\nSubscribed to market data"
-puts "\n******** Press <Enter> to cancel... *********\n\n"
-STDIN.gets
-puts "Cancelling market data subscription.."
-
-@market.each_pair { |id, contract| ib.send_message :CancelMarketData, :id => id }
+******* Press <Enter> to cancel... *********
+=end
