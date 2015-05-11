@@ -29,7 +29,8 @@ if ( ib = IB::Gateway.tws).present?
 	     IB::Option.new( symbol: 'Z',   strike: 50, expiry: EXPIRY, right: :put, exchange: 'SMART'),
 	     IB::Option.new( symbol: 'SPY', strike: 75, expiry: EXPIRY, right: :call, exchange: 'SMART'), # all ( 4 or 5 weekly) call- contracts in the EXPIRY-Month
 	     IB::Option.new( symbol: 'SPY', strike: 100, expiry: '2016',  exchange: 'SMART'),   # all available contracts (put+call) in 2016 
-	     IB::Option.new( symbol: 'DPW', strike: 29, expiry: EXPIRY, currency:'EUR', right: :put, exchange: 'DTB' )
+	     IB::Option.new( symbol: 'DPW', expiry: EXPIRY, currency:'EUR', right: :put, exchange: 'DTB' ), # load the option-chain
+	     IB::Option.new( symbol: 'BEI', strike: 80, expiry: EXPIRY, currency:'EUR', right: :put, exchange: 'DTB' )
   ]
 
   market = Hash.new
@@ -39,6 +40,9 @@ if ( ib = IB::Gateway.tws).present?
       puts "Added Contract #{contract.to_human} "
     end
   end
+  puts "\nContracts defined"
+  puts "\n******** Press <Enter> to subscribe to market-data *********\n\n"
+  STDIN.gets
 
 
   # simplify things by defining some lambda's
@@ -100,6 +104,44 @@ Added Contract <Option: SPY 20160617 call 100.0 SMART USD>
 Added Contract <Option: SPY 20160617 put 100.0 SMART USD> 
 Added Contract <Option: SPY 20150918 call 100.0 SMART USD> 
 (...)
+Added Contract <Option: DPW 20150619 put 12.0 DTB EUR> 
+Added Contract <Option: DPW 20150619 put 14.0 DTB EUR> 
+Added Contract <Option: DPW 20150619 put 16.0 DTB EUR> 
+Added Contract <Option: DPW 20150619 put 18.0 DTB EUR> 
+Added Contract <Option: DPW 20150619 put 20.0 DTB EUR> 
+Added Contract <Option: DPW 20150619 put 24.0 DTB EUR> 
+Added Contract <Option: DPW 20150619 put 28.0 DTB EUR> 
+Added Contract <Option: DPW 20150619 put 32.0 DTB EUR> 
+Added Contract <Option: DPW 20150619 put 36.0 DTB EUR> 
+Added Contract <Option: DPW 20150619 put 40.0 DTB EUR> 
+Added Contract <Option: DPW 20150619 put 44.0 DTB EUR> 
+Added Contract <Option: DPW 20150619 put 22.0 DTB EUR> 
+Added Contract <Option: DPW 20150619 put 19.0 DTB EUR> 
+Added Contract <Option: DPW 20150619 put 26.0 DTB EUR> 
+Added Contract <Option: DPW 20150619 put 30.0 DTB EUR> 
+Added Contract <Option: DPW 20150619 put 34.0 DTB EUR> 
+Added Contract <Option: DPW 20150619 put 25.0 DTB EUR> 
+Added Contract <Option: DPW 20150619 put 17.0 DTB EUR> 
+Added Contract <Option: DPW 20150619 put 38.0 DTB EUR> 
+Added Contract <Option: DPW 20150619 put 21.0 DTB EUR> 
+Added Contract <Option: DPW 20150619 put 23.0 DTB EUR> 
+Added Contract <Option: DPW 20150619 put 27.0 DTB EUR> 
+Added Contract <Option: DPW 20150619 put 29.0 DTB EUR> 
+Added Contract <Option: DPW 20150619 put 31.0 DTB EUR> 
+Added Contract <Option: DPW 20150619 put 33.0 DTB EUR> 
+Added Contract <Option: DPW 20150619 put 35.0 DTB EUR> 
+Added Contract <Option: DPW 20150619 put 19.5 DTB EUR> 
+Added Contract <Option: DPW 20150619 put 37.0 DTB EUR> 
+Added Contract <Option: DPW 20150619 put 39.0 DTB EUR> 
+Added Contract <Option: DPW 20150619 put 41.0 DTB EUR> 
+Added Contract <Option: DPW 20150619 put 18.5 DTB EUR> 
+Added Contract <Option: DPW 20150619 put 42.0 DTB EUR> 
+Added Contract <Option: DPW 20150619 put 43.0 DTB EUR> 
+Added Contract <Option: BEI 20150619 put 80.0 DTB EUR> 
+Contracts defined
+
+******** Press <Enter> to subscribe to market-data *********
+
 Subscribed to market data
 11.05.(10:03:29): P DPW  JUN 15  2900  impl.Vola: 0.273786	 dividend: 0.850096  
   Greeks   delta:  -0.500798   gamma: 0.155233   vega: 0.0376639   theta:  -0.0134041
