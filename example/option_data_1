@@ -1,0 +1,68 @@
+#!/usr/bin/env ruby
+#
+# This script subscribes to market data for a list of Options
+### not adapted to IB::Gateway
+require 'rubygems'
+require 'bundler/setup'
+$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
+require 'ib-ruby'
+require 'yaml'
+
+## Adjust !!
+EXPIRY= '201506' # valid for contracts with monthly option executions
+
+
+# First, connect to IB TWS. Arbitrary :client_id is used to identify the script
+# Marketdata subscriptions are nessesary
+# data are only queried, thus  a  tws used for real trading is safe
+TWS= 'beta:7496' # or 'localhost'  
+# We ignore logged output.
+# If something goes wrong just delete the logger argument
+gw= IB::Gateway.new host: TWS , connect:true, logger: Logger.new("/dev/null")
+if ( ib = IB::Gateway.tws).present?
+# Definition of what we want market data for. 
+# First we define an array of general option-descriptions
+# In a second step we validate the contract.
+# For each verified contract a hash-entry is created which will be later subject to a market-data-subscription
+
+  options = [IB::Option.new( symbol: 'RRD', strike: 20, expiry: EXPIRY, right: :put),
+	     IB::Option.new( symbol: 'Z',   strike: 50, expiry: EXPIRY, right: :put, exchange: 'SMART'),
+	     IB::Option.new( symbol: 'SPY', strike: 75, expiry: EXPIRY, right: :call, exchange: 'SMART'), # all ( 4 or 5 weekly) call- contracts in the EXPIRY-Month
+	     IB::Option.new( symbol: 'SPY', strike: 100, expiry: '2016',  exchange: 'SMART'),   # all available contracts (put+call) in 2016 
+	     IB::Option.new( symbol: 'DPW', expiry: EXPIRY, currency:'EUR', right: :put, exchange: 'DTB' ), # load the option-chain
+	     IB::Option.new( symbol: 'BEI', strike: 80, expiry: EXPIRY, currency:'EUR', right: :put, exchange: 'DTB' )
+  ]
+
+  subscriptions = options.map do |x| 
+    x.verify 
+    gw.advisor.contracts.update_or_create x, :con_id
+    puts "Added Contract #{x.to_human} "
+    x.update_option_details wait_for_data: false
+  end
+  puts "\nContracts defined and Market data subscribed"
+  puts "\n******** Press <Enter> to cancel... *********\n\n"
+
+
+  # we subsribe to Tickoption events.
+  # the code is executed after the data are stored by OptionDetail#UpdateOptionDetails
+
+  s= ib.subscribe(:TickOption) do |msg|
+	    unless msg.implied_volatility.nil?
+	      contract = gw.advisor.contracts.detect{|y| y.con_id == msg.ticker_id }
+	      if contract.is_a? IB::Option
+		puts "#{msg.created_at.strftime("%d.%m.(%X)")}: Tickoption Message "
+		puts contract.to_human
+		puts contract.option_detail.to_human
+		puts '+' * 100 
+	      end
+     end
+  end
+
+  STDIN.gets
+  puts "Cancelling market data subscription.."
+
+  gw.advisor.contracts.each{|x|  ib.send_message :CancelMarketData, :id => x.con_id }
+  subscriptions.each{|sub | ib.unsubscribe sub }
+  ib.unsubscribe s
+end
+
