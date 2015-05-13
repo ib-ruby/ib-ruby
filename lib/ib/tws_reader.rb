@@ -171,5 +171,57 @@ s --> <IB::Stock:0x007f3de81a4398
       count # return_value
       #queried_contract # return_value
       end # def
+
+
+      def update_option_details wait_for_data: true, snapshot: false
+	# aimed to be included into an option model
+	gw = IB::Gateway.current
+	ib = gw.tws
+	self.option_detail ||=  IB::OptionDetail.new 
+
+#	flag= { tick_option: false, close_price: false, ask_price: false, bid_price: false }
+	sub= ib.subscribe(:TickPrice, :TickSize, :TickOption, :TickString) do |msg|
+
+	  if msg.ticker_id == con_id
+	    case msg
+	    when IB::Messages::Incoming::TickOption
+	      unless msg.implied_volatility.nil?
+		#             print_tickoption[msg]
+		attributes_to_transfer = msg.data.reject{|x,_| [:version, :ticker_id,:tick_type].include? x}.keys
+		attributes_to_transfer.each{|a| option_detail.update_attribute a,   msg.data[a] }
+		option_detail.update_attribute :updated_at, Time.now  # perform validations
+		option_detail.save  # perform validations
+#		flag[:tick_option] = true
+
+	      end
+	    when IB::Messages::Incoming::TickPrice
+	      option_detail.update_attribute msg.type.to_sym, msg.price
+	      option_detail.update_attribute :updated_at, Time.now  # perform validations
+	      option_detail.save  # perform validations
+#	      flag[ msg.type.to_sym ] = true
+
+	    end  # case
+	  end # branch
+	end  # subscribe
+
+
+
+	ib.send_message( :RequestMarketData, ticker_id: con_id, contract: self)
+
+	if wait_for_data
+	  # wait for flag to fill
+	  u=0; while u<100  do   # wait max 50 sec
+	    break if ( !snapshot && option_detail.complete? ) ||( snapshot &&  option_detail.greeks? )
+	    u+=1; sleep 0.05 
+	  end
+	  ib.send_message( :CancelMarketData, id: con_id)
+	  ib.unsubscribe sub 
+	  # exchange is closed if u==100
+	  #
+	  nil  # return nil
+	  else
+	    sub # return subscription_id 
+	  end
+	end
     end # module
   end # module

@@ -1,7 +1,7 @@
 ##  ib-ruby –  Introduction to the Gateway
 
 Ib-ruby is a pure ruby implementation to access the IB-TWS-API.
-It mirrors most of the information provided by the TWS as Active-Model-Objects.
+It mirrors most of the information provided by the TWS as ActiveModel-Objects.
 
 ### Connect to the TWS
 
@@ -10,18 +10,19 @@ and API-Connections are enabled,  just instantiate IB::Gateway to connect i.e.
 
 ```
 gw = IB::Gateway.new connect: true, host: 'localhost:7496' , client_id: 1001
-# for possible argumets look into lib/ib/gateway.rb 
+# for possible argumets look into lib/ib/gateway.rb
+# use host: 'localhost.4001' to connect to a running TWS-Gateway
 ```
 
 The Connection-Object, which provides the status and recieves subscriptions of TWS-Messages, is
 always present as 
 
 ```
-  tws = IB::Connection.tws 
+  tws = IB::Gateway.tws 
 or
   tws = gw.tws
 and also
-  tws = IB::Connction.current.tws
+  tws = IB::Gateway.current.tws
 
 ```
 The Gateway acts as a Proxy to the Connection-Object and provides a simple Security-Layer.
@@ -53,7 +54,7 @@ in a structured manner:
   gw.get_account_data
   gw.request_open_orders
 ```
-leads to
+leads to this ActiveModel object-tree
 
  * Gateway 
   * Account 

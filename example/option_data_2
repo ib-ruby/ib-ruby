@@ -1,0 +1,87 @@
+#!/usr/bin/env ruby
+#
+# This script fetches Option-Details for a list of Options
+require 'rubygems'
+require 'bundler/setup'
+$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
+require 'ib-ruby'
+require 'yaml'
+
+## Adjust !!
+EXPIRY= '201506' # valid for contracts with monthly option executions
+
+
+# First, connect to IB TWS. Arbitrary :client_id is used to identify the script
+# Marketdata subscriptions are required
+# data are only queried, thus a tws used for real trading is safe
+TWS= 'beta:7496' # or 'localhost'  
+# We ignore logged output.
+# If something goes wrong just delete the logger argument
+gw = IB::Gateway.new host: TWS , connect:true, logger: Logger.new("/dev/null")
+if ( ib = IB::Gateway.tws).present?
+  # Definition of what we want market data for. 
+  # First we define an array of general option-descriptions
+  # In a second step we validate the contract.
+  # For each verified contract a hash-entry is created which will be later subject to a market-data-subscription
+
+  options = [IB::Option.new( symbol: 'RRD', strike: 20, expiry: EXPIRY, right: :put),
+	     IB::Option.new( symbol: 'Z',   strike: 50, expiry: EXPIRY, right: :put, exchange: 'SMART'),
+	     IB::Option.new( symbol: 'SPY', strike: 75, expiry: EXPIRY, right: :call, exchange: 'SMART'), # all ( 4 or 5 weekly) call- contracts in the EXPIRY-Month
+	     IB::Option.new( symbol: 'SPY', strike: 100, expiry: '2016',  exchange: 'SMART'),   # all available contracts (put+call) in 2016 
+   	     IB::Option.new( symbol: 'DPW', expiry: EXPIRY, currency:'EUR', right: :put, exchange: 'DTB' ), # load the option-chain
+    	     IB::Option.new( symbol: 'BEI', strike: 80, expiry: EXPIRY, currency:'EUR', right: :put, exchange: 'DTB' )
+  ]
+
+  options.each do |x| 
+    x.verify do |contract| 
+      gw.advisor.contracts.update_or_create  contract, :con_id
+      puts "Added Contract #{contract.to_human} "
+    end
+  end
+  puts "\nContracts defined and verified"
+
+  # request all option_details simultaniously
+  threads =  Array.new
+  gw.advisor.contracts.each do | contract|
+    if contract.is_a? IB::Option
+      threads << Thread.new do
+	contract.update_option_details( snapshot:false) 
+      end
+    end
+  end
+
+  # wait for the theads to finish
+  threads.each &:join
+
+  gw.advisor.contracts.each do |contract|
+
+	puts  contract.to_human
+	puts  contract.option_detail.to_human  if contract.is_a? IB::Option
+	puts  '-' * 45
+  end
+
+
+end
+
+=begin
+Expected Result:
+
+<Option: DPW 20150619 put 41.0 DTB EUR>
+<  close: 12.09; bid: 12.78; ask 13.73 
+optionPrice 13.73, UnderlyingPrice: 28.57 impl.Vola: 0.920235 ; dividend: 0.850091; 
+Greeks::  delta:  -0.879134; gamma: 0.0244063, vega: 0.019112; theta: -0.0220319 >
+---------------------------------------------
+<Option: DPW 20150619 put 18.5 DTB EUR>
+< Greeks::  delta:  -0.00650533; gamma: 0.00386482, vega: 0.00153879; theta: -0.00112628 >
+---------------------------------------------
+<Option: DPW 20150619 put 42.0 DTB EUR>
+<  close: 13.09; bid: 13.75; ask 14.78 
+optionPrice 14.78, UnderlyingPrice: 28.57 impl.Vola: 0.985924 ; dividend: 0.850091; 
+Greeks::  delta:  -0.874355; gamma: 0.0233992, vega: 0.0193128; theta: -0.0242302 >
+---------------------------------------------
+<Option: DPW 20150619 put 43.0 DTB EUR>
+<  close: 14.08; bid: 14.73; ask 15.79 
+optionPrice 15.79, UnderlyingPrice: 28.57 impl.Vola: 1.02968 ; dividend: 0.850091; 
+Greeks::  delta:  -0.876231; gamma: 0.0221739, vega: 0.0195192; theta: -0.0250456 >
+---------------------------------------------
+=end

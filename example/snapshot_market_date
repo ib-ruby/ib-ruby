@@ -2,82 +2,140 @@
 ##
 ## This script connects to IB API and collects snaphot Data for given Contracts
 ##
-#
-
-
-class Snapshot
-  def initialize 
-    @contracts = Hash.new
-    @prices = Hash.new
-  end
-
-
-  def add_contract id, a_hash, description
-    @contracts[id] = { :contract => IB::Contract.new( a_hash ) , :display_text => description }
-  end
-
-  def print_results
-    @prices.each do |x,y|
-      STDOUT.print "	#{@contracts[x][:display_text] } \t" +
-	y.map{|x,y| "#{x}: #{y}"}.join(" \n\t\t\t ") +" \n"
-    end
-  end
-
-
-  def process
-    ib =  IB::Gateway.current
-    @count =  @contracts.size
-    unless ib.nil?
-      ib.tws.subscribe( :TickPrice,:TickSize,:TickString,:TickGeneric,:TickSnapshotEnd) do |msg|
-	  case msg
-	  when IB::Messages::Incoming::TickSize
-	    #	for debugging purpose
-	    #	print @contracts[msg.ticker_id][:display_text], "\t", "size\t", msg.size, "\n"
-
-	  when IB::Messages::Incoming::TickPrice
-	    if @prices[msg.ticker_id].nil?
-	      @prices[msg.ticker_id] = {msg.type => msg.price }
-	    else
-	      @prices[msg.ticker_id][msg.type]=msg.price
-	    end
-	  when IB::Messages::Incoming::TickString, IB::Messages::Incoming::TickGeneric
-	    #		we ignore this message silently
-	  when IB::Messages::Incoming::TickSnapshotEnd
-	    @count -=1   
-	    print_results if @count.zero?
-	  end
-      end
-
-      @contracts.each do |id, contract_hash |
-
-	ib.send_message :RequestMarketData, 
-	:ticker_id => id, 
-	:contract => contract_hash[:contract],
-	:snapshot => 1
-      end
-    end
-  end
-
-end # class
-
-####  here it starts #######
 
 require 'rubygems'
 require 'bundler/setup'
 $LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
+require 'yaml'
 
 # # Connect to IB TWS
-IB::Gateway.new  connect:true , client_id:2222,  host:  'localhost' # or 'beta:7496' 
+gw = IB::Gateway.new  connect:true , client_id:2222,  host:  'beta:7496',  # or'localhost' 
+      logger: Logger.new( "/dev/null" )  # we ignore logging-messages 
+ib = gw.tws
+EXPIRE = '201506'
 
-s = Snapshot.new
-s.add_contract 2, {:con_id => 269120, :exchange => 'SMART'}, 'Fastenal'
-s.add_contract 4, {:symbol => 'IBM', :sec_type=> :stock, :exchange => 'SMART', :currency => 'USD'}, 'IBM'
-s.add_contract 9, {sec_type: "CASH", currency: "USD", exchange: "IDEALPRO",symbol: "EUR"}, "EUR/USD"
-s.process
-sleep 1
-puts "\n******** Press <Enter> to repeat output *********\n\n"
-STDIN.gets
+prices = Hash.new
+count = 0
 
-puts "The Snapshot-Data are still present in the Snapshot-Object"
-s.print_results
+## define and add contracts to advisor#contracts
+
+[ IB::Contract.new( con_id: 269120, :exchange => 'SMART'), # fastenal
+  IB::Option.new( symbol: "DPW", strike: 29, expiry: EXPIRE, right: :put, currency: 'EUR', exchange: 'DTB'),
+  IB::Future.new( symbol: 'NQ', expiry: EXPIRE, multiplier: 20, exchange: 'GLOBEX' ),
+  IB::Stock.new( symbol: 'IBM' ),
+  IB::Forex.new( symbol: "EUR") 
+].each do |contract|
+  contract.verify do |c|
+    gw.advisor.contracts.update_or_create contract
+  end
+end
+
+## output-part
+ print_results= -> (contract) do
+      STDOUT.print contract.to_human + "\t" +
+	prices[contract.con_id].map{|x,y| "#{x}: #{y}"}.join(" \n\t\t\t ") +" \n"
+  end
+
+# subscribe to marketdata-messages and process incomming data
+#
+ib.subscribe( :TickPrice,:TickSize,:TickString,:TickGeneric, :TickEFP,:TickSnapshotEnd) do |msg|
+  contract = gw.advisor.contracts.detect{|y| y.con_id == msg.ticker_id }
+  print  contract.local_symbol + "\t"+ msg.to_human + "\n"
+  case msg
+  when IB::Messages::Incoming::TickPrice
+    if prices[msg.ticker_id].nil?
+      prices[msg.ticker_id] = {msg.type => msg.price }
+    else
+      prices[msg.ticker_id][msg.type]=msg.price
+    end
+  when IB::Messages::Incoming::TickSnapshotEnd
+    #print_results[ contract ] 
+    count +=1
+  end
+end
+
+# request market-data for the defined contracts
+gw.advisor.contracts.each do |contract |
+puts "-" * 20 + "acquiring data for  " + contract.local_symbol + "-" * 20
+
+  ib.send_message :RequestMarketData, 
+		  :ticker_id => contract.con_id, 
+		  :contract => contract,
+		  :snapshot => 1
+end
+
+# wait until  all tickers have been processed
+while 1==1 do
+  sleep 1
+  break if count == gw.advisor.contracts.size
+end
+
+#   print wwhat we gathered
+ 
+puts "-" * 20 + "summary" + "-" * 20
+gw.advisor.contracts.each{ | c | print_results[ c ] } 
+
+
+=begin 
+Expected output
+--------------------acquiring data for  FAST--------------------
+--------------------acquiring data for  P DPW  JUN 15  2900--------------------
+--------------------acquiring data for  NQM5--------------------
+--------------------acquiring data for  IBM--------------------
+--------------------acquiring data for  EUR.USD--------------------
+NQM5  <TickPrice bid_price: price 4433.75, size 11, can_auto_execute 1 >
+NQM5  <TickPrice ask_price: price 4434.5, size 8, can_auto_execute 1 >
+NQM5  <TickPrice last_price: price 4434.25, size 1, can_auto_execute 0 >
+NQM5  <TickSize volume: size 3954 >
+NQM5  <TickPrice high: price 4436.0, size 0, can_auto_execute 0 >
+NQM5  <TickPrice low: price 4421.25, size 0, can_auto_execute 0 >
+NQM5  <TickPrice close_price: price 4420.75, size 0, can_auto_execute 0 >
+NQM5  <TickPrice open_tick: price 4423.0, size 0, can_auto_execute 0 >
+NQM5  <TickString last_timestamp: value 1431496005 >
+NQM5  <TickGeneric halted: value 0.0 >
+NQM5  <TickSnapshotEnd: ticker_id 146523110 >
+EUR.USD	<TickPrice bid_price: price 1.12465, size 14618000, can_auto_execute 1 >
+EUR.USD	<TickPrice ask_price: price 1.12475, size 12256000, can_auto_execute 1 >
+EUR.USD	<TickPrice high: price 1.1255, size 0, can_auto_execute 0 >
+EUR.USD	<TickPrice low: price 1.12125, size 0, can_auto_execute 0 >
+EUR.USD	<TickPrice close_price: price 1.1214, size 0, can_auto_execute 0 >
+EUR.USD	<TickSnapshotEnd: ticker_id 12087792 >
+P DPW  JUN 15  2900 <TickPrice close_price: price 1.79, size 0, can_auto_execute 0 >
+P DPW  JUN 15  2900 <TickPrice bid_price: price -1.0, size 0, can_auto_execute 1 >
+P DPW  JUN 15  2900 <TickPrice ask_price: price -1.0, size 0, can_auto_execute 1 >
+FAST  <TickGeneric halted: value 0.0 >
+FAST  <TickPrice close_price: price 43.01, size 0, can_auto_execute 0 >
+FAST  <TickPrice bid_price: price -1.0, size 0, can_auto_execute -1 >
+FAST  <TickPrice ask_price: price -1.0, size 0, can_auto_execute -1 >
+IBM <TickGeneric halted: value 0.0 >
+IBM <TickPrice close_price: price 170.55, size 0, can_auto_execute 0 >
+IBM <TickPrice bid_price: price -1.0, size 0, can_auto_execute -1 >
+IBM <TickPrice ask_price: price -1.0, size 0, can_auto_execute -1 >
+FAST  <TickSnapshotEnd: ticker_id 269120 >
+P DPW  JUN 15  2900 <TickSnapshotEnd: ticker_id 185114493 >
+IBM <TickSnapshotEnd: ticker_id 8314 >
+--------------------summary--------------------
+<Contract: FAST stock SMART USD>  close_price: 43.01 
+	  bid_price: -1.0 
+	  ask_price: -1.0 
+<Option: DPW 20150619 put 29.0 DTB EUR>  close_price: 1.79 
+	  bid_price: -1.0 
+	  ask_price: -1.0 
+<Future: NQ 20150619 USD>  bid_price: 4433.75 
+	  ask_price: 4434.5 
+	  last_price: 4434.25 
+	  high: 4436.0 
+	  low: 4421.25 
+	  close_price: 4420.75 
+	  open_tick: 4423.0 
+<Stock: IBM USD> close_price: 170.55 
+	  bid_price: -1.0 
+	  ask_price: -1.0 
+<Contract: EUR forex IDEALPRO USD>  bid_price: 1.12465 
+	  ask_price: 1.12475 
+	  high: 1.1255 
+	  low: 1.12125 
+	  close_price: 1.1214 
+=end
+
