@@ -369,19 +369,31 @@ end # module
 # provide  AR4- ActiveRelation-like-methods to Array-Class
 class Array
   # returns the item (in case of first) or the hole array (in case of create)
-  def first_or_create item, condition=nil
-    if condition.present?
-      detect{|x| x[condition] == item[condition]} 
+  def first_or_create item, *condition
+    if condition.empty? 
+      detect{ |x| x == item }
+    elsif condition.size == 1
+	condition =  condition.pop
+	detect{|x| x[condition] == item[condition]} 
     else
-      detect{|x| x==item}
+	condition.map{ |c| find_all{|x| x[c] == item[c] }}.intercept
     end || self.push( item )
   end
-  def update_or_create item, condition=nil
-    member = first_or_create( item, condition) 
+  def update_or_create item, *condition
+    member = first_or_create( item, *condition) 
     self[index(member)] = item  unless member == self
     self  # always returns the array 
   end
 
+  # performs [ [array] & [array] & [..] ].first
+  def intercept
+    a = self.dup
+    s = a.pop
+    while a.present?
+      s = s & a.pop
+    end
+    s.first  # return_value (or nil)
+  end
 end
 __END__
 2.2.0 :008 > b = [ IB::Stock.new(symbol:'A'), IB::Stock.new(symbol:'T') ]
