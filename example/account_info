@@ -2,32 +2,143 @@
 #
 # This script connects to IB API, subscribes to account info and prints out
 # messages received from IB (update every 3 minute or so)
+# and prints a summay every 60 seconds
 
 require 'rubygems'
 require 'bundler/setup'
 $LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
 
-# Start the Gateway and initialize the active-accounts
-IB::Gateway.new get_account_data:true
+# Start the Gateway and initialize an environment that fetches account- and portfoliovalues 
+# continously
+gw = IB::Gateway.new subscribe_account_infos: false,  host:  'localhost'
+gw.initialize_account_infos continously: true
+gw.connect
 
-accounts = IB::Gateway.current.active_accounts
-puts ""
-accounts.each do |account|
-  puts "Contracts ------------------> #{account.account } <----------------------"
-  puts account.contracts.map( &:to_human ).join( "\n" )
-  puts "-----------------"
+# subscribe to the PortfolioValue-Event and print a message as it appears
+ gw.tws.subscribe( :PortfolioValue ) do |msg|
+   puts "PortfolioValueEvent --> #{msg.account_name} "
+   puts msg.to_human
+ end
+
+gw.get_account_data
+
+## print out continuously updated values  
+## perfom the operation in a thread-safe environment
+while 1==1 do
+  puts ""
+  gw.for_active_accounts do |account |
+    puts "Contracts ------------------> #{account.account } <----------------------"
+    puts account.contracts.map( &:to_human ).join( "\n" )
+    puts "-----------------"
+
+  end
+  gw.for_active_accounts do |account |
+    puts "Portfolio_values ------------> #{account.account } <----------------------"
+    puts account.portfolio_values.map &:to_human
+    puts "-----------------"
+  end
+
+  gw.for_active_accounts do |account |
+    puts "Account_values ------------> #{account.account } <----------------------"
+    ['PNL', 'OptionValue','FundValue','WarrantValue','OptionValue','MarketValue','TotalCash'].each do | key |
+    puts account.simple_account_data_scan(key).map{|y| [y.key,y.value,y.currency].join('::') unless y.value.to_i.zero? }.compact
+    end
+  end
+  sleep  60
 
 end
-accounts.each do |account|
-  puts "Portfolio_values ------------> #{account.account } <----------------------"
-  puts account.portfolio_values.map &:to_human
-  puts "-----------------"
-end
 
-accounts.each do |account|
-  puts "Account_values ------------> #{account.account } <----------------------"
-  puts account.account_values.map{|x| x.to_human if x.value.present? && !x.value.to_i.zero? }.compact  
-  puts "-----------------"
+__END__
+Expected output
 
-end
+PortfolioValueEvent --> DU167348 
+<PortfolioValue: <Stock: CBA AUD> (1004): Market 83.62000275 price 83954.48 value; PnL: 4273.59 unrealized, 0.0 realized; account DU167348>
+PortfolioValueEvent --> DU167348 
+<PortfolioValue: <Stock: CIEN USD> (812): Market 22.2950001 price 18103.54 value; PnL: -1120.56 unrealized, 0.0 realized; account DU167348>
+PortfolioValueEvent --> DU167348 
+(...)
+<PortfolioValue: <Stock: T USD> (-700): Market 34.06000135 price -23842.0 value; PnL: 61.56 unrealized, 0.0 realized; account DU167349>
+DU167349 => Count of AccountValues: 196 
+Contracts ------------------> DU167348 <----------------------
+  <Stock: BLUE EUR>
+<Stock: CBA AUD>
+<Stock: CIEN USD>
+<Stock: CSCO USD>
+<Stock: DBA USD>
+<Stock: GE USD>
+<Stock: LHA EUR>
+<Stock: NEU USD>
+-----------------
+  Contracts ------------------> DU167349 <----------------------
+  <Stock: AGU USD>
+<Stock: ALB USD>
+<Stock: BLUE EUR>
+<Stock: CBA AUD>
+<Stock: CIEN USD>
+<Stock: CSCO USD>
+<Stock: D USD>
+<Stock: DBA USD>
+<Stock: GE USD>
+<Stock: LHA EUR>
+<Option: LHA 20151218 call 15.0  EUR>
+<Future: NQ 20150619 USD>
+<Stock: T USD>
+-----------------
+  Portfolio_values ------------> DU167348 <----------------------
+BLUE (720): Market 25.6650009 price 18478.8 value; PnL: 2175.51 unrealized, 0.0 realized;>
+CBA (1004): Market 83.62000275 price 83954.48 value; PnL: 4273.59 unrealized, 0.0 realized;>
+CIEN (812): Market 22.2950001 price 18103.54 value; PnL: -1120.56 unrealized, 0.0 realized;>
+CSCO (44): Market 29.12999915 price 1281.72 value; PnL: 337.92 unrealized, 0.0 realized;>
+DBA (1365): Market 22.625 price 30883.12 value; PnL: -3680.04 unrealized, 0.0 realized;>
+GE (-500): Market 27.39499855 price -13697.5 value; PnL: -1217.15 unrealized, 0.0 realized;>
+LHA (10124): Market 13.875 price 140470.5 value; PnL: -15375.64 unrealized, 0.0 realized;>
+NEU (1): Market 455.33999635 price 455.34 value; PnL: 178.35 unrealized, 0.0 realized;>
+-----------------
+Portfolio_values ------------> DU167349 <----------------------
+AGU (100): Market 106.84000395 price 10684.0 value; PnL: 1404.0 unrealized, 0.0 realized;>
+ALB (48): Market 63.6400032 price 3054.72 value; PnL: 127.2 unrealized, 0.0 realized;>
+BLUE (740): Market 25.6650009 price 18992.1 value; PnL: 2243.97 unrealized, 0.0 realized;>
+CBA (1032): Market 83.62000275 price 86295.84 value; PnL: 4392.77 unrealized, 0.0 realized;>
+CIEN (28): Market 22.2950001 price 624.26 value; PnL: -39.5 unrealized, 0.0 realized;>
+CSCO (51): Market 29.12999915 price 1485.63 value; PnL: 391.68 unrealized, 0.0 realized;>
+D (1264): Market 71.4599991 price 90325.44 value; PnL: 8015.46 unrealized, 0.0 realized;>
+DBA (273): Market 22.625 price 6176.62 value; PnL: -117.39 unrealized, 0.0 realized;>
+GE (-240): Market 27.39499855 price -6574.8 value; PnL: -567.31 unrealized, 0.0 realized;>
+LHA (5146): Market 13.875 price 71400.75 value; PnL: -7753.12 unrealized, 0.0 realized;>
+C LHA  DEC 15  1500 (-10): Market 0.8223776 price -822.38 value; PnL: 286.62 unrealized, 0.0 realized;>
+NQM5 (1): Market 4481.375 price 89627.5 value; PnL: 595.48 unrealized, 0.0 realized;>
+T (-700): Market 34.06000135 price -23842.0 value; PnL: 61.56 unrealized, 0.0 realized;>
+-----------------
+Account_values ------------> DU167348 <----------------------
+StockMarketValue::83954::AUD
+StockMarketValue::251143::BASE
+StockMarketValue::158949::EUR
+StockMarketValue::37026::USD
+TotalCashBalance::-78268::AUD
+TotalCashBalance::600256::BASE
+TotalCashBalance::4884::EUR
+TotalCashBalance::-735968::JPY
+TotalCashBalance::746991::USD
+TotalCashValue::600256.24::EUR
+TotalCashValue-C::29264.21::EUR
+TotalCashValue-S::570992.03::EUR
+-----------------
+Account_values ------------> DU167349 <----------------------
+FuturesPNL::1013::BASE
+FuturesPNL::1153::USD
+StockMarketValue::86296::AUD
+StockMarketValue::223710::BASE
+OptionMarketValue::-822::BASE
+StockMarketValue::90393::EUR
+OptionMarketValue::-822::EUR
+StockMarketValue::81934::USD
+TotalCashValue::712076.09::EUR
+TotalCashValue-C::81443.51::EUR
+TotalCashValue-S::630632.58::EUR
+TotalCashBalance::1829::AUD
+TotalCashBalance::712076::BASE
+TotalCashBalance::629503::EUR
+TotalCashBalance::-23111::JPY
+TotalCashBalance::92684::USD
+

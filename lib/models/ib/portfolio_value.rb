@@ -27,7 +27,7 @@ class PortfolioValue < IB::Model
         contract == other.contract
     end
     def to_human
-      "<PortfolioValue: #{contract.to_human} (#{position}): Market #{market_price}" +
+      " #{contract.local_symbol} (#{position}): Market #{market_price}" +
       " price #{market_value} value; PnL: #{unrealized_pnl} unrealized," +
       " #{realized_pnl} realized;>"
     end

@@ -9,6 +9,7 @@ module AccountInfos
 
       when IB::Messages::Incoming::AccountValue
 	  for_selected_account( msg.account_name ) do | account |
+	    #puts "#{account.account} => AccountValue "
 	    account.account_values.update_or_create msg.account_value, :currency, :key
 	  end
 
@@ -22,6 +23,7 @@ module AccountInfos
       when IB::Messages::Incoming::PortfolioValue
 	  logger.progname = 'Gateway#account_infos'
 	  for_selected_account( msg.account_name ) do | account |
+	    #puts "#{account.account} => PortfolioValue "
 	    account.portfolio_values.update_or_create( msg.portfolio_value ){ :contract }
 	    account.contracts.update_or_create msg.contract, :con_id
 	  end
@@ -39,16 +41,19 @@ an Array of account_id and IB::Account-Objects.
 =end
   def get_account_data accounts: :all
     logger.progname = 'Gateway#get_account_data'
-    accounts =   active_accounts if accounts == :all
-    accounts = [accounts] unless  accounts.is_a? Array
-    accounts.each do | a |
-      account = if a.is_a? IB::Account
-	  active_accounts.find{|x| x == a } 
-		else
-	  active_accounts.find{|x| x.account == a } 
-		end
-      send_message :RequestAccountData, subscribe: true, account_code: account.account
-	sleep 0.2
+    a = if accounts == :all
+      active_accounts
+    else
+      accounts.is_a?( Array )? accounts : [accounts]
+    end
+    a.each do | ac |
+	account = if ac.is_a? IB::Account
+		    ac
+		  else
+		    active_accounts.find{|x| x.account == ac } 
+		  end
+	send_message :RequestAccountData, subscribe: true, account_code: account.account
+	sleep 1
     end
 
 
