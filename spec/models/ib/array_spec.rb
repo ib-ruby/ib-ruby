@@ -3,9 +3,8 @@ require 'spec_helper'
 
 describe Array do
 
-  let( :valid_advisors )  { ['F1021786', 'F653317' ] }
-      let( :an_array ) { Array.new }
   context '#update_or_create' do
+  let( :an_array ) { Array.new }
     context 'a simple array' do
       it "each call increments the array-size" do
 	expect{ 0.upto(10){|x|  an_array.update_or_create(x) } }.to change{ an_array.size }.by 11 
@@ -13,6 +12,7 @@ describe Array do
       end
       it "update works" do
 	an_array.update_or_create 5 
+	an_array.update_or_create 6 
 	expect{ an_array.update_or_create 5 }.not_to change{ an_array.size }
       end
     end
@@ -22,6 +22,7 @@ describe Array do
       end
       it "update works" do
 	an_array.update_or_create({ x: 5, y: '5'})   
+	an_array.update_or_create({ x: 5, y: '6'})   
 	expect{ an_array.update_or_create( { x: 5, y: '5' }, :y) }.not_to change{ an_array.size }
       end
 
@@ -47,10 +48,37 @@ describe Array do
 	expect( an_array.size ).to eq 2
       end
 
-    end
-  end
+
+
+    end # context
+
+    context "Relation check" do
+      before { Relation = Struct.new( :has_one, :has_many ) }
+      let( :items ) { Relation.new :eins, { a:1, b:2} }
+
+      it "simple array with relation"  do
+	expect{ 0.upto(10){|x|  an_array.update_or_create( Relation.new( x.to_s, {a: x, b: x*10 })) } }.to change{ an_array.size }.by 11 
+	expect{  an_array.update_or_create( items ){ :has_one } }.to change { an_array.size}.by 1
+	expect{  an_array.update_or_create( items ){ :has_one } }.not_to change { an_array.size }
+	updated_item = Relation.new :eins, { a:1, b: 22 } 
+	expect{  an_array.update_or_create( updated_item  ){ :has_one } }.not_to change { an_array.size}
+	expect( an_array.detect{|x| x.has_one== :eins }.has_many ).to eq updated_item.has_many
+
+      end
+      it "complex array with relation"  do
+	expect{ 0.upto(10){|x|  an_array.update_or_create(  IB::PortfolioValue.new( position: x , contract: IB::Stock.new( symbol:x.to_s) ))}}.to change{ an_array.size }.by 11 
+
+
+	expect{  an_array.update_or_create(  IB::PortfolioValue.new position: 56, contract: IB::Stock.new( symbol:'IBM') ){ :contract } }.to change { an_array.size}.by 1
+	expect{  an_array.update_or_create(  IB::PortfolioValue.new position: 56, contract: IB::Stock.new( symbol:'IBM') ){ :contract } }.not_to change { an_array.size}
+
+      end
+
+    end  # context
+    
+  end  # context
 
 
 
 
-end
+end  # describe

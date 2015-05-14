@@ -19,9 +19,12 @@ class PortfolioValue < IB::Model
     def == other
       super(other) ||
         other.is_a?(self.class) &&
-        key == other.key &&
-        currency == other.currency &&
-        value == other.value 
+        market_price == other.market_price &&
+        average_cost == other.average_cost &&
+        position == other.position &&
+	unrealized_pnl == other.unrealized_pnl  &&
+	realized_pnl == other.realized_pnl &&
+        contract == other.contract
     end
     def to_human
       "<PortfolioValue: #{contract.to_human} (#{position}): Market #{market_price}" +
