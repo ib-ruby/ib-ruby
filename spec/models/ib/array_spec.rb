@@ -53,10 +53,10 @@ describe Array do
     end # context
 
     context "Relation check" do
-      before { Relation = Struct.new( :has_one, :has_many ) }
-      let( :items ) { Relation.new :eins, { a:1, b:2} }
+      before(:all) { Relation = Struct.new( :has_one, :has_many ) }
 
       it "simple array with relation"  do
+      items = Relation.new( :eins, { a:1, b:2 } )
 	expect{ 0.upto(10){|x|  an_array.update_or_create( Relation.new( x.to_s, {a: x, b: x*10 })) } }.to change{ an_array.size }.by 11 
 	expect{  an_array.update_or_create( items ){ :has_one } }.to change { an_array.size}.by 1
 	expect{  an_array.update_or_create( items ){ :has_one } }.not_to change { an_array.size }
@@ -70,7 +70,10 @@ describe Array do
 
 
 	expect{  an_array.update_or_create(  IB::PortfolioValue.new position: 56, contract: IB::Stock.new( symbol:'IBM') ){ :contract } }.to change { an_array.size}.by 1
-	expect{  an_array.update_or_create(  IB::PortfolioValue.new position: 56, contract: IB::Stock.new( symbol:'IBM') ){ :contract } }.not_to change { an_array.size}
+	expect{  an_array.update_or_create(  IB::PortfolioValue.new position: 156, contract: IB::Stock.new( symbol:'IBM') ){ :contract } }.not_to change { an_array.size}
+#	puts an_array.detect{|x| x.contract ==  IB::Stock.new(:symbol =>'IBM')}.inspect
+	expect{  an_array.update_or_create(  IB::PortfolioValue.new position: 256, contract: IB::Stock.new( symbol:'IBM') ){ :contract } }.to change { an_array.detect{|x| x.contract ==  IB::Stock.new(:symbol =>'IBM')}.position }.by( 100 )
+#	puts an_array.detect{|x| x.contract ==  IB::Stock.new(:symbol =>'IBM')}.inspect
 
       end
 
