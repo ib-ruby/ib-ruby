@@ -369,25 +369,34 @@ end # module
 # provide  AR4- ActiveRelation-like-methods to Array-Class
 class Array
   # returns the item (in case of first) or the hole array (in case of create)
-  def first_or_create item, condition=nil
-    if condition.present?
-      detect{|x| x[condition] == item[condition]} 
-    else
-      detect{|x| x==item}
-    end || self.push( item )
+  def first_or_create item, *condition, &b
+    int_array = if condition.empty? 
+	       [ find_all{ |x| x == item } ] if !block_given?
+	     else
+	       condition.map{ |c| find_all{|x| x[ c ] == item[ c ] }}
+	     end || []
+    if block_given?
+      relation = yield
+      part_2 = find_all{ |x| x.send( relation ) == item.send( relation ) }
+      int_array <<  part_2 unless part_2.empty?
+    end
+	       
+    int_array.intercept || self.push( item ) 
   end
-  def update_or_create item, condition=nil
-    member = first_or_create( item, condition) 
-    self[index(member)] = item  unless member == self
+  def update_or_create item, *condition, &b
+    member = first_or_create( item, *condition, &b) 
+    self[ index( member ) ] = item  unless member == self
     self  # always returns the array 
   end
 
+  # performs [ [ array ] & [ array ] & [..] ].first
+  def intercept
+    a = self.dup
+    s = a.pop
+    while a.present?
+      s = s & a.pop
+    end
+    s.first unless s.nil?  # return_value (or nil)
+  end
 end
 __END__
-2.2.0 :008 > b = [ IB::Stock.new(symbol:'A'), IB::Stock.new(symbol:'T') ]
- => [#<IB::Stock:0x00000002392d88 @attributes={"symbol"=>"A", "created_at"=>2015-03-28 09:22:37 +0100, "updated_at"=>2015-03-28 09:22:37 +0100, "right"=>"", "include_expired"=>false, "sec_type"=>"STK", "currency"=>"USD", "exchange"=>"SMART"}>, #<IB::Stock:0x00000002391ac8 @attributes={"symbol"=>"T", "created_at"=>2015-03-28 09:22:37 +0100, "updated_at"=>2015-03-28 09:22:37 +0100, "right"=>"", "include_expired"=>false, "sec_type"=>"STK", "currency"=>"USD", "exchange"=>"SMART"}>] 
-   2.2.0 :009 > t = IB::Stock.new( symbol:'A', con_id:1234 )
-  => #<IB::Stock:0x0000000240c6d8 @attributes={"symbol"=>"A", "con_id"=>1234, "created_at"=>2015-03-28 09:23:33 +0100, "updated_at"=>2015-03-28 09:23:33 +0100, "right"=>"", "include_expired"=>false, "sec_type"=>"STK", "currency"=>"USD", "exchange"=>"SMART"}> 
-  2.2.0 :010 > b.update_or_create t, :symbol 
-   => [#<IB::Stock:0x0000000240c6d8 @attributes={"symbol"=>"A", "con_id"=>1234, "created_at"=>2015-03-28 09:23:33 +0100, "updated_at"=>2015-03-28 09:23:33 +0100, "right"=>"", "include_expired"=>false, "sec_type"=>"STK", "currency"=>"USD", "exchange"=>"SMART"}>, #<IB::Stock:0x00000002391ac8 @attributes={"symbol"=>"T", "created_at"=>2015-03-28 09:22:37 +0100, "updated_at"=>2015-03-28 09:22:37 +0100, "right"=>"", "include_expired"=>false, "sec_type"=>"STK", "currency"=>"USD", "exchange"=>"SMART"}>] 
-
