@@ -22,9 +22,9 @@ if OPTS[:brokertron]
   }
 else
   # Connection to IB PAPER ACCOUNT
-  ACCOUNT ||= 'DU60320' # Set this to your Paper Account Number
+  ACCOUNT ||=  'DU167348' # 'DF167347' # Set this to your Paper Account Number
   HOST ||= '127.0.0.1'
-  PORT ||= 4001
+  PORT ||= 7496
 
   OPTS[:connection] = {
     :account => ACCOUNT, # Your IB PAPER ACCOUNT, tests will only run against it

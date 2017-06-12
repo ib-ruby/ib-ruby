@@ -6,7 +6,7 @@ module IB
     extend ActiveModel::Callbacks
     include ActiveModel::Validations
     include ActiveModel::Serialization
-    include ActiveModel::Serializers::Xml
+    #include ActiveModel::Serializers::Xml
     include ActiveModel::Serializers::JSON
 
     define_model_callbacks :initialize

@@ -25,7 +25,7 @@ shared_examples_for 'Connected Connection without receiver' do
   its(:server_version) { should be_an Integer }
   its(:client_version) { should be_an Integer }
   its(:subscribers) { is_expected.not_to be_empty } # :NextValidId and empty Hashes
-  its(:next_local_id) { should be_a Fixnum } # Not before :NextValidId arrives
+  its(:next_local_id) { should be_an Integer } # Not before :NextValidId arrives
 end
 
 # Need top level method to access instance var (@received) in nested context
@@ -108,14 +108,15 @@ describe IB::Connection do
         context 'when subscribed' do
 
           before(:all) do
-            @ib.send_message :RequestAccountData
+            @ib.send_message :RequestAccountData, subscribe: true , account_code: ACCOUNT
             @ib.wait_for :AccountDownloadEnd, 3
           end
 
-          after(:all) { @ib.send_message :RequestAccountData, :subscribe => false }
+          after(:all) { @ib.send_message :RequestAccountData, subscribe: false, account_code: ACCOUNT }
 
           it 'receives subscribed message types and processes them in subscriber callback' do
             print "Sad API Warning for new accounts PortfolioValue can be empty causing a series of spec errors."
+	    puts @received.inspect
             expect(@received[:AccountValue]).not_to be_empty
             expect(@received[:PortfolioValue]).not_to be_empty
             expect(@received[:AccountDownloadEnd]).not_to be_empty
@@ -160,11 +161,11 @@ describe IB::Connection do
       context 'when unsubscribed' do
 
         before(:all) do
-          @ib.send_message :RequestAccountData
+          @ib.send_message :RequestAccountData, subscribe: true , account_code: ACCOUNT
           @ib.wait_for { !@received[:AccountDownloadEnd].empty? }
         end
 
-        after(:all) { @ib.send_message :RequestAccountData, :subscribe => false }
+        after(:all) { @ib.send_message :RequestAccountData,  subscribe: false , account_code: ACCOUNT }
 
         it 'receives subscribed message types still subscribed' do
           expect(@received[:AccountValue]).not_to be_empty
