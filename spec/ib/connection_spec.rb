@@ -116,7 +116,6 @@ describe IB::Connection do
 
           it 'receives subscribed message types and processes them in subscriber callback' do
             print "Sad API Warning for new accounts PortfolioValue can be empty causing a series of spec errors."
-	    puts @received.inspect
             expect(@received[:AccountValue]).not_to be_empty
             expect(@received[:PortfolioValue]).not_to be_empty
             expect(@received[:AccountDownloadEnd]).not_to be_empty
