@@ -10,6 +10,7 @@ module IB
       class AbstractMessage < IB::Messages::AbstractMessage
 
         attr_accessor :socket
+        attr_accessor :raw_data  # is an array
 
         def version # Per message, received messages may have the different versions
           @data[:version]
@@ -26,10 +27,14 @@ module IB
           @created_at = Time.now
           if source.is_a?(Hash)  # Source is a @data Hash
             @data = source
-          else # Source is a Socket
-            @socket = source
-            @data = Hash.new
-            self.load
+	  else
+	    if source.is_a?(Array)
+	      @raw_data = source
+	    else # Source is a Socket
+	      @socket = source
+	    end
+	    @data = Hash.new
+	    self.load
           end
         end
 
@@ -43,7 +48,9 @@ module IB
 
             load_map *self.class.data_map
           else
-            raise "Unable to load, no socket"
+	    @data[:version] = @raw_data.shift.to_i
+            #raise "Unable to load, no socket"
+            load_map *self.class.data_map
           end
 
         rescue => e
@@ -80,7 +87,21 @@ module IB
                 instruction # [ :group, :name, :type, (:block)]
               end
 
-              data = socket.__send__("read_#{type}", &block)
+              data = if socket
+		       socket.__send__("read_#{type}", &block)
+		     else
+		       case type
+		       when :int
+			 @raw_data.shift.to_i
+		       when :string
+			 @raw_data.shift
+
+		       else
+		       puts "READ -->  #{type}, #{type.class}."
+		       puts "raw-data: #{@raw_data}"
+		       nil
+		       end
+		     end
               if group
                 @data[group] ||= {}
                 @data[group][name] = data

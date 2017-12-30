@@ -56,9 +56,13 @@ module IB
         def load
           super
 
+	  #  puts "!TTTTT!"
+	  #  puts @data.inspect
           @data[:contract_detail][:sec_id_list] ||= HashWithIndifferentAccess.new
           @data[:sec_id_list_count].times do
             @data[:contract_detail][:sec_id_list][socket.read_string] = socket.read_string
+#	    puts "!TTTTT!"
+#	    puts @data.inspect
           end
         end
 
