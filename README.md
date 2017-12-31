@@ -2,7 +2,7 @@
 
 Ruby Implementation of the Interactive Brokers Trader Workstation (TWS) API v.965-967.
 
-Copyright (C) 2006-2013 Paul Legato, Wes Devauld, and Ar Vicco.
+Copyright (C) 2006-2018 Paul Legato, Wes Devauld, Ar Vicco and Hartmut Bischoff.
 
 https://github.com/ib-ruby/ib-ruby
 
@@ -13,9 +13,8 @@ You've been warned.
 
 This code is not sanctioned or supported by Interactive Brokers.
 
-##ANNOUNCE:
-Checkout Branch »Gateway«  for support of FA-(aka Friends & Family)-Accounts.
-Its a release-candidate for Version 0.9.3
+## ANNOUNCE:
+We are preparing a new realease that supports the most recent TWS Version: 968 (ServerVersion: 136). Check the Branch »r24_tws963«.
 
 ## SUMMARY:
 
