@@ -11,7 +11,7 @@ class Symbol
 end
 class String
   def tws
-    self[-1] == EOL ? self : self+EOL
+    self[-1] == IB::EOL ? self : self+IB::EOL
   end
 end
 
@@ -52,8 +52,13 @@ module IB
     end
 
     def decode_message msg
+      unless msg.blank?
       size= msg[0..4].unpack("N").first
       message =  msg[4..-1].unpack("A#{size}").first.split("\0")
+      else
+	error "cannot decode an empty message"
+	""
+      end
     end
   end
 
@@ -86,9 +91,15 @@ module IB
     # calls prepare_message to convert data-elements into NULL-terminated strings
     def send_messages *data
       self.syswrite prepare_message(data)
+    rescue Errno::ECONNRESET =>  e
+      logger.error{ "Data not accepted by IB \n
+		    #{data.inspect} \n
+		    Backtrace:\n "}
+      logger.error   e.backtrace
     end
   
     def recieve_messages
+      begin
       complete_message_buffer = []
       begin 
 	# this is the blocking version of recv
@@ -97,6 +108,13 @@ module IB
 
       end while buffer.size == 4096
       complete_message_buffer.join('')
+    rescue Errno::ECONNRESET =>  e
+      logger.error{ "Data Buffer is not filling \n
+		    The Buffer: #{buffer.inspect} \n
+		    Backtrace:\n "}
+      logger.error   e.backtrace
+      Kernel.exit
+    end
     end
 
  #def _recvAllMsg(self):

@@ -24,7 +24,7 @@ module IB
         # each one and postpending a '\0'.
         #
         def send_to socket
-          self.preprocess.each {|data| socket.write_data data}
+          socket.send_messages self.preprocess #.each {|data| socket.write_data data}
         end
 
         # Same message representation as logged by TWS into API messages log file

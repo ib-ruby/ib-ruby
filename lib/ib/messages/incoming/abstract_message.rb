@@ -43,16 +43,14 @@ module IB
         def load
           if socket
             @data[:version] = socket.read_int
-
-            check_version @data[:version], self.class.version
-
-            load_map *self.class.data_map
-          else
+	  elsif @raw_data.is_a? Array
 	    @data[:version] = @raw_data.shift.to_i
-            #raise "Unable to load, no socket"
+	  else
+            raise "Unable to load, no socket/buffer"
+	    return
+	  end
+            check_version @data[:version], self.class.version
             load_map *self.class.data_map
-          end
-
         rescue => e
           error "Reading #{self.class}: #{e.class}: #{e.message}", :load, e.backtrace
         end
@@ -95,6 +93,8 @@ module IB
 			 @raw_data.shift.to_i
 		       when :string
 			 @raw_data.shift
+		       when :decimal, :decimal_max
+			 @raw_data.shift.to_d 
 
 		       else
 		       puts "READ -->  #{type}, #{type.class}."

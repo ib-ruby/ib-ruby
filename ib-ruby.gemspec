@@ -1,5 +1,3 @@
-# -*- encoding: utf-8 -*-
-
 Gem::Specification.new do |gem|
   gem.name = "ib-ruby"
   gem.version = File.open('VERSION').read.strip
@@ -21,7 +19,7 @@ Gem::Specification.new do |gem|
   gem.require_paths = ['lib']
 
   # Dependencies
-  gem.add_dependency 'bundler', '>= 1.1.15'
+  gem.add_dependency 'bundler', '>= 1.1.16'
  # gem.add_dependency 'activerecord', '>= 3.2.0'
   #gem.add_dependency 'activerecord-jdbcsqlite3-adapter', '>= 1.2.2'
   #gem.add_dependency 'jdbc-sqlite3', '>= 3.7.2'
@@ -36,7 +34,9 @@ Gem::Specification.new do |gem|
  # gem.add_development_dependency 'rspec-rails', '~> 2.10.1'
  # gem.add_development_dependency 'capybara'
  # gem.add_development_dependency 'combustion'
-  gem.add_development_dependency 'pry'
-  gem.add_development_dependency 'pry-doc'
+ # gem.add_development_dependency 'pry'
+ # gem.add_development_dependency 'pry-doc'	# the gem is not working with ruby 2.5
  # gem.add_development_dependency 'pry-rails'
 end
+
+### last updated on 2017/12/26

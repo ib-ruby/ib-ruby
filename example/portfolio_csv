@@ -3,7 +3,6 @@
 # This script exports your IB portfolio in a CSV format. Usage:
 # $ example/portfolio_csv [account] > portfolio.csv
 
-require 'rubygems'
 require 'bundler/setup'
 $LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
@@ -15,7 +14,7 @@ account = ARGV[0] || ''
 log.level = Logger::FATAL
 
 # Connect to IB TWS
-ib = IB::Connection.new :client_id => 1112, :port => 7496 # TWS
+ib = IB::Connection.new :client_id => 1112 # , :port => 7496 # TWS
 
 # Redirect TWS alerts/errors to STDERR to keep output file clean
 ib.subscribe(:Alert) { |msg| STDERR.puts msg.to_human }

@@ -1,5 +1,6 @@
 require 'rspec'
 require 'rspec/its'
+require 'rspec/collection_matchers'
 require 'ib'
 require 'pp'
 
@@ -24,7 +25,7 @@ else
   # Connection to IB PAPER ACCOUNT
   ACCOUNT ||=  'DU167348' # 'DF167347' # Set this to your Paper Account Number
   HOST ||= '127.0.0.1'
-  PORT ||= 7496
+  PORT ||= 4002 # 7496
 
   OPTS[:connection] = {
     :account => ACCOUNT, # Your IB PAPER ACCOUNT, tests will only run against it
@@ -45,6 +46,10 @@ RSpec.configure do |config|
   # config.mock_with :mocha
   # config.mock_with :flexmock
   # config.mock_with :rr
+	# ermöglicht die Einschränkung der zu testenden Specs
+	# durch  >>it "irgendwas", :focus => true do <<
+	#
+  config.filter_run focus:true
 
   config.exclusion_filter = {
     :if => proc do |condition|

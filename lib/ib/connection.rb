@@ -31,15 +31,15 @@ module IB
     attr_accessor  :socket #   Socket to IB server (TWS or Gateway)
     attr_accessor  :next_local_id # Next valid order id 
     attr_accessor  :client_id 
+    attr_accessor  :server_version
+    attr_accessor  :client_version
     alias next_order_id next_local_id
     alias next_order_id= next_local_id=
-
-    #def initialize opts = {}
+    
     def initialize host: '127.0.0.1',
                    port: '4002', # IB Gateway connection (default)
                        #:port => '7496', # TWS connection
                    connect: true, # Connect at initialization
-                   reader:  true, # Start a separate reader Thread
                    received:  true, # Keep all received messages in a @received Hash
                    logger: default_logger,
                    client_id: random_id, 
@@ -53,36 +53,20 @@ module IB
       case k
       when :logger
 	self.logger = logger  
-#      when :client_id
-#	self.client_id = client_id
       else
 	v = eval(k.to_s)
 	instance_variable_set("@#{k}", v) unless v.nil?
       end
     end
-                       
 
       # A couple of locks to avoid race conditions in JRuby
       @subscribe_lock = Mutex.new
       @receive_lock = Mutex.new
       @message_lock = Mutex.new
 
-
-
       @connected = false
       self.next_local_id = nil
-
-      open() if connect
-  #    Connection.current = self
-    end
-
-    ### Working with connection
-
-    def connect
-	logger.progname='IB::Connection#connect' if logger.is_a?(Logger)
-	logger.error { "Already connected!"} if connected?
-
-      # TWS always sends NextValidId message at connect - save this id
+      # TWS always sends NextValidId message at connect -subscribe once and  save this id
       self.subscribe(:NextValidId) do |msg|
 	logger.progname = "Connection#connect"
         self.next_local_id = msg.local_id
@@ -90,6 +74,36 @@ module IB
 	## this block is executed after the tws-communications are established
 	yield self if block_given?
       end
+  
+      # Ensure the transmission of NextValidId.
+      # Try 5 reconnection-attemps. 
+      # Then the TWS has to be restarted
+      if connect
+	a = 0
+	begin
+	  disconnect if connected?
+	  open() 
+	  wait_for  :NextValidId, 1
+	  a += 1
+	  if a == 5
+	    error 'Next Order ID not transmitted,  restart TWS/Gateway'
+	    Kernel.exit
+	  end
+	end while self.next_local_id.nil?
+      end
+
+      Connection.current = self
+    end
+
+    ### Working with connection
+
+    def connect
+	logger.progname='IB::Connection#connect' if logger.is_a?(Logger)
+	if connected?
+	  error  "Already connected!"
+	  return
+	end
+
 
       @socket = IBSocket.open(@host, @port)
 
@@ -102,7 +116,7 @@ module IB
 #      if @server_version > ib_server_version
 #        logger.error { "Server version #{ib_server_version}, #{@server_version} required." }
 #      end
-      @server_version =  used_server
+      @server_version =  used_server.to_i
       @remote_connect_time = DateTime.parse current_date
       @local_connect_time = Time.now
 
@@ -110,18 +124,20 @@ module IB
       # The client with a client_id of 0 can manage the TWS-owned open orders.
       # Other clients can only manage their own open orders.
 #      socket.write_data @client_id
+      start_reader  # Allows reconnect
 
+      # V100 initial handshake
+      # Parameters borrowed from the python client
       start_api = 71
       version = 2
       optcapab =  ""
       @socket.send_messages start_api, version, @client_id  , optcapab
 
       @connected = true
-      logger.info { "Connected to server, ver: #{@server_version},\n connection time: " +
+      logger.info { "Connected to server, version: #{@server_version},\n connection time: " +
         "#{@local_connect_time} local, " +
         "#{@remote_connect_time} remote."}
 
-      start_reader if @reader # Allows reconnect
 
     end
 
@@ -225,7 +241,7 @@ module IB
       conditions = args.delete_if { |arg| arg.is_a? Numeric }.push(block).compact
 
       until end_time < Time.now || satisfied?(*conditions)
-        if @reader
+        if reader_running?
           sleep 0.05
         else
           process_messages 50
@@ -305,9 +321,9 @@ module IB
       logger.progname='IB::Connection#process_message' if logger.is_a?(Logger)
 
       the_buffer =  @socket.recieve_messages
-    the_coded_message = @socket.decode_message the_buffer
-    puts "THE CODED MESSAGE #{ the_coded_message.inspect}"
-      msg_id = the_coded_message.shift.to_i
+    the_decoded_message = @socket.decode_message the_buffer
+    #puts "THE CODED MESSAGE #{ the_coded_message.inspect}"
+      msg_id = the_decoded_message.shift.to_i
 
       # Debug:
       logger.debug { "Got message #{msg_id} (#{Messages::Incoming::Classes[msg_id]})"}
@@ -316,7 +332,7 @@ module IB
       # and have it read the message from socket.
       # NB: Failure here usually means unsupported message type received
       logger.error { "Got unsupported message #{msg_id}" } unless Messages::Incoming::Classes[msg_id]
-      msg = Messages::Incoming::Classes[msg_id].new(the_coded_message)
+      msg = Messages::Incoming::Classes[msg_id].new(the_decoded_message)
 
       # Deliver message to all registered subscribers, alert if no subscribers
       # Ruby 2.0 and above: Hashes are ordered. 
