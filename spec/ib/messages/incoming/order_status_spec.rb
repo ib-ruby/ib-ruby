@@ -33,7 +33,7 @@ shared_examples_for 'OrderStatus message' do
 
 end
 
-describe IB::Messages::Incoming::OrderStatus do
+describe IB::Messages::Incoming::OrderStatus , focus: true do
 
   context 'Instantiated with data Hash' do
     subject do
@@ -57,7 +57,7 @@ describe IB::Messages::Incoming::OrderStatus do
     before(:all) do
       verify_account
       @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
-      @ib.wait_for :NextValidId, 3
+   #  @ib.wait_for :NextValidId, 3
       @local_id = @ib.next_local_id
       place_order IB::Symbols::Stocks[:wfc]
       @ib.wait_for 2 # OrderStatus for cancelled orders from previous specs arrives first :(

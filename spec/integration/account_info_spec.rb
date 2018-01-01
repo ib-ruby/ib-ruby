@@ -22,7 +22,7 @@ describe "Request Account Data", :connected => true, :integration => true do
     it_behaves_like 'Valid account data request'
   end
 
-  context "without subscribe option", focus:true do
+  context "without subscribe option" do
     before(:all) do
       @ib.send_message :RequestAccountData,  account_code: ACCOUNT
       @ib.wait_for :AccountDownloadEnd, 5 # sec

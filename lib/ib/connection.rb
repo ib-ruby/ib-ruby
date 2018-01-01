@@ -105,11 +105,11 @@ module IB
 	end
 
 
-      @socket = IBSocket.open(@host, @port)
+      self.socket = IBSocket.open(@host, @port)
 
-      @socket.initialising_handshake
-      the_buffer =  @socket.recieve_messages
-      used_server, current_date = @socket.decode_message the_buffer
+      socket.initialising_handshake
+      the_buffer =  socket.recieve_messages
+      used_server, current_date = socket.decode_message the_buffer
 #      ib_server_version = socket.read_int
       #     todo:  hier so etwas wie: Server-Version wird nicht unterstützt einfügen,
       #		   falls eine ServerVersion <> 136 zurück gegeben wird.
@@ -131,7 +131,7 @@ module IB
       start_api = 71
       version = 2
       optcapab =  ""
-      @socket.send_messages start_api, version, @client_id  , optcapab
+      socket.send_messages start_api, version, @client_id  , optcapab
 
       @connected = true
       logger.info { "Connected to server, version: #{@server_version},\n connection time: " +
@@ -320,9 +320,9 @@ module IB
     def process_message
       logger.progname='IB::Connection#process_message' if logger.is_a?(Logger)
 
-      the_buffer =  @socket.recieve_messages
-    the_decoded_message = @socket.decode_message the_buffer
-    #puts "THE CODED MESSAGE #{ the_coded_message.inspect}"
+      the_buffer =  socket.recieve_messages
+    the_decoded_message = socket.decode_message the_buffer
+    #puts "THE deCODED MESSAGE #{ the_decoded_message.inspect}"
       msg_id = the_decoded_message.shift.to_i
 
       # Debug:

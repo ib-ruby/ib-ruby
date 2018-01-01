@@ -1,16 +1,39 @@
 require 'ib/messages/abstract_message'
+module IBSupport
+  refine Array do
+    def read_int
+      self.shift.to_i rescue 0
+    end
 
+    def read_decimal
+      self.shift.to_d  rescue 0
+    end
+
+    alias read_decimal_max read_decimal
+
+    def read_string
+      self.shift rescue ""
+    end
+
+    def read_boolean
+      v = self.shift rescue nil
+      v.nil? ? false : v.to_i != 0
+    end
+  end
+end
 module IB
   module Messages
     module Incoming
+
+    using IBSupport
+  
 
       # Container for specific message classes, keyed by their message_ids
       Classes = {}
 
       class AbstractMessage < IB::Messages::AbstractMessage
 
-        attr_accessor :socket
-        attr_accessor :raw_data  # is an array
+        attr_accessor :buffer # is an array
 
         def version # Per message, received messages may have the different versions
           @data[:version]
@@ -28,11 +51,7 @@ module IB
           if source.is_a?(Hash)  # Source is a @data Hash
             @data = source
 	  else
-	    if source.is_a?(Array)
-	      @raw_data = source
-	    else # Source is a Socket
-	      @socket = source
-	    end
+	    @buffer = source
 	    @data = Hash.new
 	    self.load
           end
@@ -41,14 +60,7 @@ module IB
         # Every message loads received message version first
         # Override the load method in your subclass to do actual reading into @data.
         def load
-          if socket
-            @data[:version] = socket.read_int
-	  elsif @raw_data.is_a? Array
-	    @data[:version] = @raw_data.shift.to_i
-	  else
-            raise "Unable to load, no socket/buffer"
-	    return
-	  end
+            @data[:version] = @buffer.read_int
             check_version @data[:version], self.class.version
             load_map *self.class.data_map
         rescue => e
@@ -85,23 +97,8 @@ module IB
                 instruction # [ :group, :name, :type, (:block)]
               end
 
-              data = if socket
-		       socket.__send__("read_#{type}", &block)
-		     else
-		       case type
-		       when :int
-			 @raw_data.shift.to_i
-		       when :string
-			 @raw_data.shift
-		       when :decimal, :decimal_max
-			 @raw_data.shift.to_d 
+              data = @buffer.__send__("read_#{type}", &block)
 
-		       else
-		       puts "READ -->  #{type}, #{type.class}."
-		       puts "raw-data: #{@raw_data}"
-		       nil
-		       end
-		     end
               if group
                 @data[group] ||= {}
                 @data[group][name] = data
