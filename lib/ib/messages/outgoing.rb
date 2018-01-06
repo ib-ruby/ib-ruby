@@ -93,7 +93,7 @@ module IB
       # You'll get several ContractData (10) messages back if there is more than one match.
       # When all the matches are delivered you'll get ContractDataEnd (52) message.
       RequestContractDetails = RequestContractData =
-          def_message([9, 6],
+          def_message([9, 8],
                       [:contract, :serialize_short, [:con_id, :include_expired, :sec_id]])
 
       # data = { :id => ticker_id (int), :contract => Contract, :num_rows => int }

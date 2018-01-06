@@ -13,7 +13,7 @@ require 'ib-ruby'
 log.level = Logger::DEBUG #FATAL
 include IB
 # Connect to IB TWS
-ib = Connection.new :client_id => 1112, :port => 4002 #,, :port => 7496 # TWS
+ib = Connection.new :client_id => 1113, :port => 4002 #,, :port => 7496 # TWS
 
 # Only for Advisor accounts: you need to provide account_code such as U666777
 account_code = ARGV[0] || ''

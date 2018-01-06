@@ -21,7 +21,8 @@ module IB
 
                     [:contract, :con_id, :int],
                     [:contract_detail, :min_tick, :decimal],
-                    [:contract, :multiplier, :string],
+                    [:contract_detail, :md_size_multiplier, :int],
+                    [:contract, :multiplier, :int],
                     [:contract_detail, :order_types, :string],
                     [:contract_detail, :valid_exchanges, :string],
                     [:contract_detail, :price_magnifier, :int],

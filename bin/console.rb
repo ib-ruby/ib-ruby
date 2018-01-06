@@ -22,5 +22,18 @@ require 'ib-ruby'
  
   include IB
   require 'irb'
+  client_id = ARGV[0] || 2000
+  port = ARGV[1] || 4002
   ARGV.clear
+
+  C =  Connection.new  client_id: client_id, port: port
+  C.subscribe( :ContractData, :BondContractData) { |msg| puts(msg.contract.inspect + "\n") }
+  					    
+  C.subscribe( :Alert, :ContractDataEnd, :ManagedAccounts ) {| m| puts m.to_human }
+  C.subscribe( :PortfolioValue, :AccountValue ) {| m| puts m.to_human }
+  
+  puts  "Connection established on Port  #{port}, client_id #{client_id} used"
+  puts  "C points to the connection-instance"
+  puts  "some basic Alerts are subcribed and accordingly displayed"
+
   IRB.start(__FILE__)

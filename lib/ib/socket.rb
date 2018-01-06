@@ -2,7 +2,11 @@ require 'socket'
 module IBSupport
   refine  Array do
   def tws
+    if blank?
+      nil.tws
+    else
     self.map( &:tws ).join
+    end
   end
 end
   refine  Symbol do
@@ -10,11 +14,15 @@ end
     self.to_s.tws
   end
 end
- refine String do
-  def tws
-    self[-1] == IB::EOL ? self : self+IB::EOL
+  refine String do
+    def tws
+      if empty?
+	''+IB::EOL
+      else
+	self[-1] == IB::EOL ? self : self+IB::EOL
+      end
+    end
   end
-end
 
  refine  Numeric do
   def tws
@@ -36,7 +44,7 @@ end
 
 refine NilClass do
   def tws
-    0.tws
+    IB::EOL
   end
 end
 end
@@ -48,7 +56,7 @@ module IB
     def prepare_message data
       data =  data.tws unless data.is_a?(String) && data[-1]== EOL
       matrize = [data.size,data]
-      if block_given?
+      if block_given?	    # A user defined decoding-sequence is accepted via block
 	matrize.pack yield
       else
 	matrize.pack  "Na*"
@@ -57,10 +65,12 @@ module IB
 
     def decode_message msg
       unless msg.blank?
+	# the first item is the length
       size= msg[0..4].unpack("N").first
+        # followed by a sequence of characters
       message =  msg[4..-1].unpack("A#{size}").first.split("\0")
       else
-	error "cannot decode an empty message"
+	error "cannot decode an empty message", :reader
 	""
       end
     end
@@ -86,6 +96,20 @@ module IB
     # [QO] INFO  [JTS-EServerSocket-287] - [2147483647:136:136:1:0:0:0:SYS] Client version is 136
     # [QO] INFO  [JTS-EServerSocket-287] - [2147483647:136:136:1:0:0:0:SYS] is 3rdParty true
     ## end tws-log
+
+
+    def read_string
+      string = self.gets(EOL)
+
+      until string
+	# Silently ignores nils
+	string = self.gets(EOL)
+	sleep 0.1
+      end
+
+      string.chop
+    end
+
 
     # Sends null terminated data string into socket
     def write_data data

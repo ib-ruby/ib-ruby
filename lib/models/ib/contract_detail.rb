@@ -44,7 +44,9 @@ module IB
       #          the price by the approximate multiplier.
 
       :sec_id_list, # Hash with multiple Security ids
-
+      # MD Size Multiplier. Returns the size multiplier for values returned to tickSize from a market data request. Generally 100 for US stocks and 1 for other instruments.
+      :md_size_multiplier,
+#
       # BOND values:
       :cusip, # The nine-character bond CUSIP or the 12-character SEDOL.
       :ratings, # Credit rating of the issuer. Higher rating is less risky investment.

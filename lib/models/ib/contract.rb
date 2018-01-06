@@ -119,20 +119,21 @@ module IB
     # Note that it does NOT include the combo legs.
     # serialize [:option, :con_id, :include_expired, :sec_id]
     def serialize *fields
-      [(fields.include?(:con_id) ? [con_id] : []),
+      [(fields.include?(:con_id) && con_id.to_i > 0 ? [con_id] : nil),
        symbol,
        self[:sec_type],
        (fields.include?(:option) ?
         [expiry,
          strike,
          self[:right],
-         multiplier] : []),
+         multiplier] : nil),
        exchange,
-       (fields.include?(:primary_exchange) ? [primary_exchange] : []),
+       (fields.include?(:primary_exchange) ? [primary_exchange] : nil),
        currency,
        local_symbol,
-       (fields.include?(:sec_id) ? [sec_id_type, sec_id] : []),
-       (fields.include?(:include_expired) ? [include_expired] : []),
+       (fields.include?(:trading_class) ? [trading_class] : nil),
+       (fields.include?(:include_expired) ? [include_expired] : nil ),
+       (fields.include?(:sec_id_type) ? [sec_id_type, sec_id] : [nil,nil])
        ].flatten
     end
 
