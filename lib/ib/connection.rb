@@ -66,6 +66,11 @@ module IB
 
       @connected = false
       self.next_local_id = nil
+
+     self.subscribe(:Alert) do |msg|
+       puts msg.to_human
+     end
+
       # TWS always sends NextValidId message at connect -subscribe once and  save this id
       self.subscribe(:NextValidId) do |msg|
 	logger.progname = "Connection#connect"
@@ -91,7 +96,7 @@ module IB
 	  end
 	end while self.next_local_id.nil?
       end
-
+      start_reader
       Connection.current = self
     end
 
@@ -108,37 +113,39 @@ module IB
       self.socket = IBSocket.open(@host, @port)
 
       socket.initialising_handshake
-      the_buffer =  socket.recieve_messages
-      used_server, current_date = socket.decode_message the_buffer
+      socket.decode_message( socket.recieve_messages ) do  | the_message |
 #      ib_server_version = socket.read_int
       #     todo:  hier so etwas wie: Server-Version wird nicht unterstützt einfügen,
       #		   falls eine ServerVersion <> 136 zurück gegeben wird.
 #      if @server_version > ib_server_version
 #        logger.error { "Server version #{ib_server_version}, #{@server_version} required." }
 #      end
-      @server_version =  used_server.to_i
-      @remote_connect_time = DateTime.parse current_date
-      @local_connect_time = Time.now
+	@server_version =  the_message.shift.to_i
+	@remote_connect_time = DateTime.parse the_message.shift
+	@local_connect_time = Time.now
+      end
 
       # Sending (arbitrary) client ID to identify subsequent communications.
       # The client with a client_id of 0 can manage the TWS-owned open orders.
       # Other clients can only manage their own open orders.
-#      socket.write_data @client_id
-      start_reader  # Allows reconnect
 
       # V100 initial handshake
       # Parameters borrowed from the python client
       start_api = 71
       version = 2
       optcapab =  ""
-      socket.send_messages start_api, version, @client_id  , optcapab
 
+      socket.send_messages start_api, version, @client_id  , optcapab 
       @connected = true
       logger.info { "Connected to server, version: #{@server_version},\n connection time: " +
         "#{@local_connect_time} local, " +
         "#{@remote_connect_time} remote."}
 
-
+      # if the client_id is wrong or the port is not accessible, the first read attempt fails
+      # thus get the first message and proceed if something reasonable is recieved
+      the_message = process_message   # recieve next_order_id
+      error "Check Port/Client_id ", :reader if the_message == " "
+#      start_reader  
     end
 
     alias open connect # Legacy alias
@@ -257,7 +264,7 @@ module IB
     end
 
     # Process incoming messages during *poll_time* (200) msecs, nonblocking
-    def process_messages poll_time = 200 # in msec
+    def process_messages poll_time = 50 # in msec
       time_out = Time.now + poll_time/1000.0
       while (time_left = time_out - Time.now) > 0
         # If socket is readable, process single incoming message
@@ -281,7 +288,7 @@ module IB
       else
         error "Only able to send outgoing IB messages", :args
       end
-      logger.error  { "Not able to send messages, IB not connected!" } unless connected?
+      error   "Not able to send messages, IB not connected!"  unless connected?
       @message_lock.synchronize do
       message.send_to socket
       end
@@ -320,33 +327,33 @@ module IB
     def process_message
       logger.progname='IB::Connection#process_message' if logger.is_a?(Logger)
 
-      the_buffer =  socket.recieve_messages
-    the_decoded_message = socket.decode_message the_buffer
-    #puts "THE deCODED MESSAGE #{ the_decoded_message.inspect}"
-      msg_id = the_decoded_message.shift.to_i
+      socket.decode_message(  socket.recieve_messages ) do | the_decoded_message |
+#	puts "THE deCODED MESSAGE #{ the_decoded_message.inspect}"
+	msg_id = the_decoded_message.shift.to_i
 
-      # Debug:
-      logger.debug { "Got message #{msg_id} (#{Messages::Incoming::Classes[msg_id]})"}
+	# Debug:
+	logger.error { "Got message #{msg_id} (#{Messages::Incoming::Classes[msg_id]})"}
 
-      # Create new instance of the appropriate message type,
-      # and have it read the message from socket.
-      # NB: Failure here usually means unsupported message type received
-      logger.error { "Got unsupported message #{msg_id}" } unless Messages::Incoming::Classes[msg_id]
-      msg = Messages::Incoming::Classes[msg_id].new(the_decoded_message)
+	# Create new instance of the appropriate message type,
+	# and have it read the message from socket.
+	# NB: Failure here usually means unsupported message type received
+	logger.error { "Got unsupported message #{msg_id}" } unless Messages::Incoming::Classes[msg_id]
+	msg = Messages::Incoming::Classes[msg_id].new(the_decoded_message)
 
-      # Deliver message to all registered subscribers, alert if no subscribers
-      # Ruby 2.0 and above: Hashes are ordered. 
-      # Thus first declared subscribers of  a class are executed first 
-      @subscribe_lock.synchronize do
-        subscribers[msg.class].each { |_, subscriber| subscriber.call(msg) }
-      end
-      logger.warn { "No subscribers for message #{msg.class}!" } if subscribers[msg.class].empty?
+	# Deliver message to all registered subscribers, alert if no subscribers
+	# Ruby 2.0 and above: Hashes are ordered. 
+	# Thus first declared subscribers of  a class are executed first 
+	@subscribe_lock.synchronize do
+	  subscribers[msg.class].each { |_, subscriber| subscriber.call(msg) }
+	end
+	logger.warn { "No subscribers for message #{msg.class}!" } if subscribers[msg.class].empty?
 
-      # Collect all received messages into a @received Hash
-      if @received
-	@receive_lock.synchronize do
-          received[msg.message_type] << msg
-        end
+	# Collect all received messages into a @received Hash
+	if @received
+	  @receive_lock.synchronize do
+	    received[msg.message_type] << msg
+	  end
+	end
       end
     end
     # Start reader thread that continuously reads messages from @socket in background.

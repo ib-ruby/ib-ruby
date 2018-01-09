@@ -33,6 +33,8 @@ module IB
 
       :strike => :f, # double: The strike price.
       :expiry => :s, # The expiration date. Use the format YYYYMM or YYYYMMDD
+      :last_trading_day =>  :s, # the tws returns the last trading day in Format YYYYMMMDD hh:mm
+				# which may differ from the expiry 
       :exchange => :sup, # The order destination, such as Smart.
       :primary_exchange => :sup, # Non-SMART exchange where the contract trades.
       :include_expired => :bool, # When true, contract details requests and historical
@@ -117,21 +119,19 @@ module IB
     # This returns an Array of data from the given contract.
     # Different messages serialize contracts differently. Go figure.
     # Note that it does NOT include the combo legs.
-    # serialize [:option, :con_id, :include_expired, :sec_id]
+    # serialize :option, :con_id, :include_expired, :sec_id
+    # 8.1.18: serialise always includes conid
     def serialize *fields
-      [(fields.include?(:con_id) && con_id.to_i > 0 ? [con_id] : nil),
+      [(con_id.present? && con_id.to_i > 0 ? [con_id] : nil),
        symbol,
        self[:sec_type],
        (fields.include?(:option) ?
-        [expiry,
-         strike,
-         self[:right],
-         multiplier] : nil),
+        [expiry, ( strike.zero? ? nil : strike ), self[:right], multiplier] : nil),
        exchange,
        (fields.include?(:primary_exchange) ? [primary_exchange] : nil),
        currency,
        local_symbol,
-       (fields.include?(:trading_class) ? [trading_class] : nil),
+       trading_class,
        (fields.include?(:include_expired) ? [include_expired] : nil ),
        (fields.include?(:sec_id_type) ? [sec_id_type, sec_id] : [nil,nil])
        ].flatten
@@ -239,9 +239,16 @@ module IB
     end
 
     def to_short
+      if expiry.blank? && last_trading_day.blank? 
+      "#{symbol}#{exchange}#{currency}"
+      elsif expiry.present?
       "#{symbol}#{expiry}#{strike}#{right}#{exchange}#{currency}"
+      elsif last_trading_day.present?
+      "#{symbol}#{last_trading_day}#{strike}#{right}#{exchange}#{currency}"
+      else
+	error "#{self.to_s}: either expiry || last trading day must be specified "
+      end
     end
-
     # Testing for type of contract:
 
     def bag?
@@ -283,7 +290,7 @@ module IB
 
     # This returns a Contract initialized from the serialize_ib_ruby format string.
     def self.from_ib_ruby string
-      keys = [:symbol, :sec_type, :expiry, :strike, :right, :multiplier,
+      keys = [:con_id, :symbol, :sec_type, :expiry, :strike, :right, :multiplier,
               :exchange, :primary_exchange, :currency, :local_symbol]
       props = Hash[keys.zip(string.split(":"))]
       props.delete_if { |k, v| v.nil? || v.empty? }

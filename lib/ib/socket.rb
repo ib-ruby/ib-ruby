@@ -1,19 +1,19 @@
 require 'socket'
 module IBSupport
   refine  Array do
-  def tws
-    if blank?
-      nil.tws
-    else
-    self.map( &:tws ).join
+    def tws
+      if blank?
+	nil.tws
+      else
+	self.map( &:tws ).join
+      end
     end
   end
-end
   refine  Symbol do
-  def tws
-    self.to_s.tws
+    def tws
+      self.to_s.tws
+    end
   end
-end
   refine String do
     def tws
       if empty?
@@ -24,31 +24,30 @@ end
     end
   end
 
- refine  Numeric do
-  def tws
-    self.to_s.tws
+  refine  Numeric do
+    def tws
+      self.to_s.tws
+    end
+  end
+
+  refine TrueClass do
+    def tws
+      1.tws
+    end
+  end
+
+  refine  FalseClass do
+    def tws
+      0.tws
+    end
+  end
+
+  refine NilClass do
+    def tws
+      IB::EOL
+    end
   end
 end
-
-refine TrueClass do
-  def tws
-    1.tws
-  end
-end
-
-refine  FalseClass do
-  def tws
-    0.tws
-  end
-end
-
-refine NilClass do
-  def tws
-    IB::EOL
-  end
-end
-end
-
 module IB
   module PrepareData
 
@@ -64,16 +63,23 @@ module IB
     end
 
     def decode_message msg
-      unless msg.blank?
+      m = Hash.new
+      while not msg.blank?
 	# the first item is the length
-      size= msg[0..4].unpack("N").first
-        # followed by a sequence of characters
-      message =  msg[4..-1].unpack("A#{size}").first.split("\0")
-      else
-	error "cannot decode an empty message", :reader
-	""
+	size= msg[0..4].unpack("N").first
+	msg =  msg[4..-1]
+	# followed by a sequence of characters
+	message =  msg.unpack("A#{size}").first.split("\0")
+	if block_given?
+	  yield message
+	else
+	  m[message.shift.to_i] = message
+	end
+	msg =  msg[size..-1]
       end
-    end
+      return m unless block_given?
+      end
+    
   end
 
   class IBSocket < TCPSocket
@@ -133,15 +139,16 @@ module IB
 	begin 
 	  # this is the blocking version of recv
 	  buffer =  self.recvfrom(4096)[0]
+	# STDOUT.puts "BUFFER:: #{buffer.inspect}"
 	  complete_message_buffer << buffer
 
 	end while buffer.size == 4096
 	complete_message_buffer.join('')
       rescue Errno::ECONNRESET =>  e
-	logger.error{ "Data Buffer is not filling \n
+	IB::Connection.logger.error{ "Data Buffer is not filling \n
 		    The Buffer: #{buffer.inspect} \n
-		    Backtrace:\n "}
-	logger.error   e.backtrace
+		    Backtrace:\n 
+	 #{e.backtrace.join("\n") } " }
 	Kernel.exit
       end
     end

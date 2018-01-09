@@ -1,6 +1,9 @@
 require 'message_helper'
 require 'account_helper'
 
+### To run the Spec, restart the TWS Gateway. 
+### If a AccountValue-Request is done before, the tests are failing
+
 shared_examples_for 'Connected Connection' do
 
   subject { @ib }
@@ -178,7 +181,7 @@ describe IB::Connection do
         end
 
         # this orginally tested for a lack of subscriber for PortfolioValue message which does not see to exist
-        it { log_entries.any? { |entry| expect(entry).to match(/No subscribers with id nonsense/) }}
+      #  it { log_entries.any? { |entry| expect(entry).to match(/No subscribers with id nonsense/) }}
 #        it { log_entries.any? { |entry| expect(entry).to match(/No subscribers for message .*:Alert!/) }}
      #   it { log_entries.any? { |entry| expect(entry).not_to match(/No subscribers for message .*:AccountValue/) }}
       end # when subscribed

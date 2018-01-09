@@ -10,7 +10,7 @@ module IB
                     [:request_id, :int], # request id
                     [:contract, :symbol, :string],
                     [:contract, :sec_type, :string],
-                    [:contract, :expiry, :string],
+                    [:contract, :last_trading_day, :string],
                     [:contract, :strike, :decimal],
                     [:contract, :right, :string],
                     [:contract, :exchange, :string],
@@ -63,7 +63,7 @@ module IB
 #
 #
       class ContractData
-
+	using IBSupport   # defines tws-method for Array  (socket.rb)
         def contract
           @contract = IB::Contract.build @data[:contract].
             merge(:contract_detail => contract_detail)
@@ -78,13 +78,13 @@ module IB
         def load
           super
 
-	  #  puts "!TTTTT!"
-	  #  puts @data.inspect
+#	    puts "!TTTTT!"
+#	    puts @data[:contract_detail].inspect
           @data[:contract_detail][:sec_id_list] ||= HashWithIndifferentAccess.new
           @data[:sec_id_list_count].times do
-            @data[:contract_detail][:sec_id_list][socket.read_string] = socket.read_string
+            @data[:contract_detail][:sec_id_list][buffer.read_string] = buffer.read_string
 #	    puts "!TTTTT!"
-#	    puts @data.inspect
+#	    puts @data[:contract_detail].inspect
           end
         end
 
