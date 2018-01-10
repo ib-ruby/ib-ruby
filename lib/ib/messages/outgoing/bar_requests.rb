@@ -155,7 +155,7 @@ module IB
       # For backfill on futures data, you may need to leave the Primary
       # Exchange field of the Contract structure blank; see
       # http://www.interactivebrokers.com/discus/messages/2/28477.html?1114646754
-      RequestHistoricalData = def_message [20, 4], BarRequestMessage
+      RequestHistoricalData = def_message [20, 6], BarRequestMessage
 
       class RequestHistoricalData
         def parse data
@@ -173,7 +173,7 @@ module IB
           data_type, bar_size, contract = parse @data
 
           [super,
-           contract.serialize_long(:include_expired),
+           contract.serialize_long(:con_id,:trading_class,:include_expired),
            @data[:end_date_time],
            bar_size,
            @data[:duration],

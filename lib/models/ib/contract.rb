@@ -222,7 +222,7 @@ module IB
     def to_s
       "<Contract: " + instance_variables.map do |key|
         value = send(key[1..-1])
-        " #{key}=#{value}" unless value.nil? || value == '' || value == 0
+        " #{key}=#{value} (#{value.class}) " unless value.blank? 
       end.compact.join(',') + " >"
     end
 

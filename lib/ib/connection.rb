@@ -67,9 +67,9 @@ module IB
       @connected = false
       self.next_local_id = nil
 
-     self.subscribe(:Alert) do |msg|
-       puts msg.to_human
-     end
+#     self.subscribe(:Alert) do |msg|
+#       puts msg.to_human
+#     end
 
       # TWS always sends NextValidId message at connect -subscribe once and  save this id
       self.subscribe(:NextValidId) do |msg|
