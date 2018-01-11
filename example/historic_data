@@ -9,8 +9,8 @@ require 'ib-ruby'
 # Definition of what we want data for.  We have to keep track of what ticker id
 # corresponds to what symbol ourselves, because the ticks don't include any other
 # identifying information. The choice of ticker ids is, as far as I can tell, arbitrary.
-@contracts = {123 => IB::Symbols::Stocks[:vxx],
-              456 => IB::Symbols::Futures[:vix],
+@contracts = {123 => IB::Contract.new( symbol: 'T', sec_type: 'STK', currency: 'USD'),
+              456 => IB::Contract.new( symbol: 'BAS', sec_type: 'STK', currency: 'EUR') ,
               789 => IB::Symbols::Forex[:eurusd] # No historical data for GBP/CASH@IDEALPRO
 }
 
@@ -38,10 +38,10 @@ end
                       :request_id => request_id,
                       :contract => contract,
                       :end_date_time => Time.now.to_ib,
-                      :duration => '30 D', #    ?
+                      :duration => '1 D', #    ?
                       :bar_size => '1 hour', #  IB::BAR_SIZES.key(:hour)?
                       :what_to_show => :trades,
-                      :use_rth => 1,
+                      :use_rth => 0,
                       :format_date => 1)
 end
 
@@ -49,3 +49,52 @@ end
 # So we need to interrupt manually when our request is answered.
 puts "\n******** Press <Enter> to exit... *********\n\n"
 STDIN.gets
+
+__END__
+## EXTRACTED FROM THE PYTHON IMPLEMENTATION  (Jan 2018)
+contract:Contract - This object contains a description of the contract for which
+		    market data is being requested.
+  endDateTime:str - Defines a query end date and time at any point during the past 6 mos.
+  Valid values include any date/time within the past six months in the format:
+  yyyymmdd HH:mm:ss ttt
+		    where "ttt" is the optional time zone.
+  durationStr:str - Set the query duration up to one week, using a time unit
+		    of seconds, days or weeks. Valid values include any integer followed by a space
+		    and then S (seconds), D (days) or W (week). If no unit is specified, seconds is used.
+  barSizeSetting:str - Specifies the size of the bars that will be returned (within IB/TWS listimits).
+  Valid values include:
+    1 sec
+    5 secs
+    15 secs
+    30 secs
+    1 min
+    2 mins
+    3 mins
+    5 mins
+    15 mins
+    30 mins
+    1 hour
+    1 day
+    whatToShow:str - Determines the nature of data beinging extracted. Valid values include:
+      TRADES
+      MIDPOINT
+      BID
+      ASK
+      BID_ASK
+      HISTORICAL_VOLATILITY
+      OPTION_IMPLIED_VOLATILITY
+     
+    useRTH:int - Determines whether to return all data available during the requested time span,
+		  or only data that falls within regular trading hours. Valid values include:
+
+	    0 - all data is returned even where the market in question was outside of its
+		regular trading hours.
+	    1 - only data within the regular trading hours is returned, even if the
+		requested time span falls partially or completely outside of the RTH.
+    formatDate: int - Determines the date format applied to returned bars. validd values include:
+	    1 - dates applying to bars returned in the format: yyyymmdd{space}{space}hh:mm:dd
+	    2 - dates are returned as a long integer specifying the number of seconds since
+		1/1/1970 GMT.
+    chartOptions:TagValueList - For internal use only. Use default value XYZ. """
+
+

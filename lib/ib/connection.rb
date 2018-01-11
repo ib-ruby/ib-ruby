@@ -66,7 +66,7 @@ module IB
 
       @connected = false
       self.next_local_id = nil
-
+      
 #     self.subscribe(:Alert) do |msg|
 #       puts msg.to_human
 #     end
@@ -76,10 +76,10 @@ module IB
 	logger.progname = "Connection#connect"
         self.next_local_id = msg.local_id
         logger.info { "Got next valid order id: #{next_local_id}." }
-	## this block is executed after the tws-communications are established
-	yield self if block_given?
       end
   
+	## this block is executed after the tws-communications are established
+	yield self if block_given?
       # Ensure the transmission of NextValidId.
       # Try 5 reconnection-attemps. 
       # Then the TWS has to be restarted

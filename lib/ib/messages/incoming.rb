@@ -65,7 +65,7 @@ module IB
       ExecutionDataEnd = def_message 55, [:request_id, :int]
 
       MarketDataType = def_message 58, [:request_id, :int], [:market_data_type, :int]
-
+  
       CommissionReport =
           def_message 59, [:exec_id, :string],
                       [:commission, :decimal], # Commission amount.
@@ -73,6 +73,19 @@ module IB
                       [:realized_pnl, :decimal_max],
                       [:yield, :decimal_max],
                       [:yield_redemption_date, :int] # YYYYMMDD format
+
+
+      #<- 1-9-789--USD-CASH-----IDEALPRO--CAD------
+      #-> ---81-123-5.0E-5--0-
+      TickRequestParameters = def_message 81, [ :ticker_id, :int ],
+					      [ :min_tick, :decimal],
+					      [ :exchange, :string ],
+					      [ :snapshot_prermissions, :int ]
+      class TickRequestParameters 
+	def load
+	  simple_load
+	end
+      end
 
       ### Require standalone source files for more complex message classes:
 
@@ -97,38 +110,82 @@ end # module IB
 
 __END__
     // incoming msg id's
-    static final int TICK_PRICE		= 1; *
-    static final int TICK_SIZE		= 2; *
-    static final int ORDER_STATUS	= 3; *
-    static final int ERR_MSG		= 4;   *
-    static final int OPEN_ORDER         = 5;  *
-    static final int ACCT_VALUE         = 6;  *
-    static final int PORTFOLIO_VALUE    = 7;  *
-    static final int ACCT_UPDATE_TIME   = 8;  *
-    static final int NEXT_VALID_ID      = 9;  *
-    static final int CONTRACT_DATA      = 10; *
-    static final int EXECUTION_DATA     = 11; ?
-    static final int MARKET_DEPTH     	= 12; *
-    static final int MARKET_DEPTH_L2    = 13; *
-    static final int NEWS_BULLETINS    	= 14; *
-    static final int MANAGED_ACCTS    	= 15; *
-    static final int RECEIVE_FA    	    = 16; *
-    static final int HISTORICAL_DATA    = 17; *
-    static final int BOND_CONTRACT_DATA = 18; *
-    static final int SCANNER_PARAMETERS = 19; *
-    static final int SCANNER_DATA       = 20; *
-    static final int TICK_OPTION_COMPUTATION = 21; *
-    static final int TICK_GENERIC = 45;       *
-    static final int TICK_STRING = 46;        *
-    static final int TICK_EFP = 47;           *
-    static final int CURRENT_TIME = 49;       *
-    static final int REAL_TIME_BARS = 50;     *
-    static final int FUNDAMENTAL_DATA = 51;   *
-    static final int CONTRACT_DATA_END = 52;  *
-    static final int OPEN_ORDER_END = 53;     *
-    static final int ACCT_DOWNLOAD_END = 54;  *
-    static final int EXECUTION_DATA_END = 55; *
-    static final int DELTA_NEUTRAL_VALIDATION = 56; *
-    static final int TICK_SNAPSHOT_END = 57;  *
-    static final int MARKET_DATA_TYPE = 58;   ?
-    static final int COMMISSION_REPORT = 59;  ?
+    ## api 9.71v (python)
+    # incoming msg id's
+    class IN:
+        TICK_PRICE                = 1
+        TICK_SIZE                 = 2
+        ORDER_STATUS              = 3
+        ERR_MSG                   = 4
+        OPEN_ORDER                = 5
+        ACCT_VALUE                = 6
+        PORTFOLIO_VALUE           = 7
+        ACCT_UPDATE_TIME          = 8
+        NEXT_VALID_ID             = 9
+        CONTRACT_DATA             = 10
+        EXECUTION_DATA            = 11
+        MARKET_DEPTH              = 12
+        MARKET_DEPTH_L2           = 13
+        NEWS_BULLETINS            = 14
+        MANAGED_ACCTS             = 15
+        RECEIVE_FA                = 16
+        HISTORICAL_DATA           = 17
+        BOND_CONTRACT_DATA        = 18
+        SCANNER_PARAMETERS        = 19
+        SCANNER_DATA              = 20
+        TICK_OPTION_COMPUTATION   = 21
+        TICK_GENERIC              = 45
+        TICK_STRING               = 46
+        TICK_EFP                  = 47
+        CURRENT_TIME              = 49
+        REAL_TIME_BARS            = 50
+        FUNDAMENTAL_DATA          = 51
+        CONTRACT_DATA_END         = 52
+        OPEN_ORDER_END            = 53
+        ACCT_DOWNLOAD_END         = 54
+        EXECUTION_DATA_END        = 55
+        DELTA_NEUTRAL_VALIDATION  = 56
+        TICK_SNAPSHOT_END         = 57
+        MARKET_DATA_TYPE          = 58
+        COMMISSION_REPORT         = 59   ## 
+	### below is new in api 9.71
+        POSITION_DATA             = 61
+        POSITION_END              = 62
+        ACCOUNT_SUMMARY           = 63
+        ACCOUNT_SUMMARY_END       = 64
+        VERIFY_MESSAGE_API        = 65
+        VERIFY_COMPLETED          = 66
+        DISPLAY_GROUP_LIST        = 67
+        DISPLAY_GROUP_UPDATED     = 68
+        VERIFY_AND_AUTH_MESSAGE_API = 69
+        VERIFY_AND_AUTH_COMPLETED   = 70
+        POSITION_MULTI            = 71
+        POSITION_MULTI_END        = 72
+        ACCOUNT_UPDATE_MULTI      = 73
+        ACCOUNT_UPDATE_MULTI_END  = 74
+        SECURITY_DEFINITION_OPTION_PARAMETER = 75
+        SECURITY_DEFINITION_OPTION_PARAMETER_END = 76
+        SOFT_DOLLAR_TIERS         = 77
+        FAMILY_CODES              = 78
+        SYMBOL_SAMPLES            = 79
+        MKT_DEPTH_EXCHANGES       = 80
+        TICK_REQ_PARAMS           = 81
+        SMART_COMPONENTS          = 82
+        NEWS_ARTICLE              = 83
+        TICK_NEWS                 = 84
+        NEWS_PROVIDERS            = 85
+        HISTORICAL_NEWS           = 86
+        HISTORICAL_NEWS_END       = 87
+        HEAD_TIMESTAMP            = 88
+        HISTOGRAM_DATA            = 89
+        HISTORICAL_DATA_UPDATE    = 90
+        REROUTE_MKT_DATA_REQ      = 91
+        REROUTE_MKT_DEPTH_REQ     = 92
+        MARKET_RULE               = 93
+        PNL                       = 94
+        PNL_SINGLE                = 95
+        HISTORICAL_TICKS          = 96
+        HISTORICAL_TICKS_BID_ASK  = 97
+        HISTORICAL_TICKS_LAST     = 98
+        TICK_BY_TICK              = 99
+    

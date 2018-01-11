@@ -154,7 +154,7 @@ module IB
     def serialize_legs *fields
       case
       when !bag?
-        []
+        nil
       when legs.empty?
         [0]
       else

@@ -57,14 +57,19 @@ module IB
           end
         end
 
+	## more recent messages omit the transmission of a version
+	## thus just load the parameter-map 
+	def simple_load
+            load_map *self.class.data_map
+        rescue => e
+          error "Reading #{self.class}: #{e.class}: #{e.message}", :load, e.backtrace
+	end
         # Every message loads received message version first
         # Override the load method in your subclass to do actual reading into @data.
         def load
             @data[:version] = @buffer.read_int
             check_version @data[:version], self.class.version
-            load_map *self.class.data_map
-        rescue => e
-          error "Reading #{self.class}: #{e.class}: #{e.message}", :load, e.backtrace
+	    simple_load
         end
 
         # Load @data from the socket according to the given data map.
