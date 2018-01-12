@@ -5,7 +5,7 @@ module IB
       # Data format is { :id => int: local_id,
       #                  :contract => Contract,
       #                  :order => Order }
-      PlaceOrder = def_message [3, 38]
+      PlaceOrder = def_message [3, 45]
 
       class PlaceOrder
 
@@ -16,11 +16,12 @@ module IB
 
           [super,
 
-           contract.serialize_long(:con_id, :sec_id),
+           contract.serialize_short(:primary_exchange, :sec_id_type),
 
            # main order fields
            (order.side == :short ? 'SSHORT' : order.side == :short_exempt ? 'SSHORTX' : order.side.to_sup),
-           order.quantity,
+#           order.quantity,
+	   order.total_quantity,
            order[:order_type], # Internal code, 'LMT' instead of :limit
            order.limit_price,
            order.aux_price,
@@ -113,7 +114,10 @@ module IB
               order.scale_auto_reset || false,
               order.scale_init_position,
               order.scale_init_fill_qty,
-              order.scale_random_percent || false
+              order.scale_random_percent || false,
+	      order.scale_table || "",		 # v 69
+	      order.active_start_time || "",	 # v 69
+	      order.active_stop_time || ""	 # v 69
               ]
            else
              []
@@ -125,12 +129,33 @@ module IB
 
            order.opt_out_smart_routing || false, # MIN_SERVER_VER_OPT_OUT_SMART_ROUTING
 
-           order.clearing_account,
-           order.clearing_intent,
+           order.clearing_account ,
+           order.clearing_intent ,
            order.not_held || false,
            contract.serialize_under_comp,
            order.serialize_algo(),
-           order.what_if]
+           order.what_if,
+	   order.serialize_misc_options,      # MIN_SERVER_VER_LINKING
+	   order.solicided || "",		      # MIN_SERVER_VER_ORDER_SOLICITED
+	   order.random_size || "",		      # MIN_SERVER_VER_RANDOMIZE_SIZE_AND_PRICE
+	   order.random_price || "",		      # MIN_SERVER_VER_RANDOMIZE_SIZE_AND_PRICE
+				  ## pegged to Benchmark
+	   "",			  ## WE DONT SUPPORT PEGGED TO BENCHMARK this is just the 
+				  ## indication, that no conditions are given
+	   order.adjusted_order_type || "",
+	   order.trigger_price || "",
+	   order.lmt_price_offset || "",
+	   order.adjusted_stop_price || "",
+	   order.adjusted_stop_limit_price || "",
+	   order.adjusted_trailing_amount || "",
+	   order.adjustable_trailing_unit || "",
+
+
+	   order.ext_operator || "" ,		      # MIN_SERVER_VER_EXT_OPERATOR:
+	   order.soft_dollar_tier_name || "",	      # MIN_SERVER_VER_SOFT_DOLLAR_TIER
+	   order.soft_dollar_tier_value || "",      # MIN_SERVER_VER_SOFT_DOLLAR_TIER
+	   order.cash_qty || ""		      # MIN_SERVER_VER_CASH_QTY
+	  ]
 
         end
       end # PlaceOrder

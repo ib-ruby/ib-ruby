@@ -122,23 +122,24 @@ module IB
     # serialize :option, :con_id, :include_expired, :sec_id
     # 8.1.18: serialise always includes conid
     def serialize *fields
-      [(con_id.present? && con_id.to_i > 0 ? [con_id] : nil),
-       symbol,
-       self[:sec_type],
+      print_default = ->(field, default="") { field.blank? ? default : field }
+      [(con_id.present? && con_id.to_i > 0 ? con_id : ""),
+       print_default[symbol],
+       print_default[self[:sec_type]],
        (fields.include?(:option) ?
-        [expiry, ( strike.zero? ? nil : strike ), self[:right], multiplier] : nil),
-       exchange,
-       (fields.include?(:primary_exchange) ? [primary_exchange] : nil),
-       currency,
-       local_symbol,
-       trading_class,
-       (fields.include?(:include_expired) ? [include_expired] : nil ),
-       (fields.include?(:sec_id_type) ? [sec_id_type, sec_id] : [nil,nil])
-       ].flatten
+        [print_default[expiry], print_default[strike], print_default[self[:right]], print_default[multiplier,1]] : nil),
+       print_default[exchange],
+       print_default[primary_exchange] ,
+       print_default[currency],
+       print_default[local_symbol],
+       print_default[trading_class],
+       (fields.include?(:include_expired) ? print_default[include_expired,0] : nil ),
+       (fields.include?(:sec_id_type) ? [print_default[sec_id_type], print_default[sec_id]] : nil)
+       ].flatten.compact
     end
 
     def serialize_long *fields
-      serialize :option, :primary_exchange, *fields
+      serialize :option, :include_expired, *fields
     end
 
     def serialize_short *fields

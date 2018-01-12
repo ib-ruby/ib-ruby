@@ -16,7 +16,7 @@ module IB
     prop :local_id, #  int: Order id associated with client (volatile).
       :client_id, # int: The id of the client that placed this order.
       :perm_id, #   int: TWS permanent id, remains the same over TWS sessions.
-      [:quantity, :total_quantity], # int: The order quantity.
+      :quantity, :total_quantity, # int: The order quantity.
 
       :order_type, #  String: Order type.
       # Limit Risk: MTL / MKT PRT / QUOTE / STP / STP LMT / TRAIL / TRAIL LIMIT /  TRAIL LIT / TRAIL MIT
@@ -176,7 +176,7 @@ module IB
       # ALGO ORDERS ONLY:
       :algo_strategy, # String
       :algo_params, # public Vector<TagValue> m_algoParams; ?!
-
+      :algo_id,	    # sind Vers. 71
       # SCALE ORDERS ONLY:
       :scale_init_level_size, # int: Size of the first (initial) order component.
       :scale_subs_level_size, # int: Order size of the subsequent scale order
@@ -190,8 +190,42 @@ module IB
       :scale_profit_offset,
       :scale_init_position,
       :scale_init_fill_qty,
-      :scale_auto_reset => :bool,
-      :scale_random_percent => :bool
+      :scale_auto_reset, # => :bool,
+      :scale_random_percent, # => :bool,
+      :scale_table,			# Vers 69
+      :active_start_time,		# Vers 69
+      :active_stop_time,		# Vers 69
+      :solicided,			# Vers 73
+      :random_size,			# Vers 76
+      :random_price,			# Vers 76
+      ## pegged to benchmark
+      :reference_contract_id,
+      :is_pegge_change_amount_decrease,
+      :pegged_change_amount,
+      :reference_change_amount,
+      :reference_exchange_id,
+      :conditions,		# hash of type: value -pairs
+      :conditions_ignore_rth,
+      :conditions_cancel_order,
+      :adjusted_order_type,
+      :trigger_price,
+      :lmt_price_offset,
+      :adjusted_stop_price,
+      :adjusted_stop_limit_price,
+      :adjusted_trailing_amount,
+      :adjustable_trailing_unit,
+      :ext_operator ,               # 105: MIN_SERVER_VER_EXT_OPERATOR
+		      # This is a regulartory attribute that applies 
+		      # to all US Commodity (Futures) Exchanges, provided 
+		      # to allow client to comply with CFTC Tag 50 Rules. 
+      :soft_dollar_tier_name,            # 106: MIN_SERVER_VER_SOFT_DOLLAR_TIER
+      :soft_dollar_tier_value,            # 106: MIN_SERVER_VER_SOFT_DOLLAR_TIER
+		      # Define the Soft Dollar Tier used for the order. 
+		      #	Only provided for registered professional advisors and hedge and mutual funds.
+  
+      :cash_qty                     # 111: MIN_SERVER_VER_CASH_QTY
+			# decimal : The native cash quantity
+
 
     # Properties with complex processing logics
     prop :tif, #  String: Time in Force (time to market): DAY/GAT/GTD/GTC/IOC
@@ -226,6 +260,7 @@ module IB
     serialize :leg_prices
     serialize :algo_params, HashWithIndifferentAccess
     serialize :combo_params, HashWithIndifferentAccess
+    serialize :mics_options, HashWithIndifferentAccess
 
     # Order is always placed for a contract. Here, we explicitly set this link.
     belongs_to :contract
@@ -322,10 +357,14 @@ module IB
       else
         [algo_strategy,
          algo_params.size,
-         algo_params.to_a]
+         algo_params.to_a,
+	algo_id ]	    # Vers 71
       end
     end
 
+    def serialize_misc_options
+      ""		  # Vers. 70  
+    end
     # Placement
     def place contract, connection
       error "Unable to place order, next_local_id not known" unless connection.next_local_id
