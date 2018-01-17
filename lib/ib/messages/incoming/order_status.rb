@@ -31,18 +31,25 @@ module IB
       # :why_held - This property contains the comma-separated list of reasons for
       #      order to be held. For example, when TWS is trying to locate shares for
       #      a short sell, the value used to indicate this is 'locate'.
-      OrderStatus = def_message [3, 6],
+      #      As  of Api 9.72, no version is given anymore
+      #
+      OrderStatus = def_message [3, 0],
                                 [:order_state, :local_id, :int],
                                 [:order_state, :status, :string],
-                                [:order_state, :filled, :int],
-                                [:order_state, :remaining, :int],
+                                [:order_state, :filled, :decimal],
+                                [:order_state, :remaining, :decimal],
                                 [:order_state, :average_fill_price, :decimal],
                                 [:order_state, :perm_id, :int],
                                 [:order_state, :parent_id, :int],
                                 [:order_state, :last_fill_price, :decimal],
                                 [:order_state, :client_id, :int],
-                                [:order_state, :why_held, :string]
+                                [:order_state, :why_held, :string],
+				[:order_state, :market_cap_price, :decimal] 
       class OrderStatus
+
+	def load
+	  simple_load
+	end
 
         def order_state
           @order_state ||= IB::OrderState.new @data[:order_state]

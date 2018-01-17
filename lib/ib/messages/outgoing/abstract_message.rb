@@ -24,6 +24,11 @@ module IB
         # each one and postpending a '\0'.
         #
         def send_to socket
+	  puts "------sendto ---------"
+#	  puts self.preprocess
+#	  puts self.encode.inspect
+	  puts socket.prepare_message( self.preprocess).inspect
+	  puts "------sendto ---------"
           socket.send_messages self.preprocess #.each {|data| socket.write_data data}
         end
 
@@ -43,9 +48,12 @@ module IB
         # Most messages also contain (ticker, request or order) :id.
         # Then, content of @data Hash is encoded per instructions in data_map.
         # This method may be modified by message subclasses!
+	#
+	# If the version is zero, omit its apperance (for historical data)
         def encode
-          [self.class.message_id,
-           self.class.version,
+
+          [
+	   self.class.version.zero? ? self.class.message_id : [ self.class.message_id, self.class.version ],
            @data[:id] || @data[:ticker_id] || @data[:request_id] ||
            @data[:local_id] || @data[:order_id] || [],
            self.class.data_map.map do |(field, default_method, args)|

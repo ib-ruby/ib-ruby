@@ -94,7 +94,7 @@ module IB
       # When all the matches are delivered you'll get ContractDataEnd (52) message.
       RequestContractDetails = RequestContractData =
           def_message([9, 8],
-                      [:contract, :serialize_long, [:sec_id]])
+                      [:contract, :serialize_long, [:sec_id_type]])
 
       # data = { :id => ticker_id (int), :contract => Contract, :num_rows => int }
       RequestMarketDepth = def_message([10, 3],

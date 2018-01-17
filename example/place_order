@@ -1,27 +1,37 @@
 #!/usr/bin/env ruby
 #
-# This script places WFC buy order for 100 lots
-
-require 'rubygems'
+## This script places WFC buy order for 100 lots
+#
+## RUN ONLY ON A DEMO ACCOUNT
 require 'bundler/setup'
-$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
 
 # First, connect to IB TWS. Arbitrary :client_id is used to identify your script
-ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS
+ib = IB::Connection.new( :client_id => 1112 ) do | gw | #, :port => 7496 # TWS
 
-# Subscribe to TWS alerts/errors and order-related messages
-ib.subscribe(:Alert, :OpenOrder, :OrderStatus) { |msg| puts msg.to_human }
+# Subscribe to TWS alerts/errors and order-related messages prior to the connection of the client
+  gw.subscribe(:Alert, :OpenOrder, :OrderStatus,  :ContractDataEnd ) { |msg| puts msg.to_human }
+  gw.subscribe(:ContractData, :BondContractData) do |msg| 
+    puts msg.contract.to_human + "\n"
+  end
 
+end
 wfc = IB::Symbols::Stocks[:wfc]
+ib.send_message :RequestContractData, id: 56, contract: wfc
 buy_order = IB::Order.new :total_quantity => 100,
                           :limit_price => 1 + rand().round(2),
                           :action => 'BUY',
-                          :order_type => 'LMT'
+                          :order_type => 'LMT',
+			  #:cash_qty => "",
+			  :account => 'DU167348'
 ib.wait_for :NextValidId
 ib.place_order buy_order, wfc
+ib.wait_for :ContractDataEnd, 5 #sec
 
 ib.send_message :RequestAllOpenOrders
 
 puts "\n******** Press <Enter> to cancel... *********\n\n"
 STDIN.gets
+
+
+## RUN ONLY ON A DEMO ACCOUNT

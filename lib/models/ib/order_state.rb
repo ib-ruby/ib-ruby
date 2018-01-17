@@ -16,7 +16,9 @@ module IB
       :min_commission, # The possible min range of the actual order commission.
       :max_commission, # The possible max range of the actual order commission.
       :commission_currency, # String: Shows the currency of the commission.
-      :warning_text # String: Displays a warning message if warranted.
+      :warning_text, # String: Displays a warning message if warranted.
+      
+      :market_cap_price  # messages#incomming#orderstae#vers. 11
 
       # Properties arriving via OrderStatus message:
       prop :filled, #    int

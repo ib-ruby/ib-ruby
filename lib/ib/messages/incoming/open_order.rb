@@ -4,7 +4,7 @@ module IB
 
       # OpenOrder is the longest message with complex processing logics
       OpenOrder =
-          def_message [5, 30],
+          def_message [5, 34],		# updated to v. 34 according to python (decoder.py processOpenOrder)
                       [:order, :local_id, :int],
 
                       [:contract, :con_id, :int],
@@ -13,15 +13,17 @@ module IB
                       [:contract, :expiry, :string],
                       [:contract, :strike, :decimal],
                       [:contract, :right, :string],
+                      [:contract, :multiplier, :string],
                       [:contract, :exchange, :string],
                       [:contract, :currency, :string],
                       [:contract, :local_symbol, :string],
+                      [:contract, :trading_class, :string],
 
                       [:order, :action, :string],
-                      [:order, :total_quantity, :int],
+                      [:order, :total_quantity, :decimal],
                       [:order, :order_type, :string],
-                      [:order, :limit_price, :decimal_max],
-                      [:order, :aux_price, :decimal_max],
+                      [:order, :limit_price, :decimal],
+                      [:order, :aux_price, :decimal],
                       [:order, :tif, :string],
                       [:order, :oca_group, :string],
                       [:order, :account, :string],
@@ -40,35 +42,38 @@ module IB
                       [:order, :fa_method, :string],
                       [:order, :fa_percentage, :string],
                       [:order, :fa_profile, :string],
+                      [:order, :model_code, :string],
                       [:order, :good_till_date, :string],
                       [:order, :rule_80a, :string],
-                      [:order, :percent_offset, :decimal_max],
+                      [:order, :percent_offset, :decimal],
                       [:order, :settling_firm, :string],
                       [:order, :short_sale_slot, :int],
                       [:order, :designated_location, :string],
-                      [:order, :exempt_code, :int], # skipped in ver 51?
+                      [:order, :exempt_code, :int],
                       [:order, :auction_strategy, :int],
-                      [:order, :starting_price, :decimal_max],
-                      [:order, :stock_ref_price, :decimal_max],
-                      [:order, :delta, :decimal_max],
-                      [:order, :stock_range_lower, :decimal_max],
-                      [:order, :stock_range_upper, :decimal_max],
+                      [:order, :starting_price, :decimal],
+                      [:order, :stock_ref_price, :decimal],
+                      [:order, :delta, :decimal],
+                      [:order, :stock_range_lower, :decimal],
+                      [:order, :stock_range_upper, :decimal],
                       [:order, :display_size, :int],
                       #@order.rth_only = @socket.read_boolean
                       [:order, :block_order, :boolean],
                       [:order, :sweep_to_fill, :boolean],
                       [:order, :all_or_none, :boolean],
-                      [:order, :min_quantity, :int_max],
+                      [:order, :min_quantity, :int],
                       [:order, :oca_type, :int],
                       [:order, :etrade_only, :boolean],
                       [:order, :firm_quote_only, :boolean],
-                      [:order, :nbbo_price_cap, :decimal_max],
+                      [:order, :nbbo_price_cap, :decimal],
                       [:order, :parent_id, :int],
                       [:order, :trigger_method, :int],
-                      [:order, :volatility, :decimal_max],
+                      [:order, :volatility, :decimal],
                       [:order, :volatility_type, :int],
                       [:order, :delta_neutral_order_type, :string],
-                      [:order, :delta_neutral_aux_price, :decimal_max]
+                      [:order, :delta_neutral_aux_price, :decimal]
+      ## additional stuff vers 34
+      #
 
       class OpenOrder
 
@@ -131,44 +136,49 @@ module IB
                      [:order, :delta_neutral_con_id, :int],
                      [:order, :delta_neutral_settling_firm, :string],
                      [:order, :delta_neutral_clearing_account, :string],
-                     [:order, :delta_neutral_clearing_intent, :string]],
+                     [:order, :delta_neutral_open_close, :string],
+                     [:order, :delta_neutral_short_sale, :bool],
+                     [:order, :delta_neutral_short_sale_slot, :int],
+		     [:order, :delta_neutral_designated_location, :string] ],  # end proc
 
                    [:order, :continuous_update, :int],
                    [:order, :reference_price_type, :int],
-                   [:order, :trail_stop_price, :decimal_max],
-                   [:order, :trailing_percent, :decimal_max],
-                   [:order, :basis_points, :decimal_max],
-                   [:order, :basis_points_type, :int_max],
+                   [:order, :trail_stop_price, :decimal],
+                   [:order, :trailing_percent, :decimal],
+                   [:order, :basis_points, :decimal],
+                   [:order, :basis_points_type, :int],
                    [:contract, :legs_description, :string],
 
                    # As of client v.55, we receive in OpenOrder for Combos:
                    #    Contract.orderComboLegs Array
                    #    Order.leg_prices Array
                    [:contract, :legs, :array, proc do |_|
-                     IB::ComboLeg.new :con_id => socket.read_int,
-                                      :ratio => socket.read_int,
-                                      :action => socket.read_string,
-                                      :exchange => socket.read_string,
-                                      :open_close => socket.read_int,
-                                      :short_sale_slot => socket.read_int,
-                                      :designated_location => socket.read_string,
-                                      :exempt_code => socket.read_int
+                     IB::ComboLeg.new :con_id => buffer.read_int,
+                                      :ratio => buffer.read_int,
+                                      :action => buffer.read_string,
+                                      :exchange => buffer.read_string,
+                                      :open_close => buffer.read_int,
+                                      :short_sale_slot => buffer.read_int,
+                                      :designated_location => buffer.read_string,
+                                      :exempt_code => buffer.read_int
                    end],
-                   [:order, :leg_prices, :array, proc { |_| socket.read_decimal_max }],
-                   [:smart_combo_routing_params, :hash],
+                   [:order, :leg_prices, :array, proc { |_| buffer.read_decimal }],   #  needs testing
+                   [:order, :combo_params, :array , proc do |_|
+				      { tag: buffer.read_string, value: buffer.read_string }  # needs testing
+		   end],
 
-                   [:order, :scale_init_level_size, :int_max],
-                   [:order, :scale_subs_level_size, :int_max],
+                   [:order, :scale_init_level_size, :int],
+                   [:order, :scale_subs_level_size, :int],
 
-                   [:order, :scale_price_increment, :decimal_max],
+                   [:order, :scale_price_increment, :decimal],
                    [proc { | | filled?(@data[:order][:scale_price_increment]) },
                      # As of client v.54, we may receive scale order fields
-                     [:order, :scale_price_adjust_value, :decimal_max],
-                     [:order, :scale_price_adjust_interval, :int_max],
-                     [:order, :scale_profit_offset, :decimal_max],
+                     [:order, :scale_price_adjust_value, :decimal],
+                     [:order, :scale_price_adjust_interval, :int],
+                     [:order, :scale_profit_offset, :decimal],
                      [:order, :scale_auto_reset, :boolean],
-                     [:order, :scale_init_position, :int_max],
-                     [:order, :scale_init_fill_qty, :decimal_max],
+                     [:order, :scale_init_position, :int],
+                     [:order, :scale_init_fill_qty, :decimal],
                      [:order, :scale_random_percent, :boolean]
                    ],
 
@@ -196,18 +206,61 @@ module IB
                     [:order, :algo_params, :hash]
                    ],
 
+                   [:order, :solicided, :boolean],
                    [:order, :what_if, :boolean],
 
                    [:order_state, :status, :string],
                    # IB uses weird String with Java Double.MAX_VALUE to indicate no value here
-                   [:order_state, :init_margin, :decimal_max], # :string],
-                   [:order_state, :maint_margin, :decimal_max], # :string],
-                   [:order_state, :equity_with_loan, :decimal_max], # :string],
-                   [:order_state, :commission, :decimal_max], # May be nil!
-                   [:order_state, :min_commission, :decimal_max], # May be nil!
-                   [:order_state, :max_commission, :decimal_max], # May be nil!
+                   [:order_state, :init_margin, :decimal], # :string],
+                   [:order_state, :maint_margin, :decimal], # :string],
+                   [:order_state, :equity_with_loan, :decimal], # :string],
+                   [:order_state, :commission, :decimal], # May be nil!
+                   [:order_state, :min_commission, :decimal], # May be nil!
+                   [:order_state, :max_commission, :decimal], # May be nil!
                    [:order_state, :commission_currency, :string],
-                   [:order_state, :warning_text, :string]
+                   [:order_state, :warning_text, :string],
+
+
+                   [:order, :random_size, :boolean],
+                   [:order, :random_price, :boolean],
+
+		   ## todo: oerdertype = PEG BENCH  -- 
+		   #386             if order.orderType == "PEG BENCH":
+		   # 387                 order.referenceContractId = decode(int, fields)
+		   #  388                 order.isPeggedChangeAmountDecrease = decode(bool, fields)
+		   #   389                 order.peggedChangeAmount = decode(float, fields)
+		   #    390                 order.referenceChangeAmount = decode(float, fields)
+		   #     391                 order.referenceExchangeId = decode(str, fields)
+		   #     
+                   [:order, :conditions, :array , proc do |_|
+				      { tag: buffer.read_string, value: buffer.read_string }  # needs modification 
+		   end],
+		    ## todo : process conditions
+		    #394             if order.conditionsSize > 0:
+		    # 395                 order.conditions = []
+		    #  396                 for idxCond in range(order.conditionsSize):
+		    #   397                     order.conditionType = decode(int, fields)
+		    #    398                     condition = order_condition.Create(order.conditionType)
+		    #     399                     condition.decode(fields)
+		    #      400                     order.conditions.append(condition)
+		    #       401 
+		    #        402                 order.conditionsIgnoreRth = decode(bool, fields)
+		    #         403                 order.conditionsCancelOrder = decode(bool, fields)
+		    #          404 
+		    #          
+		    [:order, :adjusted_order_type, :string],
+		    [:order, :trigger_price,  :decimal],
+		    [:order, :trail_stop_price,  :decimal],
+		    [:order, :adjusted_stop_limit_price,  :decimal],
+		    [:order, :adjusted_trailing_amount,  :decimal],
+		    [:order, :adjustable_trailing_unit,  :int]
+
+## todo inlcude soft_dollar_tier's
+		    #[:order, :soft_dollar_tier_params,:name  :decimal]
+		    #[:order, :soft_dollar_tier_params,:value  :decimal]
+		    #[:order, :soft_dollar_tier_params,:display_name  :decimal]
+		    #[:order, :cash_qty,  :decimal]
+		    
         end
 
         # Check if given value was set by TWS to something vaguely "positive"

@@ -13,7 +13,7 @@ include IB
 # Definition of what we want market data for.  We have to keep track of what ticker id
 # corresponds to what symbol ourselves, because the ticks don't include any other
 # identifying information. The choice of ticker ids is, as far as I can tell, arbitrary.
-@market = {0 => IB::Symbols::Stocks[:wfc],
+market = {0 => IB::Symbols::Stocks[:wfc],
            1 => IB::Symbols::Stocks[:vxx],
            2 => IB::Symbols::Futures[:vix],
            3 => IB::Symbols::Futures[:ym],
@@ -28,22 +28,23 @@ include IB
            9 => IB::Symbols::Stocks[:wrong]}
 
 # Connect to IB TWS.
-ib = Connection.new :client_id => 11912, :port => 4002 # 7496 # TWS
-ib.wait_for :NextValidOrderId
+ib = Connection.new( :client_id => 11912, :port => 4002 ) do | gw| # 7496 # TWS
+  # Subscribe to TWS alerts/errors and contract data end marker
+  gw.subscribe(:Alert, :ContractDataEnd) { |msg| puts msg.to_human }
 
-# Subscribe to TWS alerts/errors and contract data end marker
-ib.subscribe(:Alert, :ContractDataEnd) { |msg| puts msg.to_human }
-
-# Now, subscribe to ContractData incoming events.  The code passed in the block
-# will be executed when a message of that type is received, with the received
-# message as its argument. In this case, we just print out the data.
-ib.subscribe(:ContractData, :BondContractData) do |msg| 
+  # Now, subscribe to ContractData incoming events.  The code passed in the block
+  # will be executed when a message of that type is received, with the received
+  # message as its argument. In this case, we just print out the data.
+  gw.subscribe(:ContractData, :BondContractData) do |msg| 
     puts msg.contract.to_human + "\n"
     puts "Attributes: "
     puts "\t"+ msg.contract.attributes.map{ |k,v|  "#{k} : #{v}" unless v.blank?  }.join("\n\t")
+  end
 end
+ib.wait_for :NextValidOrderId
 
-@market.each_pair do |id, contract|
+
+market.each_pair do |id, contract|
   puts "\nRequesting contract data #{id}: #{contract.description}"
 
   # Request Contract details for the symbols we're interested in. TWS will

@@ -19,6 +19,11 @@ module IBSupport
       v = self.shift rescue nil
       v.nil? ? false : v.to_i != 0
     end
+
+    def read_array
+      count = read_int
+    end
+    alias read_bool read_boolean
   end
 end
 module IB

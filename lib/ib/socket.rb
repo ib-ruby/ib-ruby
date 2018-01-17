@@ -5,7 +5,9 @@ module IBSupport
       if blank?
 	nil.tws
       else
-	self.map( &:tws ).join
+	self.flatten.map( &:tws ).join  # [ "", [] , nil].flatten -> ["", nil]
+					# elemets with empty array's are cut 
+					# this is the desired behavior!
       end
     end
   end
@@ -17,7 +19,7 @@ module IBSupport
   refine String do
     def tws
       if empty?
-	''+IB::EOL
+	IB::EOL
       else
 	self[-1] == IB::EOL ? self : self+IB::EOL
       end
@@ -44,7 +46,7 @@ module IBSupport
 
   refine NilClass do
     def tws
-      IB::EOL
+     IB::EOL
     end
   end
 end
