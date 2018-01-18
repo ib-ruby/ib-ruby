@@ -2,7 +2,7 @@
 
 Ruby Implementation of the Interactive Brokers Trader Workstation (TWS) API v.965-967.
 
-Copyright (C) 2006-2013 Paul Legato, Wes Devauld, and Ar Vicco.
+Copyright (C) 2006-2013 Paul Legato, Wes Devauld, Ar Vicco and Dr. Hartmut Bischoff.
 
 https://github.com/ib-ruby/ib-ruby
 
@@ -13,10 +13,6 @@ You've been warned.
 
 This code is not sanctioned or supported by Interactive Brokers.
 
-##ANNOUNCE:
-Checkout Branch »Gateway«  for support of FA-(aka Friends & Family)-Accounts.
-Its a release-candidate for Version 0.9.3
-
 ## SUMMARY:
 
 This is a pure Ruby implementation of Interactive Brokers API. It is NOT a wrapper
@@ -24,7 +20,7 @@ for a Java or C++ API, but rather uses socket API directly. So it does not have 
 dependencies other than TWS/Gateway itself.
 
 Why Ruby? Many people are put off by the amount of boilerplate code/plumbing required
-by Java, ActiveX or C++ API to do even the simplest of things, like getting account
+by Python, Java, ActiveX or C++ API to do even the simplest of things, like getting account
 data and placing/monitoring orders. This library intends to keep all the fluff away
 and let you focus on writing your business logics, rather than useless boilerplate.
 
@@ -52,9 +48,12 @@ other API implementations. The choice is yours.
 ### From Source
 
     $ git clone https://github.com/ib-ruby/ib-ruby
-    $ cd ib-ruby; rake gem:install
+    $ cd ib-ruby
+    $ bundle install; bundle update
 
 ## PREREQUISITES:
+
+0. A Ruby Interpreter, at least Version 2.4. We recommend Version 2.5 or above.
 
 1. Install Interactive Brokers connectivity software: either
    [TWS](http://www.interactivebrokers.com/en/p.php?f=tws) or
@@ -75,14 +74,25 @@ other API implementations. The choice is yours.
     | 0.6.1       |    921-923  |    966       |
     | 0.7.1       |    924-925  |    966       |
     | 0.8.1       |    926-930  |    967 beta  |
-    | 0.9.0+      |    931-932  |    967 final |
+    | 0.9.2       |    931-     |    967 final |
+    | 0.9.5+      |    968      |    971       |
 
 4. Start Interactive Broker's Trader Work Station or Gateway before your code
    attempts to connect to it. Note that TWS and Gateway listen to different ports,
-   this library assumes connection to Gateway on the same machine (localhost:4001)
+   this library assumes connection to Gateway on the same machine (localhost:4002)
    by default, this can be changed via :host and :port options given to IB::Connection.new.
 
 ## SYNOPSIS:
+To play around, a console-app is included. Change to the bin-directory and call 
+  
+  ./console
+
+After startup, ib-ruby is running, the Connection ist active and accessible via the global Constant »C».
+Any message to the TWS, any subscription to incomming messages can initialized. 
+
+The results can be inspected with the power of the IRB-shell
+
+
 
 This is an example of your script that requests and prints out account data, then
 places limit order to buy 100 lots of WFC and waits for execution. All in about ten
@@ -90,13 +100,15 @@ lines of code - and without sacrificing code readability or flexibility.
 ``` ruby
     require 'ib'
 
-    ib = IB::Connection.new :port => 7496
-    ib.subscribe(:Alert, :AccountValue) { |msg| puts msg.to_human }
+    ib = IB::Connection.new( port: 7496 ) do | gw |
+      gw.subscribe(:Alert, :AccountValue) { |msg| puts msg.to_human }
+      gw.subscribe(:OpenOrder) { |msg| puts "Placed: #{msg.order}!" }
+      gw.subscribe(:ExecutionData) { |msg| puts "Filled: #{msg.execution}!" }
+    end
+
     ib.send_message :RequestAccountData
     ib.wait_for :AccountDownloadEnd
 
-    ib.subscribe(:OpenOrder) { |msg| puts "Placed: #{msg.order}!" }
-    ib.subscribe(:ExecutionData) { |msg| puts "Filled: #{msg.execution}!" }
     contract = IB::Contract.new :symbol => 'WFC', :exchange => 'NYSE',
                                 :currency => 'USD', :sec_type => :stock
     buy_order = IB::Order.new :total_quantity => 100, :limit_price => 21.00,
@@ -108,8 +120,10 @@ Your code interacts with TWS via exchange of messages. Messages that you send to
 TWS are called 'Outgoing', messages your code receives from TWS - 'Incoming'.
 
 First, you need to subscribe to incoming message types you're interested in
-using `Connection#subscribe`. The code block (or proc) given to `#subscribe`
-will be executed when an incoming message of the this type is received from TWS,
+using `Connection#subscribe`. This can be done anywhere. Permanent subscriptions
+can be entered before the connection itself is established. This is realized 
+through the block when instantiating the Object. The code block (or proc) given to `#subscribe`
+will be executed when an incoming message of the this type is received from the TWS,
 with the received message as its argument.
 
 Then, you request specific data from TWS using `Connection#send_message` or place
@@ -130,77 +144,11 @@ fundamental data, request options calculations, place, list, and cancel orders.
 You may also want to look into `spec/integration` directory for more scenarios,
 use cases and examples of handling IB messages.
 
-## RAILS INTEGRATION:
-
-This gem has two operating modes: standalone and Rails-engine. If you require it in a
-Rails environment, it loads Rails engine automatically. Otherwise, it does not load any
-Rails integration.
-
-To add ib-ruby to your Rails 3 project, follow these steps:
-
-Add to your Gemfile:
-``` ruby
-gem 'ib-ruby', '~>0.9'
-```
-Add the require to your config/application.rb:
-``` ruby
-require File.expand_path('../boot', __FILE__)
-require 'rails/all'
-require 'ib'
-if defined?(Bundler)
-```
-Now run:
-
-    $ bundle install
-    $ rake ib:install:migrations
-    $ rake db:migrate
-
-This will install ib-ruby gem and copy its migrations into your Rails apps migrations.
-
-You can now use or modify IB models, develop controllers and views for them in your Rails app.
-
-## DB BACKEND:
-
-Even if you don't use Rails, you can still take advantage of its data persistance layer
-(ActiveRecord ORM). In order to use data persistance, you have to set up the database
-(SQLite recommended for simplicity) and run migrations located at gems 'db/migrate' folder.
-It is recommended that you use a gem like [standalone_migrations](https://github.com/thuss/standalone-migrations) for this.
-
-You further need to:
-``` ruby
-    require 'ib/db'
-    IB::DB.connect :adapter => 'sqlite3', :database => 'db/test.sqlite3'
-    require 'ib'
-```
-Only require 'ib' AFTER you've connected to DB, otherwise your Models will not
-inherit from ActiveRecord::Base and won't be persistent. If you are using Rails,
-you don't need IB::DB.connect part, Rails will take care of it for you.
-
-Now, all your IB Models are just ActiveRecords and you can save them to DB just
-like you would with Rails models.
-
 ## RUNNING TESTS:
 
 The gem comes with a spec suit that may be used to test ib-ruby compatibility with your
 specific TWS/Gateway installation. Please read 'spec/Readme.md' for more details about
 running specs.
-
-## RUBY VERSION COMPATIBILITY:
-
-The library is continuously tested with JRuby 1.6.7 (ruby-1.8.7-p357-compatible mode) and
-JRuby head (ruby-1.9.3-p203-compatible mode). It is not JRuby-specific though, as it is currently used in a some MRI Ruby based projects. If there are any problems in any mode
-for either JRuby or MRI, please report an [issue](https://github.com/ib-ruby/ib-ruby/issues/new)
-and we will work on it.
-
-Please keep in mind that when using Ruby 1.8.7, you need to either explicitly:
-``` ruby
-    require 'rubygems'
-    require 'ib'
-```
-
-or set the environment variable "RUBYOPT" to "-rubygems":
-
-    set RUBYOPT=-rubygems
 
 ## CONTRIBUTING:
 
