@@ -224,7 +224,7 @@ module IB
                    [:order, :random_size, :boolean],
                    [:order, :random_price, :boolean],
 
-		   ## todo: oerdertype = PEG BENCH  -- 
+		   ## todo: ordertype = PEG BENCH  -- 
 		   #386             if order.orderType == "PEG BENCH":
 		   # 387                 order.referenceContractId = decode(int, fields)
 		   #  388                 order.isPeggedChangeAmountDecrease = decode(bool, fields)

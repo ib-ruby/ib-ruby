@@ -6,7 +6,8 @@ module IBSupport
     end
 
     def read_decimal
-      self.shift.to_d  rescue 0
+     i= self.shift.to_d  rescue 0
+     i < IB::TWS_MAX ?  i : nil  # return nil, if a very large number is transmitted
     end
 
     alias read_decimal_max read_decimal
