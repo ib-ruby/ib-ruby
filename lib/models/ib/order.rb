@@ -198,12 +198,13 @@ module IB
       :scale_table,			# Vers 69
       :active_start_time,		# Vers 69
       :active_stop_time,		# Vers 69
-      ## pegged to benchmark
+      # pegged to benchmark
       :reference_contract_id,
-      :is_pegge_change_amount_decrease,
+      :is_pegged_change_amount_decrease,
       :pegged_change_amount,
       :reference_change_amount,
-      :reference_exchange_id,
+      :reference_exchange_id ,
+
       :conditions,		# Conditions determining when the order will be activated or canceled. 
       ### http://xavierib.github.io/twsapidocs/order_conditions.html
       :conditions_ignore_rth,  # bool: Indicates whether or not conditions will also be valid outside Regular Trading Hours
@@ -365,7 +366,6 @@ module IB
         :parent_id => 0,
 	:random_size => false,	  #oder.java 497			# Vers 76
 	:random_price => false,	  # order.java # 498		# Vers 76
-	:short_sale_slot => 0,	  # order.java # 486
 	:scale_auto_reset => false,  # order.java # 490
 	:scale_random_percent => false, # order.java # 491
 	:scale_table => "", # order.java # 492

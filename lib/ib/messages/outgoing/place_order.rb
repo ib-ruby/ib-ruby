@@ -142,14 +142,13 @@ module IB
 	   order.solicided ,		      # MIN_SERVER_VER_ORDER_SOLICITED
 	   order.random_size ,		      # MIN_SERVER_VER_RANDOMIZE_SIZE_AND_PRICE
 	   order.random_price ,		      # MIN_SERVER_VER_RANDOMIZE_SIZE_AND_PRICE
-				  ## pegged to Benchmark
-	   			  ## WE DONT SUPPORT PEGGED TO BENCHMARK NOW - these fields are suppressed:
-	   # referenceContractId
-	   # isPeggedChangeAmountDecrease
-	   # peggedChangeAmount
-	   # referenceChangeAmount
-	   # referenceExchangeId
-	   #
+	   ( order[:type] == 'PEG BENCH' ? [	# pegged_to_benchmark  v. 102
+	    order.reference_contract_id,
+	    order.is_pegged_change_amount_decrease,
+	    order.pegged_change_amount,
+	    order.reference_change_amount,
+	    order.reference_exchange_id ] : [] ),
+
 	   order.conditions.size,  ##  todo:  include conditions-serialisation
 
 	   order.adjusted_order_type ,

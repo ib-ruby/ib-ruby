@@ -115,12 +115,17 @@ module IB
         :exchange => 'SMART',
         :include_expired => false
     end
-
-    # This returns an Array of data from the given contract.
-    # Different messages serialize contracts differently. Go figure.
-    # Note that it does NOT include the combo legs.
-    # serialize :option, :con_id, :include_expired, :sec_id
-    # 8.1.18: serialise always includes conid
+=begin
+    This returns an Array of data from the given contract and is used to represent
+    contracts in outgoing messages.
+    
+    Different messages serialize contracts differently. Go figure.
+    
+    Note that it does NOT include the combo legs.
+    serialize :option, :con_id, :include_expired, :sec_id
+    
+    18/1/18: serialise always includes conid
+=end
     def serialize *fields
       print_default = ->(field, default="") { field.blank? ? default : field }
       [(con_id.present? && con_id.to_i > 0 ? con_id : ""),

@@ -203,7 +203,7 @@ module IB
                    # TODO: Test Order with algo_params, scale and legs!
                    [:order, :algo_strategy, :string],
                    [proc { | | filled?(@data[:order][:algo_strategy]) },
-                    [:order, :algo_params, :hash]
+                    [:order, :algo_params, :hash]  #---->  this does not work  ## todo fix in abstract message
                    ],
 
                    [:order, :solicided, :boolean],
@@ -224,14 +224,14 @@ module IB
                    [:order, :random_size, :boolean],
                    [:order, :random_price, :boolean],
 
-		   ## todo: ordertype = PEG BENCH  -- 
-		   #386             if order.orderType == "PEG BENCH":
-		   # 387                 order.referenceContractId = decode(int, fields)
-		   #  388                 order.isPeggedChangeAmountDecrease = decode(bool, fields)
-		   #   389                 order.peggedChangeAmount = decode(float, fields)
-		   #    390                 order.referenceChangeAmount = decode(float, fields)
-		   #     391                 order.referenceExchangeId = decode(str, fields)
-		   #     
+		   ## todo: ordertype = PEG BENCH  --  -> test!
+		   [proc{ @data[:order[:type]] == 'PEG BENCH' },
+		      [:order, :reference_contract_id, :int ],
+		      [:order, :is_pegged_change_amount_decrease, :bool ],
+		      [:order, :pegged_change_amount, :decimal ],
+		      [:order, :reference_change_amount, :decimal ],
+		      [:order, :reference_exchange_id, :string ]
+		   ],
                    [:order, :conditions, :array , proc do |_|
 				      { tag: buffer.read_string, value: buffer.read_string }  # needs modification 
 		   end],

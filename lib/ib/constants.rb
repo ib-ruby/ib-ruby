@@ -160,7 +160,7 @@ module IB
        'REL' => :relative, #               Relative
        'BOX TOP' => :box_top, #            Box Top
        'PEG MID' => :pegged_to_midpoint, # Pegged-to-Midpoint
-       'PEG BENCH' => :pegged_toibenchmark, # Pegged-to-Benmchmark # Vers. 102
+       'PEG BENCH' => :pegged_to_benchmark, # Pegged-to-Benmchmark # Vers. 102
        'VWAP' => :vwap, #                  VWAP-Guaranteed
        'OCA' => :one_cancels_all, #        One-Cancels-All
        'VOL' => :volatility, #             Volatility
