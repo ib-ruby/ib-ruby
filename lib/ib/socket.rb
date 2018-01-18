@@ -115,7 +115,7 @@ module IB
 	sleep 0.1
       end
 
-      string.chop
+      string.chomp
     end
 
 
@@ -155,20 +155,6 @@ module IB
       end
     end
 
-    ### Complex operations
-
-#    # Returns loaded Array or [] if count was 0
-#    def read_array &block
-#      count = read_int
-#      count > 0 ? Array.new(count, &block) : []
-#    end
-#
-#    # Returns loaded Hash
-#    def read_hash
-#      tags = read_array { |_| [read_string, read_string] }
-#      tags.empty? ? Hash.new : Hash[*tags.flatten]
-#    end
-#
   end # class IBSocket
 
 end # module IB

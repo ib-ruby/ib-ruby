@@ -5,7 +5,6 @@
 require 'bundler/setup'
 require 'logger'
 require 'yaml'
-$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
 # Set log level
 log.level = Logger::DEBUG #FATAL
@@ -41,6 +40,7 @@ ib = Connection.new( :client_id => 11912, :port => 4002 ) do | gw| # 7496 # TWS
     puts "\t"+ msg.contract.attributes.map{ |k,v|  "#{k} : #{v}" unless v.blank?  }.join("\n\t")
   end
 end
+
 ib.wait_for :NextValidOrderId
 
 

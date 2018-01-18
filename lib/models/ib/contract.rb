@@ -127,7 +127,7 @@ module IB
        print_default[symbol],
        print_default[self[:sec_type]],
        (fields.include?(:option) ?
-        [print_default[expiry], print_default[strike], print_default[self[:right]], print_default[multiplier,1]] : nil),
+        [print_default[expiry], print_default[strike], print_default[self[:right]], print_default[multiplier]] : nil),
        print_default[exchange],
        print_default[primary_exchange] ,
        print_default[currency],
