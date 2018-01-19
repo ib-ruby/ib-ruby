@@ -111,8 +111,10 @@ lines of code - and without sacrificing code readability or flexibility.
 
     contract = IB::Contract.new :symbol => 'WFC', :exchange => 'NYSE',
                                 :currency => 'USD', :sec_type => :stock
-    buy_order = IB::Order.new :total_quantity => 100, :limit_price => 21.00,
-                                :action => :buy, :order_type => :limit
+    puts IB::Limit.summary
+    puts IB::Limit.parameters
+    buy_order = IB::Limit.order total_quantity :100, limit_price: 21.00,
+                                action: :buy, tif: :good_till_cancelled
     ib.place_order buy_order, contract
     ib.wait_for :ExecutionData
 ```

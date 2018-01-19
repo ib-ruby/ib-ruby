@@ -18,14 +18,17 @@ ib = IB::Connection.new( :client_id => 1112 ) do | gw | #, :port => 7496 # TWS
 end
 wfc = IB::Symbols::Stocks[:wfc]
 ib.send_message :RequestContractData, id: 56, contract: wfc
-buy_order = IB::Order.new :total_quantity => 100,
-                          :limit_price => 1 + rand().round(2),
-                          :action => 'BUY',
-                          :order_type => 'LMT',
-			  #:cash_qty => "",
-			  :account => 'DU167348'
+
+puts IB::Limit.summary
+puts "Supported Parameter \n -------------------------- "
+puts IB::Limit.parameters
+buy_order = IB::Limit.order total_quantity: 100,
+                          limit_price: 1 + rand().round(2),
+                          action:  :buy,
+			  account: 'DU167348'
+puts buy_order.to_human
 ib.wait_for :NextValidId
-ib.place_order buy_order, wfc
+ib.place_order buy_order,  wfc
 ib.wait_for :ContractDataEnd, 5 #sec
 
 ib.send_message :RequestAllOpenOrders

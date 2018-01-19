@@ -79,7 +79,7 @@ creating a similar array from the python-source
 2.5.0 :027 > u[0]="3"
 
 Tansform "" to "E"
- u = u.map{|y| y.empty? "E"}
+ u = u.map{|y| y.empty? ? "E" : y}
 
 Displaying the Differencies
 

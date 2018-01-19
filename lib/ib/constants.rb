@@ -156,12 +156,13 @@ module IB
        'TRAIL LIMIT' => :trailing_limit, # Trailing Stop Limit
        'TRAIL LIT' => :trailing_limit_if_touched, #  Trailing Limit if Touched
        'TRAIL MIT' => :trailing_market_if_touched, # Trailing Market If Touched
-       'PEG MKT' => :pegged_to_market, #   Pegged-to-Market
        'REL' => :relative, #               Relative
        'BOX TOP' => :box_top, #            Box Top
+       'PEG MKT' => :pegged_to_market, # Pegged-to-Market
+       'PEG STK' => :pegged_to_market, #   Pegged-to-Stock
        'PEG MID' => :pegged_to_midpoint, # Pegged-to-Midpoint
        'PEG BENCH' => :pegged_to_benchmark, # Pegged-to-Benmchmark # Vers. 102
-       'VWAP' => :vwap, #                  VWAP-Guaranteed
+       'VWAP' => :vwap, #                  VWAP-Guaranted
        'OCA' => :one_cancels_all, #        One-Cancels-All
        'VOL' => :volatility, #             Volatility
        'SCALE' => :scale, #                Scale
@@ -268,7 +269,9 @@ module IB
            'GAT' => :good_after_time,
            'GTD' => :good_till_date,
            'GTC' => :good_till_cancelled,
-           'IOC' => :immediate_or_cancel},
+           'IOC' => :immediate_or_cancel,
+	   'OPG' => :opening_price, 
+	   'AUC' => :at_auction},
 
       :rule_80a =>
           {'I' => :individual,

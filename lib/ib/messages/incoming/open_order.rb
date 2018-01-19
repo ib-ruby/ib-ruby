@@ -225,7 +225,7 @@ module IB
                    [:order, :random_price, :boolean],
 
 		   ## todo: ordertype = PEG BENCH  --  -> test!
-		   [proc{ @data[:order[:type]] == 'PEG BENCH' },
+		   [proc{ @data[:order][:order_type] == 'PEG BENCH' },
 		      [:order, :reference_contract_id, :int ],
 		      [:order, :is_pegged_change_amount_decrease, :bool ],
 		      [:order, :pegged_change_amount, :decimal ],
