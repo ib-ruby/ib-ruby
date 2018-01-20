@@ -32,8 +32,8 @@ require 'ib-ruby'
   ## Here we just subscribe to some events  
   C =  Connection.new  client_id: client_id, port: port do |c|
 
-    c.subscribe( :ContractData, :BondContractData) { |msg| logger.info { msg.contract.inspect } }
-    c.subscribe( :Alert, :ContractDataEnd, :ManagedAccounts ) {| m| logger.info { m.to_human } }
+    c.subscribe( :ContractData, :BondContractData) { |msg| logger.info { msg.contract.to_human } }
+    c.subscribe( :Alert, :ContractDataEnd, :ManagedAccounts, :OrderStatus ) {| m| logger.info { m.to_human } }
     c.subscribe( :PortfolioValue, :AccountValue ) {| m| logger.info { m.to_human }}
 
   end
