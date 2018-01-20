@@ -33,7 +33,7 @@ module IB
         "#{ next_quarter_year(time) }#{ sprintf("%02d", next_quarter_month(time)) }"
       end
 
-      # Convenience method; generates an IB::Contract instance for a futures
+      # Convenience method; generates an IB::Future instance for a futures
       # contract with the given parameters.
       #
       # If expiry is nil, it will use the end month of the current
@@ -47,7 +47,7 @@ module IB
       # digit month. For example, November 2011 is "201111".
       #
       def self.future(base_symbol, exchange, currency, description="", expiry=nil)
-        IB::Contract.new :symbol => base_symbol,
+        IB::Future.new :symbol => base_symbol,
           :expiry => expiry || next_expiry,
           :exchange => exchange,
           :currency => currency,

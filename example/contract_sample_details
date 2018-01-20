@@ -1,0 +1,52 @@
+#!/usr/bin/env ruby
+#
+# This script gets details for specific contract from IB
+
+require 'bundler/setup'
+require 'logger'
+require 'yaml'
+require 'ib-ruby'
+require './contract_samples'
+# Set log level
+log.level = Logger::DEBUG #FATAL
+include IB
+# Definition of what we want market data for.  We have to keep track of what ticker id
+# corresponds to what symbol ourselves, because the ticks don't include any other
+# identifying information. The choice of ticker ids is, as far as I can tell, arbitrary.
+contract_definitions =  ContractSamples.public_instance_methods
+
+# get contracts from contract_samples db
+include ContractSamples
+the_contracts =  contract_definitions.map{ | method | self.send( method )}
+
+
+# Connect to IB TWS.
+ib = Connection.new( :client_id => 11912, :port => 4002 ) do | gw| # 7496 # TWS
+  # subscribe to TWS alerts/errors and contract data end marker
+  gw.subscribe(:Alert, :ContractDataEnd) { |msg| puts msg.to_human }
+
+  # subscribe to ContractData incoming events.  The code passed in the block
+  # will be executed when a message of that type is received, with the received
+  # message as its argument. In this case, we just print out the data.
+  gw.subscribe(:ContractData, :BondContractData) do |msg| 
+    puts "------------------> Recieved Contract Confirmation <----------------------------"
+    puts msg.contract.to_human + "\n"
+    puts "Attributes: "
+    puts "\t"+ msg.contract.attributes.map{ |k,v|  "#{k} : #{v}" unless v.blank?  }.join("\n\t")
+  end
+end
+
+ib.wait_for :NextValidOrderId
+
+
+the_contracts.each_with_index do | contract, id|
+  puts "\nRequesting contract data #{id}: #{contract_definitions[id][1..-1]}: #{contract.to_human}"
+
+  # Request Contract details for the symbols we're interested in. TWS will
+  # respond with ContractData messages, which will be processed by the code above.
+  ib.send_message :RequestContractData, :id => id, :contract => contract
+
+  # Wait for IB to respond to our request
+  ib.wait_for :ContractDataEnd, 1 #sec
+  ib.clear_received :ContractDataEnd
+end

@@ -173,16 +173,22 @@ module IB
 
   # Valid security types (sec_type attribute of IB::Contract)
   SECURITY_TYPES =
-      {'STK' => :stock,
-       'OPT' => :option,
-       'FUT' => :future,
-       'IND' => :index,
-       'FOP' => :futures_option,
-       'CASH' => :forex,
-       'BOND' => :bond,
-       'WAR' => :warrant,
-       'FUND' => :fund, # ETF?
-       'BAG' => :bag}.freeze
+    {	'BAG' =>  :bag,
+       'BOND' =>  :bond,
+       'CASH' =>  :forex,
+       'CMDTY'=>  :commodity,
+       'CFD'  =>  :cfd,
+       'FUT'  =>  :future,
+       'CONTFUT' => :continous_future,
+       'FUT+CONTFUT' => :all_futures,
+       'FOP'  =>  :futures_option,
+       'FUND' =>  :fund, # ETF?
+       'IND'  =>  :index,
+       'NEWS'  => :news,
+       'OPT'  =>  :option,
+       'IOPT' =>  :dutch_option,
+       'STK'  =>  :stock,
+       'WAR'  =>  :warrant}.freeze
 
   # Obtain symbolic value from given property code:
   # VALUES[:side]['B'] -> :buy

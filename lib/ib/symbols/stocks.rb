@@ -7,27 +7,23 @@ module IB
 
       def self.contracts
         @contracts ||= {
-          :aapl => IB::Contract.new(:symbol => "AAPL",
+          :aapl => IB::Stock.new(:symbol => "AAPL",
                                     :currency => "USD",
-                                    :sec_type => :stock,
                                     :description => "Apple Inc."),
 
-          :vxx => IB::Contract.new(:symbol => "VXX",
+          :vxx => IB::Stock.new(:symbol => "VXX",
                                    :exchange => "ARCA",
                                    # :currency => "USD",
-                                   :sec_type => :stock,
                                    :description => "iPath S&P500 VIX short term Futures ETN"),
 
-          :wfc => IB::Contract.new(:symbol => "WFC",
+          :wfc => IB::Stock.new(:symbol => "WFC",
                                    :exchange => "NYSE",
                                    :currency => "USD",
-                                   :sec_type => :stock,
                                    :description => "Wells Fargo"),
 
-          :wrong => IB::Contract.new(:symbol => "QEEUUE",
+          :wrong => IB::Stock.new(:symbol => "QEEUUE",
                                      :exchange => "NYSE",
                                      :currency => "USD",
-                                     :sec_type => :stock,
                                      :description => "Non-existent stock"),
         }
       end
