@@ -54,11 +54,21 @@ can adress and extend similar methods from UseOrder.
 	  msg =self.name + ".order -> A nessesary field is missing: #{nessesary}: --> #{requirements[nessesary]}"
 	  error msg, :args, nil
 	end
+	if alternative_parameters.present?
+	  unless ( alternative_parameters.keys  & the_arguments.keys ).size == 1
+	  msg =self.name + ".order -> One of the alternative fields needs to be specified: \n\t:" +
+		  "#{alternative_parameters.map{|x| x.join ' => '}.join(" or \n\t:")}"
+	  error msg, :args, nil
+	  end
+	end
+
 	# initialise order with given attributes	
-	 puts fields
 	 IB::Order.new the_arguments
       end
-
+  
+      def alternative_parameters
+	{}
+      end
       def requirements
 	{ action: IB::VALUES[:side], total_quantity: 'also aliased as :size' }
       end
@@ -87,6 +97,9 @@ can adress and extend similar methods from UseOrder.
   end
 
 require 'ib/order_samples/forex'
-require 'ib/order_samples/simple'
+require 'ib/order_samples/market'
+require 'ib/order_samples/limit'
+require 'ib/order_samples/stop'
+require 'ib/order_samples/volatility'
 require 'ib/order_samples/premarket'
 require 'ib/order_samples/pegged'

@@ -148,10 +148,11 @@ module IB
        'MOC' => :market_on_close, #        Market-on-Close     MKTCLSL ?
        'MOO' => :market_on_open, #         Market-on-Open
        'MTL' => :market_to_limit, #        Market-to-Limit
-       'MKTPRT' => :market_protected, #   Market with Protection
+       'MKT PRT' => :market_protected, #   Market with Protection
        'QUOTE' => :request_for_quote, #    Request for Quote
        'STP' => :stop, #                   Stop
-       'STPLMT' => :stop_limit, #         Stop Limit
+       'STP LMT' => :stop_limit, #         Stop Limit
+       'STP PRT' => :stop_protected, #	   Stop with Protection
        'TRAIL' => :trailing_stop, #        Trailing Stop
        'TRAIL LIMIT' => :trailing_limit, # Trailing Stop Limit
        'TRAIL LIT' => :trailing_limit_if_touched, #  Trailing Limit if Touched

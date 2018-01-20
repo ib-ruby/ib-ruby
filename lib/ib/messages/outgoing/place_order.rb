@@ -23,8 +23,8 @@ module IB
 #           order.quantity,
 	   order.total_quantity,
            order[:order_type], # Internal code, 'LMT' instead of :limit
-           order.limit_price || "",				      ## position in orderstring: 20
-           order.aux_price || "",
+           order.limit_price,				      ## position in orderstring: 20
+           order.aux_price,
            order[:tif],
            order.oca_group,
            order.account,
