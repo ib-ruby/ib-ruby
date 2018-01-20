@@ -109,11 +109,9 @@ lines of code - and without sacrificing code readability or flexibility.
     ib.send_message :RequestAccountData
     ib.wait_for :AccountDownloadEnd
 
-    contract = IB::Contract.new :symbol => 'WFC', :exchange => 'NYSE',
-                                :currency => 'USD', :sec_type => :stock
-    puts IB::Limit.summary
-    puts IB::Limit.parameters
-    buy_order = IB::Limit.order total_quantity :100, limit_price: 21.00,
+    contract = IB::Stock.new symbol: 'WFC'
+                                   
+    buy_order = IB::Limit.order total_quantity: 100, limit_price: 21.00,
                                 action: :buy, tif: :good_till_cancelled
     ib.place_order buy_order, contract
     ib.wait_for :ExecutionData
