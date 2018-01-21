@@ -1,7 +1,7 @@
 
 module IB
     module SimpleStop
-      extend UseOrder
+      extend OrderPrototype
       class << self
 
       def defaults
@@ -33,7 +33,7 @@ module IB
       end
     end
     module StopLimit
-      extend UseOrder
+      extend OrderPrototype
       class << self
 
       def defaults
@@ -61,7 +61,7 @@ module IB
       end
     end
     module  StopProtected
-      extend UseOrder
+      extend OrderPrototype
       class << self
 
       def defaults
@@ -93,9 +93,9 @@ module IB
       end
       end
     end
-#  module UseOrder
+#  module OrderPrototype
     module  TrailingStop
-      extend UseOrder
+      extend OrderPrototype
       class << self
 
 

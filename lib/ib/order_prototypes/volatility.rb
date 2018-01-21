@@ -1,8 +1,8 @@
 module IB
-#  module UseOrder
+#  module OrderPrototype
     module Volatility
       ### todo : check  again. Order is  siently accepted, but not acknowledged
-      extend UseOrder
+      extend OrderPrototype
       class << self
 
       def defaults

@@ -1,8 +1,8 @@
 
 module IB
-#  module UseOrder
+#  module OrderPrototype
     module  Market
-      extend UseOrder
+      extend OrderPrototype
       class << self
 
       def defaults
@@ -29,7 +29,7 @@ module IB
       end
     end
     module  MarketIfTouched
-      extend UseOrder
+      extend OrderPrototype
       class << self
 
       def defaults
@@ -63,7 +63,7 @@ module IB
 
 
     module  MarketOnClose
-      extend UseOrder
+      extend OrderPrototype
       class << self
 
       def defaults
@@ -89,7 +89,7 @@ module IB
     end
     
     module  MarketOnOpen
-      extend UseOrder
+      extend OrderPrototype
       class << self
 
       def defaults

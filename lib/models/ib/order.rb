@@ -261,7 +261,9 @@ module IB
       :modified_at,
       :leg_prices,
       :algo_params,
-      :combo_params
+      :combo_params   # Valid tags are LeginPrio, MaxSegSize, DontLeginNext, ChangeToMktTime1, 
+		      # ChangeToMktTime2, ChangeToMktOffset, DiscretionaryPct, NonGuaranteed, 
+		      # CondPriceMin, CondPriceMax, and PriceCondConid.
 
     alias order_combo_legs leg_prices
     alias smart_combo_routing_params combo_params

@@ -1,4 +1,9 @@
-#!/usr/bin/env ruby
+#!/usr/bin/env rubya
+# ---------------------------------------------------------------------------------- #
+#                     C O N T R A C T  S A M P L E S                                 #
+#
+# Sample Contracts for ib-ruby with 1:1 comparism to python code         
+#
 # based on »ContractSamples.py« (python-implementation of the tws-api)
 # which is protected by the following copyright
 #
@@ -428,11 +433,14 @@ module ContractSamples
         contract.exchange = "SMART"
         contract.currency = "USD"
 =end
-=begin
     def rOptionComboContract
 
+       Bag.new symbol: 'DBK', currency: 'EUR', exchange: 'DTB', legs:
+	[  ComboLeg.new( con_id: 197397509 , action: :buy, exchange: 'DTB', ratio: 1),   #DBK JUN 15 2018 C 
+           ComboLeg.new( con_id: 197397584,  action: :sell, exchange: 'DTB', ratio: 1 ) ] #DBK JUN 15 2018 P
     end
-        #! [bagoptcontract]
+
+=begin
         contract = Contract()
         contract.symbol = "DBK"
         contract.secType = "BAG"
@@ -462,9 +470,13 @@ module ContractSamples
     """ STK Combo contract
     Leg 1: 43645865 - IBKR's STK
     Leg 2: 9408 - McDonald's STK """
-
-    @staticmethod
-    def StockComboContract():
+=end
+    def rStockComboContract
+       Bag.new symbol: 'IBKR,MCD', currency: 'USD', legs:
+	[  ComboLeg.new( con_id: 43645865, action: :buy, ratio: 1), # IKBR STK
+           ComboLeg.new( con_id: 9408,	  action: :sell,ratio: 1 ) ] # MCD STK
+    end
+=begin
         #! [bagstkcontract]
         contract = Contract()
         contract.symbol = "IBKR,MCD"
@@ -489,12 +501,19 @@ module ContractSamples
         contract.comboLegs.append(leg2)
         #! [bagstkcontract]
         return contract
+=end
 
+
+=begin
 
     """ CBOE Volatility Index Future combo contract """
-
-    @staticmethod
-    def FutureComboContract():
+=end
+    def rFutureComboContract
+       Bag.new symbol: 'VIX', currency: 'USD', exchange: 'CFE', legs:
+	[  ComboLeg.new( con_id: 256038899, action: :buy, exchange: 'CFE', ratio: 1), #  VIX FUT 201708
+           ComboLeg.new( con_id: 260564703,  action: :sell, exchange: 'CFE', ratio: 1 ) ] # VIX FUT 201709
+    end
+=begin
         #! [bagfutcontract]
         contract = Contract()
         contract.symbol = "VIX"
@@ -520,8 +539,13 @@ module ContractSamples
         #! [bagfutcontract]
         return contract
 
-    @staticmethod
-    def SmartFutureComboContract():
+=end
+    def rSmartFutureComboContract():
+       Bag.new symbol: 'WTI', currency: 'USD', exchange: 'SMART', legs:
+	[  ComboLeg.new( con_id: 55928698, action: :buy, exchange: 'IPE', ratio: 1), #  WTI future June 2017 
+           ComboLeg.new( con_id: 55850663,  action: :sell, exchange: 'IPE', ratio: 1 ) ] # COIL future June 2017
+    end
+=begin
         #! [smartfuturespread]
         contract = Contract()
         contract.symbol = "WTI" # WTI,COIL spread. Symbol can be defined as first leg symbol ("WTI") or currency ("USD")
@@ -546,10 +570,15 @@ module ContractSamples
         contract.comboLegs.append(leg2)
         #! [smartfuturespread]
         return contract
-
-    @staticmethod
-    def InterCmdtyFuturesContract():
+=end
+    def rInterCmdtyFuturesContract():
+       Bag.new symbol: 'CL.BZ', currency: 'USD', exchange: 'NYMEX', legs:
+	[  ComboLeg.new( con_id: 47207310, action: :buy, exchange: 'NYMEX', ratio: 1), #  CL Dec'16 @NYMEX
+           ComboLeg.new( con_id: 47195961,  action: :sell, exchange: 'NYMEX', ratio: 1 ) ] # #BZ Dec'16 @NYMEX
+    end
+=begin
         #! [intcmdfutcontract]
+	#
         contract = Contract()
         contract.symbol = "CL.BZ" #symbol is 'local symbol' of intercommodity spread. 
         contract.secType = "BAG"

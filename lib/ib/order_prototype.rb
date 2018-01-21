@@ -8,15 +8,15 @@ It provides a wrapper for easy defining even complex ordertypes.
 
 The Order is build by 
 
-IB::<UseOrder>.order
+IB::<OrderPrototye>.order
 
 A description is available through
   
-  puts IB::<UseOrder>.summary
+  puts IB::<OrderPrototype>.summary
 
 Nessesary and optional arguments are printed by
     
-  puts IB::<UseOrder>.parameters
+  puts IB::<OrderPrototype>.parameters
 
 Orders can be setup interactively
 
@@ -33,13 +33,13 @@ Orders can be setup interactively
   
 
 
-The prototypes are defined as module. They extend UseOrder and establish singleton methods, which
-can adress and extend similar methods from UseOrder. 
+The prototypes are defined as module. They extend OrderPrototype and establish singleton methods, which
+can adress and extend similar methods from OrderPrototype. 
 
 
 =end
 
-  module UseOrder
+  module OrderPrototype
 
 
       def order **fields
@@ -96,10 +96,11 @@ can adress and extend similar methods from UseOrder.
     end
   end
 
-require 'ib/order_samples/forex'
-require 'ib/order_samples/market'
-require 'ib/order_samples/limit'
-require 'ib/order_samples/stop'
-require 'ib/order_samples/volatility'
-require 'ib/order_samples/premarket'
-require 'ib/order_samples/pegged'
+require 'ib/order_prototypes/forex'
+require 'ib/order_prototypes/market'
+require 'ib/order_prototypes/limit'
+require 'ib/order_prototypes/stop'
+require 'ib/order_prototypes/volatility'
+require 'ib/order_prototypes/premarket'
+require 'ib/order_prototypes/pegged'
+require 'ib/order_prototypes/combo'

@@ -1,6 +1,6 @@
 module IB
     module  Pegged2Primary
-      extend UseOrder
+      extend OrderPrototype
       class << self
 
     def defaults
@@ -46,7 +46,7 @@ module IB
       end
     end
     module  Pegged2Market
-      extend UseOrder
+      extend OrderPrototype
       class << self
 
     def defaults
@@ -81,7 +81,7 @@ module IB
     end
 
     module  Pegged2Stock
-      extend UseOrder
+      extend OrderPrototype
       class << self
 
     def defaults
@@ -127,7 +127,7 @@ module IB
     end
 
     module  Pegged2Benchmark
-      extend UseOrder
+      extend OrderPrototype
       class << self
 
     def defaults

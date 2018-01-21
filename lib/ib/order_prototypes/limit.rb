@@ -1,7 +1,7 @@
 
 module IB
     module Limit
-      extend UseOrder
+      extend OrderPrototype
       class << self
 
       def defaults
@@ -28,7 +28,7 @@ module IB
       end
     end
     module  Discretionary
-      extend UseOrder
+      extend OrderPrototype
       class << self
 
     def defaults
@@ -59,9 +59,9 @@ module IB
       end
       end
     end
-#  module UseOrder
+#  module OrderPrototype
     module  Sweep2Fill
-      extend UseOrder
+      extend OrderPrototype
       class << self
 
       def defaults
@@ -93,7 +93,7 @@ module IB
       end
     end
     module  LimitIfTouched
-      extend UseOrder
+      extend OrderPrototype
       class << self
 
       def defaults
@@ -122,7 +122,7 @@ module IB
 
 
     module  LimitOnClose
-      extend UseOrder
+      extend OrderPrototype
       class << self
 
       def defaults
@@ -148,7 +148,7 @@ module IB
     end
     
     module  LimitOnOpen
-      extend UseOrder
+      extend OrderPrototype
       class << self
 
       def defaults

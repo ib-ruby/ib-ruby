@@ -1,7 +1,7 @@
 module IB
-#  module UseOrder
+#  module OrderPrototype
     module AtAuction
-      extend UseOrder
+      extend OrderPrototype
       class << self
 
       def defaults

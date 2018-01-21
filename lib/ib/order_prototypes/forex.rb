@@ -1,7 +1,7 @@
 module IB
 #  module UseOrder
     module  ForexLimit
-      extend UseOrder
+      extend OrderPrototype
       class << self
 
 

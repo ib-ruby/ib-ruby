@@ -23,7 +23,7 @@ module IB
 #           order.quantity,
 	   order.total_quantity,
            order[:order_type], # Internal code, 'LMT' instead of :limit
-           order.limit_price,				      ## position in orderstring: 20
+           order.limit_price,		
            order.aux_price,
            order[:tif],
            order.oca_group,
@@ -49,13 +49,13 @@ module IB
                ## Support for combo routing params in Order
                order.combo_params.empty? ? 0 : [order.combo_params.size] + order.combo_params.to_a
 	     ]
-	        else      ### has to be checked!!
-	          []    ### has to be checked!!
-	  end,	      ### has to be checked!!
+	        else     
+	          []    
+	  end,	      
 	     
 
            "", # deprecated shares_allocation field
-           order.discretionary_amount,	      ## position in orderstring: 37
+           order.discretionary_amount,	    
            order.good_after_time,
            order.good_till_date,
            [ order.fa_group,
