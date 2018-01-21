@@ -5,7 +5,7 @@
 require 'bundler/setup'
 $LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
-
+require 'logger'
 COUNT_OF_EVENTS =  20
 # Definition of what we want market data for.  We have to keep track of what ticker id
 # corresponds to what symbol ourselves, because the ticks don't include any other
@@ -48,7 +48,7 @@ end
 
 # Now we actually request market data for the symbols we're interested in.
 market.each_pair do |id, contract|
-  ib.send_message :RequestMarketData, :ticker_id => id, :contract => contract
+  ib.send_message :RequestMarketData, :ticker_id => id, :contract => contract ,  tick_list: [100,101,106]
 end
 
 puts "\nSubscribed to market data"

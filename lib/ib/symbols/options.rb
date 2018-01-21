@@ -12,6 +12,7 @@ module IB
                                    :expiry => "201901",
                                    :right => "CALL",
                                    :strike => 20,
+				   :multiplier => 100,
 				   :currency => 'USD',
                                    :description => "General Electric 20 Call 2019-01"),
           :aapl200 => IB::Option.new(:symbol => "AAPL",
