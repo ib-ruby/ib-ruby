@@ -47,13 +47,18 @@ ib = IB::Connection.new( client_id: 1112)  do | gw| #, :port => 7496 # TWS
 end
 
 # Now we actually request market data for the symbols we're interested in.
+#
+# ### ticklist-values :  lib/ib/messages/outgoing/request_marketdata.rb 
 market.each_pair do |id, contract|
   ib.send_message :RequestMarketData, :ticker_id => id, :contract => contract ,  tick_list: [100,101,106]
 end
 
 puts "\nSubscribed to market data"
-#puts "\n******** Press <Enter> to cancel... *********\n\n"
+puts "\n******** Press <Enter> to cancel subscriptions  *********\n\n"
 STDIN.gets
-#puts "Cancelling market data subscription.."
+puts "Cancelling market data subscription.."
 
-#market.each_pair { |id, contract| ib.send_message :CancelMarketData, :id => id }
+market.each_pair { |id, contract| ib.send_message :CancelMarketData, :id => id }
+
+puts "\n******** Press <Enter> to quit.. *********\n\n"
+STDIN.gets

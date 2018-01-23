@@ -21,22 +21,22 @@ module IBSupport
       v.nil? ? false : v.to_i != 0
     end
 
-    def read_array
-      count = read_int
-    end
+#    def read_array
+#      count = read_int
+#    end
 
     ## originally provided in socket.rb
      #    # Returns loaded Array or [] if count was 0
-    #    161 #    def read_array &block
-    #    162 #      count = read_int
-    #    163 #      count > 0 ? Array.new(count, &block) : []
-    #    164 #    end
-    #    165 #
-    #    166 #    # Returns loaded Hash
-    #    167 #    def read_hash
-    #    168 #      tags = read_array { |_| [read_string, read_string] }
-    #    169 #      tags.empty? ? Hash.new : Hash[*tags.flatten]
-    #    170 #    end
+           def read_array &block
+             count = read_int
+             count > 0 ? Array.new(count, &block) : []
+           end
+    #   
+    #       # Returns loaded Hash
+           def read_hash
+             tags = read_array { |_| [read_string, read_string] }
+             tags.empty? ? HashWithIndifferentAccess.new : Hash[*tags.flatten]
+           end
     #
     alias read_bool read_boolean
   end
@@ -72,6 +72,9 @@ module IB
             @data = source
 	  else
 	    @buffer = source
+#	    puts "BUFFER"
+#	    puts buffer.join(" :\n ")
+#	    puts "BUFFER END"
 	    @data = Hash.new
 	    self.load
           end

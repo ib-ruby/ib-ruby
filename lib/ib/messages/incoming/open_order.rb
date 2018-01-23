@@ -13,7 +13,7 @@ module IB
                       [:contract, :expiry, :string],
                       [:contract, :strike, :decimal],
                       [:contract, :right, :string],
-                      [:contract, :multiplier, :string],
+                      [:contract, :multiplier, :int],
                       [:contract, :exchange, :string],
                       [:contract, :currency, :string],
                       [:contract, :local_symbol, :string],
@@ -72,8 +72,6 @@ module IB
                       [:order, :volatility_type, :int],
                       [:order, :delta_neutral_order_type, :string],
                       [:order, :delta_neutral_aux_price, :decimal]
-      ## additional stuff vers 34
-      #
 
       class OpenOrder
 
@@ -131,17 +129,17 @@ module IB
         def load
           super
 
-          load_map [proc { | | filled?(@data[:order][:delta_neutral_order_type]) },
+#          load_map [proc { | | filled?(@data[:order][:delta_neutral_order_type]) }, # todo Testcase!
+          load_map [proc { | | (@data[:order][:delta_neutral_order_type] != 'None') },
                       # As of client v.52, we may receive delta... params in openOrder
                      [:order, :delta_neutral_con_id, :int],
                      [:order, :delta_neutral_settling_firm, :string],
                      [:order, :delta_neutral_clearing_account, :string],
                      [:order, :delta_neutral_open_close, :string],
                      [:order, :delta_neutral_short_sale, :bool],
-                     [:order, :delta_neutral_short_sale_slot, :int],
+		     [:order, :delta_neutral_short_sale_slot, :int],
 		     [:order, :delta_neutral_designated_location, :string] ],  # end proc
-
-                   [:order, :continuous_update, :int],
+		   [:order, :continuous_update, :int],
                    [:order, :reference_price_type, :int],
                    [:order, :trail_stop_price, :decimal],
                    [:order, :trailing_percent, :decimal],
@@ -265,9 +263,10 @@ module IB
 
         # Check if given value was set by TWS to something vaguely "positive"
         def filled? value
+#	  puts "filled: #{value.class} --> #{value.to_s}"
           case value
             when String
-              !value.empty?
+              (!value.empty?) && (value !='None')
             when Float, Integer
               value > 0
             else

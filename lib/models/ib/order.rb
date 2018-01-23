@@ -464,7 +464,7 @@ module IB
 
     def to_human
       "<Order: " + ((order_ref && order_ref != '') ? "#{order_ref} " : '') +
-        "#{self[:order_type]} #{self[:tif]} #{side} #{quantity} " +
+        "#{self[:order_type]} #{self[:tif]} #{side} #{total_quantity} " +
         (limit_price ? "#{limit_price} " : '') + "#{status} " +
         ((aux_price && aux_price != 0) ? "/#{aux_price}" : '') +
         "##{local_id}/#{perm_id} from #{client_id}" +
