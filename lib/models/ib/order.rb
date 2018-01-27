@@ -479,9 +479,5 @@ module IB
         (commission ? " fee #{commission}" : '') + ">"
     end
 
-    def self.valid_intent? message
-      intents =  %w( IB, Away, PTA )
-      intents.include?( message )
-    end
   end # class Order
 end # module IB

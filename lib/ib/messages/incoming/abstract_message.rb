@@ -1,6 +1,10 @@
 require 'ib/messages/abstract_message'
 module IBSupport
   refine Array do
+
+    def zero?
+      false
+    end
     def read_int
       self.shift.to_i rescue 0
     end
@@ -16,9 +20,34 @@ module IBSupport
       self.shift rescue ""
     end
 
+    def read_required_string
+      v = read_string
+      error( "requiredString not filled", :load, false)  if v.blank?
+      v
+    end
+
     def read_boolean
+
       v = self.shift rescue nil
       v.nil? ? false : v.to_i != 0
+    end
+    def read_required_boolean
+	begin
+	  if self.empty?
+	    logger.error "End of buffer reached"
+	    error "End of buffer reached", :load, false
+	    return nil
+	  else
+	    v = self.shift
+	    if ["1","0"].include? v
+	      return v.to_i
+	    else
+	      error "bool expected, got #{v} "
+	    end
+	  end
+	end while v.empty? 
+	logger.error { "Bool required, #{v} detected instead" }
+	error  "Bool required, #{v} detected instead", :load, false
     end
 
 #    def read_array
@@ -29,13 +58,14 @@ module IBSupport
      #    # Returns loaded Array or [] if count was 0
            def read_array &block
              count = read_int
+# debug	     STDOUT.puts "ARRAY ----|> #{count}"
              count > 0 ? Array.new(count, &block) : []
            end
     #   
     #       # Returns loaded Hash
            def read_hash
              tags = read_array { |_| [read_string, read_string] }
-             tags.empty? ? HashWithIndifferentAccess.new : Hash[*tags.flatten]
+             tags.empty? ? Hash.new :  Hash[*tags.flatten]
            end
     #
     alias read_bool read_boolean
@@ -72,9 +102,9 @@ module IB
             @data = source
 	  else
 	    @buffer = source
-#	    puts "BUFFER"
-#	    puts buffer.join(" :\n ")
-#	    puts "BUFFER END"
+	    puts "BUFFER"
+	    puts buffer.inspect #.join(" :\n ")
+	    puts "BUFFER END"
 	    @data = Hash.new
 	    self.load
           end
@@ -84,14 +114,16 @@ module IB
 	## thus just load the parameter-map 
 	def simple_load
             load_map *self.class.data_map
-        rescue => e
+        rescue IB::Error  => e
           error "Reading #{self.class}: #{e.class}: #{e.message}", :load, e.backtrace
 	end
         # Every message loads received message version first
         # Override the load method in your subclass to do actual reading into @data.
         def load
-            @data[:version] = @buffer.read_int
+	    unless self.class.version.zero?
+            @data[:version] = buffer.read_int
             check_version @data[:version], self.class.version
+	    end
 	    simple_load
         end
 
@@ -124,14 +156,19 @@ module IB
               else
                 instruction # [ :group, :name, :type, (:block)]
               end
-
+# debug	      print "Name: #{name}   "
+	      begin
               data = @buffer.__send__("read_#{type}", &block)
-
+	      rescue IB::LoadError => e
+	      puts "TEST"
+	      error "Reading #{self.class}: #{e.class}: #{e.message}  --> Instruction: #{name}" , :reader, false 
+	      end
+# debug	      puts data.inspect
               if group
                 @data[group] ||= {}
                 @data[group][name] = data
               else
-                @data[name] = data
+                @data[name] = data    
               end
             else
               error "Unrecognized instruction #{instruction}"

@@ -140,16 +140,6 @@ module IB
                      [:order, :delta_neutral_short_sale, :bool],
 		     [:order, :delta_neutral_short_sale_slot, :int],
 		     [:order, :delta_neutral_designated_location, :string] ],  # end proc
-		   # [proc{ | |( @data[:contract][:sec_type] == "BAG" ) } ,
-#		    [:order, :misc1, :int],
-#		    [:order, :misc2, :int],
-#		    [:order, :misc3, :decimal],
-#		    [:order, :misc4, :decimal],
-#		    [:order, :misc5, :decimal],
-#		    [:order, :misc6, :decimal],
-#		    [:order, :misc7, :int], 
-#		    [:order, :misc8, :int] ,
-		   # ],
 		   [:order, :continuous_update, :int],
                    [:order, :reference_price_type, :int],
                    [:order, :trail_stop_price, :decimal],   # not trail-orders. see below

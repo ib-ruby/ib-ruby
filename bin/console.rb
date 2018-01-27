@@ -7,7 +7,7 @@ require 'bundler/setup'
 require 'yaml'
 
 require 'logger'
-LogLevel = Logger::INFO
+LogLevel = Logger::ERROR  # INFO
 #require File.expand_path(File.dirname(__FILE__) + "/../config/boot")
 
 require 'ib-ruby'
