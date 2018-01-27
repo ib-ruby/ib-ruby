@@ -24,7 +24,7 @@ module IB
     # ActiveModel API (for serialization)
 
     def attributes
-      @attributes ||= HashWithIndifferentAccess.new
+      @attributes ||= Hash.new #HashWithIndifferentAccess.new
     end
 
     def attributes= attrs

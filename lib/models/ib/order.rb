@@ -265,6 +265,8 @@ module IB
 		      # ChangeToMktTime2, ChangeToMktOffset, DiscretionaryPct, NonGuaranteed, 
 		      # CondPriceMin, CondPriceMax, and PriceCondConid.
 
+    prop :misc1, :misc2, :misc3, :misc4, :misc5, :misc6, :misc7, :misc8 # just 4 debugging
+
     alias order_combo_legs leg_prices
     alias smart_combo_routing_params combo_params
 
@@ -407,6 +409,11 @@ module IB
       [soft_dollar_tier_params[:name],soft_dollar_tier_params[:val]]
     end
 
+    def initialize_soft_dollar_tier *fields
+      self.soft_dollar_tier_params= HashWithIndifferentAccess.new(
+      name:   fields.pop, val:  fields.pop, display_name:  fields.pop )
+    end
+
     def serialize_misc_options
       ""		  # Vers. 70  
     end
@@ -470,6 +477,11 @@ module IB
         "##{local_id}/#{perm_id} from #{client_id}" +
         (account ? "/#{account}" : '') +
         (commission ? " fee #{commission}" : '') + ">"
+    end
+
+    def self.valid_intent? message
+      intents =  %w( IB, Away, PTA )
+      intents.include?( message )
     end
   end # class Order
 end # module IB

@@ -1,28 +1,32 @@
 require 'model_helper'
+## is noct compatible withe RSpec 3
 
-describe IB::Order,
-  :props =>
-  {:local_id => 23,
-   :order_ref => 'Test',
-   :client_id => 1111,
-   :perm_id => 173276893,
-   :parent_id => 0,
-   :side => :buy,
-   :tif => :good_till_cancelled,
-   :order_type => :market_if_touched,
-   :limit_price => 0.1,
-   :quantity => 100,
-   :open_close => :close,
-   :oca_group => '',
-   :oca_type => :reduce_no_block,
-   :origin => :firm,
-   :designated_location => "WHATEVER",
-   :exempt_code => 123,
-   :delta_neutral_order_type => :market,
-   :transmit => false,
-   :outside_rth => true,
-   :what_if => true,
-   :not_held => true},
+RSpec.describe IB::Order , focus: true do
+
+  let( :props ) do
+    {
+    :props => 
+      {:local_id => 23,
+       :order_ref => 'Test',
+       :client_id => 1111,
+       :perm_id => 173276893,
+       :parent_id => 0,
+       :side => :buy,
+       :tif => :good_till_cancelled,
+       :order_type => :market_if_touched,
+       :limit_price => 0.1,
+       :quantity => 100,
+       :open_close => :close,
+       :oca_group => '',
+       :oca_type => :reduce_no_block,
+       :origin => :firm,
+       :designated_location => "WHATEVER",
+       :exempt_code => 123,
+       :delta_neutral_order_type => :market,
+       :transmit => false,
+       :outside_rth => true,
+       :what_if => true,
+       :not_held => true },
 
   # TODO: :presents => { Object => "Formatted"}
   :human => "<Order: Test MIT GTC buy 100 0.1 New #23/173276893 from 1111>",
@@ -80,14 +84,16 @@ describe IB::Order,
      :shares => 60,
      :cumulative_quantity => 100,
      :side => :buy,
-     :time => "20120312  15:41:10"}]
-} do
-
+     :time => "120312  15:41:10"}]
+    }
+    }
+  end   
+  
   it_behaves_like 'Self-equal Model'
   it_behaves_like 'Model with invalid defaults'
 
   context 'Order associations' do
-    after(:all) { DatabaseCleaner.clean if IB.db_backed? }
+  #  after(:all) { DatabaseCleaner.clean if IB.db_backed? }
 
     subject { IB::Order.new props }
 

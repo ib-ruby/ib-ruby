@@ -34,6 +34,9 @@ else
     :client_id => 1111, #  Client id that identifies the test suit
     :reuters => true #     Subscription to Reuters data enabled ?
   }
+  OPTS[:order] = {	# 
+    :account => ACCOUNT
+  }
 end
 
 RSpec.configure do |config|

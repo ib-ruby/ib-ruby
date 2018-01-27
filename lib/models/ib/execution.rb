@@ -17,7 +17,9 @@ module IB
       :price, #         double: The order execution price.
       :average_price, # double: Used in regular trades, combo trades and legs of the combo.
       :ev_rule, #       String: Australian products only
-      :ev_multiplier, # double: Australian products only
+      :ev_multiplier, # double: Australian products onlyA
+      :model_code,
+      :last_liquidity,
 
       [:quantity, :shares], #       int: The number of shares filled.
       :cumulative_quantity, # int: Used in regular trades, combo trades and legs of combo

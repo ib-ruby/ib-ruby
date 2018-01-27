@@ -12,19 +12,32 @@ include IB
 # Definition of what we want market data for.  We have to keep track of what ticker id
 # corresponds to what symbol ourselves, because the ticks don't include any other
 # identifying information. The choice of ticker ids is, as far as I can tell, arbitrary.
-market = {0 => IB::Symbols::Stocks[:wfc],
-           1 => IB::Symbols::Stocks[:vxx],
-           2 => IB::Symbols::Futures[:vix],
-           3 => IB::Symbols::Futures[:ym],
-           4 => IB::Symbols::Options[:ge20],
+#
+# I. Selected Contracts
+contracts = [ IB::Symbols::Stocks.wfc,
+              IB::Symbols::Stocks.vxx,
+              IB::Symbols::Futures.vix,
+              IB::Symbols::Futures.ym,
+              IB::Symbols::Options.ge20,
 	   ### OSI-Notation is broken
-#           5 => IB::Symbols::Options[:vix20],
-#           6 => IB::Symbols::Options[:spy270],
-#           7 => IB::Symbols::Options[:vxx40],
-           8 => IB::Symbols::Forex[:eurusd],
+#            IB::Symbols::Options[:vix20],
+#            IB::Symbols::Options[:spy270],
+#            IB::Symbols::Options[:vxx40],
+	       IB::Symbols::Forex.eurusd,
 	   ### Bonds are not actually not supported 
            # 8 => IB::Symbols::Bonds[:wag],
-           9 => IB::Symbols::Stocks[:wrong]}
+	       IB::Symbols::Stocks.wrong ]
+# or
+# II. Use predefined Contracts
+stock_contracts =  Symbols::Stocks.all.map{|x|  Symbols::Stocks.send x }
+future_contracts =  Symbols::Futures.all.map{|x|  Symbols::Futures.send x }
+option_contracts =  Symbols::Options.all.map{|x|  Symbols::Options.send x }
+cfd_contracts =  Symbols::CFD.all.map{|x|  Symbols::CFD.send x }
+index_contracts =  Symbols::Index.all.map{|x|  Symbols::Index.send x }
+
+## comment if you want to display selected contracts ( I. )
+contracts =  stock_contracts + future_contracts + option_contracts +  cfd_contracts + index_contracts
+
 
 # Connect to IB TWS.
 ib = Connection.new( :client_id => 11912, :port => 4002 ) do | gw| # 7496 # TWS
@@ -44,12 +57,12 @@ end
 ib.wait_for :NextValidOrderId
 
 
-market.each_pair do |id, contract|
-  puts "\nRequesting contract data #{id}: #{contract.description}"
+contracts.each_with_index do |contract, i|
+  puts "\nRequesting contract data #{i+1}: #{contract.description}"
 
   # Request Contract details for the symbols we're interested in. TWS will
   # respond with ContractData messages, which will be processed by the code above.
-  ib.send_message :RequestContractData, :id => id, :contract => contract
+  ib.send_message :RequestContractData, :id => i+1, :contract => contract
 
   # Wait for IB to respond to our request
   ib.wait_for :ContractDataEnd, 5 #sec

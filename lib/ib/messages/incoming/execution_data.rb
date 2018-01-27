@@ -3,7 +3,7 @@ module IB
     module Incoming
 
       ExecutionData =
-          def_message [11, [8, 9]],
+          def_message [11, 0] , # [8, 9]],
                       # The reqID that was specified previously in the call to reqExecution()
                       [:request_id, :int],
                       [:execution, :local_id, :int],
@@ -17,13 +17,14 @@ module IB
                       [:contract, :exchange, :string],
                       [:contract, :currency, :string],
                       [:contract, :local_symbol, :string],
+                      [:contract, :trading_class, :string],
 
                       [:execution, :exec_id, :string], # Weird format
                       [:execution, :time, :string],
                       [:execution, :account_name, :string],
                       [:execution, :exchange, :string],
                       [:execution, :side, :string],
-                      [:execution, :quantity, :int],
+                      [:execution, :quantity, :decimal],
                       [:execution, :price, :decimal],
                       [:execution, :perm_id, :int],
                       [:execution, :client_id, :int],
@@ -32,9 +33,15 @@ module IB
                       [:execution, :average_price, :decimal],
                       [:execution, :order_ref, :string],
                       [:execution, :ev_rule, :string],
-                      [:execution, :ev_multiplier, :decimal]
+                      [:execution, :ev_multiplier, :decimal],
+                      [:execution, :model_code, :string],
+                      [:execution, :last_liquidity, :int]
 
       class ExecutionData
+
+	def load
+	  simple_load
+	end
 
         def contract
           @contract = IB::Contract.build @data[:contract]

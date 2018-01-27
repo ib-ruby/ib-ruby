@@ -1,7 +1,7 @@
 module IB
   module Messages
     module Incoming
-
+      using IBSupport
       # OpenOrder is the longest message with complex processing logics
       OpenOrder =
           def_message [5, 34],		# updated to v. 34 according to python (decoder.py processOpenOrder)
@@ -19,9 +19,9 @@ module IB
                       [:contract, :local_symbol, :string],
                       [:contract, :trading_class, :string],
 
-                      [:order, :action, :string],
+                      [:order, :action, :required_string],
                       [:order, :total_quantity, :decimal],
-                      [:order, :order_type, :string],
+                      [:order, :order_type, :required_string],
                       [:order, :limit_price, :decimal],
                       [:order, :aux_price, :decimal],
                       [:order, :tif, :string],
@@ -58,19 +58,19 @@ module IB
                       [:order, :stock_range_upper, :decimal],
                       [:order, :display_size, :int],
                       #@order.rth_only = @socket.read_boolean
-                      [:order, :block_order, :boolean],
-                      [:order, :sweep_to_fill, :boolean],
-                      [:order, :all_or_none, :boolean],
+                      [:order, :block_order, :required_boolean],
+                      [:order, :sweep_to_fill, :required_boolean],
+                      [:order, :all_or_none, :required_boolean],
                       [:order, :min_quantity, :int],
                       [:order, :oca_type, :int],
-                      [:order, :etrade_only, :boolean],
-                      [:order, :firm_quote_only, :boolean],
+                      [:order, :etrade_only, :required_boolean],
+                      [:order, :firm_quote_only, :required_boolean],
                       [:order, :nbbo_price_cap, :decimal],
                       [:order, :parent_id, :int],
                       [:order, :trigger_method, :int],
                       [:order, :volatility, :decimal],
                       [:order, :volatility_type, :int],
-                      [:order, :delta_neutral_order_type, :string],
+                      [:order, :delta_neutral_order_type, :required_string],
                       [:order, :delta_neutral_aux_price, :decimal]
 
       class OpenOrder
@@ -129,41 +129,54 @@ module IB
         def load
           super
 
-#          load_map [proc { | | filled?(@data[:order][:delta_neutral_order_type]) }, # todo Testcase!
-          load_map [proc { | | (@data[:order][:delta_neutral_order_type] != 'None') },
+#          load_map [proc { | | (@data[:order][:delta_neutral_order_type] != 'None') },
+          load_map [proc { | | filled?(@data[:order][:delta_neutral_order_type]) }, # todo Testcase!
                       # As of client v.52, we may receive delta... params in openOrder
                      [:order, :delta_neutral_con_id, :int],
                      [:order, :delta_neutral_settling_firm, :string],
                      [:order, :delta_neutral_clearing_account, :string],
+                     [:order, :delta_neutral_clearing_intent, :string],
                      [:order, :delta_neutral_open_close, :string],
                      [:order, :delta_neutral_short_sale, :bool],
 		     [:order, :delta_neutral_short_sale_slot, :int],
 		     [:order, :delta_neutral_designated_location, :string] ],  # end proc
+		   # [proc{ | |( @data[:contract][:sec_type] == "BAG" ) } ,
+#		    [:order, :misc1, :int],
+#		    [:order, :misc2, :int],
+#		    [:order, :misc3, :decimal],
+#		    [:order, :misc4, :decimal],
+#		    [:order, :misc5, :decimal],
+#		    [:order, :misc6, :decimal],
+#		    [:order, :misc7, :int], 
+#		    [:order, :misc8, :int] ,
+		   # ],
 		   [:order, :continuous_update, :int],
                    [:order, :reference_price_type, :int],
-                   [:order, :trail_stop_price, :decimal],
+                   [:order, :trail_stop_price, :decimal],   # not trail-orders. see below
                    [:order, :trailing_percent, :decimal],
                    [:order, :basis_points, :decimal],
                    [:order, :basis_points_type, :int],
+
                    [:contract, :legs_description, :string],
 
                    # As of client v.55, we receive in OpenOrder for Combos:
                    #    Contract.orderComboLegs Array
                    #    Order.leg_prices Array
                    [:contract, :legs, :array, proc do |_|
-                     IB::ComboLeg.new :con_id => buffer.read_int,
-                                      :ratio => buffer.read_int,
-                                      :action => buffer.read_string,
-                                      :exchange => buffer.read_string,
-                                      :open_close => buffer.read_int,
-                                      :short_sale_slot => buffer.read_int,
-                                      :designated_location => buffer.read_string,
-                                      :exempt_code => buffer.read_int
+                     IB::ComboLeg.new :con_id => @buffer.read_int,
+                                      :ratio => @buffer.read_int,
+                                      :action => @buffer.read_string,
+                                      :exchange => @buffer.read_string,
+                                      :open_close => @buffer.read_int,
+                                      :short_sale_slot => @buffer.read_int,
+                                      :designated_location => @buffer.read_string,
+                                      :exempt_code => @buffer.read_int
                    end],
                    [:order, :leg_prices, :array, proc { |_| buffer.read_decimal }],   #  needs testing
-                   [:order, :combo_params, :array , proc do |_|
-				      { tag: buffer.read_string, value: buffer.read_string }  # needs testing
-		   end],
+                   [:order, :combo_params, :hash ],
+		   #, proc do |_|
+		#		      { tag: buffer.read_string, value: buffer.read_string }  # needs testing
+		 #  end],
 
                    [:order, :scale_init_level_size, :int],
                    [:order, :scale_subs_level_size, :int],
@@ -184,11 +197,11 @@ module IB
                    [proc { | | filled?(@data[:order][:hedge_type]) },
                      # As of client v.49/50, we can receive hedgeType, hedgeParam
                      [:order, :hedge_param, :string]
-                   ],
+                  ],
 
                    [:order, :opt_out_smart_routing, :boolean],
                    [:order, :clearing_account, :string],
-                   [:order, :clearing_intent, :string],
+                   [:order, :clearing_intent, :required_string],
                    [:order, :not_held, :boolean],
 
                    [:underlying_present, :boolean],
@@ -201,13 +214,21 @@ module IB
                    # TODO: Test Order with algo_params, scale and legs!
                    [:order, :algo_strategy, :string],
                    [proc { | | filled?(@data[:order][:algo_strategy]) },
-                    [:order, :algo_params, :hash]  #---->  this does not work  ## todo fix in abstract message
+                    [:order, :algo_params, :hash]  #-
                    ],
+#		   order.algoParamsCount = decode(int, fields)
+#		   357                 if order.algoParamsCount > 0:
+#		     358                     order.algoParams = []
+#		   359                     for idxAlgoPrm in range(order.algoParamsCount):
+#		     360                         tagValue = TagValue()
+#		   361                         tagValue.tag = decode(str, fields)
+#		   362                         tagValue.value = decode(str, fields)
+#		   363                         order.algoParams.append(tagValue)
+#
 
                    [:order, :solicided, :boolean],
                    [:order, :what_if, :boolean],
-
-                   [:order_state, :status, :string],
+		   [:order_state, :status, :required_string],
                    # IB uses weird String with Java Double.MAX_VALUE to indicate no value here
                    [:order_state, :init_margin, :decimal], # :string],
                    [:order_state, :maint_margin, :decimal], # :string],
@@ -248,16 +269,15 @@ module IB
 		    #          
 		    [:order, :adjusted_order_type, :string],
 		    [:order, :trigger_price,  :decimal],
-		    [:order, :trail_stop_price,  :decimal],
+		    [:order, :trail_stop_price,  :decimal],	    # cpp -source: Traillimit orders 
 		    [:order, :adjusted_stop_limit_price,  :decimal],
 		    [:order, :adjusted_trailing_amount,  :decimal],
 		    [:order, :adjustable_trailing_unit,  :int]
 
-## todo inlcude soft_dollar_tier's
-		    #[:order, :soft_dollar_tier_params,:name  :decimal]
-		    #[:order, :soft_dollar_tier_params,:value  :decimal]
-		    #[:order, :soft_dollar_tier_params,:display_name  :decimal]
-		    #[:order, :cash_qty,  :decimal]
+		    [:order, :soft_dollar_tier_params, :name,  :string]
+		    [:order, :soft_dollar_tier_params, :value, :string]
+		    [:order, :soft_dollar_tier_params, :display_name,  :string]
+		    [:order, :cash_qty,  :decimal]
 		    
         end
 
@@ -266,8 +286,8 @@ module IB
 #	  puts "filled: #{value.class} --> #{value.to_s}"
           case value
             when String
-              (!value.empty?) && (value !='None')
-            when Float, Integer
+              (!value.empty?)# && (value != :none) && (value !='None')  
+            when Float, Integer, BigDecimal
               value > 0
             else
               !!value # to_bool

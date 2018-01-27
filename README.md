@@ -92,7 +92,23 @@ Any message to the TWS, any subscription to incomming messages can initialized.
 
 The results can be inspected with the power of the IRB-shell
 
+By default, any response from the TWS is stored in the received Hash.
+This can easyly inspected in the console
 
+``` ruby
+C.received.keys
+ => [:OpenOrder, :OrderStatus, :OpenOrderEnd, :ManagedAccounts, :NextValidId, :Alert]
+
+C.received[:OpenOrder].size
+ => 3 
+
+C.received[:OpenOrder].contract.to_human
+ => ["<Stock: GE USD>", "<Bag: IECombo SMART USD legs: 9408|-1,43645865|1 >", "<Stock: WFC USD>"] 
+
+C.received[:OpenOrder].status
+ => ["Submitted", "PreSubmitted", "PreSubmitted"]
+
+``` 
 
 This is an example of your script that requests and prints out account data, then
 places limit order to buy 100 lots of WFC and waits for execution. All in about ten
