@@ -20,23 +20,7 @@ Gem::Specification.new do |gem|
 
   # Dependencies
   gem.add_dependency 'bundler', '>= 1.1.16'
- # gem.add_dependency 'activerecord', '>= 3.2.0'
-  #gem.add_dependency 'activerecord-jdbcsqlite3-adapter', '>= 1.2.2'
-  #gem.add_dependency 'jdbc-sqlite3', '>= 3.7.2'
-#  gem.add_dependency 'xml-simple', '>= 1.1.1'
-#  gem.add_dependency 'standalone_migrations'
-  #gem.add_dependency 'pg', '>= 0.12.1'
-
-#  gem.add_development_dependency 'database_cleaner', '>= 0.7.2'
-  gem.add_development_dependency 'rspec','>=3.6'#  '>= 2.10.0'
- # gem.add_development_dependency 'my_scripts'
- # gem.add_development_dependency 'rails', '~> 3.2.3'
- # gem.add_development_dependency 'rspec-rails', '~> 2.10.1'
- # gem.add_development_dependency 'capybara'
- # gem.add_development_dependency 'combustion'
- # gem.add_development_dependency 'pry'
- # gem.add_development_dependency 'pry-doc'	# the gem is not working with ruby 2.5
- # gem.add_development_dependency 'pry-rails'
+  gem.add_development_dependency 'rspec','>=3.6'
 end
 
-### last updated on 2017/12/26
+### last updated on 2018/2/27
