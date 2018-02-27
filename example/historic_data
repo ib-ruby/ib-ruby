@@ -3,45 +3,47 @@
 # This script downloads historic data for specific symbols from IB
 
 require 'bundler/setup'
-$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
 
 # Definition of what we want data for.  We have to keep track of what ticker id
 # corresponds to what symbol ourselves, because the ticks don't include any other
 # identifying information. The choice of ticker ids is, as far as I can tell, arbitrary.
-@contracts = {123 => IB::Contract.new( symbol: 'T', sec_type: 'STK', currency: 'USD'),
-              456 => IB::Contract.new( symbol: 'BAS', sec_type: 'STK', currency: 'EUR') ,
-              789 => IB::Symbols::Forex[:eurusd] # No historical data for GBP/CASH@IDEALPRO
+# Predefined Symbol-definitions -->  lib/ib/symbols
+contracts = {123 => IB::Stock.new( symbol: 'T'),			# AT&T
+              456 => IB::Stock.new( symbol: 'BAS',  currency: 'EUR') ,  # BASF
+              789 => IB::Symbols::Forex[:eurusd] 
 }
 
 # Connect to IB TWS.
-ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS
+ib = IB::Connection.new( :client_id => 1102, port: 4002  ) do  | gw | #, :port => 7497 # TWS 
 
-# Subscribe to TWS alerts/errors
-ib.subscribe(:Alert) { |msg| puts msg.to_human }
+	# Subscribe to TWS alerts/errors
+	gw.subscribe(:Alert) { |msg| puts msg.to_human }
 
-# Subscribe to HistoricalData incoming events.  The code passed in the block
-# will be executed when a message of that type is received, with the received
-# message as its argument. In this case, we just print out the data.
-#
-# Note that we have to look the ticker id of each incoming message
-# up in local memory to figure out what it's for.
-ib.subscribe(IB::Messages::Incoming::HistoricalData) do |msg|
-  puts @contracts[msg.request_id].description + ": #{msg.count} items:"
-  msg.results.each { |entry| puts "  #{entry}" }
+	# Subscribe to HistoricalData incoming events.  The code passed in the block
+	# will be executed when a message of that type is received, with the received
+	# message as its argument. In this case, we just print out the data.
+	#
+	# Note that we have to look the ticker id of each incoming message
+	# up in local memory to figure out what it's for.
+	gw.subscribe(IB::Messages::Incoming::HistoricalData) do |msg|
+		puts @contracts[msg.request_id].description + ": #{msg.count} items:"
+		msg.results.each { |entry| puts "  #{entry}" }
+	end
 end
 
 # Now we actually request historical data for the symbols we're interested in. TWS will
 # respond with a HistoricalData message, which will be processed by the code above.
-@contracts.each_pair do |request_id, contract|
+contracts.each_pair do |request_id, contract|
   ib.send_message IB::Messages::Outgoing::RequestHistoricalData.new(
                       :request_id => request_id,
                       :contract => contract,
                       :end_date_time => Time.now.to_ib,
                       :duration => '1 D', #    ?
-                      :bar_size => '1 hour', #  IB::BAR_SIZES.key(:hour)?
+                      :bar_size => :hour1, #  IB::BAR_SIZES.key(:hour)?
                       :what_to_show => :trades,
                       :use_rth => 0,
+		      :keep_up_todate => 0,
                       :format_date => 1)
 end
 
