@@ -6,14 +6,14 @@
 
 require 'rubygems'
 require 'bundler/setup'
-$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
 
 # First, connect to IB TWS.
-ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS
+ib = IB::Connection.new client_id: 1112, port: 4002 do | gw |  #, :port => 7496 # TWS
 
-# Subscribe to TWS alerts/errors and order-related messages
-ib.subscribe(:Alert, :OpenOrder, :OrderStatus, :OpenOrderEnd) { |msg| puts msg.to_human }
+	# Subscribe to TWS alerts/errors and order-related messages
+	gw.subscribe(:Alert, :OpenOrder, :OrderStatus, :OpenOrderEnd) { |msg| puts msg.to_human }
+end
 
 if ARGV.empty?
   ib.send_message :RequestGlobalCancel
@@ -25,3 +25,35 @@ end
 ib.send_message :RequestAllOpenOrders
 
 sleep 3
+
+
+## Expected output
+#12:20:25.154 Connected to server, version: 137,
+# connection time: 2018-02-27 12:20:25 +0000 local, 2018-02-27T12:20:25+00:00 remote.
+#12:20:25.156 Got message 5 (IB::Messages::Incoming::OpenOrder)
+#<OpenOrder: <Stock: WFC USD> <Order: LMT GTC buy 100.0 1.13 Submitted #1/1562725191 from 1112/DU167348 fee 0.0>>
+#12:20:25.158 Got message 3 (IB::Messages::Incoming::OrderStatus)
+#<OrderStatus: <OrderState: Submitted #1/1562725191 from 1112 filled 0.0/100.0 at 0.0/0.0 why_held >>
+#12:20:25.197 Got message 53 (IB::Messages::Incoming::OpenOrderEnd)
+#<OpenOrderEnd: >
+#12:20:25.197 Got message 15 (IB::Messages::Incoming::ManagedAccounts)
+#12:20:25.197 No subscribers for message IB::Messages::Incoming::ManagedAccounts!
+#12:20:25.197 Got message 9 (IB::Messages::Incoming::NextValidId)
+#12:20:25.197 Got next valid order id: 2.
+#------sendto ---------(debugging output in outgoing/abstract_message)
+#["\\x0558", "1", "\""]
+#------sendto ---------
+#------sendto ---------(debugging output in outgoing/abstract_message)
+#["\\x0516", "1", "\""]
+#------sendto ---------
+#12:20:25.254 Got message 5 (IB::Messages::Incoming::OpenOrder)
+#<OpenOrder: <Stock: WFC USD> <Order: LMT GTC buy 100.0 1.13 PendingCancel #1/1562725191 from 1112/DU167348 fee 0.0>>
+#12:20:25.256 Got message 3 (IB::Messages::Incoming::OrderStatus)
+#<OrderStatus: <OrderState: PendingCancel #1/1562725191 from 1112 filled 0.0/100.0 at 0.0/0.0 why_held >>
+#12:20:25.297 Got message 53 (IB::Messages::Incoming::OpenOrderEnd)
+#<OpenOrderEnd: >
+#12:20:25.342 Got message 3 (IB::Messages::Incoming::OrderStatus)
+#<OrderStatus: <OrderState: Cancelled #1/1562725191 from 1112 filled 0.0/100.0 at 0.0/0.0 why_held >>
+#12:20:25.343 Got message 4 (IB::Messages::Incoming::Alert)
+#TWS Error 202: Order Canceled - reason:
+##
