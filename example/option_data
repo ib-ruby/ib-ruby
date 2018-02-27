@@ -5,7 +5,6 @@
 require 'bundler/setup'
 $LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
-require 'logger'
 COUNT_OF_EVENTS =  20
 # Definition of what we want market data for.  We have to keep track of what ticker id
 # corresponds to what symbol ourselves, because the ticks don't include any other
@@ -20,7 +19,7 @@ contracts = [ IB::Symbols::Options.ge20,
 counter = 0
 
 # First, connect to IB TWS. Arbitrary :client_id is used to identify your script
-ib = IB::Connection.new( client_id: 1112)  do | gw| #, :port => 7496 # TWS
+ib = IB::Connection.new( client_id: 1116)  do | gw| #, :port => 7496 # TWS
 
   ## Subscribe to TWS alerts/errors
   gw.subscribe(:Alert) { |msg| puts msg.to_human }

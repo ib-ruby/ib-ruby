@@ -45,7 +45,7 @@ module IB
            if contract.bag?
              [
                ## Support for per-leg prices in Order
-               [contract.legs.size] + contract.legs.map(&:price) ,
+               [contract.legs.size] + contract.legs.map { |_| nil }, #(&:price) ,
                ## Support for combo routing params in Order
                order.combo_params.empty? ? 0 : [order.combo_params.size] + order.combo_params.to_a
 	     ]
