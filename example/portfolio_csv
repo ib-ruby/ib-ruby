@@ -4,23 +4,24 @@
 # $ example/portfolio_csv [account] > portfolio.csv
 
 require 'bundler/setup'
-$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
 
 # Only for Advisors: you need to provide account id such as U666777
 account = ARGV[0] || ''
 
-# Get rid of logging verbosity
-log.level = Logger::FATAL
 
-# Connect to IB TWS
-ib = IB::Connection.new :client_id => 1112 # , :port => 7496 # TWS
+# Connect to IB TWS and subscribe to events
+ib = IB::Connection.new( :client_id => 1112 , port: 4002 ) do |gw| # , :port => 7496 # TWS
 
-# Redirect TWS alerts/errors to STDERR to keep output file clean
-ib.subscribe(:Alert) { |msg| STDERR.puts msg.to_human }
+	# Redirect TWS alerts/errors to STDERR to keep output file clean
+	gw.subscribe(:Alert) { |msg| STDERR.puts msg.to_human }
 
-# Silently ignore account-related messages other than :PortfolioValue
-ib.subscribe(:AccountUpdateTime, :AccountValue, :ManagedAccounts, :AccountDownloadEnd) {}
+	# Silently ignore account-related messages other than :PortfolioValue
+	gw.subscribe(:AccountUpdateTime, :AccountValue, :ManagedAccounts, :AccountDownloadEnd) {}
+	# Get rid of logging verbosity
+	gw.logger.level =  Logger::FATAL
+
+end
 
 # Output CSV headers
 puts %w[Symbol

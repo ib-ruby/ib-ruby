@@ -108,9 +108,9 @@ module IB
             @data = source
 	  else
 	    @buffer = source
-	    puts "BUFFER"
-	    puts buffer.inspect #.join(" :\n ")
-	    puts "BUFFER END"
+	  #  puts "BUFFER"
+	  #  puts buffer.inspect #.join(" :\n ")
+	  #  puts "BUFFER END"
 	    @data = Hash.new
 	    self.load
           end

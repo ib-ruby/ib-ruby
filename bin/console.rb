@@ -46,7 +46,7 @@ end # Array
   ARGV.clear
   logger = Logger.new  STDOUT
 
-  ## The Block takes instructions taking in effect after initializing all instance-variables
+  ## The Block takes instructions which are executed  after initializing all instance-variables
   ## and prior to the connection-process
   ## Here we just subscribe to some events  
   C =  Connection.new  client_id: client_id, port: port do |c|

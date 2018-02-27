@@ -5,7 +5,6 @@ require 'rubygems'
 require 'time'
 require 'getopt/long'
 require 'bundler/setup'
-$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
 
 include Getopt
@@ -127,39 +126,40 @@ REGULAR_HOURS_ONLY = opt["nonregularhours"] ? 0 : 1
 
 DATE_FORMAT = (opt["dateformat"] && opt["dateformat"].to_i) || 1
 
-PORT = (opt["port"] && opt["port"]) || '4001'
-
-# First, connect to IB TWS.
-ib = IB::Connection.new :client_id => 1112, :port => PORT
-
-# Subscribe to TWS alerts/errors
-ib.subscribe(:Alert) { |msg| puts msg.to_human }
+PORT = (opt["port"] && opt["port"]) || '4002'
 
 lastMessageTime = Queue.new # for communicating with the reader thread.
 
-# Subscribe to incoming HistoricalData events. The code passed in the
-# block will be executed when a message of the subscribed type is
-# received, with the received message as its argument. In this case,
-# we just print out the data.
-#
-# Note that we have to look the ticker id of each incoming message
-# up in local memory to figure out what security it relates to.
-# The incoming message packet from TWS just identifies it by ticker id.
-#
-ib.subscribe(:HistoricalData) do |msg|
-  if opt["csv"]
-    puts "date,time,open,high,low,close,volume,wap,has_gaps"
-    msg.results.each do |datum|
-      puts "#{datum.time},#{datum.open},#{datum.high},#{datum.low}," +
-               "#{datum.close},#{datum.volume},#{datum.wap},#{datum.has_gaps}"
-    end
-  else
-    STDERR.puts "Received #{msg.count} items:"
-    msg.results.each { |datum| puts datum.to_s }
-  end
-  lastMessageTime.push(Time.now)
-end
+# First, connect to IB TWS.
+ib = IB::Connection.new( :client_id => 1112, :port => PORT) do | gw|
 
+	# Subscribe to TWS alerts/errors
+	gw.subscribe(:Alert) { |msg| puts msg.to_human }
+
+
+	# Subscribe to incoming HistoricalData events. The code passed in the
+	# block will be executed when a message of the subscribed type is
+	# received, with the received message as its argument. In this case,
+	# we just print out the data.
+	#
+	# Note that we have to look the ticker id of each incoming message
+	# up in local memory to figure out what security it relates to.
+	# The incoming message packet from TWS just identifies it by ticker id.
+	#
+	gw.subscribe(:HistoricalData) do |msg|
+		if opt["csv"]
+			puts "date,time,open,high,low,close,volume,wap,has_gaps"
+			msg.results.each do |datum|
+				puts "#{datum.time},#{datum.open},#{datum.high},#{datum.low}," +
+				"#{datum.close},#{datum.volume},#{datum.wap},#{datum.has_gaps}"
+			end
+		else
+			STDERR.puts "Received #{msg.count} items:"
+			msg.results.each { |datum| puts datum.to_s }
+		end
+		lastMessageTime.push(Time.now)
+	end
+end 
 # Now we actually request historical data for the symbols we're
 # interested in.  TWS will respond with a HistoricalData message,
 # which will be received by the code above.
@@ -171,6 +171,7 @@ ib.send_message :RequestHistoricalData,
                 :bar_size => BAR_SIZE, # 1 minute bars
                 :what_to_show => WHAT,
                 :use_RTH => REGULAR_HOURS_ONLY,
+		:keep_up_todate => 0,
                 :format_date => DATE_FORMAT
 
 # A complication here is that IB does not send any indication when all historic data

@@ -183,7 +183,7 @@ module IB
            data_type.to_s.upcase,
            @data[:format_date],
            contract.serialize_legs ,
-	   @data[:keep_up_todate},   # 0 / 1
+	   @data[:keep_up_todate],   # 0 / 1
 	  'XYZ'	#  chartOptions:TagValueList - For internal use only. Use default value XYZ. 	
 	  ]
         end
