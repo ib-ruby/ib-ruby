@@ -97,8 +97,10 @@ module IB
                       [:contract, :serialize_long, [:sec_id_type]])
 
       # data = { :id => ticker_id (int), :contract => Contract, :num_rows => int }
+      RequstMarketDepthExchanges =			# requires ServerVersion >= 112
+		 	   def_message 82
       RequestMarketDepth = def_message([10, 5],
-                                       [:contract, :serialize_short, []],
+                                       [:contract, :serialize_short],
                                        :num_rows, 
 				       "")  #  mktDataOptionsStr. ## not supported by api
 

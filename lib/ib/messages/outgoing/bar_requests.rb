@@ -41,14 +41,16 @@ module IB
       #                     "Regular Trading Hours" of the product in question is returned,
       #                     even if the time span requested falls partially or completely
       #                     outside of them.
-      RequestRealTimeBars = def_message 50, BarRequestMessage
+      #
+      #  Version 3 
+      RequestRealTimeBars = def_message [ 50, 3 ], BarRequestMessage
 
       class RequestRealTimeBars
         def parse data
           data_type, bar_size, contract = super data
 
           size = data[:bar_size] || data[:size]
-          bar_size = size.to_i
+          bar_size = 5 #  only 5 sec bars are supported   --> for future use ::> size.to_i
           [data_type, bar_size, contract]
         end
 
@@ -56,10 +58,12 @@ module IB
           data_type, bar_size, contract = parse @data
 
           [super,
-           contract.serialize_long,
+           contract.serialize_short(:primary_exchange),  # include primary exchange in request
            bar_size,
            data_type.to_s.upcase,
-           @data[:use_rth]]
+           @data[:use_rth] ,
+	   "XYZ"   # not suported realtimebars option string
+	  ]
         end
       end # RequestRealTimeBars
 

@@ -3,8 +3,6 @@
 # This script gets details for specific contract from IB
 
 require 'bundler/setup'
-require 'logger'
-require 'yaml'
 require 'ib-ruby'
 require './contract_samples'
 # Set log level

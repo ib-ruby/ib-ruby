@@ -84,7 +84,7 @@ module IB
       #
       RequestMarketData =
           def_message [1, 11],
-                      [:contract, :serialize_short],
+                      [:contract, :serialize_short, :primary_exchange],  # include primary exchange in request
                       [:contract, :serialize_legs, []],
                       [:contract, :serialize_under_comp, []],
                       [:tick_list, lambda do |tick_list|

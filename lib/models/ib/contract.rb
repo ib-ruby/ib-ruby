@@ -131,22 +131,32 @@ module IB
       [(con_id.present? && con_id.to_i > 0 ? con_id : ""),
        print_default[symbol],
        print_default[self[:sec_type]],
-       (fields.include?(:option) ?
-        [print_default[expiry], print_default[strike], print_default[self[:right]], print_default[multiplier]] : nil),
+       ( fields.include?(:option) ?
+        [print_default[expiry], 
+	 print_default[strike], 
+	 print_default[self[:right]], 
+	 print_default[multiplier]] : nil ),
        print_default[exchange],
-       print_default[primary_exchange] ,
+       ( fields.include?(:primary_exchange) ? print_default[primary_exchange]   : nil ) ,
        print_default[currency],
        print_default[local_symbol],
        print_default[trading_class],
-       (fields.include?(:include_expired) ? print_default[include_expired,0] : nil ),
-       (fields.include?(:sec_id_type) ? [print_default[sec_id_type], print_default[sec_id]] : nil)
+       ( fields.include?(:include_expired) ? print_default[include_expired,0] : nil ),
+       ( fields.include?(:sec_id_type) ? [print_default[sec_id_type], print_default[sec_id]] : nil )
        ].flatten.compact
     end
 
+    # serialize contract 
+    # con_id. sec_type, expiry, strike, right, multiplier exchange, primary_exchange, currency, local_symbol, include_expired 
+    # other fields on demand
     def serialize_long *fields
-      serialize :option, :include_expired, *fields
+      serialize :option, :include_expired, :primary_exchange, *fields
     end
 
+    # serialize contract 
+    # con_id. sec_type, expiry, strike, right, multiplier exchange, currency, local_symbol
+    # other fields on demand
+    # acutal used by place_order, request_marketdata, request_market_depth, exercise_options
     def serialize_short *fields
       serialize :option, *fields
     end
