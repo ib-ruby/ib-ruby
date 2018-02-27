@@ -1,4 +1,5 @@
 require 'ib/messages/abstract_message'
+require 'ox'
 module IBSupport
   refine Array do
 
@@ -18,6 +19,11 @@ module IBSupport
 
     def read_string
       self.shift rescue ""
+    end
+
+    # convert xml into a hash
+    def read_xml
+	Ox.load( read_string, mode: :hash_no_attrs)
     end
 
     def read_required_string

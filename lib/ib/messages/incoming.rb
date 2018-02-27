@@ -43,7 +43,7 @@ module IB
           def_message 16, [:type, :int], # type of Financial Advisor configuration data
                       #                    being received from TWS. Valid values include:
                       #                    1 = GROUPS, 2 = PROFILE, 3 = ACCOUNT ALIASES
-                      [:xml, :string] # XML string with requested FA configuration information.
+                      [:xml, :xml] # XML string with requested FA configuration information.
 
       # Receives an XML document that describes the valid parameters that a scanner
       # subscription can have (for outgoing RequestScannerSubscription message).
