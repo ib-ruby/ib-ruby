@@ -332,7 +332,7 @@ module IB
 	msg_id = the_decoded_message.shift.to_i
 
 	# Debug:
-	logger.error { "Got message #{msg_id} (#{Messages::Incoming::Classes[msg_id]})"}
+	logger.info { "Got message #{msg_id} (#{Messages::Incoming::Classes[msg_id]})"}
 
 	# Create new instance of the appropriate message type,
 	# and have it read the message from socket.

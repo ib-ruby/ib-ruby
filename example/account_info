@@ -6,23 +6,23 @@
 require 'bundler/setup'
 require 'logger'
 require 'yaml'
-$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
-
-# Set log level
-log.level = Logger::DEBUG #FATAL
-include IB
-# Connect to IB TWS
-ib = Connection.new :client_id => 1113, :port => 4002 #,, :port => 7496 # TWS
 
 # Only for Advisor accounts: you need to provide account_code such as U666777
 account_code = ARGV[0] || ''
 
-# Subscribe to TWS alerts/errors and account-related messages
-# that TWS sends in response to account data request
-ib.subscribe(:Alert, :AccountValue,
-             :PortfolioValue, :AccountUpdateTime) { |msg| puts msg.to_human }
+include IB
+# Connect to IB TWS
+ib = Connection.new client_id: 1113, port: 4002 do | gw |  # :port => 7497 # TWS
 
+	# Subscribe to TWS alerts/errors and account-related messages
+	# that TWS sends in response to account data request
+	gw.subscribe(:Alert, :AccountValue,
+		     :PortfolioValue, :AccountUpdateTime) { |msg| puts msg.to_human }
+
+	# Set log level
+	gw.logger.level = Logger::FATAL # DEBUG #FATAL
+end
 ib.send_message :RequestAccountData, :subscribe => true, :account_code => account_code
 
 puts "\nSubscribing to IB account data"
