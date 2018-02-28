@@ -5,30 +5,33 @@
 
 require 'rubygems'
 require 'bundler/setup'
-$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
 
 # Definition of what we want L2 data for.  We have to keep track of what ticker id
 # corresponds to what symbol ourselves, because the ticks don't include any other
 # identifying information. The choice of ticker ids is, as far as I can tell, arbitrary.
-@market = {123 => IB::Symbols::Stocks[:wfc],
+market = {123 => IB::Symbols::Stocks[:wfc],
            456 => IB::Symbols::Futures[:es],
            789 => IB::Symbols::Forex[:gbpusd]
 }
 
 # First, connect to IB TWS.
-ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS
+ib = IB::Connection.new client_id: 1112, port: 4002 do | gw | #, :port => 7496 # TWS
 
-# Subscribe to TWS alerts/errors
-ib.subscribe(:Alert) { |msg| puts msg.to_human }
+	# Subscribe to TWS alerts/errors
+	gw.subscribe(:Alert) { |msg| puts msg.to_human }
 
-# Subscribe to MarketDepth events.
-ib.subscribe(:MarketDepth) do |msg|
-  puts @market[msg.request_id].description + ": " + msg.to_human
+	# Subscribe to MarketDepth events.
+	gw.subscribe(:MarketDepth) do |msg|
+		puts market[msg.request_id].description + ": " + msg.to_human
+	end
+
+	# Set log level
+	gw.logger.level = Logger::FATAL # DEBUG #FATAL
+
 end
-
 # Now we actually request L2 market data for the symbols we're interested in.
-@market.each_pair do |id, contract|
+market.each_pair do |id, contract|
   ib.send_message :RequestMarketDepth,
                   :id => id,
                   :contract => contract,
@@ -40,4 +43,4 @@ puts "\n******** Press <Enter> to cancel... *********\n\n"
 STDIN.gets
 puts "Cancelling market data subscription.."
 
-@market.each_pair { |id, contract| ib.send_message :CancelMarketDepth, :id => id }
+market.each_pair { |id, contract| ib.send_message :CancelMarketDepth, :id => id }

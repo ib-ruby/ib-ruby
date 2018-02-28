@@ -29,20 +29,21 @@ module IB
                                    [:count, :int]
       class HistoricalData
         attr_accessor :results
-
+	using IBSupport  # extended Array-Class  from abstract_message
+ 
         def load
           super
 
           @results = Array.new(@data[:count]) do |_|
-            IB::Bar.new :time => socket.read_string,
-                        :open => socket.read_decimal,
-                        :high => socket.read_decimal,
-                        :low => socket.read_decimal,
-                        :close => socket.read_decimal,
-                        :volume => socket.read_int,
-                        :wap => socket.read_decimal,
-                        :has_gaps => socket.read_string,
-                        :trades => socket.read_int
+            IB::Bar.new :time => buffer.read_string,
+                        :open => buffer.read_decimal,
+                        :high => buffer.read_decimal,
+                        :low => buffer.read_decimal,
+                        :close => buffer.read_decimal,
+                        :volume => buffer.read_int,
+                        :wap => buffer.read_decimal,   # python: average
+#                        :has_gaps => buffer.read_string,  # python only if serverVersion < MIN_SERVER_VER_SYNT_REALTIME_BARS
+                        :trades => buffer.read_int   # python:  BarCount
           end
         end
 

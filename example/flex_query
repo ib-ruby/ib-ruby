@@ -1,4 +1,8 @@
 #!/usr/bin/env ruby
+# THIS SCRIPT IS NOT MAINTAINED
+# IB::Flex has to be ported to use the fast Ox-XML-Parsing library 
+#
+#
 #
 # FLEX is a web-based service from IB that helps you to retrieve your activity,
 # trades and positions. It is working independently from TWS or Gateway, using your
@@ -21,7 +25,6 @@
 
 require 'rubygems'
 require 'bundler/setup'
-$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
 require 'yaml'
 

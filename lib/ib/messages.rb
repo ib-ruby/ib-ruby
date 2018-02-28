@@ -1,9 +1,15 @@
+require 'ib/server_versions'
 module IB
+
   module Messages
   	# This gem supports incoming/outgoing IB messages compatible with the following
   	# IB client/server versions:
-    CLIENT_VERSION = 59 # 59? Maximal client version implemented
-    SERVER_VERSION = 62 # 38? 53? 62? Minimal server version required
+    CLIENT_VERSION = 66 # 59? Maximal client version implemented
+		        # 66 => API V  9.71
+    # SERVER_VERSION = 76 # 38? 53? 62? Minimal server version required   
+    #  ##  EClient.java --> MIN_VERSION (line 280)
+    SERVER_VERSION =  "v"+ MIN_CLIENT_VER.to_s + ".." + MAX_CLIENT_VER.to_s  
+	    # extracted from the python-client			  
   end
 end
 
@@ -86,3 +92,12 @@ __END__
     // 58 = can receive CUSIP/ISIN/etc. in contractDescription/bondContractDescription
     // 59 = can receive evRule, evMultiplier in contractDescription/bondContractDescription/executionDetails
     //      can receive multiplier in executionDetails
+    // 60 = can receive deltaNeutralOpenClose, deltaNeutralShortSale, deltaNeutralShortSaleSlot and              …deltaNeutralDesignatedLocation in openOrder
+    // 61 = can receive multiplier in openOrder
+    //      can receive tradingClass in openOrder, updatePortfolio, execDetails and position
+    // 62 = can receive avgCost in position message
+    // 63 = can receive verifyMessageAPI, verifyCompleted, displayGroupList and displayGroupUpdated messages
+    // 64 = can receive solicited attrib in openOrder message
+    // 65 = can receive verifyAndAuthMessageAPI and verifyAndAuthCompleted messages
+    // 66 = can receive randomize size and randomize price order fields
+

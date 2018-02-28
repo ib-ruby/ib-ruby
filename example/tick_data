@@ -4,18 +4,13 @@
 
 require 'rubygems'
 require 'bundler/setup'
-$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
 
-contract = IB::Contract.new :symbol=> 'AAPL',
-                            :exchange=> "Smart",
-                            :currency=> "USD",
-                            :sec_type=> :stock,
-                            :description=> "Some stock"
+contract = IB::Stock.new :symbol=> 'AAPL'
 
 # First, connect to IB Gateway.
 ib = IB::Connection.new :client_id => 1112, #  Arbitrary id to identify your script
-                        #:port => 7496,     # TWS connection (instead of default Gateway)
+                        #:port => 7497,     # TWS connection (instead of default Gateway)
                         :received => false  # Do not keep all received messages in memory
 
 ib.subscribe(:Alert) { |msg| puts msg.to_human }

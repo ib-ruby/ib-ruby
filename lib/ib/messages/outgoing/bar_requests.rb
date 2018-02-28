@@ -41,14 +41,16 @@ module IB
       #                     "Regular Trading Hours" of the product in question is returned,
       #                     even if the time span requested falls partially or completely
       #                     outside of them.
-      RequestRealTimeBars = def_message 50, BarRequestMessage
+      #
+      #  Version 3 
+      RequestRealTimeBars = def_message [ 50, 3 ], BarRequestMessage
 
       class RequestRealTimeBars
         def parse data
           data_type, bar_size, contract = super data
 
           size = data[:bar_size] || data[:size]
-          bar_size = size.to_i
+          bar_size = 5 #  only 5 sec bars are supported   --> for future use ::> size.to_i
           [data_type, bar_size, contract]
         end
 
@@ -56,10 +58,12 @@ module IB
           data_type, bar_size, contract = parse @data
 
           [super,
-           contract.serialize_long,
+           contract.serialize_short(:primary_exchange),  # include primary exchange in request
            bar_size,
            data_type.to_s.upcase,
-           @data[:use_rth]]
+           @data[:use_rth] ,
+	   "XYZ"   # not suported realtimebars option string
+	  ]
         end
       end # RequestRealTimeBars
 
@@ -155,7 +159,9 @@ module IB
       # For backfill on futures data, you may need to leave the Primary
       # Exchange field of the Contract structure blank; see
       # http://www.interactivebrokers.com/discus/messages/2/28477.html?1114646754
-      RequestHistoricalData = def_message [20, 4], BarRequestMessage
+      #
+      # Version 6 implemented --> the version is not transmitted anymore
+      RequestHistoricalData = def_message [20, 0], BarRequestMessage
 
       class RequestHistoricalData
         def parse data
@@ -172,15 +178,18 @@ module IB
         def encode
           data_type, bar_size, contract = parse @data
 
-          [super,
-           contract.serialize_long(:include_expired),
+          [super.flatten,
+           contract.serialize_long[0..-1],   # omit sec_id_type and sec_id
            @data[:end_date_time],
            bar_size,
            @data[:duration],
            @data[:use_rth],
            data_type.to_s.upcase,
            @data[:format_date],
-           contract.serialize_legs]
+           contract.serialize_legs ,
+	   @data[:keep_up_todate],   # 0 / 1
+	  'XYZ'	#  chartOptions:TagValueList - For internal use only. Use default value XYZ. 	
+	  ]
         end
       end # RequestHistoricalData
 

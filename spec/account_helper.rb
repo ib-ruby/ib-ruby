@@ -21,9 +21,9 @@ def verify_account
 
   raise "Unable to verify IB PAPER ACCOUNT" unless @ib.received?(:ManagedAccounts)
 
-  received = @ib.received[:ManagedAccounts].first.accounts_list
+  received = @ib.received[:ManagedAccounts].first.accounts_list.split(',')
 
-  raise "Connected to wrong account #{received}, expected #{account}" if account != received
+  raise "Connected to wrong account #{received}, expected #{account}" unless received.include?(account)
 
   close_connection
   OPTS[:account_verified] = true
@@ -61,12 +61,13 @@ shared_examples_for 'Valid account data request' do
     it { should be_an IB::Messages::Incoming::PortfolioValue }
     its(:contract) { should be_a IB::Contract }
     its(:data) { should be_a Hash }
-    its(:position) { should be_a Integer }
-    its(:market_price) { should be_a Float }
-    its(:market_value) { should be_a Float }
-    its(:average_cost) { should be_a Float }
-    its(:unrealized_pnl) { should be_a Float }
-    its(:realized_pnl) { should be_a Float }
+    its(:position) { should be_a BigDecimal }
+    puts 
+    its(:market_price) { should be_a BigDecimal }
+    its(:market_value) { should be_a BigDecimal }
+    its(:average_cost) { should be_a BigDecimal }
+    its(:unrealized_pnl) { should be_a BigDecimal }
+    its(:realized_pnl) { should be_a BigDecimal }
     its(:account_name) { should =~ /\w\d/ }
     its(:to_human) { should =~ /PortfolioValue/ }
   end

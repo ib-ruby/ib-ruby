@@ -10,18 +10,19 @@ module IB
                     [:request_id, :int], # request id
                     [:contract, :symbol, :string],
                     [:contract, :sec_type, :string],
-                    [:contract, :expiry, :string],
+                    [:contract, :last_trading_day, :string],
                     [:contract, :strike, :decimal],
                     [:contract, :right, :string],
                     [:contract, :exchange, :string],
                     [:contract, :currency, :string],
                     [:contract, :local_symbol, :string],
-
                     [:contract_detail, :market_name, :string], # extended
-                    [:contract_detail, :trading_class, :string],
+		    [:contract, :trading_class, :string],  # new Version 8
+
                     [:contract, :con_id, :int],
                     [:contract_detail, :min_tick, :decimal],
-                    [:contract, :multiplier, :string],
+                    [:contract_detail, :md_size_multiplier, :int],
+                    [:contract, :multiplier, :int],
                     [:contract_detail, :order_types, :string],
                     [:contract_detail, :valid_exchanges, :string],
                     [:contract_detail, :price_magnifier, :int],
@@ -38,10 +39,31 @@ module IB
                     [:contract_detail, :ev_rule, :decimal],
                     [:contract_detail, :ev_multipler, :string],
                     [:sec_id_list_count, :int])
-
-
+# additional Fields (from python -- are actually ignored (present in array, but thrown away)
+#	516             if contract.secIdListCount > 0:
+#	  517                 contract.secIdList = []
+#	518                 for idxSecIdList in range(contract.secIdListCount):
+#	  519                     tagValue = TagValue()
+#	520                     tagValue.tag = decode(str, fields)
+#	521                     tagValue.value = decode(str, fields)
+#	522                     contract.secIdList.append(tagValue)
+#	523 
+#	524         if self.serverVersion >= MIN_SERVER_VER_AGG_GROUP:
+#	  525             contract.aggGroup = decode(int, fields)
+#	526 
+#	527         if self.serverVersion >= MIN_SERVER_VER_UNDERLYING_INFO:
+#	  528             contract.underSymbol = decode(str, fields)
+#	529             contract.underSecType = decode(str, fields)
+#	530 
+#	531         if self.serverVersion >= MIN_SERVER_VER_MARKET_RULES:
+#	  532             contract.marketRuleIds = decode(str, fields)
+#	533 
+#	534         if self.serverVersion >= MIN_SERVER_VER_REAL_EXPIRATION_DATE:
+#	  535             contract.realExpirationDate = decode(str, fields)
+#
+#
       class ContractData
-
+	using IBSupport   # defines tws-method for Array  (socket.rb)
         def contract
           @contract = IB::Contract.build @data[:contract].
             merge(:contract_detail => contract_detail)
@@ -58,7 +80,7 @@ module IB
 
           @data[:contract_detail][:sec_id_list] ||= HashWithIndifferentAccess.new
           @data[:sec_id_list_count].times do
-            @data[:contract_detail][:sec_id_list][socket.read_string] = socket.read_string
+            @data[:contract_detail][:sec_id_list][buffer.read_string] = buffer.read_string
           end
         end
 

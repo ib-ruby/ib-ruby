@@ -1,15 +1,95 @@
 require 'ib/messages/abstract_message'
+require 'ox'
+module IBSupport
+  refine Array do
 
+    def zero?
+      false
+    end
+    def read_int
+      self.shift.to_i rescue 0
+    end
+
+    def read_decimal
+     i= self.shift.to_d  rescue 0
+     i < IB::TWS_MAX ?  i : nil  # return nil, if a very large number is transmitted
+    end
+
+    alias read_decimal_max read_decimal
+
+    def read_string
+      self.shift rescue ""
+    end
+
+    # convert xml into a hash
+    def read_xml
+	Ox.load( read_string, mode: :hash_no_attrs)
+    end
+
+    def read_required_string
+      v = read_string
+      error( "requiredString not filled", :load, false)  if v.blank?
+      v
+    end
+
+    def read_boolean
+
+      v = self.shift rescue nil
+      v.nil? ? false : v.to_i != 0
+    end
+    def read_required_boolean
+	begin
+	  if self.empty?
+	    logger.error "End of buffer reached"
+	    error "End of buffer reached", :load, false
+	    return nil
+	  else
+	    v = self.shift
+	    if ["1","0"].include? v
+	      return v.to_i
+	    else
+	      error "bool expected, got #{v} "
+	    end
+	  end
+	end while v.empty? 
+	logger.error { "Bool required, #{v} detected instead" }
+	error  "Bool required, #{v} detected instead", :load, false
+    end
+
+#    def read_array
+#      count = read_int
+#    end
+
+    ## originally provided in socket.rb
+     #    # Returns loaded Array or [] if count was 0
+           def read_array &block
+             count = read_int
+# debug	     STDOUT.puts "ARRAY ----|> #{count}"
+             count > 0 ? Array.new(count, &block) : []
+           end
+    #   
+    #       # Returns loaded Hash
+           def read_hash
+             tags = read_array { |_| [read_string, read_string] }
+             tags.empty? ? Hash.new :  Hash[*tags.flatten]
+           end
+    #
+    alias read_bool read_boolean
+  end
+end
 module IB
   module Messages
     module Incoming
+
+    using IBSupport
+  
 
       # Container for specific message classes, keyed by their message_ids
       Classes = {}
 
       class AbstractMessage < IB::Messages::AbstractMessage
 
-        attr_accessor :socket
+        attr_accessor :buffer # is an array
 
         def version # Per message, received messages may have the different versions
           @data[:version]
@@ -26,28 +106,31 @@ module IB
           @created_at = Time.now
           if source.is_a?(Hash)  # Source is a @data Hash
             @data = source
-          else # Source is a Socket
-            @socket = source
-            @data = Hash.new
-            self.load
+	  else
+	    @buffer = source
+	  #  puts "BUFFER"
+	  #  puts buffer.inspect #.join(" :\n ")
+	  #  puts "BUFFER END"
+	    @data = Hash.new
+	    self.load
           end
         end
 
+	## more recent messages omit the transmission of a version
+	## thus just load the parameter-map 
+	def simple_load
+            load_map *self.class.data_map
+        rescue IB::Error  => e
+          error "Reading #{self.class}: #{e.class}: #{e.message}", :load, e.backtrace
+	end
         # Every message loads received message version first
         # Override the load method in your subclass to do actual reading into @data.
         def load
-          if socket
-            @data[:version] = socket.read_int
-
+	    unless self.class.version.zero?
+            @data[:version] = buffer.read_int
             check_version @data[:version], self.class.version
-
-            load_map *self.class.data_map
-          else
-            raise "Unable to load, no socket"
-          end
-
-        rescue => e
-          error "Reading #{self.class}: #{e.class}: #{e.message}", :load, e.backtrace
+	    end
+	    simple_load
         end
 
         # Load @data from the socket according to the given data map.
@@ -79,13 +162,19 @@ module IB
               else
                 instruction # [ :group, :name, :type, (:block)]
               end
-
-              data = socket.__send__("read_#{type}", &block)
+# debug	      print "Name: #{name}   "
+	      begin
+              data = @buffer.__send__("read_#{type}", &block)
+	      rescue IB::LoadError => e
+	      puts "TEST"
+	      error "Reading #{self.class}: #{e.class}: #{e.message}  --> Instruction: #{name}" , :reader, false 
+	      end
+# debug	      puts data.inspect
               if group
                 @data[group] ||= {}
                 @data[group][name] = data
               else
-                @data[name] = data
+                @data[name] = data    
               end
             else
               error "Unrecognized instruction #{instruction}"

@@ -116,7 +116,7 @@ shared_examples_for 'Placed Order' do
 
       if @attached_order
         if contract_type == :butterfly && @attached_order.tif == :good_till_cancelled
-          pending 'API Bug: Attached GTC orders not working for butterflies!'
+          skip 'API Bug: Attached GTC orders not working for butterflies!'
         else
           order_should_be /Submit/, @attached_order
         end
@@ -174,7 +174,7 @@ end
 def place_order contract, opts = {}
   @contract = contract
   @order = IB::Order.new({:total_quantity => 100,
-                          :limit_price => 9.13,
+                          :limit_price => 49.13,
                           :action => 'BUY',
                           :order_type => 'LMT'}.merge(opts))
   @local_id_before = @ib.next_local_id

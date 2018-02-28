@@ -1,0 +1,115 @@
+## Contract_data
+
+open the console
+then 
+  irb C
+
+  o=[9, 8, 77, [[0, "WFC", "STK", "", 0.0, "", nil, "NYSE", "USD", "", 0,0,false, "", ""]]]
+
+  socket.send_messages o
+>> response 
+ THE deCODED MESSAGE ["4", "2", "77", "200", "Invalid destination exchange specified"]
+ TWS Error 200: Invalid destination exchange specified
+
+
+  o=[9, 8, 77, [[0, "WFC", "STK", "", 0.0, "", nil, "SMART", "USD", "", 0,0,false, "", ""]]]
+>> response
+  TWS Error 200: Invalid destination exchange specified
+
+  o=[9, 8, 77, [[0, "WFC", "STK", "", 0.0, "", nil, "SMART","NYSE", "USD", "", 0,false, "", ""]]]
+>> response
+TWS Error 200: No security definition has been found for the request
+
+### the right format:
+
+o=[9, 8, 77, [[128937778, "", "STK", "", 0, "", nil, "SMART","ISLAND", "USD", "", 0,false, "", ""]]]
+>> response
+  Got message 10 (IB::Messages::Incoming::ContractData)
+  #<IB::Contract:0x0000000002bb2ae0 @attributes={"symbol"=>"FOSL", "sec_type"=>"STK", "expiry"=>"", "strike"=>0.0, "right"=>"", "exchange"=>"SMART", "currency"=>"USD", "local_symbol"=>"FOSL", "trading_class"=>"NMS", "con_id"=>128937778, "multiplier"=>0, "primary_exchange"=>"NASDAQ", "created_at"=>2018-01-06 15:39:04 +0100, "updated_at"=>2018-01-06 15:39:04 +0100, "include_expired"=>false}, @contract_detail=#<IB::ContractDetail:0x0000000002b76298 @attributes={"market_name"=>"NMS", "min_tick"=>0.1e-1, "md_size_multiplier"=>100, "order_types"=>"ACTIVETIM,ADJUST,ALERT,ALGO,ALLOC,AON,AVGCOST,BASKET,COND,CONDORDER,DARKONLY,DARKPOLL,DAY,DEACT,DEACTDIS,DEACTEOD,DIS,GAT,GTC,GTD,GTT,HID,IBKRATS,ICE,IMB,IOC,LIT,LMT,LOC,MIT,MKT,MOC,MTL,NGCOMB,NODARK,NONALGO,OCA,OPG,OPGREROUT,PEGBENCH,POSTONLY,PREOPGRTH,REL,RPI,RTH,SCALE,SCALEODD,SCALERST,SNAPMID,SNAPMKT,SNAPREL,STP,STPLMT,SWEEP,TRAIL,TRAILLIT,TRAILLMT,TRAILMIT,WHATIF", "valid_exchanges"=>"SMART,AMEX,CBOE,ISE,CHX,ARCA,ISLAND,DRCTEDGE,NSX,BEX,BATS,EDGEA,CSFBALGO,JEFFALGO,BYX,IEX,PSX", "price_magnifier"=>1, "under_con_id"=>0, "long_name"=>"FOSSIL GROUP INC", "contract_month"=>"", "industry"=>"Consumer, Cyclical", "category"=>"Distribution/Wholesale", "subcategory"=>"Distribution/Wholesale", "time_zone"=>"EST5EDT", "trading_hours"=>"20180106:CLOSED;20180107:CLOSED;20180108:0400-2000;20180109:0400-2000;20180110:0400-2000;20180111:0400-2000;20180112:0400-2000;20180113:CLOSED;20180114:CLOSED;20180115:CLOSED;20180116:0400-2000;20180117:0400-2000;20180118:0400-2000;20180119:0400-2000;20180120:CLOSED;20180121:CLOSED;20180122:0400-2000;20180123:0400-2000;20180124:0400-2000;20180125:0400-2000;20180126:0400-2000;20180127:CLOSED;20180128:CLOSED;20180129:0400-2000;20180130:0400-2000;20180131:0400-2000;20180201:0400-2000;20180202:0400-2000;20180203:CLOSED;20180204:CLOSED;20180205:0400-2000;20180206:0400-2000;20180207:0400-2000;20180208:0400-2000;20180209:0400-2000", "liquid_hours"=>"20180106:CLOSED;20180107:CLOSED;20180108:0930-1600;20180109:0930-1600;20180110:0930-1600;20180111:0930-1600;20180112:0930-1600;20180113:CLOSED;20180114:CLOSED;20180115:CLOSED;20180116:0930-1600;20180117:0930-1600;20180118:0930-1600;20180119:0930-1600;20180120:CLOSED;20180121:CLOSED;20180122:0930-1600;20180123:0930-1600;20180124:0930-1600;20180125:0930-1600;20180126:0930-1600;20180127:CLOSED;20180128:CLOSED;20180129:0930-1600;20180130:0930-1600;20180131:0930-1600;20180201:0930-1600;20180202:0930-1600;20180203:CLOSED;20180204:CLOSED;20180205:0930-1600;20180206:0930-1600;20180207:0930-1600;20180208:0930-1600;20180209:0930-1600", "ev_rule"=>0.0, "ev_multiplier"=>"", "sec_id_list"=>{}, "created_at"=>2018-01-06 15:39:04 +0100, "updated_at"=>2018-01-06 15:39:04 +0100, "coupon"=>0.0, "callable"=>false, "puttable"=>false, "convertible"=>false, "next_option_partial"=>false}>>
+
+THE deCODED MESSAGE ["52", "1", "77"]
+15:39:04.904 Got message 52 (IB::Messages::Incoming::ContractDataEnd)
+
+
+## historical data
+
+Request:
+ => [[20, 456], [128937778, "", nil, "", 0, "", nil, nil, nil, "USD", "", 0, false], "20180104 20:30:00 EST", "1 hour", "30 D", 1, "TRADES", 1, nil, "XYZ"] 
+ 2.5.0 :002 > socket.send_messages c
+  => 89 
+  2.5.0 :003 > 11:15:58.425 Got message 4 (IB::Messages::Incoming::Alert)
+  TWS Error 321: Error validating request:-'bF' : cause - Please enter exchange
+
+Request:
+=> [[20, 456], [128937778, "", "STK", "", 0, "", nil, "SMART", "ISLAND", "USD", "", 0, false], "20180104 20:30:00 EST", "1 hour", "30 D", 1, "TRADES", 1, nil, "XYZ"] 
+2.5.0 :003 > 07:34:37.890 Got message 4 (IB::Messages::Incoming::Alert)
+TWS Warning 2106: HMDS data farm connection is OK:ushmds
+TWS Warning 2106: HMDS data farm connection is OK:ushmds
+07:34:38.204 Got message 4 (IB::Messages::Incoming::Alert)
+TWS Error 162: Historical Market Data Service error message:No market data permissions for ISLAND STK
+TWS Error 162: Historical Market Data Service error message:No market data permissions for ISLAND STK
+
+
+[[20, 789], [nil,	"EUR", "CASH", "", nil, "", nil, "IDEALPRO", nil,   "USD", "", "", nil], "20180110 07:21:06"	  , "1 hour", "30 D", 1, "TRADES", 1, [], "XYZ"]
+[[20, 456], [128937778, "",   "STK",   "", 0,	"", nil, "SMART", "ISLAND", "USD", "", 0, false], "20180104 20:30:00 EST", "1 hour", "30 D", 1, "TRADES", 1, nil, "XYZ"] 
+
+
+
+
+## order
+
+ib-ruby:  Output of stringdump of example place-order
+"\x00\x00\x00\xBE3\x0045\x001\x00\x00WFC\x00STK\x00\x000.0\x00\x001\x00NYSE\x00\x00USD\x00\x00\x00\x00\x00BUY\x00100\x00LMT\x001.6600000000000001\x00\x00DAY\x00\x00DU167348\x00O\x000\x00\x001\x000\x000\x000\x000\x000\x000\x000\x00\x00\x00\x000.0\x00\x00\x00\x00\x00\x00\x00\x000\x00\x00-1\x000\x00\x00\x000\x00\x00\x000\x000\x00\x000\x00\x00\x00\x00\x00\x000\x00\x00\x00\x00\x000\x00\x00\x00\x00\x00\x00\x00\x000\x00\x00\x000\x000\x00\x000\x00\x000\x000\x000\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+
+python: Output of flds-dupmp of place-order demo-order
+['3\x00', '45\x00', '1\x00', '0\x00', 'WFC\x00', 'STK\x00', '\x00', '0.0\x00', '\x00', '\x00', 'SMART\x00', '\x00', 'USD\x00', '\x00', '\x00', '\x00', '\x00', 'BUY\x00', '100\x00', 'LMT\x00', '4.56\x00', '\x00', 'DAY\x00', '\x00', 'DU167348\x00', 'O\x00', '0\x00', '\x00', '1\x00', '0\x00', '0\x00', '0\x00', '0\x00', '0\x00', '0\x00', '0\x00', '\x00', '0\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '0\x00', '\x00', '-1\x00', '0\x00', '\x00', '\x00', '0\x00', '\x00', '\x00', '1\x00', '1\x00', '\x00', '0\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '0\x00', '\x00', '\x00', '\x00', '\x00', '0\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '0\x00', '\x00', '\x00', '0\x00', '0\x00', '\x00', '\x00', '0\x00', '\x00', '0\x00', '0\x00', '0\x00', '0\x00', '\x00', '1.7976931348623157e+308\x00', '1.7976931348623157e+308\x00', '1.7976931348623157e+308\x00', '1.7976931348623157e+308\x00', '1.7976931348623157e+308\x00', '0\x00', '\x00', '\x00', '\x00', '1.7976931348623157e+308\x00']
+
+in irb
+u =  ib-string
+up =  python-string
+
+transforming u into a array of commands
+2.5.0 :013 > u=u.split('\x00')[3..-1]
+ => ["3", "45", "14", "E", "WFC", "STK", "E", "0.0", "E", "1", "NYSE", "E", "USD", "E", "E", "E", "E", "BUY", "100", "LMT", "1.42", "E", "DAY", "E", "DU167348", "O", "0", "E", "1", "0", "0", "0", "0", "0", "0", "0", "E", "0", "E", "E", "E", "E", "E", "E", "E", "0", "E", "-1", "0", "E", "E", "0", "E", "E", "1", "1", "E", "0", "E", "E", "E", "E", "E", "0", "E", "E", "E", "E", "0", "E", "E", "E", "E", "E", "E", "E", "E", "E", "E", "0", "E", "E", "0", "0", "E", "E", "0", "E", "0", "0", "0", "0"] 
+
+creating a similar array from the python-source
+ 2.5.0 :014 > up =up.map{|y| y.split("\\").first}
+  => ["3", "45", "1", "0", "WFC", "STK", "", "0.0", "", "", "SMART", "", "USD", "", "", "", "", "BUY", "100", "LMT", "4.56", "", "DAY", "", "DU167348", "O", "0", "", "1", "0", "0", "0", "0", "0", "0", "0", "", "0", "", "", "", "", "", "", "", "0", "", "-1", "0", "", "", "0", "", "", "1", "1", "", "0", "", "", "", "", "", "0", "", "", "", "", "0", "", "", "", "", "", "", "", "", "", "", "0", "", "", "0", "0", "", "", "0", "", "0", "0", "0", "0", "", "1.7976931348623157e+308", "1.7976931348623157e+308", "1.7976931348623157e+308", "1.7976931348623157e+308", "1.7976931348623157e+308", "0", "", "", "", "1.7976931348623157e+308"] 
+
+2.5.0 :027 > u[0]="3"
+
+Tansform "" to "E"
+ u = u.map{|y| y.empty? ? "E" : y}
+
+Displaying the Differencies
+
+List of required field in a basic limit order
+2.5.0 :195 > ui
+ => ["mm", "msgid", "order_id", "conID", "symbol", "secType", "expiry", "strike", "right", "multiplier", "exchange", "primary_exchange", "currency", "local_symbol", "tradingclass", "secid_type", "secId", "action", "total_quantity", "oder_type", "lmitprice", "auxprice", "TIF", "ocaGroup", "account", "openClose", "origin", "orderref", "transmit", "parentid", "blockorder", "sweep2fill", "displaySize", "triggerMethod", "ousideRth", "hidden", "depr._sharesAllocation", "discretionary_Amount", "goodaftertime", "goodtilltime", "faGroup", "faMethod", "faPercentage", "faProfile", "modelCode", "shotSalesSlot", "designedLocation", "exemptCode", "ocatype", "rule80a", "settingsFirm", "allOrNone", "min_quantity,", "percent_offest", "etrade_only", "firmQuoteOnly", "nbboPriceCap", "auctionStrategy", "startingPrice", "stock_ref_price", "delta", "RangeLower", "RangeUpper", "ORverridePercentageContrains", "volatility", "volatilityType", "deltatNeurtralOrderType", "deltaNeutralAuxPrice", "continousUpdate", "referencePriceType", "TrailStopPrice", "TrailingPercent", "Scale_init_level_size", "Scale_subs_leve_size", "Scale_price_incresement", "scaleTable", "activeStartTime", "activeStopTime", "hedge_type", "opt_out_smart_routing", "clearingAccount", "clearing_intent", "not_held", "underComp(false)", ".algoStrategy", "algoId", "whatIf", "miscOptionsStr", "solicited", "randomizeSize", "randomPrice", "order.conditions", "adjustedOrderType", "triggerPrice", "lmtPriceOffset", "adjustedStopPrice", "adjustedStopLimitPrice", "adjustedTrailingAmount", "adjustableTrailingUnit", "extOperator", "softDollarTier.name", ".softDollarTier.val", "cashQty"] 
+
+Generated Array after importing stuff from the output of place-order-example
+2.5.0 :196 > uuu
+
+2.5.0 :195 > up.size.times{ |x| puts " #{x}:#{ui[x]} --> #{uuu[x]} <--> #{up[x]} " if uuu[x] != up[x] }
+  2:order_id --> 14 <--> 1	      ## this is ok, the orderid is incremented automatically
+  3:conID --> E <--> 0		      ## something to consider: default 0 for conid. 
+				      # but its working by transmitting nil, too
+  9:multiplier --> 1 <--> E	      ## will be changed by overloading contract with stock,forex,future
+  10:exchange --> NYSE <--> SMART     ## this is intended
+  20:lmitprice --> 1.42 <--> 4.56     ## different kimit prices were used
+			### below is a list of fields not transmitted by ib-ruby using a simple limit order.
+  92:adjustedOrderType -->  <--> E 
+  93:triggerPrice -->  <--> 1.7976931348623157e+308 
+  94:lmtPriceOffset -->  <--> 1.7976931348623157e+308 
+  95:adjustedStopPrice -->  <--> 1.7976931348623157e+308 
+  96:adjustedStopLimitPrice -->  <--> 1.7976931348623157e+308 
+  97:adjustedTrailingAmount -->  <--> 1.7976931348623157e+308 
+  98:adjustableTrailingUnit -->  <--> 0 
+  99:extOperator -->  <--> E 
+  100:softDollarTier.name -->  <--> E 
+  101:.softDollarTier.val -->  <--> E 
+  102:cashQty -->  <--> 1.7976931348623157e+308 
+
+Although the size of the arrays differs, the order is exepted by the gateway.
+The final fields are silenty omitted by ib-ruby. 
+However, they are transmitted, if a value is given, i.e. setting order.cash_qty

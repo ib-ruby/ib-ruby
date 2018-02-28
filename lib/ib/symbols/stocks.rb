@@ -6,30 +6,33 @@ module IB
       extend Symbols
 
       def self.contracts
-        @contracts ||= {
-          :aapl => IB::Contract.new(:symbol => "AAPL",
+ @contracts.presence || super.merge(
+	  :ib_smart =>   IB::Stock.new( symbol: 'IBKR', 
+				      :description  => 'Interactive Brokers Stock with smart exchange setting'),
+	  :ib =>   IB::Stock.new( symbol: 'IBKR', exchange: 'ISLAND', 
+				      :description  => 'Interactive Brokers Stock'),
+          :aapl => IB::Stock.new(:symbol => "AAPL",
                                     :currency => "USD",
-                                    :sec_type => :stock,
                                     :description => "Apple Inc."),
 
-          :vxx => IB::Contract.new(:symbol => "VXX",
+	  :msft  => IB::Stock.new( symbol: 'MSFT', primary_exchange: 'ISLAND',
+				  description: 'Apple, primary trading @ ISLAND'), ## primary exchange set
+          :vxx => IB::Stock.new(:symbol => "VXX",
                                    :exchange => "ARCA",
                                    # :currency => "USD",
-                                   :sec_type => :stock,
                                    :description => "iPath S&P500 VIX short term Futures ETN"),
 
-          :wfc => IB::Contract.new(:symbol => "WFC",
+          :wfc => IB::Stock.new(:symbol => "WFC",
                                    :exchange => "NYSE",
                                    :currency => "USD",
-                                   :sec_type => :stock,
                                    :description => "Wells Fargo"),
-
-          :wrong => IB::Contract.new(:symbol => "QEEUUE",
+	  :sie => IB::Stock.new( symbol: 'SIE', currency: 'EUR', 
+				  description: 'Siemes AG'),
+          :wrong => IB::Stock.new(:symbol => "QEEUUE",
                                      :exchange => "NYSE",
                                      :currency => "USD",
-                                     :sec_type => :stock,
-                                     :description => "Non-existent stock"),
-        }
+                                     :description => "Non-existent stock")
+ )
       end
 
     end

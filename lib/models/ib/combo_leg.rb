@@ -33,6 +33,7 @@ module IB
     # OPEN = 1 Open. This value is only valid for institutional customers.
     # CLOSE = 2 Close. This value is only valid for institutional customers.
     # UNKNOWN = 3
+     :price  # support for pet leg prices
 
     # Extra validations
     validates_numericality_of :ratio, :con_id

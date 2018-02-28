@@ -2,7 +2,7 @@ module IB
   module Messages
     module Incoming
 
-      PortfolioValue = def_message [7, 7],
+      PortfolioValue = def_message [7, 8],
                                    [:contract, :con_id, :int],
                                    [:contract, :symbol, :string],
                                    [:contract, :sec_type, :string],
@@ -13,7 +13,8 @@ module IB
                                    [:contract, :primary_exchange, :string],
                                    [:contract, :currency, :string],
                                    [:contract, :local_symbol, :string],
-                                   [:position, :int],
+                                   [:contract, :trading_class, :string],  # new Version 8
+                                   [:position, :decimal],   # changed from int after Server Vers. MIN_SERVER_VER_FRACTIONAL_POSITIONS
                                    [:market_price, :decimal],
                                    [:market_value, :decimal],
                                    [:average_cost, :decimal],

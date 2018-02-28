@@ -16,7 +16,9 @@ module IB
       :min_commission, # The possible min range of the actual order commission.
       :max_commission, # The possible max range of the actual order commission.
       :commission_currency, # String: Shows the currency of the commission.
-      :warning_text # String: Displays a warning message if warranted.
+      :warning_text, # String: Displays a warning message if warranted.
+      
+      :market_cap_price  # messages#incomming#orderstae#vers. 11
 
       # Properties arriving via OrderStatus message:
       prop :filled, #    int
@@ -30,7 +32,11 @@ module IB
       :perm_id, #   int: TWS permanent id, remains the same over TWS sessions.
       :client_id, # int: The id of the client that placed this order.
       :parent_id, # int: The order ID of the parent (original) order, used
-      :status => :s # String: Displays the order status. Possible values include:
+      :status => :s # String: one of
+      #   ApiCancelled, PreSubmitted, PendingCancel, Cancelled, Submitted, Filled,
+      #	  Inactive, PendingSubmit, Unknown, ApiPending,
+      #
+      #  Displays the order status. Possible values include:
       # - PendingSubmit - indicates that you have transmitted the order, but
       #   have not yet received confirmation that it has been accepted by the
       #   order destination. NOTE: This order status is NOT sent back by TWS
@@ -56,12 +62,19 @@ module IB
       # - Inactive - indicates that the order has been accepted by the system
       #   (simulated orders) or an exchange (native orders) but that currently
       #   the order is inactive due to system, exchange or other issues.
+      #   
 
       validates_format_of :status, :without => /\A\z/, :message => 'must not be empty'
     validates_numericality_of :price, :average_price, :allow_nil => true
     validates_numericality_of :local_id, :perm_id, :client_id, :parent_id, :filled,
       :remaining, :only_integer => true, :allow_nil => true
 
+    def self.valid_status? the_message
+      valid_stati =  %w( ApiCancelled PreSubmitted PendingCancel Cancelled Submitted Filled
+			 Inactive PendingSubmit Unknown ApiPending)
+	   valid_stati.include?( the_message )
+    end
+  
     ## Testing Order state:
 
     def new?
@@ -70,12 +83,12 @@ module IB
 
     # Order is in a valid, working state on TWS side
     def submitted?
-      status == 'PreSubmitted' || status == 'Submitted'
+      status =~ /Submit/
     end
 
     # Order is in a valid, working state on TWS side
     def pending?
-      submitted? || status == 'PendingSubmit'
+      submitted? || status =~ /Pending/
     end
 
     # Order is in invalid state

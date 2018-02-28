@@ -1,5 +1,6 @@
 require 'rspec'
 require 'rspec/its'
+require 'rspec/collection_matchers'
 require 'ib'
 require 'pp'
 
@@ -22,9 +23,9 @@ if OPTS[:brokertron]
   }
 else
   # Connection to IB PAPER ACCOUNT
-  ACCOUNT ||= 'DU60320' # Set this to your Paper Account Number
+  ACCOUNT ||=  'DU167348' # 'DF167347' # Set this to your Paper Account Number
   HOST ||= '127.0.0.1'
-  PORT ||= 4001
+  PORT ||= 4002 # 7496
 
   OPTS[:connection] = {
     :account => ACCOUNT, # Your IB PAPER ACCOUNT, tests will only run against it
@@ -32,6 +33,9 @@ else
     :port => PORT, #       4001 for Gateway, 7496 for TWS GUI
     :client_id => 1111, #  Client id that identifies the test suit
     :reuters => true #     Subscription to Reuters data enabled ?
+  }
+  OPTS[:order] = {	# 
+    :account => ACCOUNT
   }
 end
 
@@ -45,6 +49,10 @@ RSpec.configure do |config|
   # config.mock_with :mocha
   # config.mock_with :flexmock
   # config.mock_with :rr
+	# ermöglicht die Einschränkung der zu testenden Specs
+	# durch  >>it "irgendwas", :focus => true do <<
+	#
+  config.filter_run focus:true
 
   config.exclusion_filter = {
     :if => proc do |condition|

@@ -16,7 +16,7 @@ module IB
     prop :local_id, #  int: Order id associated with client (volatile).
       :client_id, # int: The id of the client that placed this order.
       :perm_id, #   int: TWS permanent id, remains the same over TWS sessions.
-      [:quantity, :total_quantity], # int: The order quantity.
+      :quantity, :total_quantity, # int: The order quantity.
 
       :order_type, #  String: Order type.
       # Limit Risk: MTL / MKT PRT / QUOTE / STP / STP LMT / TRAIL / TRAIL LIMIT /  TRAIL LIT / TRAIL MIT
@@ -30,8 +30,8 @@ module IB
       :limit_price, # double: LIMIT price, used for limit, stop-limit and relative
       #               orders. In all other cases specify zero. For relative
       #               orders with no limit price, also specify zero.
-
-      :aux_price, #   double: STOP price for stop-limit orders, and the OFFSET amount
+      :aux_price, #  => 0.0,  default set to "" (as implemented in python code)
+      #:aux_price, #   double: STOP price for stop-limit orders, and the OFFSET amount
       #               for relative orders. In all other cases, specify zero.
 
       :oca_group, #   String: Identifies a member of a one-cancels-all group.
@@ -86,7 +86,7 @@ module IB
 
       # Financial advisors only - use an empty String if not applicable.
       :fa_group, :fa_profile, :fa_method, :fa_percentage,
-
+      :model_code ,  # string, no further reference in docs. 
       # Institutional orders only!
       :origin, #          0=Customer, 1=Firm
       :order_ref, #       String: Order reference. Customer defined order ID tag.
@@ -150,10 +150,15 @@ module IB
       #           type that requires an Aux price, such as a REL order.
 
       # As of client v.52, we also receive delta... params in openOrder
+      :delta_neutral_designated_location,
       :delta_neutral_con_id,
       :delta_neutral_settling_firm,
       :delta_neutral_clearing_account,
       :delta_neutral_clearing_intent,
+	:delta_neutral_open_close,
+	:delta_neutral_short_sale ,
+	:delta_neutral_short_sale_slot,
+        :delta_neutral_designated_location , # order.java # 487
 
       # HEDGE ORDERS ONLY:
       # As of client v.49/50, we can now add hedge orders using the API.
@@ -176,7 +181,7 @@ module IB
       # ALGO ORDERS ONLY:
       :algo_strategy, # String
       :algo_params, # public Vector<TagValue> m_algoParams; ?!
-
+      :algo_id,	    # since Vers. 71
       # SCALE ORDERS ONLY:
       :scale_init_level_size, # int: Size of the first (initial) order component.
       :scale_subs_level_size, # int: Order size of the subsequent scale order
@@ -190,11 +195,49 @@ module IB
       :scale_profit_offset,
       :scale_init_position,
       :scale_init_fill_qty,
-      :scale_auto_reset => :bool,
-      :scale_random_percent => :bool
+      :scale_table,			# Vers 69
+      :active_start_time,		# Vers 69
+      :active_stop_time,		# Vers 69
+      # pegged to benchmark
+      :reference_contract_id,
+      :is_pegged_change_amount_decrease,
+      :pegged_change_amount,
+      :reference_change_amount,
+      :reference_exchange_id ,
+
+      :conditions,		# Conditions determining when the order will be activated or canceled. 
+      ### http://xavierib.github.io/twsapidocs/order_conditions.html
+      :conditions_ignore_rth,  # bool: Indicates whether or not conditions will also be valid outside Regular Trading Hours
+      :conditions_cancel_order,# bool: Conditions can determine if an order should become active or canceled.
+      :adjusted_order_type,
+      :trigger_price,
+      :lmt_price_offset,
+      :adjusted_stop_price,
+      :adjusted_stop_limit_price,
+      :adjusted_trailing_amount,
+      
+      :adjustable_trailing_unit,
+      :ext_operator ,               # 105: MIN_SERVER_VER_EXT_OPERATOR
+		      # This is a regulartory attribute that applies 
+		      # to all US Commodity (Futures) Exchanges, provided 
+		      # to allow client to comply with CFTC Tag 50 Rules. 
+      :soft_dollar_tier_params,        # 106: MIN_SERVER_VER_SOFT_DOLLAR_TIER
+		      # Define the Soft Dollar Tier used for the order. 
+		      #	Only provided for registered professional advisors and hedge and mutual funds.
+		      #	format: "#{name}=#{value},#{display_name}", name and value are used in the 
+		      #	      order-specification. Its included as ["#{name}","#{value}"] pair
+  
+      :cash_qty                     # 111: MIN_SERVER_VER_CASH_QTY
+			# decimal : The native cash quantity
+
 
     # Properties with complex processing logics
     prop :tif, #  String: Time in Force (time to market): DAY/GAT/GTD/GTC/IOC
+      :random_size => :bool,			# Vers 76
+      :random_price => :bool,			# Vers 76
+      :scale_auto_reset => :bool,
+      :scale_random_percent => :bool,
+      :solicided  => :bool,			# Vers 73
       :what_if => :bool, # Only return pre-trade commissions and margin info, do not place
       :not_held => :bool, # Not Held
       :outside_rth => :bool, # Order may trigger or fill outside of regular hours. (WAS: ignore_rth)
@@ -218,14 +261,21 @@ module IB
       :modified_at,
       :leg_prices,
       :algo_params,
-      :combo_params
+      :combo_params   # Valid tags are LeginPrio, MaxSegSize, DontLeginNext, ChangeToMktTime1, 
+		      # ChangeToMktTime2, ChangeToMktOffset, DiscretionaryPct, NonGuaranteed, 
+		      # CondPriceMin, CondPriceMax, and PriceCondConid.
+
+    prop :misc1, :misc2, :misc3, :misc4, :misc5, :misc6, :misc7, :misc8 # just 4 debugging
 
     alias order_combo_legs leg_prices
     alias smart_combo_routing_params combo_params
 
     serialize :leg_prices
+    serialize :conditions
     serialize :algo_params, HashWithIndifferentAccess
-    serialize :combo_params, HashWithIndifferentAccess
+    serialize :combo_params
+    serialize :soft_dollar_tier_params, HashWithIndifferentAccess
+    serialize :mics_options, HashWithIndifferentAccess
 
     # Order is always placed for a contract. Here, we explicitly set this link.
     belongs_to :contract
@@ -286,46 +336,87 @@ module IB
     validates_numericality_of :limit_price, :aux_price, :allow_nil => true
 
 
-    def default_attributes
-      super.merge :aux_price => 0.0,
-        :discretionary_amount => 0.0,
-        :parent_id => 0,
-        :tif => :day,
-        :order_type => :limit,
-        :open_close => :open,
-        :origin => :customer,
-        :short_sale_slot => :default,
-        :trigger_method => :default,
-        :oca_type => :none,
-        :auction_strategy => :none,
-        :designated_location => '',
-        :exempt_code => -1,
-        :display_size => 0,
-        :continuous_update => 0,
-        :delta_neutral_con_id => 0,
+    def default_attributes    # default valus are taken from order.java 
+			      #  public Order() { }
+      super.merge(
+      :active_start_time => "",  # order.java # 470		# Vers 69
+      :active_stop_time => "",	 #order.java # 471	# Vers 69
         :algo_strategy => '',
+	:algo_id => '' , # order.java # 495
+	:auction_strategy => :none,
+	:conditions => [],
+        :continuous_update => 0,
+	:delta_neutral_designated_location => "", # order.java # 487
+	:delta_neutral_con_id => 0, # order.java # 480
+	:delta_neutral_settling_firm => "",  #order.java # 481
+	:delta_neutral_clearing_account => "", # order.java # 482
+	:delta_neutral_clearing_intent => "", # order.java # 483
+#	:delta_neutral_short_sale => false,
+#	:delta_neutral_short_sale_slot => 0,
+        :designated_location => '', # order.java # 487
+        :display_size => 0,
+        :discretionary_amount => 0,
+	:etrade_only => true,	# stolen from python client
+        :exempt_code => -1,
+	:ext_operator  => '' ,  # order.java # 499
+	:firm_quote_only  => true,  # stolen from python client
+	:not_held => false,  # order.java # 494
+        :oca_type => :none,
+	:order_type => :limit,
+        :open_close => :open,	  # order.java # 
+	:opt_out_smart_routing => false,
+        :origin => :customer,
+	:outside_rth => false, # order.java # 472
+        :parent_id => 0,
+	:random_size => false,	  #oder.java 497			# Vers 76
+	:random_price => false,	  # order.java # 498		# Vers 76
+	:scale_auto_reset => false,  # order.java # 490
+	:scale_random_percent => false, # order.java # 491
+	:scale_table => "", # order.java # 492
+        :short_sale_slot => :default,
+        :solicided =>  false,  # order.java #  496
+        :tif => :day,
         :transmit => true,
-        :what_if => false,
+	:trigger_method => :default,
+        :what_if => false,  # order.java # 493
         :leg_prices => [],
         :algo_params => HashWithIndifferentAccess.new, #{},
-        :combo_params => HashWithIndifferentAccess.new, #{},
+        :combo_params =>[], #{},
+        :soft_dollar_tier_params => HashWithIndifferentAccess.new( 
+					    :name => "",
+					    :val => "",
+					    :display_name => ''),
         :order_state => IB::OrderState.new(:status => 'New',
                                            :filled => 0,
                                            :remaining => 0,
                                            :price => 0,
                                            :average_price => 0)
+      )  # closing of merge
         end
 
     def serialize_algo
       if algo_strategy.nil? || algo_strategy.empty?
-        ''
+        [algo_strategy, algo_id]  # just omit the size and content-field
       else
         [algo_strategy,
          algo_params.size,
-         algo_params.to_a]
+         algo_params.to_a,
+	algo_id ]	    # Vers 71
       end
     end
 
+    def serialize_soft_dollar_tier
+      [soft_dollar_tier_params[:name],soft_dollar_tier_params[:val]]
+    end
+
+    def initialize_soft_dollar_tier *fields
+      self.soft_dollar_tier_params= HashWithIndifferentAccess.new(
+      name:   fields.pop, val:  fields.pop, display_name:  fields.pop )
+    end
+
+    def serialize_misc_options
+      ""		  # Vers. 70  
+    end
     # Placement
     def place contract, connection
       error "Unable to place order, next_local_id not known" unless connection.next_local_id
@@ -380,12 +471,13 @@ module IB
 
     def to_human
       "<Order: " + ((order_ref && order_ref != '') ? "#{order_ref} " : '') +
-        "#{self[:order_type]} #{self[:tif]} #{side} #{quantity} " +
+        "#{self[:order_type]} #{self[:tif]} #{side} #{total_quantity} " +
         (limit_price ? "#{limit_price} " : '') + "#{status} " +
         ((aux_price && aux_price != 0) ? "/#{aux_price}" : '') +
         "##{local_id}/#{perm_id} from #{client_id}" +
         (account ? "/#{account}" : '') +
         (commission ? " fee #{commission}" : '') + ">"
     end
+
   end # class Order
 end # module IB

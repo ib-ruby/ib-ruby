@@ -33,7 +33,7 @@ module IB
         "#{ next_quarter_year(time) }#{ sprintf("%02d", next_quarter_month(time)) }"
       end
 
-      # Convenience method; generates an IB::Contract instance for a futures
+      # Convenience method; generates an IB::Future instance for a futures
       # contract with the given parameters.
       #
       # If expiry is nil, it will use the end month of the current
@@ -47,7 +47,7 @@ module IB
       # digit month. For example, November 2011 is "201111".
       #
       def self.future(base_symbol, exchange, currency, description="", expiry=nil)
-        IB::Contract.new :symbol => base_symbol,
+        IB::Future.new :symbol => base_symbol,
           :expiry => expiry || next_expiry,
           :exchange => exchange,
           :currency => currency,
@@ -56,61 +56,67 @@ module IB
       end
 
       def self.contracts
-        @contracts ||= {
-          :ym => IB::Contract.new(:symbol => "YM",
+	@contracts.presence ||( super.merge  :ym => IB::Future.new(:symbol => "YM",
                                   :expiry => next_expiry,
                                   :exchange => "ECBOT",
                                   :currency => "USD",
-                                  :sec_type => :future,
                                   :description => "Mini-DJIA future"),
-
-          :es => IB::Contract.new(:symbol => "ES",
+          :es => IB::Future.new(:symbol => "ES",
                                   :expiry => next_expiry,
                                   :exchange => "GLOBEX",
                                   :currency => "USD",
-                                  :sec_type => :future,
                                   :multiplier => 50,
                                   :description => "E-Mini S&P 500 future"),
-
-          :gbp => IB::Contract.new(:symbol => "GBP",
+	  :es_local => IB::Future.new( symbol: 'ES', exchange: 'GLOBEX', 
+		 currency: 'USD',
+		 local_symbol: 'ESU8',
+		description: 'Mini S&P Future specified by :local_symbol'  ),
+	  :mini_dax => IB::Future.new( symbol: 'DAX', exchange: 'DTB', 
+		 expiry:  next_expiry,
+		 currency: 'EUR',
+		 multiplier: 5,
+		 description: 'Mini DAX-Future'),
+	  :dax => IB::Future.new( symbol: 'DAX', exchange: 'DTB', 
+		 expiry:  next_expiry,
+		 currency: 'EUR',
+		 multiplier: 50,
+		 description: 'DAX-Future'),
+	  :stoxx=> IB::Future.new( symbol: 'ESTX50', exchange: 'DTB', 
+		 expiry:  next_expiry,
+		 currency: 'EUR',
+		 multiplier: 10,
+		 description: 'EuroStoxx 50 -Future'),
+          :gbp => IB::Future.new(:symbol => "GBP",
                                    :expiry => next_expiry,
                                    :exchange => "GLOBEX",
                                    :currency => "USD",
-                                   :sec_type => :future,
                                    :multiplier => 62500,
                                    :description => "British Pounds future"),
-
-          :eur => IB::Contract.new(:symbol => "EUR",
+          :eur => IB::Future.new(:symbol => "EUR",
                                    :expiry => next_expiry,
                                    :exchange => "GLOBEX",
                                    :currency => "USD",
-                                   :sec_type => :future,
                                    :multiplier => 12500,
                                    :description => "Euro FX future"),
-
-          :jpy => IB::Contract.new(:symbol => "JPY",
+          :jpy => IB::Future.new(:symbol => "JPY",
                                    :expiry => next_expiry,
                                    :exchange => "GLOBEX",
                                    :currency => "USD",
-                                   :sec_type => :future,
                                    :multiplier => 12500000,
                                    :description => "Japanese Yen future"),
-
-          :hsi => IB::Contract.new(:symbol => "HSI",
+          :hsi => IB::Future.new(:symbol => "HSI",
                                    :expiry => next_expiry,
                                    :exchange => "HKFE",
                                    :currency => "HKD",
-                                   :sec_type => :future,
                                    :multiplier => 50,
                                    :description => "Hang Seng Index future"),
-
-          :vix => IB::Contract.new(:symbol => "VIX",
+          :vix => IB::Future.new(:symbol => "VIX",
                                    :expiry => next_expiry,
                                    :exchange => "CFE", #"ECBOT",
                                    # :currency => "USD",
-                                   :sec_type => :future,
-                                   :description => "CBOE Volatility Index future")
-        }
+                                   :description => "CBOE Volatility Index future"))
+	
+        
       end
     end
   end

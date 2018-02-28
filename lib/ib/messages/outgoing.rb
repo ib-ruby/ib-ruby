@@ -46,7 +46,7 @@ module IB
       RequestGlobalCancel = def_message 58
 
       ## Data format is: @data = { :id => ticker_id}
-      CancelMarketData = def_message 2
+      CancelMarketData = def_message [2, 2]
       CancelMarketDepth = def_message 11
       CancelScannerSubscription = def_message 23
       CancelHistoricalData = def_message 25
@@ -93,13 +93,16 @@ module IB
       # You'll get several ContractData (10) messages back if there is more than one match.
       # When all the matches are delivered you'll get ContractDataEnd (52) message.
       RequestContractDetails = RequestContractData =
-          def_message([9, 6],
-                      [:contract, :serialize_short, [:con_id, :include_expired, :sec_id]])
+          def_message([9, 8],
+                      [:contract, :serialize_long, [:sec_id_type]])
 
       # data = { :id => ticker_id (int), :contract => Contract, :num_rows => int }
-      RequestMarketDepth = def_message([10, 3],
-                                       [:contract, :serialize_short, []],
-                                       :num_rows)
+      RequstMarketDepthExchanges =			# requires ServerVersion >= 112
+		 	   def_message 82
+      RequestMarketDepth = def_message([10, 5],
+                                       [:contract, :serialize_short],
+                                       :num_rows, 
+				       "")  #  mktDataOptionsStr. ## not supported by api
 
       # When this message is sent, TWS responds with ExecutionData messages, each
       # containing the execution report that meets the specified criteria.
@@ -136,43 +139,13 @@ module IB
       #                       exercised. Values are:
       #                              - 0 = do not override
       #                              - 1 = override
-      ExerciseOptions = def_message(21,
+      ExerciseOptions = def_message([ 21, 2 ],
                                     [:contract, :serialize_short],
                                     :exercise_action,
                                     :exercise_quantity,
                                     :account,
                                     :override)
 
-      # @data={:id => int: ticker_id - Must be a unique value. When the market data
-      #                                returns, it will be identified by this tag,
-      #      :contract => IB::Contract, requested contract.
-      #      :tick_list => String: comma delimited list of requested tick groups:
-      #        Group ID - Description - Requested Tick Types
-      #        100 - Option Volume (currently for stocks) - 29, 30
-      #        101 - Option Open Interest (currently for stocks) - 27, 28
-      #        104 - Historical Volatility (currently for stocks) - 23
-      #        106 - Option Implied Volatility (currently for stocks) - 24
-      #        162 - Index Future Premium - 31
-      #        165 - Miscellaneous Stats - 15, 16, 17, 18, 19, 20, 21
-      #        221 - Mark Price (used in TWS P&L computations) - 37
-      #        225 - Auction values (volume, price and imbalance) - 34, 35, 36
-      #        233 - RTVolume - 48
-      #        236 - Shortable - 46
-      #        256 - Inventory - ?
-      #        258 - Fundamental Ratios - 47
-      #        411 - Realtime Historical Volatility - 58
-      #      :snapshot => bool: Check to return a single snapshot of market data and
-      #                   have the market data subscription canceled. Do not enter any
-      #                   :tick_list values if you use snapshot. }
-      RequestMarketData =
-          def_message([1, 9],
-                      [:contract, :serialize_long, [:con_id]],
-                      [:contract, :serialize_legs, []],
-                      [:contract, :serialize_under_comp, []],
-                      [:tick_list, lambda do |tick_list|
-                        tick_list.is_a?(Array) ? tick_list.join(',') : (tick_list || '')
-                      end, []],
-                      [:snapshot, false])
 
       # The API can receive frozen market data from Trader Workstation. Frozen market
       # data is the last data recorded in our system. During normal trading hours,
@@ -285,47 +258,89 @@ module IB
 
       require 'ib/messages/outgoing/place_order'
       require 'ib/messages/outgoing/bar_requests'
+      require 'ib/messages/outgoing/request_marketdata'
 
     end # module Outgoing
   end # module Messages
 end # module IB
 
 __END__
+## python: message.py
+     REQ_MKT_DATA                  = 1
+     CANCEL_MKT_DATA               = 2
+     PLACE_ORDER                   = 3
+     CANCEL_ORDER                  = 4
+     REQ_OPEN_ORDERS               = 5
+     REQ_ACCT_DATA                 = 6
+     REQ_EXECUTIONS                = 7
+     REQ_IDS                       = 8
+     REQ_CONTRACT_DATA             = 9
+     REQ_MKT_DEPTH                 = 10
+     CANCEL_MKT_DEPTH              = 11
+     REQ_NEWS_BULLETINS            = 12
+     CANCEL_NEWS_BULLETINS         = 13
+     SET_SERVER_LOGLEVEL           = 14
+     REQ_AUTO_OPEN_ORDERS          = 15
+     REQ_ALL_OPEN_ORDERS           = 16
+     REQ_MANAGED_ACCTS             = 17
+     REQ_FA                        = 18
+     REPLACE_FA                    = 19
+     REQ_HISTORICAL_DATA           = 20
+     EXERCISE_OPTIONS              = 21
+     REQ_SCANNER_SUBSCRIPTION      = 22
+     CANCEL_SCANNER_SUBSCRIPTION   = 23
+     REQ_SCANNER_PARAMETERS        = 24
+     CANCEL_HISTORICAL_DATA        = 25
+     REQ_CURRENT_TIME              = 49
+     REQ_REAL_TIME_BARS            = 50
+     CANCEL_REAL_TIME_BARS         = 51
+     REQ_FUNDAMENTAL_DATA          = 52
+     CANCEL_FUNDAMENTAL_DATA       = 53
+     REQ_CALC_IMPLIED_VOLAT        = 54
+     REQ_CALC_OPTION_PRICE         = 55
+     CANCEL_CALC_IMPLIED_VOLAT     = 56
+     CANCEL_CALC_OPTION_PRICE      = 57
+     REQ_GLOBAL_CANCEL             = 58
+     REQ_MARKET_DATA_TYPE          = 59  
 
-    // outgoing msg id's
-    private static final int REQ_MKT_DATA = 1;
-    private static final int CANCEL_MKT_DATA = 2;
-    private static final int PLACE_ORDER = 3;
-    private static final int CANCEL_ORDER = 4;
-    private static final int REQ_OPEN_ORDERS = 5;
-    private static final int REQ_ACCOUNT_DATA = 6;
-    private static final int REQ_EXECUTIONS = 7;
-    private static final int REQ_IDS = 8;
-    private static final int REQ_CONTRACT_DATA = 9;
-    private static final int REQ_MKT_DEPTH = 10;
-    private static final int CANCEL_MKT_DEPTH = 11;
-    private static final int REQ_NEWS_BULLETINS = 12;
-    private static final int CANCEL_NEWS_BULLETINS = 13;
-    private static final int SET_SERVER_LOGLEVEL = 14;
-    private static final int REQ_AUTO_OPEN_ORDERS = 15;
-    private static final int REQ_ALL_OPEN_ORDERS = 16;
-    private static final int REQ_MANAGED_ACCTS = 17;
-    private static final int REQ_FA = 18;
-    private static final int REPLACE_FA = 19;
-    private static final int REQ_HISTORICAL_DATA = 20;
-    private static final int EXERCISE_OPTIONS = 21;
-    private static final int REQ_SCANNER_SUBSCRIPTION = 22;
-    private static final int CANCEL_SCANNER_SUBSCRIPTION = 23;
-    private static final int REQ_SCANNER_PARAMETERS = 24;
-    private static final int CANCEL_HISTORICAL_DATA = 25;
-    private static final int REQ_CURRENT_TIME = 49;
-    private static final int REQ_REAL_TIME_BARS = 50;
-    private static final int CANCEL_REAL_TIME_BARS = 51;
-    private static final int REQ_FUNDAMENTAL_DATA = 52;
-    private static final int CANCEL_FUNDAMENTAL_DATA = 53;
-    private static final int REQ_CALC_IMPLIED_VOLAT = 54;
-    private static final int REQ_CALC_OPTION_PRICE = 55;
-    private static final int CANCEL_CALC_IMPLIED_VOLAT = 56;
-    private static final int CANCEL_CALC_OPTION_PRICE = 57;
-    private static final int REQ_GLOBAL_CANCEL = 58;
-     private static final int REQ_MARKET_DATA_TYPE = 59;
+     --> unsupported by ib-ruby 0.94
+     
+     REQ_POSITIONS                 = 61
+     REQ_ACCOUNT_SUMMARY           = 62
+     CANCEL_ACCOUNT_SUMMARY        = 63
+     CANCEL_POSITIONS              = 64
+     VERIFY_REQUEST                = 65
+     VERIFY_MESSAGE                = 66
+     QUERY_DISPLAY_GROUPS          = 67
+     SUBSCRIBE_TO_GROUP_EVENTS     = 68
+     UPDATE_DISPLAY_GROUP          = 69
+     UNSUBSCRIBE_FROM_GROUP_EVENTS = 70
+     START_API                     = 71
+     VERIFY_AND_AUTH_REQUEST       = 72
+     VERIFY_AND_AUTH_MESSAGE       = 73
+     REQ_POSITIONS_MULTI           = 74
+     CANCEL_POSITIONS_MULTI        = 75
+     REQ_ACCOUNT_UPDATES_MULTI     = 76
+     CANCEL_ACCOUNT_UPDATES_MULTI  = 77
+     REQ_SEC_DEF_OPT_PARAMS        = 78
+     REQ_SOFT_DOLLAR_TIERS         = 79
+     REQ_FAMILY_CODES              = 80
+     REQ_MATCHING_SYMBOLS          = 81
+     REQ_MKT_DEPTH_EXCHANGES       = 82
+     REQ_SMART_COMPONENTS          = 83
+     REQ_NEWS_ARTICLE              = 84
+     REQ_NEWS_PROVIDERS            = 85
+     REQ_HISTORICAL_NEWS           = 86
+     REQ_HEAD_TIMESTAMP            = 87
+     REQ_HISTOGRAM_DATA            = 88
+     CANCEL_HISTOGRAM_DATA         = 89
+     CANCEL_HEAD_TIMESTAMP         = 90
+     REQ_MARKET_RULE               = 91
+     REQ_PNL                       = 92
+     CANCEL_PNL                    = 93
+     REQ_PNL_SINGLE                = 94
+     CANCEL_PNL_SINGLE             = 95
+     REQ_HISTORICAL_TICKS          = 96
+     REQ_TICK_BY_TICK_DATA         = 97
+     CANCEL_TICK_BY_TICK_DATA      = 98
+

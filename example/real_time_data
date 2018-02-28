@@ -4,30 +4,31 @@
 
 require 'rubygems'
 require 'bundler/setup'
-$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
 
-@contracts = {1 => IB::Symbols::Stocks[:vxx]}
+contracts = {1 => IB::Symbols::Stocks[:vxx], 
+              9 => IB::Symbols::Forex[:gbpusd] 
+	     }
 
 # Connect to IB TWS.
-ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS
+ib = IB::Connection.new :client_id => 1112 do | gw | #, :port => 7497 # TWS
 
-# Subscribe to TWS alerts/errors
-ib.subscribe(:Alert) { |msg| puts msg.to_human }
+	# Subscribe to TWS alerts/errors
+	gw.subscribe(:Alert) { |msg| puts msg.to_human }
 
-# Subscribe to RealTimeBar incoming events. We have to use message request_id
-# to figure out what contract it's for.
-ib.subscribe(IB::Messages::Incoming::RealTimeBar) do |msg|
-  puts @contracts[msg.request_id].description + ": #{msg.to_human}"
+	# Subscribe to RealTimeBar incoming events. We have to use message request_id
+	# to figure out what contract it's for.
+	gw.subscribe(IB::Messages::Incoming::RealTimeBar) do |msg|
+		puts contracts[msg.request_id].description + ": #{msg.to_human}"
+	end
 end
-
-@contracts.each_pair do |request_id, contract|
+contracts.each_pair do |request_id, contract|
   ib.send_message IB::Messages::Outgoing::RequestRealTimeBars.new(
                         :request_id => request_id,
                         :contract => contract,
-                        :bar_size => 5, # Only 5 secs bars available?
-                        :data_type => :trades,
-                        :use_rth => true)
+                  #      :bar_size => 5, # Only 5 secs bars supported  (hard coded in messages/outgoing/bar_requests)
+                        :data_type => :trades,	# possible values: :trades, :bid, :ask , :midpoint
+                        :use_rth => false)
 end
 
 # So we need to interrupt manually when we do not want any more quotes.

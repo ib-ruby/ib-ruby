@@ -11,11 +11,11 @@ describe "Request Account Data", :connected => true, :integration => true do
 
   context "with subscribe option set" do
     before(:all) do
-      @ib.send_message :RequestAccountData, :subscribe => true
+      @ib.send_message :RequestAccountData,  subscribe: true , account_code: ACCOUNT
       @ib.wait_for :AccountDownloadEnd, 5 # sec
     end
     after(:all) do
-      @ib.send_message :RequestAccountData, :subscribe => false
+      @ib.send_message :RequestAccountData,  subscribe: false , account_code: ACCOUNT
       clean_connection
     end
 
@@ -24,12 +24,12 @@ describe "Request Account Data", :connected => true, :integration => true do
 
   context "without subscribe option" do
     before(:all) do
-      @ib.send_message :RequestAccountData
+      @ib.send_message :RequestAccountData,  account_code: ACCOUNT
       @ib.wait_for :AccountDownloadEnd, 5 # sec
     end
 
     after(:all) do
-      @ib.send_message :RequestAccountData, :subscribe => false
+      @ib.send_message :RequestAccountData,  subscribe: false , account_code: ACCOUNT
       clean_connection
     end
 
