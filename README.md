@@ -1,6 +1,6 @@
 # ib-ruby
 
-Ruby Implementation of the Interactive Brokers Trader Workstation (TWS) API v.965-967.
+Ruby Implementation of the Interactive Brokers Trader Workstation (TWS) API v.972+.
 
 Copyright (C) 2006-2018 Paul Legato, Wes Devauld, Ar Vicco and Hartmut Bischoff.
 
@@ -13,6 +13,13 @@ You've been warned.
 
 This code is not sanctioned or supported by Interactive Brokers.
 
+## TESTING API v. 972+
+The master-branch covers the most recent versions of Ruby and TWS. Ruby 2.5 and TWS Vers. 969 
+are needed. Most of the Rails-stuff is gone. However, ib-ruby provides active-model objects, which
+can easily used in Rails. 
+Most features of the latest gem are covered, still some testing is rquired.
+
+__DONT USE THE VERSION OF MASTER BRANCH IN PRODUCTION__
 ## SUMMARY:
 
 This is a pure Ruby implementation of Interactive Brokers API. It is NOT a wrapper
