@@ -9,6 +9,8 @@ require 'rubygems'
 require 'bundler/setup'
 require 'ib-ruby'
 
+# Only for Advisor accounts: you need to provide account_code such as U666777
+account_code = ARGV[0] || ''
 # First, connect to IB TWS. Arbitrary :client_id is used to identify your script
 ib = IB::Connection.new :client_id => 1112 do | gw | #, :port => 7497 # TWS
 
@@ -28,7 +30,8 @@ buy_order = IB::Order.new :total_quantity => 100,
                           :action => 'BUY',
                           :order_type => 'LMT',
                           :algo_strategy => '',
-                          :transmit => false
+                          :transmit => false,
+		      account: account_code 
 ib.wait_for :NextValidId
 
 #-- Child STOP --
@@ -38,14 +41,16 @@ stop_order = IB::Order.new :total_quantity => 100,
                           :action => 'SELL',
                           :order_type => 'STP',
                           :parent_id => buy_order.local_id,
-                          :transmit => true
+                          :transmit => true,
+		      account: account_code 
 #-- Profit LMT
 profit_order = IB::Order.new :total_quantity => 100,
                           :limit_price => profit_price,
                           :action => 'SELL',
                           :order_type => 'LMT',
                           :parent_id => buy_order.local_id,
-                          :transmit => true
+                          :transmit => true,
+		      account: account_code 
 
 # place parent order
 ib.place_order buy_order, symbol

@@ -1,36 +1,36 @@
 #!/usr/bin/env ruby
+#  This Script needs testing.  remove this line after sucessfully using the scanner facility
 #
 # This script setups a scan request and retreives the results.
 
 require 'rubygems'
 require 'bundler/setup'
-$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
 
 
 
 # Connect to IB TWS.
-ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS
+ib = IB::Connection.new :client_id => 1112  do | gw | #, :port => 7497 # TWS
 
 
-# Subscribe to TWS alerts/errors
-ib.subscribe(:Alert) { |msg| puts msg.to_human }
+	# Subscribe to TWS alerts/errors
+	gw.subscribe(:Alert) { |msg| puts msg.to_human }
 
 
-# Subscribe to ScannerData incoming events.  The code passed in the block
-# will be executed when a message of that type is received, with the received
-# message as its argument. In this case, we just print out the data.
-#
-ib.subscribe(IB::Messages::Incoming::ScannerData) do |msg|
-   puts "ID: #{msg.request_id} : #{msg.count} items:"
-  msg.results.each { |entry| puts "  #{entry}" }
+	# Subscribe to ScannerData incoming events.  The code passed in the block
+	# will be executed when a message of that type is received, with the received
+	# message as its argument. In this case, we just print out the data.
+	#
+	gw.subscribe(IB::Messages::Incoming::ScannerData) do |msg|
+		puts "ID: #{msg.request_id} : #{msg.count} items:"
+		msg.results.each { |entry| puts "  #{entry}" }
+	end
 end
-
-@id = 42
+id = 42
 # Now we actually request scanner data for the type of scan we are interested.
 # Some scan types can be found here:  http://www.interactivebrokers.com/php/apiUsersGuide/apiguide/tables/available_market_scanners.htm
 mess = IB::Messages::Outgoing::RequestScannerSubscription.new(
-                    :request_id => @id,
+                    :request_id => id,
                     :number_of_rows => 20,
                     :instrument => "STK",
                     :location_code => 'STK.US.MAJOR',

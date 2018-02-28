@@ -10,14 +10,16 @@ require 'ib-ruby'
 ib = IB::Connection.new :client_id => 0  do |gw| #   , :port => 7497 # TWS
 
 	# Subscribe to TWS alerts/errors and order-related messages
-	@counter = 0
+	counter = 0
 
 	gw.subscribe(:Alert, :OrderStatus, :OpenOrderEnd) { |msg| puts msg.to_human }
 
 	gw.subscribe(:OpenOrder) do |msg|
-		@counter += 1
-		puts "#{@counter}: #{msg.to_human}"
-		#pp msg.order
+		counter += 1
+		puts "#{counter}: #{msg.to_human}"
+
+	# Get rid of logging verbosity
+	gw.logger.level =  Logger::FATAL
 	end
 end
 ib.send_message :RequestAllOpenOrders
@@ -25,3 +27,18 @@ ib.send_message :RequestAllOpenOrders
 # Wait for IB to respond to our request
 ib.wait_for :OpenOrderEnd
 sleep 1 # Let printer do the job
+
+=begin
+---> expected output
+1: <OpenOrder: <Bag: GOOG SMART USD legs: 269330045|1,269562569|1,301964119|-2 > <Order: LMT GTC buy 10.0 0.06 PreSubmitted #9/561364885 from 1112/DU167349 fee 0.0>>
+<OrderStatus: <OrderState: PreSubmitted #9/561364885 from 1112 filled 0.0/10.0 at 0.0/0.0 why_held locate>>
+2:<OpenOrder: <Stock: WFC USD> <Order: LMT DAY sell 100.0 34.05 PreSubmitted #19/561364895 from 1112/DU167349 fee 0.0>>
+<OrderStatus: <OrderState: PreSubmitted #19/561364895 from 1112 filled 0.0/100.0 at 0.0/0.0 why_held child,locate>>
+3: <OpenOrder: <Stock: WFC USD> <Order: STP DAY sell 100.0 0.0 PreSubmitted /33.55#18/561364894 from 1112/DU167349 fee 0.0>>
+<OrderStatus: <OrderState: PreSubmitted #18/561364894 from 1112 filled 0.0/100.0 at 0.0/0.0 why_held child,locate,trigger>>
+4: <OpenOrder: <Bag: GOOG SMART USD legs: 269330045|1,269562569|1,301964119|-2 > <Order: LMT GTC buy 10.0 0.06 PreSubmitted #8/1562725198 from 1112/DU167349 fee 0.0>>
+<OrderStatus: <OrderState: PreSubmitted #8/1562725198 from 1112 filled 0.0/10.0 at 0.0/0.0 why_held locate>>
+5: <OpenOrder: <Stock: WFC USD> <Order: LMT GTC buy 100.0 1.72 Submitted #3/1562725193 from 1112/DU167349 fee 0.0>>
+<OrderStatus: <OrderState: Submitted #3/1562725193 from 1112 filled 0.0/100.0 at 0.0/0.0 why_held >>
+<OpenOrderEnd: >
+=end 

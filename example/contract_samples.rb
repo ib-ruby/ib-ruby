@@ -13,14 +13,12 @@
 #
 #
 
-# This script generates contracts, sends them to the tws and stores the request in the recieved array
+# This script just generates contracts 
+# If called from the command line, it prints a list
 
 require 'bundler/setup'
-require 'logger'
 require 'yaml'
 require 'ib-ruby'
-# Set log level
-log.level = Logger::DEBUG #FATAL
 include IB
 
 module ContractSamples
@@ -540,7 +538,7 @@ module ContractSamples
         return contract
 
 =end
-    def rSmartFutureComboContract():
+    def rSmartFutureComboContract()
        Bag.new symbol: 'WTI', currency: 'USD', exchange: 'SMART', legs:
 	[  ComboLeg.new( con_id: 55928698, action: :buy, exchange: 'IPE', ratio: 1), #  WTI future June 2017 
            ComboLeg.new( con_id: 55850663,  action: :sell, exchange: 'IPE', ratio: 1 ) ] # COIL future June 2017
@@ -571,7 +569,7 @@ module ContractSamples
         #! [smartfuturespread]
         return contract
 =end
-    def rInterCmdtyFuturesContract():
+    def rInterCmdtyFuturesContract()
        Bag.new symbol: 'CL.BZ', currency: 'USD', exchange: 'NYMEX', legs:
 	[  ComboLeg.new( con_id: 47207310, action: :buy, exchange: 'NYMEX', ratio: 1), #  CL Dec'16 @NYMEX
            ComboLeg.new( con_id: 47195961,  action: :sell, exchange: 'NYMEX', ratio: 1 ) ] # #BZ Dec'16 @NYMEX
