@@ -100,7 +100,7 @@ Any message to the TWS, any subscription to incomming messages can initialized.
 The results can be inspected with the power of the IRB-shell
 
 By default, any response from the TWS is stored in the received Hash.
-This can easyly inspected in the console
+This can easily inspected in the console (bin/console)
 
 ``` ruby
 C.received.keys
@@ -118,24 +118,26 @@ C.received[:OpenOrder].status
 ``` 
 
 This is an example of your script that requests and prints out account data, then
-places limit order to buy 100 lots of WFC and waits for execution. All in about ten
+places limit order to buy 100 lots of WFC and waits for execution. All in about 10
 lines of code - and without sacrificing code readability or flexibility.
 ``` ruby
     require 'ib'
 
-    ib = IB::Connection.new( port: 7496 ) do | gw |
+    ib = IB::Connection.new( port: 7497 ) do | gw |
       gw.subscribe(:Alert, :AccountValue) { |msg| puts msg.to_human }
       gw.subscribe(:OpenOrder) { |msg| puts "Placed: #{msg.order}!" }
       gw.subscribe(:ExecutionData) { |msg| puts "Filled: #{msg.execution}!" }
     end
 
-    ib.send_message :RequestAccountData
+    ib.send_message :RequestAccountData, account_code: 'U123456'
+
     ib.wait_for :AccountDownloadEnd
 
     contract = IB::Stock.new symbol: 'WFC'
                                    
     buy_order = IB::Limit.order total_quantity: 100, limit_price: 21.00,
-                                action: :buy, tif: :good_till_cancelled
+                                action: :buy, tif: :good_till_cancelled, account_code: 'U123456'
+   
     ib.place_order buy_order, contract
     ib.wait_for :ExecutionData
 ```
