@@ -1,6 +1,6 @@
 # ib-ruby
 
-Ruby Implementation of the Interactive Brokers Trader Workstation (TWS) API v.965-967.
+Ruby Implementation of the Interactive Brokers Trader Workstation (TWS) API v.972+.
 
 Copyright (C) 2006-2018 Paul Legato, Wes Devauld, Ar Vicco and Hartmut Bischoff.
 
@@ -13,6 +13,13 @@ You've been warned.
 
 This code is not sanctioned or supported by Interactive Brokers.
 
+## TESTING API v. 972+
+The master-branch covers the most recent versions of Ruby and TWS. Ruby 2.5 and TWS Vers. 969 
+are needed. Most of the Rails-stuff is gone. However, ib-ruby provides active-model objects, which
+can easily used in Rails. 
+Most features of the latest gem are covered, still some testing is rquired.
+
+__DONT USE THE VERSION OF MASTER BRANCH IN PRODUCTION__
 ## SUMMARY:
 
 This is a pure Ruby implementation of Interactive Brokers API. It is NOT a wrapper
@@ -93,7 +100,7 @@ Any message to the TWS, any subscription to incomming messages can initialized.
 The results can be inspected with the power of the IRB-shell
 
 By default, any response from the TWS is stored in the received Hash.
-This can easyly inspected in the console
+This can easily inspected in the console (bin/console)
 
 ``` ruby
 C.received.keys
@@ -111,24 +118,26 @@ C.received[:OpenOrder].status
 ``` 
 
 This is an example of your script that requests and prints out account data, then
-places limit order to buy 100 lots of WFC and waits for execution. All in about ten
+places limit order to buy 100 lots of WFC and waits for execution. All in about 10
 lines of code - and without sacrificing code readability or flexibility.
 ``` ruby
     require 'ib'
 
-    ib = IB::Connection.new( port: 7496 ) do | gw |
+    ib = IB::Connection.new( port: 7497 ) do | gw |
       gw.subscribe(:Alert, :AccountValue) { |msg| puts msg.to_human }
       gw.subscribe(:OpenOrder) { |msg| puts "Placed: #{msg.order}!" }
       gw.subscribe(:ExecutionData) { |msg| puts "Filled: #{msg.execution}!" }
     end
 
-    ib.send_message :RequestAccountData
+    ib.send_message :RequestAccountData, account_code: 'U123456'
+
     ib.wait_for :AccountDownloadEnd
 
     contract = IB::Stock.new symbol: 'WFC'
                                    
     buy_order = IB::Limit.order total_quantity: 100, limit_price: 21.00,
-                                action: :buy, tif: :good_till_cancelled
+                                action: :buy, tif: :good_till_cancelled, account_code: 'U123456'
+   
     ib.place_order buy_order, contract
     ib.wait_for :ExecutionData
 ```
