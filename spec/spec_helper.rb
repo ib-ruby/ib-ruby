@@ -9,7 +9,7 @@ require 'pp'
 OPTS ||= {
   :verbose => false, #true, # Run test suite in a verbose mode ?
   :brokertron => false, # Use mock (Brokertron) instead of paper account ?
-  :rails => IB.rails? && Rails.application.class.parent_name,
+#  :rails => IB.rails? && Rails.application.class.parent_name,
   :db => IB.db_backed?
 }
 
@@ -25,7 +25,7 @@ else
   # Connection to IB PAPER ACCOUNT
   ACCOUNT ||=  'DU167348' # 'DF167347' # Set this to your Paper Account Number
   HOST ||= '127.0.0.1'
-  PORT ||= 4002 # 7496
+  PORT ||= 4002 # 7497
 
   OPTS[:connection] = {
     :account => ACCOUNT, # Your IB PAPER ACCOUNT, tests will only run against it
@@ -34,9 +34,9 @@ else
     :client_id => 1111, #  Client id that identifies the test suit
     :reuters => true #     Subscription to Reuters data enabled ?
   }
-  OPTS[:order] = {	# 
-    :account => ACCOUNT
-  }
+ # OPTS[:order] = {	# 
+ #   :account => ACCOUNT
+ # }
 end
 
 RSpec.configure do |config|
@@ -44,7 +44,7 @@ RSpec.configure do |config|
   puts "Running specs with OPTS:"
   pp OPTS
 
-  # config.filter = { :focus => true }
+   config.filter = { :focus => true }
   # config.include(UserExampleHelpers)
   # config.mock_with :mocha
   # config.mock_with :flexmock
@@ -52,7 +52,7 @@ RSpec.configure do |config|
 	# ermöglicht die Einschränkung der zu testenden Specs
 	# durch  >>it "irgendwas", :focus => true do <<
 	#
-  config.filter_run focus:true
+  config.filter_run focus: true
 
   config.exclusion_filter = {
     :if => proc do |condition|
@@ -67,31 +67,32 @@ RSpec.configure do |config|
       end
     end,
 
-    :db => proc { |condition| IB.db_backed? != condition }, # true/false
+    :db => false,  #proc { |condition| IB.db_backed? != condition }, # true/false
 
-    :rails => proc { |condition| IB.rails? != condition }, # false or "Dummy"/"Combustion"
+    :rails => false, # proc { |condition| IB.rails? != condition }, # false or "Dummy"/"Combustion"
 
     :reuters => proc { |condition| !OPTS[:connection][:reuters] == condition }, # true/false
   }
 
-  if OPTS[:db]
-    require 'database_cleaner'
-
-    config.before(:suite) do
-      DatabaseCleaner.strategy = :truncation
-      DatabaseCleaner.clean
-    end
-
-    config.after(:suite) do
-      DatabaseCleaner.clean
-    end
-  end
-
-  if OPTS[:rails]
-    config.include IB::Engine.routes.url_helpers,
-      :example_group => {:file_path => /\brails_spec\//}
-
-    config.include Capybara::DSL,
-      :example_group => { :file_path => /\brails_spec\//}
-  end
+  #  not used anymore
+#  if OPTS[:db]
+#    require 'database_cleaner'
+#
+#    config.before(:suite) do
+#      DatabaseCleaner.strategy = :truncation
+#      DatabaseCleaner.clean
+#    end
+#
+#    config.after(:suite) do
+#      DatabaseCleaner.clean
+#    end
+#  end
+#
+#  if OPTS[:rails]
+#    config.include IB::Engine.routes.url_helpers,
+#      :example_group => {:file_path => /\brails_spec\//}
+#
+#    config.include Capybara::DSL,
+#      :example_group => { :file_path => /\brails_spec\//}
+#  end
 end

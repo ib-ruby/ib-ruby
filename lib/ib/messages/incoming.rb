@@ -65,7 +65,13 @@ module IB
       ExecutionDataEnd = def_message 55, [:request_id, :int]
 
       MarketDataType = def_message 58, [:request_id, :int], [:market_data_type, :int]
-  
+			class MarketDataType
+				def to_human
+					"<#{self.message_type}:" +
+						" switched to »#{MARKET_DATA_TYPES[market_data_type]}«"
+
+				end
+			end
       CommissionReport =
           def_message 59, [:exec_id, :string],
                       [:commission, :decimal], # Commission amount.

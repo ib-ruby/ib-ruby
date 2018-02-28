@@ -101,20 +101,22 @@ module IB
           end
         end
 
-        # Create incoming message from a given source (IB Socket or data Hash)
-        def initialize source
-          @created_at = Time.now
-          if source.is_a?(Hash)  # Source is a @data Hash
-            @data = source
-	  else
-	    @buffer = source
-	  #  puts "BUFFER"
-	  #  puts buffer.inspect #.join(" :\n ")
-	  #  puts "BUFFER END"
-	    @data = Hash.new
-	    self.load
-          end
-        end
+				# Create incoming message from a given source (IB Socket or data Hash)
+				def initialize source
+					@created_at = Time.now
+					if source.is_a?(Hash)  # Source is a @data Hash
+						@data = source
+						@buffer =[] # initialize empty buffer, indicates a successfull initializing
+					else
+						@buffer = source
+						#  if uncommented, the raw-input from the tws is displayed
+#						puts "BUFFER"
+#						puts buffer.inspect #.join(" :\n ")
+#						puts "BUFFER END"
+						@data = Hash.new
+						self.load
+					end
+				end
 
 	## more recent messages omit the transmission of a version
 	## thus just load the parameter-map 

@@ -1,6 +1,6 @@
 require 'message_helper'
 
-describe IB::Messages::Outgoing do
+describe IB::Messages::Outgoing , focus: true do
 
   context 'Newly instantiated Message' do
 
@@ -25,7 +25,7 @@ describe IB::Messages::Outgoing do
     end
 
     it 'encodes into Array' do
-      subject.encode.should == [6, 2, [], [true, "DUH"]]
+      subject.encode.should == [[6, 2], [], [true, "DUH"]]
     end
 
     it 'that is flattened before sending it over socket to IB server' do

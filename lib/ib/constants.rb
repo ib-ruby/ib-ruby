@@ -123,7 +123,8 @@ module IB
       0 => :unknown,
       1 => :real_time,
       2 => :frozen,
-  }
+			3 => :delayed,
+			4 => :frozen_delayed }.freeze
 
   # Market depth messages contain these "operation" codes to tell you what to do with the data.
   # See also http://www.interactivebrokers.com/php/apiUsersGuide/apiguide/java/updatemktdepth.htm

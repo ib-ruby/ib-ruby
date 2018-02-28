@@ -43,18 +43,20 @@ end
 
 # Clear logs and message collector. Output may be silenced.
 def clean_connection
+	ib =  IB::Connection.current
   if OPTS[:verbose]
     #puts @received.map { |type, msg| [" #{type}:", msg.map(&:to_human)] } if @received
-    puts @ib.received.map { |type, msg| [" #{type}:", msg.map(&:to_human)] }
+    puts ib.received.map { |type, msg| [" #{type}:", msg.map(&:to_human)] }
     puts " Logs:", log_entries if @stdout
   end
   @stdout.string = '' if @stdout
-  @ib.clear_received
+  ib.clear_received
   @received.clear if @received # In connection_spec
 end
 
 def close_connection
-  @ib.cancel_order @local_id_placed if @ib && @local_id_placed
-  @ib.close if @ib
+	ib =  IB::Connection.current
+  ib.cancel_order @local_id_placed if ib && @local_id_placed
+  ib.close if ib
   clean_connection
 end

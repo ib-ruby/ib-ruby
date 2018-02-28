@@ -153,7 +153,8 @@ module IB
       # telling TWS to automatically switch to frozen market data AFTER the close.
       # Then, before the opening of the next trading day, market data will automatically
       # switch back to real-time market data.
-      # :market_data_type = 1 for real-time streaming, 2 for frozen market data
+      # :market_data_type = 1 (:real_time) for real-time streaming, 2 (:frozen) for frozen market data
+			#										= 3 (delayed) for delayed streaming , 4 (frozen_delayed)  for frozen delayed
       RequestMarketDataType =
           def_message 59, [:market_data_type,
                            lambda { |type| MARKET_DATA_TYPES.invert[type] || type }, []]
