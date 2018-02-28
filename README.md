@@ -1,6 +1,9 @@
 # ib-ruby
 
 Ruby Implementation of the Interactive Brokers Trader Workstation (TWS) API v.965-967.
+This Branch features the »old« API-Protocol, used via ports 4001 and 7496
+It can be used as Rails-Engine and supports storing of Data from the TWS in a SQL Database
+
 
 Copyright (C) 2006-2018 Paul Legato, Wes Devauld, Ar Vicco and Hartmut Bischoff.
 
@@ -13,8 +16,6 @@ You've been warned.
 
 This code is not sanctioned or supported by Interactive Brokers.
 
-## ANNOUNCE:
-We are preparing a new realease that supports the most recent TWS Version: 968 (ServerVersion: 136). Check the Branch »r24_tws963«.
 
 ## SUMMARY:
 
