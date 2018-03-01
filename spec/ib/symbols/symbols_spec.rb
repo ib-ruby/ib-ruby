@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe IB::Symbols do
+describe IB::Symbols, focus: true  do
 
   it 'references pre-defined IB stock Contracts' do
     wfc = IB::Symbols::Stocks[:wfc]
@@ -13,14 +13,14 @@ describe IB::Symbols do
   end
 
   it 'references pre-defined IB option Contracts' do
-    wfc = IB::Symbols::Options[:wfc20]
+    wfc = IB::Symbols::Options[:ge20]
     wfc.should be_an IB::Contract
     wfc.sec_type.should == :option
-    wfc.symbol.should == "WFC"
-    wfc.expiry.should == "201301"
+    wfc.symbol.should == "GE"
+    wfc.expiry.should == "201901"
     wfc.right.should == :call
     wfc.strike.should == 20
-    wfc.description.should == "Wells Fargo 20 Call 2013-01"
+    wfc.description.should == "General Electric 20 Call 2019-01"
   end
 
   it 'references pre-defined IB forex Contracts' do
