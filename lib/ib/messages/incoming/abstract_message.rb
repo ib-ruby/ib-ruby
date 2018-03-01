@@ -32,6 +32,10 @@ module IBSupport
       v
     end
 
+		def read_int_date
+			Time.at read_int
+		end
+
     def read_boolean
 
       v = self.shift rescue nil
@@ -110,9 +114,9 @@ module IB
 					else
 						@buffer = source
 						#  if uncommented, the raw-input from the tws is displayed
-#						puts "BUFFER"
-#						puts buffer.inspect #.join(" :\n ")
-#						puts "BUFFER END"
+				#		puts "BUFFER"
+				#		puts buffer.inspect #.join(" :\n ")
+				#		puts "BUFFER END"
 						@data = Hash.new
 						self.load
 					end

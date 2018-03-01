@@ -52,6 +52,13 @@ module IB
       # Receives the current system time on the server side.
       CurrentTime = def_message 49, [:time, :int] # long!
 
+
+			HeadTimeStamp = def_message( [88, 0], [:request_id, :int], [:date,  :int_date] ) do
+				# def to_human
+					"<#{self.message_type}:" +
+						"Request #{request_id}, First Historical Datapoint @ #{date.to_s}«"
+			end
+
       # Receive Reuters global fundamental market data. There must be a subscription to
       # Reuters Fundamental set up in Account Management before you can receive this data.
       FundamentalData = def_message 51, [:request_id, :int], [:xml, :string]
@@ -64,14 +71,11 @@ module IB
 
       ExecutionDataEnd = def_message 55, [:request_id, :int]
 
-      MarketDataType = def_message 58, [:request_id, :int], [:market_data_type, :int]
-			class MarketDataType
-				def to_human
+      MarketDataType = def_message 58, [:request_id, :int], [:market_data_type, :int] do
+				#def to_human
 					"<#{self.message_type}:" +
 						" switched to »#{MARKET_DATA_TYPES[market_data_type]}«"
-
 				end
-			end
       CommissionReport =
           def_message 59, [:exec_id, :string],
                       [:commission, :decimal], # Commission amount.

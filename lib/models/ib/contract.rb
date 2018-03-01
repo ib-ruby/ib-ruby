@@ -140,7 +140,7 @@ module IB
        ( fields.include?(:primary_exchange) ? print_default[primary_exchange]   : nil ) ,
        print_default[currency],
        print_default[local_symbol],
-       print_default[trading_class],
+       ( fields.include?(:trading_class) ? print_default[trading_class] : nil ),
        ( fields.include?(:include_expired) ? print_default[include_expired,0] : nil ),
        ( fields.include?(:sec_id_type) ? [print_default[sec_id_type], print_default[sec_id]] : nil )
        ].flatten.compact
@@ -150,7 +150,7 @@ module IB
     # con_id. sec_type, expiry, strike, right, multiplier exchange, primary_exchange, currency, local_symbol, include_expired 
     # other fields on demand
     def serialize_long *fields
-      serialize :option, :include_expired, :primary_exchange, *fields
+      serialize :option, :include_expired, :primary_exchange, :trading_class, *fields
     end
 
     # serialize contract 
@@ -158,7 +158,7 @@ module IB
     # other fields on demand
     # acutal used by place_order, request_marketdata, request_market_depth, exercise_options
     def serialize_short *fields
-      serialize :option, *fields
+      serialize :option, :trading_class, *fields
     end
 
     # Serialize under_comp parameters: EClientSocket.java, line 471

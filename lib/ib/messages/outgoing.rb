@@ -167,14 +167,40 @@ module IB
       #          :report_type => String: one of the following:
       #                   'estimates' - Estimates
       #                   'finstat'   - Financial statements
-      #                    'snapshot' - Summary   }
+      #                    'snapshot' - Summary   }a
+					#                    ReportsFinSummary	Financial summary
+#ReportsOwnership	Company's ownership (Can be large in size)
+#ReportSnapshot	Company's financial overview
+#ReportsFinStatements	Financial Statements
+#RESC	Analyst Estimates
+#CalendarReport	Company's calendar 
       RequestFundamentalData =
-          def_message(52,
-                      [:contract, :serialize, [:primary_exchange]],
-                      :report_type)
+          def_message([52,2],
+      #                :request_id, 
+											 [:contract, :serialize, :primary_exchange],
+                      :report_type,
+											""  )
 
+					# contract.serialize(:primary_exchange) => => ["", "AAPL", "OPT", "SMART", "", "USD", ""]a
+					#												con_id, symbol, sec_type, exchange, primary_exchange, currency, loacl_symbol
+					#
       # data = { :request_id => int, :contract => Contract,
       #          :option_price => double, :under_price => double }
+			#
+
+			RequestHeadTimeStamp = 
+					def_message( [87,0],
+		#	:request_id,
+					[:contract, :serialize_short, [:primary_exchange,:include_expired] ],
+#					[:include_expired, true ],
+					[:use_rth, 1 ],
+					[:what_to_show, 'Trades' ],
+					[:format_date, 2 ]  )
+
+			CancelHeadTimeStamp =
+					def_message [90,0 ], :request_id
+
+
       RequestCalculateImpliedVolatility = CalculateImpliedVolatility =
           RequestImpliedVolatility =
               def_message(54,
@@ -257,6 +283,8 @@ module IB
                       :scanner_setting_pairs,
                       :stock_type_filter)
 
+
+										  
       require 'ib/messages/outgoing/place_order'
       require 'ib/messages/outgoing/bar_requests'
       require 'ib/messages/outgoing/request_marketdata'
