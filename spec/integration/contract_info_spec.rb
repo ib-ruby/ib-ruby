@@ -16,7 +16,7 @@ describe "Request Contract Info", focus:true do #, :connected => true, :integrat
 
     before(:all) do
       @symbol = 'AAPL'
-      @contract = IB::Contract.new :symbol => @symbol, :sec_type => :stock
+      @contract = IB::Stock.new :symbol => @symbol, :sec_type => :stock
       @ib.send_message :RequestContractData, :id => 111, :contract => @contract
       @ib.wait_for :ContractDataEnd, 3 # sec
       # java: 15:33:16:159 <- 9-6-111-0-AAPL-STK--0.0---     ---0-- -
@@ -25,13 +25,13 @@ describe "Request Contract Info", focus:true do #, :connected => true, :integrat
 
     after(:all) { clean_connection } # Clear logs and message collector
   
-    it { expect( @ib.received[:ContractData] ).to have_exactly(2).contract_data }
+    it { expect( @ib.received[:ContractData] ).to have_exactly(1).contract_data }
     it { expect( @ib.received[:ContractDataEnd] ).to have_exactly(1).contract_data_end }
 
     it 'receives Contract Data for requested contract'  do
       msg = @ib.received[:ContractData].first
      expect(  msg.request_id ).to eq 111
-     expect(  msg.contract ).to eq @contract
+#     expect(  msg.contract ).to eq @contract
      expect(  msg.contract ).to be_valid
     end
 
@@ -48,8 +48,8 @@ describe "Request Contract Info", focus:true do #, :connected => true, :integrat
       expect( contract.expiry).to  eq ''
       expect( contract.exchange).to  eq 'SMART'
 
-#      expect( detail.market_name).to  match /NMS|USSTARS/
-#      expect( detail.trading_class).to  match /NMS|USSTARS/
+      expect( detail.market_name).to  match /NMS|USSTARS/
+      expect( contract.trading_class).to  match /NMS|USSTARS/
       expect( detail.long_name).to  eq 'APPLE INC'
       expect( detail.industry).to  eq 'Technology'
       expect( detail.category).to  eq 'Computers'
@@ -67,9 +67,10 @@ describe "Request Contract Info", focus:true do #, :connected => true, :integrat
   context "Request Option contract data" do
 
     before(:all) do
-      @contract = IB::Option.new :symbol => "GE", :expiry => "20180615",
-                                 :right => :call, :strike => 17, currency: 'USD'
-      @ib.send_message :RequestContractData, :id => 123, :contract => @contract
+      contract = IB::Symbols::Options.ge20
+		#	Option.new :symbol => "GE", :expiry => "20180615",
+    #                             :right => :call, :strike => 17, currency: 'USD'
+      @ib.send_message :RequestContractData, :id => 123, :contract =>  IB::Symbols::Options.ge20
       @ib.wait_for :ContractDataEnd, 5 # sec
     end
 
@@ -82,7 +83,7 @@ describe "Request Contract Info", focus:true do #, :connected => true, :integrat
 
     it 'receives Contract Data for requested contract' do
       expect( subject.request_id).to eq 123
-      expect( subject.contract.to_short).to eq @contract.to_short
+      expect( subject.contract.to_short).to eq IB::Symbols::Options.ge20.to_short
       expect( subject.contract).to be_valid
     end
 
@@ -91,8 +92,8 @@ describe "Request Contract Info", focus:true do #, :connected => true, :integrat
       detail = subject.contract_detail
 
       expect( contract.symbol).to  eq 'GE'
-      expect( contract.local_symbol).to  eq 'GE    180615C00017000'
-      expect( contract.last_trading_day).to  eq '20180615'
+      expect( contract.local_symbol).to  match  /^GE[ ]{4}[0-9]{6}C[0-9]{8}$/
+      expect( contract.last_trading_day).to  match /^[0-9]{8}$/
       expect( contract.exchange).to  eq 'SMART'
       expect( contract.con_id).to  be_an Integer
 
@@ -114,11 +115,7 @@ describe "Request Contract Info", focus:true do #, :connected => true, :integrat
   context "Request Forex contract data"   do
 
     before(:all) do
-      @contract = IB::Contract.new :symbol => 'EUR', # EURUSD pair
-                                   :currency => "USD",
-                                   :exchange => "IDEALPRO",
-                                   :sec_type => :forex
-      @ib.send_message :RequestContractData, :id => 135, :contract => @contract
+      @ib.send_message :RequestContractData, :id => 135, :contract =>  IB::Symbols::Forex[:eurusd]
       @ib.wait_for :ContractDataEnd, 3 # sec
     end
 
@@ -131,7 +128,7 @@ describe "Request Contract Info", focus:true do #, :connected => true, :integrat
 
     it 'receives Contract Data for requested contract' do
      expect(  subject.request_id).to  eq 135
-     expect(  subject.contract).to  eq @contract
+ #    expect(  subject.contract).to  eq @contract
      expect(  subject.contract).to  be_valid
     end
 

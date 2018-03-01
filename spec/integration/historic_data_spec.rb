@@ -1,6 +1,8 @@
 require 'integration_helper'
 
-describe 'Request Historic Data', :connected => true, :integration => true do
+## todo  test with a real account (with historical data permissions )
+
+describe 'Request Historic Data', :connected => true, :integration => true , focus: true do
 
   CORRECT_OPTS = {:id => 567,
                   :contract => IB::Symbols::Stocks[:wfc],
@@ -36,6 +38,7 @@ describe 'Request Historic Data', :connected => true, :integration => true do
   context 'Correct Request' do
     before(:all) do
       # No historical data for GBP/CASH@IDEALPRO
+			@ib.send_message :RequestMarketDataType, :market_data_type => :delayed
       @ib.send_message :RequestHistoricalData, CORRECT_OPTS
       @ib.wait_for :HistoricalData, 6 # sec
     end
@@ -57,11 +60,11 @@ describe 'Request Historic Data', :connected => true, :integration => true do
       subject.results.each do |bar|
         bar.should be_an IB::Bar
         bar.time.should =~ /\d{8} *\d\d:\d\d:\d\d/
-        bar.open.should be_a Float
-        bar.high.should be_a Float
-        bar.low.should be_a Float
-        bar.close.should be_a Float
-        bar.wap.should be_a Float
+        bar.open.should be_a BigDecimal
+        bar.high.should be_a BigDecimal
+        bar.low.should be_a BigDecimal
+        bar.close.should be_a BigDecimal
+        bar.wap.should be_a BigDecimal
         bar.trades.should be_an Integer
         bar.volume.should be_an Integer
       end

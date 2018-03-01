@@ -9,17 +9,18 @@ module IB
       def self.contracts
         @contracts ||= {
           :ge20 => IB::Option.new(:symbol => "GE",
-                                   :expiry => "201901",
+                                   :expiry => "20190118",  # use fully qualified expiry, to cover contract-info integration test
                                    :right => "CALL",
                                    :strike => 20,
 				   :multiplier => 100,
 				   :currency => 'USD',
                                    :description => "General Electric 20 Call 2019-01"),
           :aapl200 => IB::Option.new(:symbol => "AAPL",
-                                     :expiry => "201903",
-                                     :right => "CALL",
+                                     :expiry => "201901",
+                                     :right => "C",
                                      :strike => 200,
-                                     :description => "Apple 200 Call 2019-03"),
+				   :currency => 'USD',
+                                     :description => "Apple 200 Call 2019-01"),
           :z750 => IB::Option.new(:symbol => "Z",
                                  :exchange => "LIFFE",
                                  :expiry => "201903",

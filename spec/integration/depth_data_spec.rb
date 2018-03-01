@@ -1,7 +1,7 @@
 require 'integration_helper'
 
 describe 'Request Depth of Market Data', :connected => true,
-         :integration => true, :if => :forex_trading_hours do
+         :integration => true, :if => :forex_trading_hours,  focus: true  do
 
   before(:all) do
     verify_account
@@ -24,7 +24,7 @@ describe 'Request Depth of Market Data', :connected => true,
 
   it { should be_an IB::Messages::Incoming::MarketDepth }
   its(:request_id) { should == 456 }
-  its(:price) { should be_a Float }
+  its(:price) { should be_a BigDecimal }
   its(:size) { should be_an Integer }
   its(:to_human) { should =~ /MarketDepth/ }
 

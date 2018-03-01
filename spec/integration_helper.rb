@@ -19,7 +19,7 @@ shared_examples_for 'Received Market Data' do
     it { should be_an IB::Messages::Incoming::TickPrice }
     its(:tick_type) { should be_an Integer }
     its(:type) { should be_a Symbol }
-    its(:price) { should be_a Float }
+    its(:price) { should be_a BigDecimal }
     its(:size) { should be_an Integer }
     its(:data) { should be_a Hash }
     its(:ticker_id) { should == 456 } # ticker_id

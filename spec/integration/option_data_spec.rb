@@ -1,14 +1,14 @@
 require 'integration_helper'
-
-describe 'Request Market Data for Options', :if => :us_trading_hours,
-         :connected => true, :integration => true do
+# todo:  run with a real account with marketdata subsriptions
+describe 'Request Market Data for Options',# :if => :us_trading_hours,
+         :connected => true, :integration => true , focus: true do
 
   before(:all) do
     verify_account
     @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
-
+		@ib.send_message :RequestMarketDataType, :market_data_type => :delayed
     @ib.send_message :RequestMarketData, :id => 456,
-                     :contract => IB::Symbols::Options[:aapl500]
+                     :contract => IB::Symbols::Options.aapl200
     @ib.wait_for :TickPrice, :TickSize, :TickString, :TickOption, 5 # sec
   end
 
@@ -27,13 +27,13 @@ describe 'Request Market Data for Options', :if => :us_trading_hours,
     its(:data) { should be_a Hash }
     its(:tick_type) { should be_an Integer }
     its(:type) { should be_a Symbol }
-    its(:under_price) { should be_a Float }
-    its(:option_price) { should be_a Float }
-    its(:pv_dividend) { should be_a Float }
-    its(:implied_volatility) { should be_a Float }
-    its(:gamma) { should be_a Float }
-    its(:vega) { should be_a Float }
-    its(:theta) { should be_a Float }
+    its(:under_price) { should be_a BigDecimal }
+    its(:option_price) { should be_a BigDecimal }
+    its(:pv_dividend) { should be_a BigDecimal }
+    its(:implied_volatility) { should be_a BigDecimal }
+    its(:gamma) { should be_a BigDecimal }
+    its(:vega) { should be_a BigDecimal }
+    its(:theta) { should be_a BigDecimal }
     its(:ticker_id) { should == 456 }
     its(:to_human) { should =~ /TickOption/ }
   end
