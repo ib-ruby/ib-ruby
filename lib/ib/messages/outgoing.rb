@@ -41,7 +41,6 @@ module IB
       RequestScannerParameters = def_message 24
 
       CancelNewsBulletins = def_message 13
-      RequestManagedAccounts = def_message 17
       RequestCurrentTime = def_message 49
       RequestGlobalCancel = def_message 58
 
@@ -76,11 +75,6 @@ module IB
       ReplaceFA = def_message 19, :fa_data_type, :xml
       # data = { :market_data_type => int }
 
-      # @data = { :subscribe => boolean,
-      #           :account_code => Advisor accounts only. Empty ('') for a standard account. }
-      RequestAccountUpdates = RequestAccountData = def_message([6, 2],
-                                                               [:subscribe, true],
-                                                               :account_code)
 
       # data => { :id => request_id (int), :contract => Contract }
       #
@@ -192,14 +186,24 @@ module IB
 					def_message( [87,0],
 		#	:request_id,
 					[:contract, :serialize_short, [:primary_exchange,:include_expired] ],
-#					[:include_expired, true ],
 					[:use_rth, 1 ],
 					[:what_to_show, 'Trades' ],
 					[:format_date, 2 ]  )
 
 			CancelHeadTimeStamp =
-					def_message [90,0 ], :request_id
+					def_message [90,0 ], #:request_id
 
+
+
+			RequestHistogramData = 
+					def_message( [88, 0],
+											# request_id
+					[:contract, :serialize_short, [:primary_exchange,:include_expired] ],
+					[:use_rth, 1 ],
+					[:time_period ]   )
+
+			CancelHistogramData =
+					def_message [89,0 ], #:request_id
 
       RequestCalculateImpliedVolatility = CalculateImpliedVolatility =
           RequestImpliedVolatility =
@@ -287,6 +291,7 @@ module IB
 										  
       require 'ib/messages/outgoing/place_order'
       require 'ib/messages/outgoing/bar_requests'
+      require 'ib/messages/outgoing/account_requests'
       require 'ib/messages/outgoing/request_marketdata'
 
     end # module Outgoing

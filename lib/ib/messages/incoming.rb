@@ -24,6 +24,14 @@ module IB
         "<AccountValue: #{account_name}, #{key}=#{value} #{currency}>"
       end
 
+		  AccountSummary = def_message(63,  [:request_id, :int],
+																	 [ :account, :string ],
+																	 [ :tag , :string ],
+																	 [ :value , :decimal ],
+																	 [ :currency , :string ]
+																	)
+		  AccountSummaryEnd = def_message(64)
+
       AccountUpdateTime = def_message 8, [:time_stamp, :string]
 
       NewsBulletins =

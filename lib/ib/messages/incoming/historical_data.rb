@@ -29,7 +29,7 @@ module IB
                                    [:count, :int]
       class HistoricalData
         attr_accessor :results
-	using IBSupport  # extended Array-Class  from abstract_message
+				using IBSupport  # extended Array-Class  from abstract_message
  
         def load
           super
@@ -51,6 +51,44 @@ module IB
           "<HistoricalData: #{request_id}, #{count} items, #{start_date} to #{end_date}>"
         end
       end # HistoricalData
+=begin
+				 ## python code
+			# def processHistogramData(self,fields):
+        sMsgId = next(fields)
+        reqId = decode(int, fields)
+        numPoints = decode(int, fields)
+
+        histogram = []
+        for idxBar in range(numPoints):
+            dataPoint = HistogramData()
+            dataPoint.price = decode(float,fields)
+            dataPoint.count = decode(int,fields)
+            histogram.append(dataPoint)
+=end
+
+
+				HistogramData  = def_message( [89,0], 
+																		 [:strange_version_item, :int], 
+																	[:request_id, :int], 
+																	[ :number_of_points , :int ]) do
+																		# to human
+          "<HistogramData: #{request_id}, #{number_of_points} read>"
+																	end
+
+      class HistogramData
+        attr_accessor :results
+				using IBSupport  # extended Array-Class  from abstract_message
+ 
+        def load
+          super
+
+          @results = Array.new(@data[:number_of_points]) do |_|
+						{ price:  buffer.read_decimal, 
+						 count: buffer.read_int }
+					end
+				end
+			end
+
     end # module Incoming
   end # module Messages
 end # module IB

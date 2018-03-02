@@ -1,0 +1,72 @@
+#!/usr/bin/env ruby
+#
+# This script connects to IB API and subscribes to  Account Summary Updates for certain tags
+
+require 'bundler/setup'
+require 'ib-ruby'
+
+COUNT_OF_EVENTS =  20
+# Definition of what we want listed
+# possible tags
+#            NetLiquidation,
+#            TotalCashValue - Total cash including futures pnl
+#            SettledCash - For cash accounts, this is the same as
+#            TotalCashValue
+#            AccruedCash - Net accrued interest
+#            BuyingPower - The maximum amount of marginable US stocks the
+#                account can buy
+#            EquityWithLoanValue - Cash + stocks + bonds + mutual funds
+#            PreviousDayEquityWithLoanValue,
+#            GrossPositionValue - The sum of the absolute value of all stock
+#                and equity option positions
+#            RegTEquity,
+#            RegTMargin,
+#            SMA - Special Memorandum Account
+#            InitMarginReq,
+#            MaintMarginReq,
+#            AvailableFunds,
+#            ExcessLiquidity,
+#            Cushion - Excess liquidity as a percentage of net liquidation value
+#            FullInitMarginReq,
+#            FullMaintMarginReq,
+#            FullAvailableFunds,
+#            FullExcessLiquidity,
+#            LookAheadNextChange - Time when look-ahead values take effect
+#            LookAheadInitMarginReq,
+#            LookAheadMaintMarginReq,
+#            LookAheadAvailableFunds,
+#            LookAheadExcessLiquidity,
+#            HighestSeverity - A measure of how close the account is to liquidation
+#            DayTradesRemaining - The Number of Open/Close trades a user
+#                could put on before Pattern Day Trading is detected. A value of "-1"
+#                means that the user can put on unlimited day trades.
+#            Leverage - GrossPositionValue / NetLiquidation
+#            $LEDGER - Single flag to relay all cash balance tags*, only in base
+#                currency.
+#            $LEDGER:CURRENCY - Single flag to relay all cash balance tags*, only in
+#                the specified currency.
+#            $LEDGER:ALL - Single flag to relay all cash balance tags* in all
+#
+tags =  %w( NetLiquidation InitMarginReq DayTradesRemaining )
+# connect to IB TWS.
+
+
+ib = IB::Connection.new( :client_id => 1112) do | gw | #, :port => 7496 # TWS) 
+## Subcribe to forseable events before the connection is completed
+## Subscribe to TWS alerts/errors
+  gw.subscribe(:Alert, :AccountSummary){ |msg| puts msg.to_human }
+	gw.logger.level = Logger::FATAL # DEBUG  -- INFO -- WARN -- ERROR  -- FATAL
+end
+
+ Thread.new do 
+	sleep 1
+	puts "\n******** Press <Enter> to quit *********\n\n"
+ end
+# request the  AccountSummary
+  ib.send_message :RequestAccountSummary, request_id: 45, tags: tags.join(',')
+
+STDIN.gets
+ puts "\n *** canceling Reqest ..." 
+		ib.send_message :CancelAccountSummary, request_id: 45
+sleep 1
+puts "done."
