@@ -2,6 +2,10 @@ module IB
   module Messages
     module Incoming
 
+		class PositionMessage < AbstractMessage
+
+		end
+
       PortfolioValue = def_message [7, 8],
                                    [:contract, :con_id, :int],
                                    [:contract, :symbol, :string],
@@ -33,6 +37,38 @@ module IB
               " #{realized_pnl} realized; account #{account_name}>"
         end
       end # PortfolioValue
+
+
+			PositionData =
+				def_message( [61,3] ,
+					[:account, :string],
+                                   [:contract, :con_id, :int],
+                                   [:contract, :symbol, :string],
+                                   [:contract, :sec_type, :string],
+                                   [:contract, :expiry, :string],
+                                   [:contract, :strike, :decimal],
+                                   [:contract, :right, :string],
+                                   [:contract, :multiplier, :string],
+                                   [:contract, :primary_exchange, :string],
+                                   [:contract, :currency, :string],
+                                   [:contract, :local_symbol, :string],
+                                   [:contract, :trading_class, :string],  # new Version 8
+          [:position, :decimal],   # changed from int after Server Vers. MIN_SERVER_VER_FRACTIONAL_POSITIONS
+					[:price, :decimal]
+									 )
+					
+      class PositionData
+
+        def contract
+          @contract = IB::Contract.build @data[:contract]
+        end
+
+        def to_human
+          "<PositionValue: #{account} ->  #{contract.to_human} ( Amount #{position}) : Market-Price #{price} >"
+        end
+      end # PortfolioValue
+
+			PositionDataEnd = def_message( 62 )
 
 
     end # module Incoming

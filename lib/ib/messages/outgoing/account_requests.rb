@@ -68,11 +68,17 @@ module IB
 =end
 					RequestAccountSummary = 
 						def_message( 62,
-											 # request_id
+											 # request_id required
 						[:group, 'All'],
 						:tags )
 
-						CancelAccountSummary =  def_message 63   # request_id
+					CancelAccountSummary	=  def_message 63   # request_id  required
+					RequestPositions			=  def_message 61
+					CancelPositions				=  def_message 64
+
+
+
+
 		end # module outgoing
 	end # module messages 
 end # module ib

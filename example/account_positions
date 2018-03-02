@@ -1,0 +1,30 @@
+#!/usr/bin/env ruby
+#
+# This script connects to IB API and subscribes to  Position Values which are updated regulary
+
+require 'bundler/setup'
+require 'ib-ruby'
+
+
+# connect to IB TWS.
+
+
+ib = IB::Connection.new( :client_id => 1112) do | gw | #, :port => 7496 # TWS) 
+## Subcribe to forseable events before the connection is completed
+## Subscribe to TWS alerts/errors
+  gw.subscribe(:Alert, :PositionData){ |msg| puts msg.to_human }
+	gw.logger.level = Logger::FATAL # DEBUG  -- INFO -- WARN -- ERROR  -- FATAL
+end
+
+ Thread.new do 
+	sleep 1
+	puts "\n******** Press <Enter> to quit *********\n\n"
+ end
+# request the  AccountSummary
+  ib.send_message :RequestPositions
+
+STDIN.gets
+ puts "\n *** canceling Reqest ..." 
+		ib.send_message :CancelPositions
+sleep 1
+puts "done."
