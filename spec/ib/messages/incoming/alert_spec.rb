@@ -21,9 +21,9 @@ shared_examples_for 'Alert message' do
   end
 end
 
-describe IB::Messages::Incoming do
+describe IB::Messages::Incoming, focus: true do
 
-  context 'Newly instantiated Message', focus: true do
+  context 'Newly instantiated Message' do
 
     subject do
       IB::Messages::Incoming::Alert.new(
@@ -36,17 +36,17 @@ describe IB::Messages::Incoming do
     it_behaves_like 'Alert message'
   end
 
-  context 'Message received from IB', :connected => true , focus: true do
+  context 'Message received from IB', :connected => true  do
 
     before(:all) do
-      @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
-      @ib.wait_for :Alert
-      pending 'No Alert received upon connect!' unless @ib.received? :Alert
+      ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
+      ib.wait_for :Alert
+      pending 'No Alert received upon connect!' unless ib.received? :Alert
     end
 
     after(:all) { close_connection }
 
-    subject { @ib.received[:Alert].first }
+    subject { IB::Connection.current.received[:Alert].first }
 		
     it_behaves_like 'Alert message'
   end #

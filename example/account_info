@@ -8,25 +8,47 @@ require 'logger'
 require 'yaml'
 require 'ib-ruby'
 
-# Only for Advisor accounts: you need to provide account_code such as U666777
+# Only for Advisor accounts: you can provide account_code such as U666777  (otherwise the last account is used)
 account_code = ARGV[0] || ''
 
 include IB
 # Connect to IB TWS
+accounts =  []
 ib = Connection.new client_id: 1113, port: 4002 do | gw |  # :port => 7497 # TWS
 
 	# Subscribe to TWS alerts/errors and account-related messages
 	# that TWS sends in response to account data request
-	gw.subscribe(:Alert, :AccountValue,
+	gw.subscribe(:Alert) do |msg|
+			## if an account is not given. but required, (Error 321 indicates this) 
+			## fetch data from the last account detected. (The first is most probably the Advisor-Account)
+											if  msg.code == 321
+												gw.send_message :RequestAccountData, :subscribe => true, :account_code => accounts.last
+											else
+												puts msg.to_human
+											end
+								end
+	
+	## Print Account+Portfolio-Values
+	gw.subscribe(:AccountValue,
 		     :PortfolioValue, :AccountUpdateTime) { |msg| puts msg.to_human }
+
+	## Just in case: put accout-names into accounts-array
+	gw.subscribe(:ManagedAccounts){  |msg| accounts = msg.accounts_list.split ',' }
 
 	# Set log level
 	gw.logger.level = Logger::FATAL # DEBUG #FATAL
 end
+
 ib.send_message :RequestAccountData, :subscribe => true, :account_code => account_code
 
 puts "\nSubscribing to IB account data"
-puts "\n******** Press <Enter> to cancel... *********\n\n"
+
+## print message after recieving account-data
+Thread.new do 
+	sleep 3
+	puts "\n******** Press <Enter> to quit *********\n\n"
+end
+
 STDIN.gets
 puts "Cancelling account data subscription.."
 

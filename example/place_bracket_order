@@ -20,36 +20,30 @@ end
 
 symbol = IB::Symbols::Stocks[:wfc]
 
-order_price   = 33.80
+order_price   = 55
 stop_price    = order_price - 0.25
 profit_price  = order_price + 0.25
 
 #-- Parent Order --
-buy_order = IB::Order.new :total_quantity => 100,
-                          :limit_price => order_price,
-                          :action => 'BUY',
-                          :order_type => 'LMT',
+buy_order = IB::Limit.order :total_quantity => 100,
+                          :price => order_price,
+                          :action => :buy,
                           :algo_strategy => '',
                           :transmit => false,
 		      account: account_code 
 ib.wait_for :NextValidId
 
 #-- Child STOP --
-stop_order = IB::Order.new :total_quantity => 100,
-                          :limit_price => 0,
-                          :aux_price => stop_price,
-                          :action => 'SELL',
-                          :order_type => 'STP',
+stop_order = IB::SimpleStop.order :total_quantity => 100,
+                          :price => stop_price,
+                          :action => :sell,
                           :parent_id => buy_order.local_id,
-                          :transmit => true,
 		      account: account_code 
 #-- Profit LMT
-profit_order = IB::Order.new :total_quantity => 100,
-                          :limit_price => profit_price,
-                          :action => 'SELL',
-                          :order_type => 'LMT',
+profit_order = IB::Limit.order  :total_quantity => 100,
+                          :price => profit_price,
+                          :action => :sell,
                           :parent_id => buy_order.local_id,
-                          :transmit => true,
 		      account: account_code 
 
 # place parent order
