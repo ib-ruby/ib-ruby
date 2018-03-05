@@ -5,12 +5,12 @@ def define_contracts
   @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
   @contracts = {
     :stock => IB::Symbols::Stocks[:wfc],
-    :butterfly => butterfly('GOOG', '201301', 'CALL', 500, 510, 520)
+    :butterfly => butterfly('GOOG', '201901', 'CALL', 1000, 1020, 1040)
   }
   close_connection
 end
 
-describe 'Attached Orders', :connected => true, :integration => true do
+describe 'Attached Orders', :connected => true, :integration => true , focus: true do
 
   before(:all) do
     verify_account
@@ -36,11 +36,13 @@ describe 'Attached Orders', :connected => true, :integration => true do
 
         #p [contract, qty, tif, attach_type, limit_price, attach_price, aux_price]
         @contract = @contracts[contract]
-        place_order @contract,
-        :total_quantity => qty,
+				order =  IB::Limit.order :total_quantity => qty,
         :limit_price => limit_price,
         :tif => tif,
-        :transmit => false
+        :transmit => false,
+				:account => ACCOUT
+
+        @ib.place_order order,  @contract
 
         @ib.wait_for :OpenOrder, :OrderStatus, 2
       end
@@ -48,16 +50,16 @@ describe 'Attached Orders', :connected => true, :integration => true do
       after(:all) { close_connection }
 
       it 'does not transmit original Order before attach' do
-        @ib.received[:OpenOrder].should have_exactly(0).order_message
-        @ib.received[:OrderStatus].should have_exactly(0).status_message
+        expect( @ib.received[:OpenOrder]).to  have_exactly(0).order_message
+        expect( @ib.received[:OrderStatus]).to  have_exactly(0).status_message
       end
 
       context "Attaching #{attach_type} order" do
         before(:all) do
-          @attached_order = IB::Order.new :limit_price => attach_price,
+          @attached_order = IB::StopLimit.order :limit_price => attach_price,
           :aux_price => aux_price || 0,
           :total_quantity => qty,
-          :side => :sell,
+          :action => :sell,
           :tif => tif,
           :order_type => attach_type,
           :parent_id => @local_id_placed

@@ -7,17 +7,9 @@ module IB
           def_message [5, 34],		# updated to v. 34 according to python (decoder.py processOpenOrder)
                       [:order, :local_id, :int],
 
-                      [:contract, :con_id, :int],
-                      [:contract, :symbol, :string],
-                      [:contract, :sec_type, :string],
-                      [:contract, :expiry, :string],
-                      [:contract, :strike, :decimal],
-                      [:contract, :right, :string],
-                      [:contract, :multiplier, :int],
-                      [:contract, :exchange, :string],
-                      [:contract, :currency, :string],
-                      [:contract, :local_symbol, :string],
-                      [:contract, :trading_class, :string],
+                      [:contract, :contract], # read standard-contract 
+											# [ con_id, symbol,. sec_type, expiry, strike, right, multiplier,
+											# 	primary_exchange, currency, local_symbol, trading_class ] 
 
                       [:order, :action, :required_string],
                       [:order, :total_quantity, :decimal],

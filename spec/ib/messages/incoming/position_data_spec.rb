@@ -15,19 +15,7 @@ end
 
 describe IB::Messages::Incoming do
 
-  context 'Simulated Response from TWS', focus: false do
-
-    subject do
-      IB::Messages::Incoming::HistogramData.new ["89","123","5","1.2",1,"2.1","2","3.1","3","4.1","4","5.1","5"]
-    end
-
-    it_behaves_like 'PositionData message'
-  end
-
   context 'Message received from IB', :connected => true , focus: true do
-## This happends on the lack of permissions
-#I, [2018-03-02T05:44:38.411662 #15045]  
-		#INFO -- : TWS Warning 10188: Failed to request histogram data:No market data permissions for ISLAND STK
 #
 ##
     before(:all) do

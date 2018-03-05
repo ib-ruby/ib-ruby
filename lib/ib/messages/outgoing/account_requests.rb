@@ -76,9 +76,18 @@ module IB
 					RequestPositions			=  def_message 61
 					CancelPositions				=  def_message 64
 
+		
+					RequestPositionsMulti = def_message( 74, # request_id required
+						 :account,
+						 [:model_code, nil ] )
 
+					CancelPositionsMulti = def_message 75   # request_id required
 
-
+					RequestAccountUpdatesMulti = def_message( 76, # request_id required
+						 :account,																# account or account-group	
+						 [:model_code, nil],
+						 [ :leger_and_nlv, nil ])
+					CancelAccountUpdatesMulti = def_message 77   # request_id required
 		end # module outgoing
 	end # module messages 
 end # module ib

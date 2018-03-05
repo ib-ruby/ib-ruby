@@ -25,11 +25,6 @@ describe IB::Messages::Incoming do
   end
 
   context 'Message received from IB', :connected => true , focus: true do
-## This happends on the lack of permissions
-#I, [2018-03-02T05:44:38.411662 #15045]  
-		#INFO -- : TWS Warning 10188: Failed to request histogram data:No market data permissions for ISLAND STK
-#
-##
     before(:all) do
       ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
 			ib.send_message :RequestAccountSummary, request_id: 123, tags: 'RegTMargin,ExcessLiquidity, DayTradesRemaining'

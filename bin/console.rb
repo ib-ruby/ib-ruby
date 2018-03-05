@@ -2,7 +2,8 @@
 ### loads the active-orient environment 
 ### and starts an interactive shell
 ###
-### Parameter: (none) 
+### Parameter: t)ws | g)ateway (or number of port ) Default: Gateway ,
+###							client_id , Default 2000
 require 'bundler/setup'
 require 'yaml'
 
@@ -41,11 +42,19 @@ end # Array
  
   include IB
   require 'irb'
-  client_id = ARGV[0] || 2000
-  port = ARGV[1] || 4002
+  client_id = ARGV[1] || 2000
+  specified_port = ARGV[0] || 'Gateway'
+	port =  case specified_port
+					when Integer
+						specified_port  # just use the number
+					when /^[gG]/ 
+						4002
+					when /^[Tt]/
+						7497
+					end
   ARGV.clear
   logger = Logger.new  STDOUT
-
+	
   ## The Block takes instructions which are executed  after initializing all instance-variables
   ## and prior to the connection-process
   ## Here we just subscribe to some events  

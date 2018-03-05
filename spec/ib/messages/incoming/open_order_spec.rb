@@ -41,7 +41,7 @@ shared_examples_for 'OpenOrder message' do
 
 end
 
-describe IB::Messages::Incoming::OpenOrder do
+describe IB::Messages::Incoming::OpenOrder, focus: true do
 
   context 'Instantiated with buffer data'  do
     subject do

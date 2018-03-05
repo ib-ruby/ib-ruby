@@ -8,46 +8,30 @@ module IB
 				end
 			end
 
-      PortfolioValue = def_message( [7, 8], ContractMessage,
-                                   [:contract, :con_id, :int],
-                                   [:contract, :symbol, :string],
-                                   [:contract, :sec_type, :string],
-                                   [:contract, :expiry, :string],
-                                   [:contract, :strike, :decimal],
-                                   [:contract, :right, :string],
-                                   [:contract, :multiplier, :string],
-                                   [:contract, :primary_exchange, :string],
-                                   [:contract, :currency, :string],
-                                   [:contract, :local_symbol, :string],
-                                   [:contract, :trading_class, :string],  # new Version 8
-                                   [:position, :decimal],   # changed from int after Server Vers. MIN_SERVER_VER_FRACTIONAL_POSITIONS
-                                   [:market_price, :decimal],
-                                   [:market_value, :decimal],
-                                   [:average_cost, :decimal],
-                                   [:unrealized_pnl, :decimal_max], # May be nil!
-                                   [:realized_pnl, :decimal_max], #   May be nil!
-                                   [:account_name, :string] ) do
-        #def to_human
-          "<PortfolioValue: #{contract.to_human} (#{position}): Market #{market_price}" +
-              " price #{market_value} value; PnL: #{unrealized_pnl} unrealized," +
-              " #{realized_pnl} realized; account #{account_name}>"
-      end # PortfolioValue
+			PortfolioValue = def_message( [7, 8], ContractMessage,
+						[:contract, :contract], # read standard-contract 
+						#																	 [ con_id, symbol,. sec_type, expiry, strike, right, multiplier,
+						# primary_exchange, currency, local_symbol, trading_class ] 
+						[:position, :decimal],   # changed from int after Server Vers. MIN_SERVER_VER_FRACTIONAL_POSITIONS
+						[:market_price, :decimal],
+						[:market_value, :decimal],
+						[:average_cost, :decimal],
+						[:unrealized_pnl, :decimal_max], # May be nil!
+						[:realized_pnl, :decimal_max], #   May be nil!
+						[:account_name, :string] ) do
+				#def to_human
+					"<PortfolioValue: #{contract.to_human} (#{position}): Market #{market_price}" +
+					" price #{market_value} value; PnL: #{unrealized_pnl} unrealized," +
+					" #{realized_pnl} realized; account #{account_name}>"
+				end
 
 
 			PositionData =
 				def_message( [61,3] , ContractMessage,
 					[:account, :string],
-                                   [:contract, :con_id, :int],
-                                   [:contract, :symbol, :string],
-                                   [:contract, :sec_type, :string],
-                                   [:contract, :expiry, :string],
-                                   [:contract, :strike, :decimal],
-                                   [:contract, :right, :string],
-                                   [:contract, :multiplier, :string],
-                                   [:contract, :primary_exchange, :string],
-                                   [:contract, :currency, :string],
-                                   [:contract, :local_symbol, :string],
-                                   [:contract, :trading_class, :string],  # new Version 8
+          [:contract, :contract], # read standard-contract 
+#																	 [ con_id, symbol,. sec_type, expiry, strike, right, multiplier,
+																	 # primary_exchange, currency, local_symbol, trading_class ] 
           [:position, :decimal],   # changed from int after Server Vers. MIN_SERVER_VER_FRACTIONAL_POSITIONS
 					[:price, :decimal]
 									 ) do 
@@ -56,6 +40,26 @@ module IB
         end
 
 			PositionDataEnd = def_message( 62 )
+			PositionsMulti =  def_message( 71, ContractMessage,
+																		[ :request_id, :int ], 
+																		[ :account, :string ],
+																		[:contract, :contract], # read standard-contract 
+          [ :position, :decimal],   # changed from int after Server Vers. MIN_SERVER_VER_FRACTIONAL_POSITIONS
+					[ :average_cost, :decimal],
+					[ :model_code, :string ])
+
+			PositionsMultiEnd =  def_message 72
+	
+					
+					AccountUpdatesMulti =  def_message( 73,
+							[ :request_id, :int ],
+							[ :account , :string ],
+							[ :key		,  :string ],
+							[ :value ,	 :decimal],
+							[ :currency, :string ])
+
+					AccountUpdatesMultiEnd =  def_message 74
+
 
 
     end # module Incoming
