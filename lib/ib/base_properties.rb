@@ -48,8 +48,8 @@ module IB
     ### Default attributes support
 
     def default_attributes
-      {:created_at => Time.now,
-       :updated_at => Time.now,
+      {:created_at => Time.now
+     #  :updated_at => Time.now,
        }
     end
 
@@ -143,7 +143,7 @@ module IB
 
       # Timestamps in lightweight models
       unless defined?(ActiveRecord::Base) && ancestors.include?(ActiveRecord::Base)
-        prop :created_at, :updated_at
+        prop :created_at #, :updated_at
       end
 
     end # included
