@@ -133,7 +133,7 @@ module IB
       #                       exercised. Values are:
       #                              - 0 = do not override
       #                              - 1 = override
-      ExerciseOptions = def_message([ 21, 2 ],
+      ExerciseOptions = def_message([ 21, 2 ],  # request_id required
                                     [:contract, :serialize_short],
                                     :exercise_action,
                                     :exercise_quantity,
@@ -183,21 +183,19 @@ module IB
 			#
 
 			RequestHeadTimeStamp = 
-					def_message( [87,0],
-		#	:request_id,
+					def_message( [87,0], #	:request_id required
 					[:contract, :serialize_short, [:primary_exchange,:include_expired] ],
 					[:use_rth, 1 ],
 					[:what_to_show, 'Trades' ],
 					[:format_date, 2 ]  )
 
 			CancelHeadTimeStamp =
-					def_message [90,0 ], #:request_id
+					def_message [90,0 ], #:request_id required
 
 
 
 			RequestHistogramData = 
-					def_message( [88, 0],
-											# request_id
+					def_message( [88, 0], # request_id required
 					[:contract, :serialize_short, [:primary_exchange,:include_expired] ],
 					[:use_rth, 1 ],
 					[:time_period ]   )
@@ -207,18 +205,22 @@ module IB
 
       RequestCalculateImpliedVolatility = CalculateImpliedVolatility =
           RequestImpliedVolatility =
-              def_message(54,
-                          [:contract, :serialize_long, [:con_id]],
+              def_message([ 54,3 ],										# request_id required
+                          [:contract, :serialize_long, []],
                           :option_price,
-                          :under_price)
+                          :under_price,
+													[:implied_volatility_options_count, 0],
+												  [:implied_volatility_options_conditions, ''])
 
       # data = { :request_id => int, :contract => Contract,
       #          :volatility => double, :under_price => double }
       RequestCalculateOptionPrice = CalculateOptionPrice = RequestOptionPrice =
-          def_message(55,
-                      [:contract, :serialize_long, [:con_id]],
+          def_message([ 55, 3],										# request_id required
+                      [:contract, :serialize_long, []],
                       :volatility,
-                      :under_price)
+                      :under_price,
+													[:implied_volatility_options_count, 0],
+												  [:implied_volatility_options_conditions, ''])
 
       # Start receiving market scanner results through the ScannerData messages.
       # @data = { :id => ticker_id (int),
@@ -337,12 +339,14 @@ __END__
      REQ_GLOBAL_CANCEL             = 58
      REQ_MARKET_DATA_TYPE          = 59  
 
-     --> unsupported by ib-ruby 0.94
+     --> supported by ib-ruby 0.94
      
-     REQ_POSITIONS                 = 61
-     REQ_ACCOUNT_SUMMARY           = 62
-     CANCEL_ACCOUNT_SUMMARY        = 63
-     CANCEL_POSITIONS              = 64
+     REQ_POSITIONS                 = 61   supported now
+     REQ_ACCOUNT_SUMMARY           = 62   supported now
+
+     CANCEL_ACCOUNT_SUMMARY        = 63   supported now
+
+     CANCEL_POSITIONS              = 64   supported now
      VERIFY_REQUEST                = 65
      VERIFY_MESSAGE                = 66
      QUERY_DISPLAY_GROUPS          = 67
@@ -352,10 +356,13 @@ __END__
      START_API                     = 71
      VERIFY_AND_AUTH_REQUEST       = 72
      VERIFY_AND_AUTH_MESSAGE       = 73
-     REQ_POSITIONS_MULTI           = 74
-     CANCEL_POSITIONS_MULTI        = 75
-     REQ_ACCOUNT_UPDATES_MULTI     = 76
-     CANCEL_ACCOUNT_UPDATES_MULTI  = 77
+     REQ_POSITIONS_MULTI           = 74   supported now
+     CANCEL_POSITIONS_MULTI        = 75   supported now
+
+     REQ_ACCOUNT_UPDATES_MULTI     = 76   supported now
+
+     CANCEL_ACCOUNT_UPDATES_MULTI  = 77   supported now
+
      REQ_SEC_DEF_OPT_PARAMS        = 78
      REQ_SOFT_DOLLAR_TIERS         = 79
      REQ_FAMILY_CODES              = 80
@@ -365,10 +372,14 @@ __END__
      REQ_NEWS_ARTICLE              = 84
      REQ_NEWS_PROVIDERS            = 85
      REQ_HISTORICAL_NEWS           = 86
-     REQ_HEAD_TIMESTAMP            = 87
-     REQ_HISTOGRAM_DATA            = 88
-     CANCEL_HISTOGRAM_DATA         = 89
-     CANCEL_HEAD_TIMESTAMP         = 90
+     REQ_HEAD_TIMESTAMP            = 87   supported now
+
+     REQ_HISTOGRAM_DATA            = 88   supported now
+
+     CANCEL_HISTOGRAM_DATA         = 89   supported now
+
+     CANCEL_HEAD_TIMESTAMP         = 90   supported now
+
      REQ_MARKET_RULE               = 91
      REQ_PNL                       = 92
      CANCEL_PNL                    = 93

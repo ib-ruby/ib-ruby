@@ -3,7 +3,7 @@ require 'account_helper'
 
 shared_examples_for 'Received Market Data' do
   context "received :Alert message " do
-    subject { @ib.received[:Alert].first }
+    subject { IB::Connection.current.received[:Alert].first }
 
     it { should be_an IB::Messages::Incoming::Alert }
     it { should be_warning }
@@ -14,7 +14,7 @@ shared_examples_for 'Received Market Data' do
   end
 
   context "received :TickPrice message" do
-    subject { @ib.received[:TickPrice].first }
+    subject { IB::Connection.current.received[:TickPrice].first }
 
     it { should be_an IB::Messages::Incoming::TickPrice }
     its(:tick_type) { should be_an Integer }
@@ -28,10 +28,10 @@ shared_examples_for 'Received Market Data' do
 
   context "received :TickSize message", :if => :us_trading_hours do
     before(:all) do
-      @ib.wait_for 3, :TickSize
+      IB::Connection.current.wait_for 3, :TickSize
     end
 
-    subject { @ib.received[:TickSize].first }
+    subject { IB::Connection.current.received[:TickSize].first }
 
     it { should be_an IB::Messages::Incoming::TickSize }
     its(:type) { should_not be_nil }

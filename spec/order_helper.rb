@@ -1,25 +1,68 @@
 require 'integration_helper'
+RSpec.shared_examples_for 'OpenOrder message' do
+#	let( :subject ){ the_returned_message }
+  it { should be_an IB::Messages::Incoming::OpenOrder }
+  its(:message_type) { is_expected.to eq :OpenOrder }
+  its(:message_id) { is_expected.to eq 5 }
+  its(:version) { is_expected.to eq 34}
+  its(:data) { is_expected.not_to  be_empty }
+  its(:buffer, pending: true ) { is_expected.to be_empty }  # Work on openOrder-Message has to be finished.
+  							## Integration of Conditions !
+  its(:local_id) { is_expected.to be_an Integer }
+  its(:status) { is_expected.to match /Submit/ }
+  #its(:to_human) { is_expected.to match /<OpenOrder: <Stock: WFC USD> <Order: LMT DAY buy 100.0 49.13 .*Submit.* #\d+\/\d+ from 1111/ }
 
-shared_examples_for 'Placed Order' do
-  context "Placing" do
-    after(:all) { clean_connection } # Clear logs and message collector
 
-    it 'sets placement-related properties' do
-      @order.placed_at.should be_a Time
+  it 'has proper order accessor' do
+    o = subject.order
+    expect( o.client_id ).to eq(1111) or eq(2000)
+    expect( o.parent_id ).to be_zero
+  end
+
+  it 'has proper order_state accessor' do
+    os = subject.order_state
+    expect(os.local_id).to be_an Integer
+    expect(os.perm_id).to  be_an Integer 
+    expect(os.perm_id.to_s).to  match  /^\d{8,11}$/   # has 9 to 11 numeric characters
+    expect(os.client_id).to eq(1111)  or eq(2000)
+    expect(os.parent_id).to be_zero
+    expect(os.submitted?).to be_truthy
+  end
+end
+
+
+RSpec.shared_examples_for 'Placed Order' do
+
+  context "returned Message" do
+
+    #it 'sets placement-related properties' do
+		it{ is_expected.to be_a IB::Order }
+		it "got proper id's" do
+			expect( subject.local_id ).to be_an Integer
+			expect( subject.perm_id ).to be_an Integer
+			expect(subject.perm_id.to_s).to  match  /^\d{8,11}$/   # has 9 to 11 numeric charactersa
+		end
+		it "has an adequat clearing intent" do
+			expect(IB::VALUES[:clearing_intent].values). to include subject.clearing_intent
+		end
+		it" the Time in Force is valid" do
+			expect( IB::VALUES[:tif].values ).to include subject.tif
+		end
+		its( :clearing_intent ){is_expected.to eq :ib }
+	end
+end
+=begin
       @order.modified_at.should be_a Time
       @order.placed_at.should == @order.modified_at
       @order.local_id.should be_an Integer
       @order.local_id.should == @local_id_before
     end
 
-    it 'changes client`s next_local_id' do
-      @local_id_placed.should == @local_id_before
-      @ib.next_local_id.should be >= @local_id_before
-    end
 
     it 'receives all appropriate response messages' do
-      @ib.received[:OpenOrder].should have_at_least(1).order_message
-      @ib.received[:OrderStatus].should have_at_least(1).status_message
+			ib =  IB::Connection.current
+      ib.received[:OpenOrder].should have_at_least(1).order_message
+      ib.received[:OrderStatus].should have_at_least(1).status_message
     end
 
     it 'receives confirmation of Order submission' do
@@ -221,3 +264,4 @@ def order_should_be status, order=@order
   msg.order.should == order
   msg.contract.should == @contract
 end
+=end

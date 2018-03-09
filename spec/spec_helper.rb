@@ -13,15 +13,6 @@ OPTS ||= {
   :db => IB.db_backed?
 }
 
-if OPTS[:brokertron]
-  puts "Using Brokerton free.brokertron.com mock service."
-  # Connection to mock (Brokertron) account
-  OPTS[:connection] = {
-    :client_id => 1111, # Client id that identifies the test suit
-    :host => 'free.brokertron.com',
-    :port => 10501
-  }
-else
   # Connection to IB PAPER ACCOUNT
   ACCOUNT ||=  'DU167348' # 'DF167347' # Set this to your Paper Account Number
   HOST ||= '127.0.0.1'
@@ -34,10 +25,6 @@ else
     :client_id => 1111, #  Client id that identifies the test suit
     :reuters => true #     Subscription to Reuters data enabled ?
   }
- # OPTS[:order] = {	# 
- #   :account => ACCOUNT
- # }
-end
 
 RSpec.configure do |config|
 
@@ -54,25 +41,26 @@ RSpec.configure do |config|
 	#
   config.filter_run focus: true
 
-  config.exclusion_filter = {
-    :if => proc do |condition|
-      t = Time.now.utc
-      case condition # NB: excludes if condition is false!
-      when :us_trading_hours
-        # 09:30 - 16:00 (ET) Mon-Fri 14:30 - 21:00 (UTC)
-        !(t.wday >= 1 && t.wday <= 5 && t.hour >= 15 && t.hour <= 21)
-      when :forex_trading_hours
-        # 17:15 - 17:00 (ET) Sunday-Friday Forex  22:15 - 22:00 (UTC)
-        !(t.wday > 0 && t.wday < 5 || t.wday == 5 && t.hour < 22)
-      end
-    end,
-
-    :db => false,  #proc { |condition| IB.db_backed? != condition }, # true/false
-
-    :rails => false, # proc { |condition| IB.rails? != condition }, # false or "Dummy"/"Combustion"
-
-    :reuters => proc { |condition| !OPTS[:connection][:reuters] == condition }, # true/false
-  }
+	config.expose_dsl_globally = true  #+ monkey-patching in rspec 3
+#  config.exclusion_filter = {
+#    :if => proc do |condition|
+#      t = Time.now.utc
+#      case condition # NB: excludes if condition is false!
+#      when :us_trading_hours
+#        # 09:30 - 16:00 (ET) Mon-Fri 14:30 - 21:00 (UTC)
+#        !(t.wday >= 1 && t.wday <= 5 && t.hour >= 15 && t.hour <= 21)
+#      when :forex_trading_hours
+#        # 17:15 - 17:00 (ET) Sunday-Friday Forex  22:15 - 22:00 (UTC)
+#        !(t.wday > 0 && t.wday < 5 || t.wday == 5 && t.hour < 22)
+#      end
+#    end,
+#
+#    :db => false,  #proc { |condition| IB.db_backed? != condition }, # true/false
+#
+#    :rails => false, # proc { |condition| IB.rails? != condition }, # false or "Dummy"/"Combustion"
+#
+#    :reuters => proc { |condition| !OPTS[:connection][:reuters] == condition }, # true/false
+#  }
 
   #  not used anymore
 #  if OPTS[:db]

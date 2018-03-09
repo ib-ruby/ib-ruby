@@ -15,13 +15,13 @@ def verify_account
   account = OPTS[:connection][:account] || OPTS[:connection][:account_name]
   raise "Please configure IB PAPER ACCOUNT in spec/spec_helper.rb" unless account
 
-  @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
+  ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
 
-  @ib.wait_for :ManagedAccounts, 5
+  ib.wait_for :ManagedAccounts, 5
 
-  raise "Unable to verify IB PAPER ACCOUNT" unless @ib.received?(:ManagedAccounts)
+  raise "Unable to verify IB PAPER ACCOUNT" unless ib.received?(:ManagedAccounts)
 
-  received = @ib.received[:ManagedAccounts].first.accounts_list.split(',')
+  received = ib.received[:ManagedAccounts].first.accounts_list.split(',')
 
   raise "Connected to wrong account #{received}, expected #{account}" unless received.include?(account)
 
@@ -34,7 +34,7 @@ end
 shared_examples_for 'Valid account data request' do
 
   context "received :AccountUpdateTime message" do
-    subject { @ib.received[:AccountUpdateTime].first }
+    subject { IB::Connection.current.received[:AccountUpdateTime].first }
 
     it { should be_an IB::Messages::Incoming::AccountUpdateTime }
     its(:data) { should be_a Hash }
@@ -43,7 +43,7 @@ shared_examples_for 'Valid account data request' do
   end
 
   context "received :AccountValue message" do
-    subject { @ib.received[:AccountValue].first }
+    subject { IB::Connection.current.received[:AccountValue].first }
 
     #ps
     it { should be_an IB::Messages::Incoming::AccountValue }
@@ -56,7 +56,7 @@ shared_examples_for 'Valid account data request' do
   end
 
   context "received :PortfolioValue message" do
-    subject { @ib.received[:PortfolioValue].first }
+    subject { IB::Connection.current.received[:PortfolioValue].first }
 
     it { should be_an IB::Messages::Incoming::PortfolioValue }
     its(:contract) { should be_a IB::Contract }
@@ -73,7 +73,7 @@ shared_examples_for 'Valid account data request' do
   end
 
   context "received :AccountDownloadEnd message" do
-    subject { @ib.received[:AccountDownloadEnd].first }
+    subject { IB::Connection.current.received[:AccountDownloadEnd].first }
 
     it { should be_an IB::Messages::Incoming::AccountDownloadEnd }
     its(:data) { should be_a Hash }

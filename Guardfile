@@ -20,6 +20,7 @@ guard :rspec, cmd: "bundle exec rspec -rgw" do
   watch(%r{^lib/models/ib/(.+)\.rb$})     { |m| "spec/#{m[1]}_spec.rb" }
   watch(%r{^lib/ib/alerts/(.+)\.rb$})     { |m| "spec/#{m[1]}_spec.rb" }
   watch(%r{^lib/ib/messages/(.+)\.rb$})     { |m| "spec/#{m[1]}_spec.rb" }
+  watch(%r{^lib/ib/order_prototypes/(.+)\.rb$})     { |m| "spec/#{m[1]}_spec.rb" }
 #  watch(%r{^lib/ib/alerts/(.+)\.rb$})     { |m| "spec/#{m[1]}_spec.rb" }
   watch('spec/spec_helper.rb')  { "spec" }
 

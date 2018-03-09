@@ -84,7 +84,6 @@ module IB
            order.override_percentage_constraints || false,
            order.volatility || "", #              Volatility orders
            order[:volatility_type] || "", #       Volatility orders
-
            # Support for delta neutral orders with parameters
            if order.delta_neutral_order_type && order.delta_neutral_order_type != :none
              [order[:delta_neutral_order_type],
@@ -92,8 +91,11 @@ module IB
               order.delta_neutral_con_id,
               order.delta_neutral_settling_firm,
               order.delta_neutral_clearing_account,
-              order[:delta_neutral_clearing_intent]
-              ]
+              order[:delta_neutral_clearing_intent],
+							order.delta_neutral_open_close,
+							order.delta_neutral_short_sale,
+							order.delta_neutral_short_sale_slot,
+							order.delta_neutral_designated_location ]
            else
              ['', '']
            end,
@@ -153,7 +155,7 @@ module IB
 
 	   order.adjusted_order_type ,
 	   order.trigger_price ,
-	   order.lmt_price_offset ,
+	   order.limit_price_offset ,
 	   order.adjusted_stop_price ,
 	   order.adjusted_stop_limit_price ,
 	   order.adjusted_trailing_amount ,

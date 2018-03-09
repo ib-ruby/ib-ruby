@@ -3,7 +3,7 @@ require 'spec_helper'
 shared_examples_for 'Valid DB-backed Model' do
 
   context 'with DB backend', :db => true do
-    after(:all) { DatabaseCleaner.clean }
+    #after(:all) { DatabaseCleaner.clean }
 
     it_behaves_like 'Model with associations'
 
@@ -59,7 +59,7 @@ end
 shared_examples_for 'Invalid DB-backed Model' do
 
   context 'with DB backend', :db => true do
-    after(:all) { DatabaseCleaner.clean }
+   # after(:all) { DatabaseCleaner.clean }
 
     it_behaves_like 'Model with associations'
 

@@ -155,10 +155,14 @@ module IB
       :delta_neutral_settling_firm,
       :delta_neutral_clearing_account,
       :delta_neutral_clearing_intent,
-	:delta_neutral_open_close,
-	:delta_neutral_short_sale ,
-	:delta_neutral_short_sale_slot,
-        :delta_neutral_designated_location , # order.java # 487
+			# Used when the hedge involves a stock and indicates whether or not it is sold short. 
+			:delta_neutral_short_sale,
+			#  Has a value of 1 (the clearing broker holds shares) or 2 (delivered from a third party). 
+			#  If you use 2, then you must specify a deltaNeutralDesignatedLocation.
+			:delta_neutral_short_sale_slot,
+			# Specifies whether the order is an Open or a Close order and is used 
+			# when the hedge involves a CFD and and the order is clearing away.
+			:delta_neutral_open_close,
 
       # HEDGE ORDERS ONLY:
       # As of client v.49/50, we can now add hedge orders using the API.
@@ -211,7 +215,7 @@ module IB
       :conditions_cancel_order,# bool: Conditions can determine if an order should become active or canceled.
       :adjusted_order_type,
       :trigger_price,
-      :lmt_price_offset,
+      :limit_price_offset,  # used in trailing stop limit + trailing limit orders
       :adjusted_stop_price,
       :adjusted_stop_limit_price,
       :adjusted_trailing_amount,
@@ -273,7 +277,7 @@ module IB
     serialize :leg_prices
     serialize :conditions
     serialize :algo_params, HashWithIndifferentAccess
-    serialize :combo_params
+   # serialize :combo_params
     serialize :soft_dollar_tier_params, HashWithIndifferentAccess
     serialize :mics_options, HashWithIndifferentAccess
 
@@ -346,13 +350,6 @@ module IB
 	:auction_strategy => :none,
 	:conditions => [],
         :continuous_update => 0,
-	:delta_neutral_designated_location => "", # order.java # 487
-	:delta_neutral_con_id => 0, # order.java # 480
-	:delta_neutral_settling_firm => "",  #order.java # 481
-	:delta_neutral_clearing_account => "", # order.java # 482
-	:delta_neutral_clearing_intent => "", # order.java # 483
-#	:delta_neutral_short_sale => false,
-#	:delta_neutral_short_sale_slot => 0,
         :designated_location => '', # order.java # 487
         :display_size => 0,
         :discretionary_amount => 0,

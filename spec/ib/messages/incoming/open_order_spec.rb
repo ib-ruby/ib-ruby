@@ -93,23 +93,22 @@ describe IB::Messages::Incoming::OpenOrder, focus: true do
     it_behaves_like 'OpenOrder message'
   end
 
-  context 'degraded Message' do
-    subject do
-      IB::Messages::Incoming::OpenOrder.new ["34",
-	     "1313", "7516", "WFC", "STK", "", "0", "?", "", "NYSE", "USD", "WFC",
-	     "WFC", "BUY", "100", "LMT", "49.13", "0.0", "GTC", "", "DU167349", "C", "0",
-	     "", "1111", "172323828", "0", "0", "0", "", "", "", "", "", "", "", "",
-	     "0", "", "", "0", "", "-1", "0", "", "", "", "", "", "", "0", "0", "0",
-	     "", "3", "0", "0", "", "0", "0", "", "0", "None", "", "0", "", "", "",
-	     "?", "0", "0", "", "0", "0", "", "", "", "", "", "0", "0", "0", "", ""]
-    end
+	context 'degraded Message' do
+		subject do
+			IB::Messages::Incoming::OpenOrder.new ["34",
+					"1313", "7516", "WFC", "STK", "", "0", "?", "", "NYSE", "USD", "WFC",
+					"WFC", "BUY", "100", "LMT", "49.13", "0.0", "GTC", "", "DU167349", "C", "0",
+					"", "1111", "172323828", "0", "0", "0", "", "", "", "", "", "", "", "",
+					"0", "", "", "0", "", "-1", "0", "", "", "", "", "", "", "0", "0", "0",
+					"", "3", "0", "0", "", "0", "0", "", "0", "None", "", "0", "", "", "",
+					"?", "0", "0", "", "0", "0", "", "", "", "", "", "0", "0", "0", "", ""]
+		end
 
-
-    it "matches the error message" do
-      expect { subject}.
-	to raise_error(IB::TransmissionError)
-    end
-  end
+		it "matches the error message" do
+			expect { subject}.
+				to raise_error(IB::TransmissionError)
+		end
+	end
   context 'received from IB' do
     before(:all) do
       verify_account
@@ -129,7 +128,7 @@ describe IB::Messages::Incoming::OpenOrder, focus: true do
       c = subject.contract
       expect(c).to be_an IB::Contract
       expect(c.symbol).to eq  'WFC'
-      expect(c.exchange).to eq 'NYSE'
+      expect(c.exchange).to eq 'SMART'
     end
      
 
@@ -204,16 +203,38 @@ describe IB::Messages::Incoming::OpenOrder, focus: true do
     
   end
     context "OptionSpread recieved from IB", focus: true do
+			subject do 
+				IB::Messages::Incoming::OpenOrder.new ["34", "7", 
+							"17356630", "DBK", "BAG", "", "0", "?", "", 
+							"DTB", "EUR", "DBK", "COMB", "SELL", "5", "LMT", "56.0", "0.0", "GTC", "", 
+							"DU167348", "O", "0", "", "1111", "1696530848", "0", "0", "0", 
+							"", "", "", "", "", "", "", "", "", "", "", "0", "", "-1", "0", 
+							"", "", "", "", "", "", "0", "0", "0", "", "3", "1", "1", "", "0", 
+							"0", "", "0", "None", "", "0", "", "", "", "?", "0", "0", "", "0", 
+							"0", "", "", "", "", "270580382|-1,270581032|1", "2", "270580382", 
+							"1", "SELL", "DTB", "0", "0", "", "-1", "270581032", 
+							"1", "BUY", "DTB", "0", "0", "", "-1", "0", "0", "", "", "", "", "0", "",
+							"IB", "0", "0", "", "0", "0", "Submitted", "1.7976931348623157E308", 
+							"1.7976931348623157E308", "1.7976931348623157E308", "", "", "", "", "", 
+							"0", "0", "0", "None", "1.7976931348623157E308", "57.0", "1.7976931348623157E308", 
+							"1.7976931348623157E308", "1.7976931348623157E308", "1.7976931348623157E308", "0", 
+							"", "", "", "1.7976931348623157E308"]
+			end
 # to generate the order:
       # o = Combo.order action: :sell, size: 5, price: 56
       # c =  Symbols::Combo.dbk_straddle
       # C.place_order o, c
+			#
+
+    it_behaves_like 'OpenOrder message'
+		it{ puts subject.inspect  }
     end
+
 
     context "Forex cash_qty order recieved from IB", focus: true do
 # to generate the order:
       # o = ForexLimit.order action: :buy, size: 15000, cash_qty: true
-      # c =  Symbols::Symbols::Forex.eurusd
+      # c =  Symbols::Forex.eurusd
       # C.place_order o, c
     end
 

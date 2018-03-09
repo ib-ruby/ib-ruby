@@ -56,7 +56,9 @@ end
 
 def close_connection
 	ib =  IB::Connection.current
-  ib.cancel_order @local_id_placed if ib && @local_id_placed
+	#  don't cancel orders after finishing tests, 
+	#  otherwise it's not possible to inspect them manually, in case something went wrong
+#  ib.cancel_order @local_id_placed if ib && @local_id_placed
   ib.close if ib
   clean_connection
 end
