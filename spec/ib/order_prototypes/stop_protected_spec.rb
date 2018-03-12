@@ -6,7 +6,9 @@ require 'order_helper'
 ## Simply repeat the Execution of the Test
 
 
-RSpec.describe IB::Limit do
+# works with Futures, Exchanges: ECBOT, NYMEX, GLOBEX
+# not for stocks, forex, bonds, options
+RSpec.describe IB::StopProtected do
 	before(:all) do
 		verify_account
 		ib = IB::Connection.new OPTS[:connection] do | gw| 
@@ -15,51 +17,44 @@ RSpec.describe IB::Limit do
 			gw.subscribe( :OpenOrder ){|msg| @the_open_order_message = msg}
 		end
 		ib.wait_for :NextValidId
-		place_the_order do | last_price |
 
-			@the_order_price = last_price.nil? ? 56 : last_price -2    # set a limit price that 
-			# is well below the actual price
-			# The Order will become visible only if the market-price is below the trigger-price
-			#
-		  IB::Limit.order price: @the_order_price , action: :buy, size: 100, account: ACCOUNT
+		@the_order_id = place_the_order( contract: IB::Symbols::Futures.es ) do | last_price |
+			@the_order_price = last_price.nil? ? 2000 : last_price +2    # set a stop price that 
+			IB::StopProtected.order price: @the_order_price , action: :buy, size: 1, 
+				account: ACCOUNT
 		end
-
-	end
-
+	 end
 		
 	after(:all) { IB::Connection.current.send_message(:RequestGlobalCancel); close_connection; } 
 
-	context 'Initiate Order' , focus: true  do
+	context 'Initiate an not supported Order' , focus: true  do
 		# reset open_order_message variable
 		# this is done before(:all) ist triggered
 		@the_open_order_message = nil
 		it  'place the order' do
-			expect(IB::Connection.current.received?(:OpenOrder)).to  be_truthy
-			expect(IB::Connection.current.received[:OpenOrder].last).to  eq @the_open_order_message
+			expect(IB::Connection.current.received?(:OpenOrder)).to  be_falsy
+			expect(IB::Connection.current.received?(:Alert)).to  be_truthy
+			expect(IB::Connection.current.received[:Alert].detect{|x| x.error_id == @the_order_id}.message ).to match /Unsupported order type for this exchange and security type/
 		end
 
-		subject{ @the_open_order_message }
-		it_behaves_like 'OpenOrder message'
 	end
 
-	context "the placed order",  focus: true  do
+	context "the placed order",  focus: false  do
 
 		subject{ @the_open_order_message.order }
 #		subject{ IB::Connection.current.received[:OpenOrder].order.last }
 		it_behaves_like 'Placed Order' 
+		its( :aux_price ){ is_expected.not_to  be_zero }  # trigger-price => aux-price
+		its( :action ){ is_expected.to  eq( :buy ) or eq( :sell ) }
+		its( :order_type ){ is_expected.to  eq :stopi_protected }
+		its( :account ){ is_expected.to  eq ACCOUNT }
+		its( :limit_price ){ is_expected.to be_zero }
+		its( :aux_price ){ is_expected.to eq @the_order_price }
+		its( :total_quantity ){ is_expected.to eq 100 }
 
-		it 'has the appropiate order attributes' do
-			#puts subject.inspect
-			o =  subject
-			expect( o.action ).to eq  :buy
-			expect( o.order_type ).to eq :limit
-			expect( o.total_quantity  ).to eq 100
-			expect( o.limit_price ).to eq @the_order_price
-			expect( o.account ).to  eq ACCOUNT
-		end
 	end
 
-	context "the returned contract" do
+	context "the returned contract" , focus: false do
 
 		subject{ @the_open_order_message.contract }
 		it 'has proper contract accessor' do

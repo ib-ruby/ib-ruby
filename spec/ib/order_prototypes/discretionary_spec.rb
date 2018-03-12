@@ -6,6 +6,28 @@ require 'order_helper'
 ## Simply repeat the Execution of the Test
 
 
+def place_the_dc_order  # returns the used order-price
+		ib =  IB::Connection.current
+		contract =  IB::Symbols::Stocks[:wfc]
+		ib.send_message :RequestMarketDataType, :market_data_type => :delayed
+		ib.send_message :RequestMarketData, id: 123, contract:  contract
+		ib.wait_for :TickPrice
+		ib.send_message :RequestGlobalCancel
+		ib.send_message :CancelMarketData, id: 123
+		last_price = ib.received[:TickPrice].price.max
+		the_order_price = last_price.nil? ? 56 : last_price - 4   # set a limit price that 
+		# will not cause immediate filling
+		# the disretionary amount adds to the limit-price, thus the real limit price is Price - 2 
+		discretionary_amount = dc =2
+		order = IB::Discretionary.order price: the_order_price , action: :buy, size: 100, 
+																		discretionary_amount: dc , account: ACCOUNT
+		ib.place_order order, contract      
+		ib.wait_for :OpenOrder, 3
+
+		[the_order_price, dc ] #  return_value
+
+end
+
 RSpec.describe IB::Limit do
 	before(:all) do
 		verify_account
@@ -15,14 +37,7 @@ RSpec.describe IB::Limit do
 			gw.subscribe( :OpenOrder ){|msg| @the_open_order_message = msg}
 		end
 		ib.wait_for :NextValidId
-		place_the_order do | last_price |
-
-			@the_order_price = last_price.nil? ? 56 : last_price -2    # set a limit price that 
-			# is well below the actual price
-			# The Order will become visible only if the market-price is below the trigger-price
-			#
-		  IB::Limit.order price: @the_order_price , action: :buy, size: 100, account: ACCOUNT
-		end
+		@the_order_price, @the_discretionary_amount =  place_the_dc_order
 
 	end
 
@@ -55,6 +70,7 @@ RSpec.describe IB::Limit do
 			expect( o.order_type ).to eq :limit
 			expect( o.total_quantity  ).to eq 100
 			expect( o.limit_price ).to eq @the_order_price
+			expect( o.discretionary_amount ).to eq @the_discretionary_amount
 			expect( o.account ).to  eq ACCOUNT
 		end
 	end

@@ -19,7 +19,7 @@ end
 RSpec.describe IB::Messages::Incoming::AccountUpdatesMulti do
 
 
-  context 'Message received from IB', :connected => true , focus: true do
+  context 'Message received from IB' do
     before(:all) do
       ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
 			ib.send_message :RequestAccountUpdatesMulti, request_id: 2084 #, account: ACCOUNT

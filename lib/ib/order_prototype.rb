@@ -42,25 +42,25 @@ can adress and extend similar methods from OrderPrototype.
   module OrderPrototype
 
 
-      def order **fields
-  
-	# change aliases  to the original. We are modifying the fields-hash.
-	fields.keys.each{|x| fields[aliases.key(x)] = fields.delete(x) if aliases.has_value?(x)}
-	# inlcude defaults (arguments override defaults)
-	the_arguments = defaults.merge fields
-	# check if requirements are fullfilled
-	nessesary = requirements.keys.detect{|y| the_arguments[y].nil?}
-	if nessesary.present?
-	  msg =self.name + ".order -> A nessesary field is missing: #{nessesary}: --> #{requirements[nessesary]}"
-	  error msg, :args, nil
-	end
-	if alternative_parameters.present?
-	  unless ( alternative_parameters.keys  & the_arguments.keys ).size == 1
-	  msg =self.name + ".order -> One of the alternative fields needs to be specified: \n\t:" +
-		  "#{alternative_parameters.map{|x| x.join ' => '}.join(" or \n\t:")}"
-	  error msg, :args, nil
-	  end
-	end
+		def order **fields
+
+			# change aliases  to the original. We are modifying the fields-hash.
+			fields.keys.each{|x| fields[aliases.key(x)] = fields.delete(x) if aliases.has_value?(x)}
+			# inlcude defaults (arguments override defaults)
+			the_arguments = defaults.merge fields
+			# check if requirements are fullfilled
+			nessesary = requirements.keys.detect{|y| the_arguments[y].nil?}
+			if nessesary.present?
+				msg =self.name + ".order -> A nessesary field is missing: #{nessesary}: --> #{requirements[nessesary]}"
+				error msg, :args, nil
+			end
+			if alternative_parameters.present?
+				unless ( alternative_parameters.keys  & the_arguments.keys ).size == 1
+					msg =self.name + ".order -> One of the alternative fields needs to be specified: \n\t:" +
+						"#{alternative_parameters.map{|x| x.join ' => '}.join(" or \n\t:")}"
+					error msg, :args, nil
+				end
+			end
 
 	# initialise order with given attributes	
 	 IB::Order.new the_arguments

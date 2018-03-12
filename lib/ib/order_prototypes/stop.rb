@@ -91,49 +91,112 @@ module IB
 	the protection points.
 	HERE
       end
-      end
     end
+		end
 #  module OrderPrototype
-    module  TrailingStop
-      extend OrderPrototype
-      class << self
+		module  TrailingStop
+			extend OrderPrototype
+			class << self
 
 
-      def defaults
-	  super.merge order_type: :trailing_stop , tif: :day
-      end
+				def defaults
+					super.merge order_type: :trailing_stop , tif: :day
+				end
 
-      def aliases
-	Limit.aliases 
-      end
+				def aliases
+					super.merge trail_stop_price: :price,
+											aux_price: :trailing_amount
+				end
 
-      def requirements
-	 super.merge trail_stop_price: 'Price to trigger the action'
-		     
-      end
-    
-      def alternative_parameters
-	{ aux_price: 'Trailing distance in absolute terms',
-		    trailing_percent: 'Trailing distance in relative terms'}
-      end
+				def requirements
+					## usualy the trail_stop_price is the market-price minus(plus) the trailing_amount
+					super.merge trail_stop_price: 'Price to trigger the action, aliased as :price'
 
-      def summary
-	<<-HERE
+				end
+
+				def alternative_parameters
+					{ aux_price: 'Trailing distance in absolute terms, aliased as :trailing_amount',
+			 trailing_percent: 'Trailing distance in relative terms'}
+				end
+
+				def summary
+					<<-HERE
 	A "Sell" trailing stop order sets the stop price at a fixed amount below the market 
 	price with an attached "trailing" amount. As the market price rises, the stop price 
 	rises by the trail amount, but if the stock price falls, the stop loss price doesn't 
 	change, and a market order is submitted when the stop price is hit. This technique 
 	is designed to allow an investor to specify a limit on the maximum possible loss, 
 	without setting a limit on the maximum possible gain. 
-	
+
 	"Buy" trailing stop orders are the mirror image of sell trailing stop orders, and 
 	are most appropriate for use in falling markets.
 
 	Note that Trailing Stop orders can have the trailing amount specified as a percent, 
 	or as an absolute amount which is specified in the auxPrice field. 
 
-	HERE
-      end
-      end
-    end
+					HERE
+				end  # summary
+			end	   # class self
+		end			# module
+
+		module TrailingStopLimit
+			extend OrderPrototype
+			class << self
+
+
+				def defaults
+					super.merge order_type: :trailing_limit , tif: :day
+				end
+
+				def aliases
+					Limit.aliases 
+				end
+
+				def requirements
+					super.merge trail_stop_price: 'Price to trigger the action',
+											limit_price_offset: 'a pRICE'
+
+				end
+
+				def alternative_parameters
+					{ aux_price: 'Trailing distance in absolute terms',
+			 trailing_percent: 'Trailing distance in relative terms'}
+				end
+
+				def summary
+					<<-HERE
+		 A trailing stop limit order is designed to allow an investor to specify a
+		 limit on the maximum possible loss, without setting a limit on the maximum
+		 possible gain. A SELL trailing stop limit moves with the market price, and
+		 continually recalculates the stop trigger price at a fixed amount below
+		 the market price, based on the user-defined "trailing" amount. The limit
+		 order price is also continually recalculated based on the limit offset. As
+		 the market price rises, both the stop price and the limit price rise by
+		 the trail amount and limit offset respectively, but if the stock price
+		 falls, the stop price remains unchanged, and when the stop price is hit a
+		 limit order is submitted at the last calculated limit price. A "Buy"
+		 trailing stop limit order is the mirror image of a sell trailing stop
+		 limit, and is generally used in falling markets.
+
+     Products: BOND, CFD, CASH, FUT, FOP, OPT, STK, WAR
+					HERE
+				end
+			end
+
+#    def TrailingStopLimit(action:str, quantity:float, lmtPriceOffset:float, 
+#                          trailingAmount:float, trailStopPrice:float):
+#    
+#        # ! [trailingstoplimit]
+#        order = Order()
+#        order.action = action
+#        order.orderType = "TRAIL LIMIT"
+#        order.totalQuantity = quantity
+#        order.trailStopPrice = trailStopPrice
+#        order.lmtPriceOffset = lmtPriceOffset
+#        order.auxPrice = trailingAmount
+#        # ! [trailingstoplimit]
+#        return order
+#
+#
+		end
 end

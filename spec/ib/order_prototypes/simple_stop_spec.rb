@@ -6,6 +6,7 @@ require 'order_helper'
 ## Simply repeat the Execution of the Test
 
 
+
 RSpec.describe IB::Limit do
 	before(:all) do
 		verify_account
@@ -15,15 +16,12 @@ RSpec.describe IB::Limit do
 			gw.subscribe( :OpenOrder ){|msg| @the_open_order_message = msg}
 		end
 		ib.wait_for :NextValidId
+
 		place_the_order do | last_price |
-
-			@the_order_price = last_price.nil? ? 56 : last_price -2    # set a limit price that 
-			# is well below the actual price
-			# The Order will become visible only if the market-price is below the trigger-price
-			#
-		  IB::Limit.order price: @the_order_price , action: :buy, size: 100, account: ACCOUNT
+			@the_order_price = last_price.nil? ? 56 : last_price +2    # set a limit price that 
+			IB::SimpleStop.order price: @the_order_price , action: :buy, size: 100, 
+				account: ACCOUNT
 		end
-
 	end
 
 		
@@ -47,19 +45,17 @@ RSpec.describe IB::Limit do
 		subject{ @the_open_order_message.order }
 #		subject{ IB::Connection.current.received[:OpenOrder].order.last }
 		it_behaves_like 'Placed Order' 
+		its( :aux_price ){ is_expected.not_to  be_zero }  # trigger-price => aux-price
+		its( :action ){ is_expected.to  eq( :buy ) or eq( :sell ) }
+		its( :order_type ){ is_expected.to  eq :stop }
+		its( :account ){ is_expected.to  eq ACCOUNT }
+		its( :limit_price ){ is_expected.to be_zero }
+		its( :aux_price ){ is_expected.to eq @the_order_price }
+		its( :total_quantity ){ is_expected.to eq 100 }
 
-		it 'has the appropiate order attributes' do
-			#puts subject.inspect
-			o =  subject
-			expect( o.action ).to eq  :buy
-			expect( o.order_type ).to eq :limit
-			expect( o.total_quantity  ).to eq 100
-			expect( o.limit_price ).to eq @the_order_price
-			expect( o.account ).to  eq ACCOUNT
-		end
 	end
 
-	context "the returned contract" do
+	context "the returned contract" , focus: true do
 
 		subject{ @the_open_order_message.contract }
 		it 'has proper contract accessor' do
