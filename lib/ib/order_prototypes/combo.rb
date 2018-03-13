@@ -1,35 +1,28 @@
 module IB
 #  module UseOrder
+
+=begin
+Combo-Orders are used for NonGuaranteed Orders only.
+»Normal« Option-Spreads are transmited by ordinary Limit-Orders
+=end
     module Combo
       ### Basic Order Prototype: Combo with two limits
       extend OrderPrototype
       class << self
-=begin
-	O order = new Order();
-	order.action(action);
-	order.orderType("LMT");
-	order.lmtPrice(limitPrice);
-	order.totalQuantity(quantity);
-	if (nonGuaranteed)
-	  {
-	    List<TagValue> smartComboRoutingParams = new ArrayList<>();
-	    smartComboRoutingParams.add(new TagValue("NonGuaranteed", "1")
-							end
-=end
       def defaults
 	## todo implement serialisation of  key/tag Hash to camelCased-keyValue-List 
 #      super.merge order_type: :limit , combo_params: { non_guaranteed: true} 
 	#      for the time beeing, we use the array representation
-      super.merge order_type: :limit , combo_params: [ ['NonGuaranteed', false] ]
+      super.merge order_type: :limit , combo_params: [ ['NonGuaranteed', true] ]
       end
 
 
       def requirements
-	Limit.requirements
+				Limit.requirements
       end
 
       def aliases
-	Limit.aliases
+				Limit.aliases
       end
 
 

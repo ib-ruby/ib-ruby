@@ -1,0 +1,85 @@
+#!/usr/bin/env ruby
+#
+## This script places WFC buy order for 100 lots
+#
+## RUN ONLY ON A DEMO ACCOUNT
+require 'bundler/setup'
+require 'ib-ruby'
+
+# Only for Advisor accounts: you need to provide account_code such as U666777
+account_code = ARGV[0] || ''
+#
+# First, connect to IB TWS. Arbitrary :client_id is used to identify your script
+ib = IB::Connection.new client_id: 1112  do | gw | #, :port => 7496 # TWS
+
+# Subscribe to TWS alerts/errors and order-related messages prior to the connection of the client
+  gw.subscribe(:Alert, :OpenOrder, :OrderStatus,  :ContractDataEnd ) { |msg| puts msg.to_human }
+  gw.subscribe(:ContractData ) do |msg| 
+    puts msg.contract.to_human + "\n"
+  end
+
+end
+wfc = IB::Symbols::Stocks[:wfc]
+ib.send_message :RequestContractData, id: 56, contract: wfc
+
+puts IB::Limit.summary
+puts "Supported Parameter \n -------------------------- "
+puts IB::Limit.parameters
+buy_order = IB::Limit.order size: 100,
+                          price: 1 + rand().round(2),
+                          action:  :buy,
+													account: account_code
+puts buy_order.to_human
+ib.wait_for :NextValidId
+ib.place_order buy_order,  wfc
+ib.wait_for :ContractDataEnd, 5 #sec
+
+ib.send_message :RequestAllOpenOrders
+
+puts "\n******** Press <Enter> to cancel... *********\n\n"
+STDIN.gets
+
+
+## RUN ONLY ON A DEMO ACCOUNT
+#
+#
+# expected output
+#
+#12:13:05.096 Got message 15 (IB::Messages::Incoming::ManagedAccounts)
+#12:13:05.097 No subscribers for message IB::Messages::Incoming::ManagedAccounts!
+#12:13:05.137 Got message 9 (IB::Messages::Incoming::NextValidId)
+#12:13:05.137 Got next valid order id: 1.
+#------sendto ---------(debugging output in outgoing/abstract_message)
+#["'9", "8", "56", "", "WFC", "STK", "", "0.0", "", "", "NYSE", "", "USD", "", "", "0", "", "", "\""]
+#------sendto ---------
+#	A Limit order is an order to buy or sell at a specified price or better. 
+#	The Limit order ensures that if the order fills, it will not fill at a price less favorable than 
+#	your limit price, but it does not guarantee a fill. 
+#	It appears in the orderbook.
+#Supported Parameter 
+# -------------------------- 
+#Required : action --> {"B"=>:buy, "S"=>:sell, "T"=>:short, "X"=>:short_exempt}
+#	: total_quantity --> also aliased as :size
+#	: limit_price --> decimal
+# --------------- 
+#Optional : account --> Account(number) to trade on
+# --------------- 
+#<Order: LMT GTC buy 100 1.13 New #/ from /DU167348>
+#------sendto ---------(debugging output in outgoing/abstract_message)
+#["\\xB03", "45", "1", "", "WFC", "STK", "", "0.0", "", "", "NYSE", "", "USD", "", "", "", "", "BUY", "100", "LMT", "1.13", "", "GTC", "", "DU167348", "O", "0", "", "1", "0", "0", "0", "0", "0", "0", "0", "", "0", "", "", "", "", "", "", "", "0", "", "-1", "0", "", "", "0", "", "", "1", "1", "", "0", "", "", "", "", "", "0", "", "", "", "", "0", "", "", "", "", "", "", "", "", "", "", "0", "", "", "0", "0", "", "", "0", "", "0", "0", "0", "0", "", "", "", "", "", "", "", "", "", "", "", "\""]
+#------sendto ---------
+#12:13:05.290 Got message 10 (IB::Messages::Incoming::ContractData)
+#<Stock: WFC USD>
+#12:13:05.291 Got message 52 (IB::Messages::Incoming::ContractDataEnd)
+#<ContractDataEnd: request_id 56 >
+#
+#******** Press <Enter> to cancel... *********
+#
+#12:13:05.303 Got message 3 (IB::Messages::Incoming::OrderStatus)
+#<OrderStatus: <OrderState: ApiPending #1/0 from 1112 filled 0.0/100.0 at 0.0/0.0>>
+#12:13:05.304 Got message 53 (IB::Messages::Incoming::OpenOrderEnd)
+#12:13:05.304 No subscribers for message IB::Messages::Incoming::OpenOrderEnd!
+#12:13:05.712 Got message 5 (IB::Messages::Incoming::OpenOrder)
+#<OpenOrder: <Stock: WFC USD> <Order: LMT GTC buy 100.0 1.13 Submitted #1/1562725191 from 1112/DU167348 fee 0.0>>
+#12:13:05.714 Got message 3 (IB::Messages::Incoming::OrderStatus)
+#<OrderStatus: <OrderState: Submitted #1/1562725191 from 1112 filled 0.0/100.0 at 0.0/0.0 why_held >>

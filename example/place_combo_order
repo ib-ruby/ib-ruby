@@ -1,100 +1,93 @@
 #!/usr/bin/env ruby
 #
-# This script places GOOG option butterfly combo order
+# This script places a combo order:  Buy Microsoft, sell WellsFarge for 32$
+# (Marketprice : 40$ (Mar 2018))
 
-require 'rubygems'
 require 'bundler/setup'
 require 'ib-ruby'
 
 # Utility method that helps us build multi-legged (BAG) Orders
-def butterfly symbol, expiry, right, *strikes
-	
-  ib = IB::Connection.current
-  legs = strikes.zip([1, -2, 1]).map do |strike, weight|
-    # Create contract
-    contract = IB::Option.new :symbol => symbol,
-                              :expiry => expiry,
-                              :right => right,
-                              :strike => strike
-    # Find out contract's con_id
-    ib.clear_received :ContractData, :ContractDataEnd
-    ib.send_message :RequestContractData, :id => strike, :contract => contract
-    ib.wait_for :ContractDataEnd, 3
-    con_id = ib.received[:ContractData].last.contract.con_id
+def spread *contracts
 
-    # Create Comboleg from con_id and weight
-    IB::ComboLeg.new :con_id => con_id, :weight => weight  # return_value for legs
-  end
+	ib = IB::Connection.current
+	tws_contracts =  contracts.map.with_index do |c, i|
+		ib.clear_received :ContractData, :ContractDataEnd
+		ib.send_message :RequestContractData, :id => i+1, :contract => c
+		ib.wait_for :ContractDataEnd, 3
+		ib.received[:ContractData].last.contract
+	end
+	con_ids =  tws_contracts.map &:con_id
+	bag_symbol =  tws_contracts.map( &:symbol ).join(',')
+	weights =  block_given? ? yield  : Array.new(contracts.size,1)
 
-  # Create and return new Combo contract
-  IB::Bag.new :symbol => symbol,
-              :currency => "USD", # Only US options in combo Contracts
-              :exchange => "SMART",
-              :legs => legs
+	legs = con_ids.zip(weights).map do |con_id, weight|
+		IB::ComboLeg.new con_id: con_id, weight: weight  
+	end
+
+	# Create and return new Combo contract
+	IB::Bag.new :symbol => bag_symbol,
+		:currency => tws_contracts.first.currency,   
+		:exchange => "SMART",
+		:legs => legs
 end
-
 # Only for Advisor accounts: you need to provide account_code such as U666777
 account_code = ARGV[0] || ''
 
 # 
 # First, connect to IB TWS. Arbitrary :client_id is used to identify your script
-ib = IB::Connection.new :client_id => 1112 do | gw | #, :port => 7497 # TWS
+ib = IB::Connection.new :client_id => 1112, port: 7497 do | gw | #, :port => 7497 # TWS
 
 # Subscribe to TWS alerts/errors and order-related messages
 	gw.subscribe(:Alert, :OpenOrder, :OrderStatus) { |msg| puts msg.to_human }
 end
+
+# if tws/gateway is ready
 ib.wait_for :NextValidId
 
-# Create multi-legged option Combo using utility method above
-combo = butterfly 'GOOG', '201806', 'CALL', 1100, 1110, 1120
+# create the bag
+the_bag = spread( IB::Symbols::Stocks.msft, IB::Symbols::Stocks.wfc ){ [1, -1]  }
 
-# Create Order stub
-order = IB::Limit.order total_quantity: 10, # 10 butterflies
-                      limit_price: 0.06, # at 0.06 x 100 USD per contract
+puts the_bag.inspect
+# use the order-prototype to create the order
+order = IB::Combo.order total_quantity: 10, 
+                      limit_price: 32,
                       action: :buy,
-		      account: account_code 
+											account: account_code 
 		
-
-ib.place_order order, combo
+# and place both
+ib.place_order order,the_bag 
 
 ib.wait_for [:OpenOrder, 3], [:OrderStatus, 2]
 
 puts "\n******** Press <Enter> to cancel... *********\n\n"
 STDIN.gets
 
+=begin
+Expected output (with debugging-content)
 
-### Expected output
-#delta:~/workspace/ib-ruby/example$ ./place_combo_order DU167349
-#20:30:20.120 Connected to server, version: 137,
-#20:30:20.170 Got next valid order id: 10.
-#------sendto ---------(debugging output in outgoing/abstract_message)
-#["29", "8", "1100", "", "GOOG", "OPT", "201806", "1100.0", "C", "", "SMART", "", "", "", "", "0", "", "", "\""]
-#["29", "8", "1110", "", "GOOG", "OPT", "201806", "1110.0", "C", "", "SMART", "", "", "", "", "0", "", "", "\""]
-#["29", "8", "1120", "", "GOOG", "OPT", "201806", "1120.0", "C", "", "SMART", "", "", "", "", "0", "", "", "\""]
-#------sendto ---------(debugging output in outgoing/abstract_message)
-#["45", "10", "", "GOOG", "BAG", "", "0.0", "", "", "SMART", "", "USD", "", "", "", "", "BUY", "10", "LMT", "0.06", "", "GTC", "", "DU167349", "O", "0", "", "1", "0", "0", "0", "0", "0", "0", "0", "3", "269330045", "1", "BUY", "SMART", "0", "0", "", "-1", "301964119", "2", "SELL", "SMART", "0", "0", "", "-1", "269562569", "1", "BUY", "SMART", "0", "0", "", "-1", "3", "", "", "", "0", "", "0", "", "", "", "", "", "", "", "0", "", "-1", "0", "", "", "0", "", "", "1", "1", "", "0", "", "", "", "", "", "0", "", "", "", "", "0", "", "", "", "", "", "", "", "", "", "", "0", "", "", "0", "0", "", "", "0", "", "0", "0", "0", "0", "", "", "", "", "", "", "", "", "", "", "", "\""]
-#------sendto ---------
-#
-#******** Press <Enter> to cancel... *********
-#
-#
-#delta:~/workspace/ib-ruby/example$ ./list_orders 
-#20:31:26.781 Connected to server, version: 137,
-# connection time: 2018-02-27 20:31:26 +0000 local, 2018-02-27T20:31:26+00:00 remote.
-#20:31:26.782 Got message 15 (IB::Messages::Incoming::ManagedAccounts)
-#20:31:26.782 No subscribers for message IB::Messages::Incoming::ManagedAccounts!
-#20:31:26.825 Got message 9 (IB::Messages::Incoming::NextValidId)
-#20:31:26.825 Got next valid order id: 1.
-#20:31:26.825 Got message 4 (IB::Messages::Incoming::Alert)
-#TWS Warning 2104: Market data farm connection is OK:usopt
-#20:31:26.825 Got message 4 (IB::Messages::Incoming::Alert)
-#TWS Warning 2104: Market data farm connection is OK:usfarm
-#------sendto ---------(debugging output in outgoing/abstract_message)
-#["\\x0516", "1", "\""]
-#------sendto ---------
-#20:31:26.834 Got message 5 (IB::Messages::Incoming::OpenOrder)
-#1: <OpenOrder: <Bag: GOOG SMART USD legs: 269330045|1,269562569|1,301964119|-2 > <Order: LMT GTC buy 10.0 0.06 PendingSubmit #9/561364885 from 1112/DU167349 fee 0.0>>
-#20:31:26.836 Got message 3 (IB::Messages::Incoming::OrderStatus)
-#<OrderStatus: <OrderState: PendingSubmit #9/561364885 from 1112 filled 0.0/10.0 at 0.0/0.0 why_held >>
-#20:31:26.877 Got message 5 (IB::Messages::Incoming::OpenOrder)
-#
+------sendto ---------(debugging output in outgoing/abstract_message)
+[".9", "8", "1", "", "MSFT", "STK", "", "0.0", "", "", "SMART", "ISLAND", "USD", "", "", "0", "", "", "\""]
+------sendto ---------
+09:38:02.426 Got message 10 (IB::Messages::Incoming::ContractData)
+09:38:02.426 No subscribers for message IB::Messages::Incoming::ContractData!
+09:38:02.426 Got message 52 (IB::Messages::Incoming::ContractDataEnd)
+09:38:02.426 No subscribers for message IB::Messages::Incoming::ContractDataEnd!
+------sendto ---------(debugging output in outgoing/abstract_message)
+["&9", "8", "2", "", "WFC", "STK", "", "0.0", "", "", "NYSE", "", "USD", "", "", "0", "", "", "\""]
+------sendto ---------
+09:38:02.476 Got message 10 (IB::Messages::Incoming::ContractData)
+09:38:02.476 No subscribers for message IB::Messages::Incoming::ContractData!
+09:38:02.517 Got message 52 (IB::Messages::Incoming::ContractDataEnd)
+09:38:02.517 No subscribers for message IB::Messages::Incoming::ContractDataEnd!
+#<IB::Bag:0x0000000001a9d4d0 @attributes={:symbol=>"MSFT,WFC", :currency=>"USD", :exchange=>"SMART", :created_at=>2018-03-13 09:38:02 +0000, :con_id=>0, :right=>"", :include_expired=>false, :sec_type=>"BAG"}, @combo_legs=[#<IB::ComboLeg:0x0000000001a9e998 @attributes={:con_id=>272093, :side=>"B", :ratio=>1, :created_at=>2018-03-13 09:38:02 +0000, :open_close=>0, :short_sale_slot=>0, :designated_location=>"", :exchange=>"SMART", :exempt_code=>-1}>, #<IB::ComboLeg:0x0000000001a9e038 @attributes={:con_id=>10375, :side=>"S", :ratio=>1, :created_at=>2018-03-13 09:38:02 +0000, :open_close=>0, :short_sale_slot=>0, :designated_location=>"", :exchange=>"SMART", :exempt_code=>-1}>]>
+------sendto ---------(debugging output in outgoing/abstract_message)
+["45", "41", "", "MSFT,WFC", "BAG", "", "0.0", "", "", "SMART", "", "USD", "", "", "", "", "BUY", "10", "LMT", "32", "", "GTC", "", "DU167348", "O", "0", "", "1", "0", "0", "0", "0", "0", "0", "0", "2", "272093", "1", "BUY", "SMART", "0", "0", "", "-1", "10375", "1", "SELL", "SMART", "0", "0", "", "-1", "2", "", "", "1", "NonGuaranteed", "1", "", "0", "", "", "", "", "", "", "", "0", "", "-1", "0", "", "", "0", "", "", "1", "1", "", "0", "", "", "", "", "", "0", "", "", "", "", "0", "", "", "", "", "", "", "", "", "", "", "0", "", "", "0", "0", "", "", "0", "", "0", "0", "0", "0", "", "", "", "", "", "", "", "", "", "", "", "\""]
+------sendto ---------
+09:38:02.784 Got message 5 (IB::Messages::Incoming::OpenOrder)
+<OpenOrder: <Bag: MSFT,WFC SMART USD legs: 10375|-1,272093|1 > <Order: LMT GTC buy 10.0 32.0 PreSubmitted #41/953636816 from 1112/DU167348 fee 0.0>>
+09:38:02.787 Got message 3 (IB::Messages::Incoming::OrderStatus)
+<OrderStatus: <OrderState: PreSubmitted #41/953636816 from 1112 filled 0.0/10.0 at 0.0/0.0 why_held locate>>
+
+******** Press <Enter> to cancel... *********
+
+=end

@@ -268,6 +268,11 @@ module IB
       :combo_params   # Valid tags are LeginPrio, MaxSegSize, DontLeginNext, ChangeToMktTime1, 
 		      # ChangeToMktTime2, ChangeToMktOffset, DiscretionaryPct, NonGuaranteed, 
 		      # CondPriceMin, CondPriceMax, and PriceCondConid.
+		# to set an execuction-range of a security: 
+				#			 PriceCondConid, 10375;  -- conid of the combo-leg
+				#			 CondPriceMax, 62.0;		 -- max and min-price
+				#			 CondPriceMin.;60.0
+
 
     prop :misc1, :misc2, :misc3, :misc4, :misc5, :misc6, :misc7, :misc8 # just 4 debugging
 
