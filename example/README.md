@@ -11,13 +11,16 @@ Normally you run these examples like this:
     $ ruby example/list_orders
 
 The examples are executable.
-If you're on Unix-like platform, they can be called directly.
+If you're on Unix-like platform, they can be called directly ( » ./{script} «)
+
+The Examples assume a running Gateway-Application on Localhost. Please use a Demo-Account or run
+the API in »read-only-mode«
 
 ## EXAMPLE DESCRIPTION:
 
 *account_info* - Request your account info, current positions, portfolio values and so on
 
-    $ ruby example/account_info
+    $ ruby example/account_info   # or cd example; ./account_info
 
 For Financial Advisors, you need to add the managed account you want info for:
 
@@ -40,7 +43,7 @@ For Financial Advisors, you need to add the managed account you want info for:
 
     $ ruby example/flex_query 12345 # Flex query id pre-defined in Account Management
 
-*fundamental_data* - Request and print fundamental data report for a specific stock.
+*fundamental_data* - Request and print fundamental data report for a specific stock. 
 
 *historic_data* - Receive 5 days of 1-hour trade data for Stock, Forex and Future symbols.
 
