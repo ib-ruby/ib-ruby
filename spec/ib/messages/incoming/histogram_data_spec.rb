@@ -34,7 +34,7 @@ describe IB::Messages::Incoming do
 ##
     before(:all) do
       @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
-			@ib.send_message :RequestHistogramData, request_id: 123, contract: IB::Symbols::Stocks.aapl, 
+			@ib.send_message :RequestHistogramData,  contract: IB::Symbols::Stocks.aapl, 
 											 time_period: '1 month'
       @ib.wait_for :HistogramData
     end

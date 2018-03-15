@@ -302,6 +302,8 @@ module IB
       @message_lock.synchronize do
       message.send_to socket
       end
+			## return the transmitted message
+		  message.data[:request_id].presence || true
     end
 
     alias dispatch send_message # Legacy alias

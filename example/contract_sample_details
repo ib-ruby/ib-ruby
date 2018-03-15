@@ -37,12 +37,12 @@ end
 ib.wait_for :NextValidOrderId
 
 
-the_contracts.each_with_index do | contract, id|
-  puts "\nRequesting contract data #{id}: #{contract_definitions[id][1..-1]}: #{contract.to_human}"
+the_contracts.each do | contract|
+  puts "\nRequesting contract data: #{contract_definitions[id][1..-1]}: #{contract.to_human}"
 
   # Request Contract details for the symbols we're interested in. TWS will
   # respond with ContractData messages, which will be processed by the code above.
-  ib.send_message :RequestContractData, :id => id, :contract => contract
+  ib.send_message :RequestContractData, contract: contract
 
   # Wait for IB to respond to our request
   ib.wait_for :ContractDataEnd, 1 #sec

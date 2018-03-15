@@ -1,49 +1,50 @@
 require 'order_helper'
 require 'combo_helper'
-
-RSpec.describe "Combo Order", :connected => true, :integration => true, :slow => true , focus: true do
+### passes only during regular trading hours of the google-butterfly
+RSpec.describe IB::Limit do
 
   let(:contract_type) { :butterfly }
-
-  before(:all) { verify_account }
-
-  context 'What-if order' do
-    before(:all) do
-      ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
-      ib.wait_for :NextValidId
+	before(:all) do
+		verify_account
+		ib = IB::Connection.new OPTS[:connection] do | gw| 
+			gw.logger = mock_logger
+			# put the most recent received OpenOrder-Message to an instance-variable
+			gw.subscribe( :OpenOrder ){|msg| @the_open_order_message = msg}
 		end
-    after(:all) { close_connection }
-	let( :the_contract ){  butterfly 'GOOG', '201901', 'CALL', 1130, 1150, 1170 }
-  let( :the_order) do |_|  IB::Limit.order(
-									action: :buy,
-                  order_ref:  'What_if',
-                  limit_price: 0.06,
-                  total_quantity: 10,
-                  what_if: true,
-									account: ACCOUNT)
+		ib.wait_for :NextValidId
+		place_the_order  contract:  butterfly('GOOG', '201901', 'CALL', 1130, 1150, 1170)  do | last_price |
+
+			@the_order_price = last_price.nil? ? 5 : last_price -0.4    # set a limit price that 
+			# is well below the actual price
+			# The Order will become visible only if the market-price is below the trigger-price
+			#
+		  IB::Limit.order price: @the_order_price , action: :buy, size: 10, account: ACCOUNT, order_ref: 'What_if'
+		end
 	end
+	context 'Initiate Order' , focus: true  do
+
+			@the_open_order_message = nil
 
 		it 'place the order' do
+
 			ib = IB::Connection.current
-			ib.place_order the_order, the_contract
-      ib.wait_for :OpenOrder, 8
-#		subject{  IB::Connection.current.received }
-    expect( ib.received[:OpenOrder]).to have_at_least(1).open_order_message 
-    expect( ib.received[:OrderStatus]).to have_exactly(0).status_messages 
-    end
+			#		subject{  IB::Connection.current.received }
+			expect( ib.received[:OpenOrder]).to have_at_least(1).open_order_message 
+			expect( ib.received[:OrderStatus]).to have_exactly(0).status_messages 
+		end
+		subject{ @the_open_order_message }
+		it_behaves_like 'OpenOrder message'
+	end
 
+	context "the placed order",  focus: true  do
 
-#    it 'changes client`s next_local_id' do
-#     @local_id_placed.should == @local_id_before
-#      @ib.next_local_id.should == @local_id_before + 1
-#    end
-		
 
     it 'responds with margin info' do
 			ib =  IB::Connection.current
 #
 			#order_should_be /PreSubmitted/
-      order = ib.received[:OpenOrder].first.order
+#      order = ib.received[:OpenOrder].first.order
+      order = @the_open_order_message.order
       expect( order.what_if).to be_truthy
       expect( order.equity_with_loan).to be_a BigDecimal
       expect( order.init_margin).to be_a BigDecimal
@@ -54,7 +55,8 @@ RSpec.describe "Combo Order", :connected => true, :integration => true, :slow =>
 
     it 'responds with commission  and margininfo' do
 #       :pending => 'API Bug: No commission in what_if for Combo orders' do
-      o = IB::Connection.current.received[:OpenOrder].first.order
+      o = @the_open_order_message.order
+    #  o = IB::Connection.current.received[:OpenOrder].first.order
 			puts o.inspect
       expect( o.max_commission).to  be_a BigDecimal
       expect( o.min_commission).to  be_a BigDecimal
@@ -71,8 +73,7 @@ RSpec.describe "Combo Order", :connected => true, :integration => true, :slow =>
       ib.wait_for :OpenOrderEnd
       expect(  ib.received[:OpenOrder]).to have_exactly(0).order_message
     end
-  end
-
+	end
   #context "Limit" do # , :if => :us_trading_hours
     #before(:all) do
     #  ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)

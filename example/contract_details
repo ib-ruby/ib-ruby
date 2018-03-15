@@ -36,7 +36,7 @@ contracts =  stock_contracts + future_contracts + option_contracts +  cfd_contra
 
 
 # Connect to IB TWS.
-ib = Connection.new( :client_id => 11912, :port => 4002 ) do | gw| # 7496 # TWS
+ib = Connection.new :client_id => 11912  do | gw|  # , port: 7497 do | gw | # TWS
   # Subscribe to TWS alerts/errors and contract data end marker
   gw.subscribe(:Alert, :ContractDataEnd) { |msg| puts msg.to_human }
 
@@ -56,12 +56,12 @@ end
 ib.wait_for :NextValidOrderId
 
 
-contracts.each_with_index do |contract, i|
-  puts "\nRequesting contract data #{i+1}: #{contract.description}"
+contracts.each do |contract|
+  puts "\nRequesting contract data for #{contract.description}"
 
   # Request Contract details for the symbols we're interested in. TWS will
   # respond with ContractData messages, which will be processed by the code above.
-  ib.send_message :RequestContractData, :id => i+1, :contract => contract
+  ib.send_message :RequestContractData,  :contract => contract
 
   # Wait for IB to respond to our request
   ib.wait_for :ContractDataEnd, 5 #sec

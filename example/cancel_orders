@@ -9,7 +9,7 @@ require 'bundler/setup'
 require 'ib-ruby'
 
 # First, connect to IB TWS.
-ib = IB::Connection.new client_id: 1112, port: 4002 do | gw |  #, :port => 7496 # TWS
+ib = IB::Connection.new client_id: 1112 do | gw |  #, :port => 7496 # TWS
 
 	# Subscribe to TWS alerts/errors and order-related messages
 	gw.subscribe(:Alert, :OpenOrder, :OrderStatus, :OpenOrderEnd) { |msg| puts msg.to_human }

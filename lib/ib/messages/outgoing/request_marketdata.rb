@@ -80,10 +80,10 @@ module IB
       #      :regulatory_snapshot => bool - With the US Value Snapshot Bundle for stocks,
       #                   regulatory snapshots are available for 0.01 USD each.
       #      :mktDataOptions => (TagValueList)  For internal use only.
-      #                    Use default value XYZ. """
+      #                    Use default value XYZ. 
       #
       RequestMarketData =
-          def_message [1, 11],
+          def_message [1, 11], :request_id,
                       [:contract, :serialize_short, :primary_exchange],  # include primary exchange in request
                       [:contract, :serialize_legs, []],
                       [:contract, :serialize_under_comp, []],

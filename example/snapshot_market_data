@@ -5,65 +5,60 @@
 #
 class Snapshot
 	def initialize 
-		@contracts = Hash.new
+		@contracts = Array.new
 		@prices = Hash.new
 	end
 
 
-	def add_contract id, a_hash, description
-		@contracts[id] = { :contract => IB::Contract.new( a_hash ) , :display_text => description }
+	def add_contract  *contract
+		contract.each do |c|
+			@contracts << c
+		end
 	end
 
 	def print_results
-		@prices.each do |x,y|
-			STDOUT.print "	#{@contracts[x][:display_text] } \t" +
-				y.collect{|x,y| "#{x}: #{y}"}.join(" \n\t\t\t ") +" \n"
-		end
+	#	@prices.each do |x,y|
+	#		STDOUT.print "	#{@contracts[x][:display_text] } \t" +
+	#			y.collect{|x,y| "#{x}: #{y}"}.join(" \n\t\t\t ") +" \n"
+	#	enda
+		 @prices.each do |a,b|
+			  contract = b.delete :contract
+				if contract.present?
+					puts  contract.to_human
+					print b.inspect  # [:bid_price], b[:ask_price], b[:high], b[:low], b[:close_price]
+					print"\n"
+				end
+		 end
 	end
 
 
 	def process
 		ib =  IB::Connection.current
 
-		@count =  @contracts.size
+		count =  @contracts.size
 		ib.subscribe(:Alert)  do |msg|
-			if msg.code == 354 #Requested market data is not subscribed
-				@count -=1  # wir zählen den Counter runter, so dass
-				puts "No Marketdata Subscription"
-				# am Ende die Orderantwort ausgelöst wird
+			if msg.code == 354										# Requested market data is not subscribed
+				count -=1														# wir zählen den Counter runter, so dass
+				puts "No Marketdata Subscription"		# am Ende die Orderantwort ausgelöst wird
 			else
-				puts msg.message  # unhandled Alert
+				puts msg.message										# unhandled Alert
 			end
 		end
-		ib.subscribe( :TickPrice,:TickSize,:TickString,:TickGeneric,:TickSnapshotEnd) do |msg|
-			case msg
-			when IB::Messages::Incoming::TickSize
-				#	for debugging purpose
-				#	print @contracts[msg.ticker_id][:display_text], "\t", "size\t", msg.size, "\n"
-
-			when IB::Messages::Incoming::TickPrice
-				if @prices[msg.ticker_id].nil?
-					@prices[msg.ticker_id] = {msg.type => msg.price }
-				else
-					@prices[msg.ticker_id][msg.type]=msg.price
-				end
-			when IB::Messages::Incoming::TickString, IB::Messages::Incoming::TickGeneric
-				#		we ignore this message silently
-			when IB::Messages::Incoming::TickSnapshotEnd
-				@count -=1   
-				print_results if @count.zero?
-			else
-				# unhandled message
-				puts msg.inspect
-			end
+		#  we collect price-events in @prices-Hash
+		ib.subscribe( :TickPrice){ |msg| @prices[msg.ticker_id][msg.type]=msg.price }
+		# When finished, print the results
+		ib.subscribe( :TickSnapshotEnd) do |_|
+				count -=1   
+				print_results if count.zero?
 		end
 
+		# fire the request
 		ib.send_message :RequestMarketDataType, :market_data_type => :delayed
-		@contracts.each do |id, contract_hash |
-			ib.send_message :RequestMarketData, 
-			:ticker_id => id, 
-			:contract => contract_hash[:contract],
-			:snapshot => 1
+
+		@contracts.each do | contract |
+			request_id = 	ib.send_message :RequestMarketData, :contract => contract, :snapshot => 1
+			# connect contracts to prices
+			@prices[request_id] = {:contract => contract}
 		end
 	end
 
@@ -71,25 +66,44 @@ end # class
 
 ####  here it starts #######
 
-require 'rubygems'
 require 'bundler/setup'
-$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
 
-# Set log level
-log.level = Logger::FATAL
-#
 # # Connect to IB TWS
-IB::Connection.new :client_id => 1112 , :port => 7497 # TWS
+IB::Connection.new :client_id => 1112  do | gw | # , :port => 7497  do |gw|
+
+	# Set log level
+	gw.logger.level = Logger::FATAL
+end
 
 s = Snapshot.new
-s.add_contract 2, {:con_id => 269120, :exchange => 'SMART'}, 'Fastenal'
-s.add_contract 4, {:symbol => 'IBM', :sec_type=> :stock, :exchange => 'SMART', :currency => 'USD'}, 'IBM'
-s.add_contract 9, {sec_type: "CASH", currency: "USD", exchange: "IDEALPRO",symbol: "EUR"}, "EUR/USD"
+s.add_contract  IB::Stock.new symbol: 'FAST', :con_id => 269120, :exchange => 'SMART'
+s.add_contract  IB::Stock.new :symbol => 'IBM'
+s.add_contract  IB::Symbols::Forex.eurusd
 s.process
 
-puts "\n******** Press <Enter> to cancel... *********\n\n"
+ Thread.new do 
+	sleep 3
+	puts "\n******** Press <Enter> to quit *********\n\n"
+ end
 STDIN.gets
+puts "done."
 
-puts "Once again, the Snapshot-Data"
-s.print_results
+
+=begin
+Expected Output
+
+Market data farm is connecting:usfarm
+Market data farm connection is OK:cashfarm
+Market data farm is connecting:usfarm
+Market data farm connection is OK:usfarm
+Requested market data is not subscribed. Displaying delayed market data...
+Requested market data is not subscribed. Displaying delayed market data...
+<Stock: FAST USD>
+{:delayed_bid=>0.578e2, :delayed_ask=>0.5784e2, :delayed_last=>0.5781e2, :delayed_high=>0.584e2, :delayed_low=>0.573e2, :delayed_close=>0.5737e2, :delayed_open=>0.0}
+<Stock: IBM USD>
+{:delayed_bid=>0.16083e3, :delayed_ask=>0.16085e3, :delayed_last=>0.16085e3, :delayed_high=>0.16125e3, :delayed_low=>0.15852e3, :delayed_close=>0.15812e3, :delayed_open=>0.0}
+<Contract: EUR forex IDEALPRO USD>
+{:high=>0.123835e1, :low=>0.12316e1, :close_price=>0.12368e1, :bid_price=>0.123218e1, :ask_price=>0.123219e1}
+
+=end

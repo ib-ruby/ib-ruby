@@ -8,19 +8,33 @@ require 'ib-ruby'
 
 # Only for Advisors: you need to provide account id such as U666777
 account = ARGV[0] || ''
-
+accounts = []
 
 # Connect to IB TWS and subscribe to events
 ib = IB::Connection.new( :client_id => 1112 , port: 4002 ) do |gw| # , :port => 7496 # TWS
 
 	# Redirect TWS alerts/errors to STDERR to keep output file clean
-	gw.subscribe(:Alert) { |msg| STDERR.puts msg.to_human }
+	#gw.subscribe(:Alert) { |msg| STDERR.puts msg.to_human }
 
+	# Subscribe to TWS alerts/errors and account-related messages
+	# that TWS sends in response to account data request
+	gw.subscribe(:Alert) do |msg|
+			## if an account is not given. but required, (Error 321 indicates this) 
+			## fetch data from the last account detected. (The first is most probably the Advisor-Account)
+											if  msg.code == 321
+												account = accounts.last
+												gw.send_message :RequestAccountData, :subscribe => true, :account_code => account
+											else
+												puts msg.to_human
+											end
+								end
 	# Silently ignore account-related messages other than :PortfolioValue
 	gw.subscribe(:AccountUpdateTime, :AccountValue, :ManagedAccounts, :AccountDownloadEnd) {}
 	# Get rid of logging verbosity
 	gw.logger.level =  Logger::FATAL
 
+	## Just in case: put account-names into accounts-array
+	gw.subscribe(:ManagedAccounts){  |msg| accounts = msg.accounts_list.split ',' }
 end
 
 # Output CSV headers
@@ -37,7 +51,7 @@ puts %w[Symbol
         AvgCost
         UnrealizedPNL
         RealizedPNL
-        Acct].map {|val| "\"#{val}\""}.join(",")
+        Account].map {|val| "\"#{val}\""}.join(",")
 
 # Output each portfolio position as a single line in CSV format
 ib.subscribe(:PortfolioValue) do |msg|

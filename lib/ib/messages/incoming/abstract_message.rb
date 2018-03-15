@@ -131,9 +131,9 @@ module IB
 					else
 						@buffer = source
 						#  if uncommented, the raw-input from the tws is displayed, logger does not work on this level
-#						puts "BUFFER"
-#						puts buffer.inspect #.join(" :\n ")
-#						puts "BUFFER END"
+				#		puts "BUFFER"
+				#		puts buffer.inspect #.join(" :\n ")
+				#		puts "BUFFER END"
 						@data = Hash.new
 						self.load
 					end

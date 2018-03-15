@@ -3,18 +3,14 @@
 # This script subscribes to market data for a list of Options
 
 require 'bundler/setup'
-$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 require 'ib-ruby'
 COUNT_OF_EVENTS =  20
 # Definition of what we want market data for.  We have to keep track of what ticker id
 # corresponds to what symbol ourselves, because the ticks don't include any other
 # identifying information. The choice of ticker ids is, as far as I can tell, arbitrary.
-contracts = [ IB::Symbols::Options.ge20,
-	      IB::Symbols::Options.z750,
-	      IB::Symbols::Options.spy75,
-	      IB::Symbols::Options.aapl200 
-	    ]
-
+contracts = [ IB::Symbols::Options.ge20, IB::Symbols::Options.z750, IB::Symbols::Options.spy75,
+							IB::Symbols::Options.aapl200 ]
+list_of_ids =[]
 
 counter = 0
 
@@ -23,7 +19,8 @@ ib = IB::Connection.new( client_id: 1116)  do | gw| #, :port => 7496 # TWS
 
   ## Subscribe to TWS alerts/errors
   gw.subscribe(:Alert) { |msg| puts msg.to_human }
-
+	#  set the log level
+	gw.logger.level = Logger::FATAL
   # Subscribe to Ticker... events.  The code passed in the block will be executed when
   # any message of that type is received, with the received message as its argument.
   # In this case, we just print out the tick.
@@ -36,12 +33,12 @@ ib = IB::Connection.new( client_id: 1116)  do | gw| #, :port => 7496 # TWS
     counter =  counter + 1
     if counter == COUNT_OF_EVENTS
       puts "Cancelling market data subscription.."
-      market.each_pair { |id, _| ib.send_message :CancelMarketData, :id => id }  
+      list_of_ids.each { |id| ib.send_message :CancelMarketData, :id => id }  
       puts "Generally, the TWS sends additional TickEvents after the subscription is cancelled ... \n\n"
       Thread.new do 
-	sleep 1
-	puts "\n******** Press <Enter> to quit *********\n\n"
-      end
+				sleep 1
+				puts "\n******** Press <Enter> to quit *********\n\n"
+			end
     end
   end
 end
@@ -49,10 +46,12 @@ end
 # Now we actually request market data for the symbols we're interested in.
 #
 # ### ticklist-values :  lib/ib/messages/outgoing/request_marketdata.rb 
-contracts.each_with_index do |contract, i|
-  ib.send_message :RequestMarketData, :ticker_id => i+1, :contract => contract ,  tick_list: [100,101,106]
+ib.send_message :RequestMarketDataType, :market_data_type => :delayed
+list_of_ids = contracts.map do |contract|
+  ib.send_message :RequestMarketData, :contract => contract ,  tick_list: [100,101,106]
 end
-
+# we modify contracts: { ticker_id => Contract } ( Will be used in the subscrption thread )
+contracts =  list_of_ids.zip( contracts ).to_h
 puts "\nSubscribed to market data"
 puts "\n******** Press <Enter> to cancel subscriptions  *********\n\n"
 STDIN.gets

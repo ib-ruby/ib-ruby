@@ -34,11 +34,19 @@ module IB
         self.class.message_id
       end
 
+			def request_id
+				@data[:request_id].presence || nil
+			end
+
       def message_type
         self.class.message_type
       end
 
       attr_accessor :created_at, :data
+
+			def self.properties?
+				@given_arguments
+			end
 
       def to_human
         "<#{self.message_type}:" +
@@ -64,10 +72,13 @@ module IB
       message_class = Class.new(base) do
         @message_id, @version = message_id, version || 1
         @data_map = data_map
+				@given_arguments =[]
 
         @data_map.each do |(name, _, type_args)|
+					dont_process = name == :request_id # [ :request_id, :local_id, :id ].include? name.to_sym 
+					@given_arguments << name.to_sym
           # Avoid redefining existing accessor methods
-          unless instance_methods.include?(name.to_s) || instance_methods.include?(name.to_sym)
+          unless instance_methods.include?(name.to_s) || instance_methods.include?(name.to_sym) || dont_process
             if type_args.is_a?(Symbol) # This is Incoming with [group, field, type]
               attr_reader name
             else

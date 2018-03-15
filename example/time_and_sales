@@ -3,7 +3,6 @@
 # This script connects to IB API and subscribes to market data for Forex symbols.
 # It then prints out all trades that exceed certain size.
 
-require 'rubygems'
 require 'bundler/setup'
 require 'ib-ruby'
 

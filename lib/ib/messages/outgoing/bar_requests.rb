@@ -161,7 +161,8 @@ module IB
       # http://www.interactivebrokers.com/discus/messages/2/28477.html?1114646754
       #
       # Version 6 implemented --> the version is not transmitted anymore
-      RequestHistoricalData = def_message [20, 0], BarRequestMessage
+      RequestHistoricalData = def_message [20, 0], BarRequestMessage,
+				:request_id
 
       class RequestHistoricalData
         def parse data

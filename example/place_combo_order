@@ -35,7 +35,7 @@ account_code = ARGV[0] || ''
 
 # 
 # First, connect to IB TWS. Arbitrary :client_id is used to identify your script
-ib = IB::Connection.new :client_id => 1112, port: 7497 do | gw | #, :port => 7497 # TWS
+ib = IB::Connection.new :client_id => 1112 do | gw | #, :port => 7497 # TWS
 
 # Subscribe to TWS alerts/errors and order-related messages
 	gw.subscribe(:Alert, :OpenOrder, :OrderStatus) { |msg| puts msg.to_human }

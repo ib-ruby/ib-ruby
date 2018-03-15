@@ -99,7 +99,39 @@ module IB
       54 => :trade_count, #             tickGeneric()
       55 => :trade_rate, #              tickGeneric()
       56 => :volume_rate, #             tickGeneric()
-      57 => :last_rth_trade, #            ?
+      57 => :last_rth_trade, #
+		  58 => :rt_historical_vol,
+      59 => :ib_dividends,
+      60 => :bond_factor_multiplier,
+      61 => :regulatory_imbalance,
+      62 => :news_tick,
+      63 => :short_term_volume_3_min,
+      64 => :short_term_volume_5_min,
+      65 => :short_term_volume_10_min,
+      66 => :delayed_bid,
+      67 => :delayed_ask,
+      68 => :delayed_last,
+      69 => :delayed_bid_size,
+      70 => :delayed_ask_size,
+      71 => :delayed_last_size,
+      72 => :delayed_high,
+      73 => :delayed_low,
+      74 => :delayed_volume,
+      75 => :delayed_close,
+      76 => :delayed_open,
+      77 => :rt_trd_volume,
+      78 => :creditman_mark_price,
+      79 => :creditman_slow_mark_price,
+      80 => :delayed_bid_option,
+      81 => :delayed_ask_option,
+      82 => :delayed_last_option,
+      83 => :delayed_model_option,
+      84 => :last_exch,
+      85 => :last_reg_time,
+      86 => :futures_open_interest,
+      87 => :avg_opt_volume,
+      88 => :not_set
+	
       #   Note 1: Tick types BID_OPTION, ASK_OPTION, LAST_OPTION, and MODEL_OPTION return
       #           all Greeks (delta, gamma, vega, theta), the underlying price and the
       #           stock and option reference price when requested.

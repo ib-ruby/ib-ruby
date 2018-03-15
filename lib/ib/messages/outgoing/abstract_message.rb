@@ -25,9 +25,9 @@ module IB
         #
         def send_to socket
 	  ### debugging of Messages
-	  puts "------sendto ---------(debugging output in outgoing/abstract_message)" 
-	  puts socket.prepare_message( self.preprocess).inspect.split('\x00')[3..-1].inspect
-	  puts "------sendto ---------"
+#	  puts "------sendto ---------(debugging output in outgoing/abstract_message)" 
+#	  puts socket.prepare_message( self.preprocess).inspect.split('\x00')[3..-1].inspect
+#	  puts "------sendto ---------"
           socket.send_messages self.preprocess #.each {|data| socket.write_data data}
         end
 
@@ -50,18 +50,26 @@ module IB
 	#
 	# If the version is zero, omit its apperance (for historical data)
         def encode
-
-          [
+					## create a proper request_id  and erase :id and :ticker_id if nessesary
+					if self.class.properties?.include?(:request_id) 
+						@data[:request_id] = if  @data[:request_id].blank? && @data[:ticker_id].blank? && @data[:id].blank?
+																	 rand(9999)  
+																 else
+																	 @data[:id] || @data[:ticker_id] || @data[:request_id] 
+																 end
+						@data[:id] = @data[:ticker_id] = nil
+					end
+         [
 	   self.class.version.zero? ? self.class.message_id : [ self.class.message_id, self.class.version ],
-           @data[:id] || @data[:ticker_id] || @data[:request_id] ||
+           @data[:id] || @data[:ticker_id] ||# @data[:request_id] ||
            @data[:local_id] || @data[:order_id] || [],
            self.class.data_map.map do |(field, default_method, args)|
              case
              when default_method.nil?
                @data[field]
-
+	
              when default_method.is_a?(Symbol) # method name with args
-               @data[field].send default_method, *args
+               @data[field].send default_method, *args 
 
              when default_method.respond_to?(:call) # callable with args
                default_method.call @data[field], *args

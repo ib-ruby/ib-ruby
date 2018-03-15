@@ -63,10 +63,10 @@ end
 	puts "\n******** Press <Enter> to quit *********\n\n"
  end
 # request the  AccountSummary
-  ib.send_message :RequestAccountSummary, request_id: 45, tags: tags.join(',')
+  request_id = ib.send_message :RequestAccountSummary, tags: tags.join(',')
 
 STDIN.gets
  puts "\n *** canceling Reqest ..." 
-		ib.send_message :CancelAccountSummary, request_id: 45
+		ib.send_message :CancelAccountSummary, id: request_id
 sleep 1
 puts "done."
