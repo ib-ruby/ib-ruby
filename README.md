@@ -13,18 +13,16 @@ You've been warned.
 
 This code is not sanctioned or supported by Interactive Brokers.
 
-## TESTING API v. 972+
-The master-branch covers the most recent versions of Ruby and TWS. Ruby 2.5 and TWS Vers. 969 
+## TESTING API v. 9.72+
+The master-branch covers the most recent versions of Ruby and TWS. Ruby 2.4 and TWS Vers. 969 
 are needed. Most of the Rails-stuff is gone. However, ib-ruby provides active-model objects, which
 can easily used in Rails. 
-Most features of the latest gem are covered, still some testing is rquired.
+Most features of the latest gem are covered, still some testing is required.
 
-__DONT USE THE VERSION OF MASTER BRANCH IN PRODUCTION__
 ## SUMMARY:
 
-This is a pure Ruby implementation of Interactive Brokers API. It is NOT a wrapper
-for a Java or C++ API, but rather uses socket API directly. So it does not have any
-dependencies other than TWS/Gateway itself.
+This is a pure Ruby implementation of Interactive Brokers API. It uses socket API directly. 
+So it does not have any dependencies other than TWS/Gateway itself.
 
 Why Ruby? Many people are put off by the amount of boilerplate code/plumbing required
 by Python, Java, ActiveX or C++ API to do even the simplest of things, like getting account
