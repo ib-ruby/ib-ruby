@@ -12,7 +12,6 @@ shared_examples_for 'TickOption message' do
     expect( subject.class.message_type).to eq :TickOption
   end
 end
-####  NOT FINISHED ####
 RSpec.describe IB::Messages::Incoming::TickOption do
 
   context 'Simulated Response from TWS', focus: false do
@@ -31,19 +30,28 @@ RSpec.describe IB::Messages::Incoming::TickOption do
   context 'Message received from IB', :connected => true , focus: true do
 ##
     before(:all) do
-      @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
-			@ib.send_message :RequestOptionPrice, request_id: 123, contract: IB::Symbols::Options.aapl200,
+      ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
+			ib.send_message :RequestOptionPrice, request_id: 123, contract: IB::Symbols::Options.aapl200,
 								:under_price => 190, volatility: 0.29
 
-      @ib.wait_for :TickOption
+      ib.wait_for :TickOption
     end
 
     after(:all) { close_connection }
 
-    subject { @ib.received[:TickOption].first }
+    subject { IB::Connection.current.received[:TickOption].first }
 		 
     it_behaves_like 'TickOption message'
 		its( :implied_volatility ){ is_expected.to eq 0.29 }
 		its( :under_price ){ is_expected.to eq 190 }
+		its( :option_price ){ is_expected.to be_a BigDecimal }
+		its( :delta ){ is_expected.to be_a BigDecimal }
+		its( :gamma ){ is_expected.to be_a BigDecimal }
+		its( :vega ){ is_expected.to be_a BigDecimal }
+		its( :theta ){ is_expected.to be_a BigDecimal }
+		its( :pv_dividend ){ is_expected.to be_a BigDecimal }
+		its( :type ){ is_expected.to eq :cust_option_computation }
+
+	
   end #
 end # describe IB::Messages:Incoming

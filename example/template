@@ -2,7 +2,6 @@
 #
 # Your script description here...
 
-require 'rubygems'
 require 'bundler/setup'
 require 'ib-ruby'
 
