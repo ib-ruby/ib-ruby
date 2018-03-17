@@ -40,7 +40,10 @@ else
 	puts '-'*55
 end
 
+puts '-'*55
+puts "Remaining Orders"
 ib.send_message :RequestAllOpenOrders
+puts '-'*55
 
 sleep 3
 

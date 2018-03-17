@@ -54,7 +54,7 @@ tags =  %w( NetLiquidation InitMarginReq DayTradesRemaining )
 ib = IB::Connection.new( :client_id => 1112) do | gw | #, :port => 7496 # TWS) 
 ## Subcribe to forseable events before the connection is completed
 ## Subscribe to TWS alerts/errors
-  gw.subscribe(:Alert, :AccountSummary){ |msg| puts msg.to_human }
+	gw.subscribe(:Alert, :AccountSummary){ |msg| puts msg.to_human }
 	gw.logger.level = Logger::FATAL # DEBUG  -- INFO -- WARN -- ERROR  -- FATAL
 end
 
@@ -69,4 +69,21 @@ STDIN.gets
  puts "\n *** canceling Reqest ..." 
 		ib.send_message :CancelAccountSummary, id: request_id
 sleep 1
-puts "done."
+puts "done."	
+
+
+=begin
+Expected Output
+
+delta:~/workspace/ib-ruby/example$ ./account_summary 
+<AccountSummary: request_id 8111, account DU167349, tag DayTradesRemaining, value -1.0, currency  >
+<AccountSummary: request_id 8111, account DU167349, tag InitMarginReq, value 93402.16, currency EUR >
+<AccountSummary: request_id 8111, account DU167349, tag NetLiquidation, value 990842.34, currency EUR >
+<AccountSummary: request_id 8111, account DF167347, tag InitMarginReq, value 0.0, currency EUR >
+<AccountSummary: request_id 8111, account DF167347, tag NetLiquidation, value 0.0, currency EUR >
+<AccountSummary: request_id 8111, account DU167348, tag DayTradesRemaining, value -1.0, currency  >
+<AccountSummary: request_id 8111, account DU167348, tag InitMarginReq, value 135317.73, currency EUR >
+<AccountSummary: request_id 8111, account DU167348, tag NetLiquidation, value 949599.26, currency EUR >
+
+******** Press <Enter> to quit *********
+=end
