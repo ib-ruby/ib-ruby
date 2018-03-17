@@ -3,13 +3,13 @@ require 'integration_helper'
 def place_the_order( contract: IB::Symbols::Stocks[:wfc])  
 		ib =  IB::Connection.current
 		ib.send_message :RequestMarketDataType, :market_data_type => :delayed
-		ib.send_message :RequestMarketData, id: 123, contract:  contract
+		the_id = ib.send_message :RequestMarketData, contract:  contract
 		ib.wait_for :TickPrice
-		ib.send_message :CancelMarketData, id: 123
-		last_price = ib.received[:TickPrice].price.max
+		ib.send_message :CancelMarketData, id: the_id
+		last_price = ib.received[:TickPrice].price.map(&:to_f).max
 		ib.clear_received :TickPrice
-
-		order =  yield( last_price )
+		last_price =  last_price.nil? ? rand(999).to_f/100 : last_price
+		order =  yield(last_price)
 
 		the_order_id = ib.place_order order, contract      
 		ib.wait_for :OpenOrder, 3

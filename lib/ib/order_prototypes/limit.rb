@@ -13,7 +13,7 @@ module IB
       end
 
       def requirements
-	super.merge limit_price: :decimal 
+	super.merge limit_price: "also aliased as :price"
       end
 
 

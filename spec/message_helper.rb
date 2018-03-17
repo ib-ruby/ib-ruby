@@ -50,7 +50,7 @@ def clean_connection
     puts " Logs:", log_entries if @stdout
   end
   @stdout.string = '' if @stdout
-  ib.clear_received
+  ib.clear_received if ib
   @received.clear if @received # In connection_spec
 end
 
@@ -59,6 +59,6 @@ def close_connection
 	#  don't cancel orders after finishing tests, 
 	#  otherwise it's not possible to inspect them manually, in case something went wrong
 #  ib.cancel_order @local_id_placed if ib && @local_id_placed
-  ib.close if ib
   clean_connection
+  ib.close if ib
 end
