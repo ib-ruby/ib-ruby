@@ -1,7 +1,7 @@
 require 'order_helper'
 require 'combo_helper'
 
-RSpec.describe "Combo Order", :connected => true, :integration => true, :slow => true , focus: true do
+RSpec.describe "Combo Order",  focus: true do
 
   let(:contract_type) { :butterfly }
 
@@ -24,10 +24,10 @@ RSpec.describe "Combo Order", :connected => true, :integration => true, :slow =>
 	end
 
 		it 'place the order' do
+			place_the_order( contract: the_contract ) do
+				the_order
+			end
 			ib = IB::Connection.current
-			ib.place_order the_order, the_contract
-      ib.wait_for :OpenOrder, 8
-#		subject{  IB::Connection.current.received }
     expect( ib.received[:OpenOrder]).to have_at_least(1).open_order_message 
     expect( ib.received[:OrderStatus]).to have_exactly(0).status_messages 
     end
@@ -55,7 +55,7 @@ RSpec.describe "Combo Order", :connected => true, :integration => true, :slow =>
     it 'responds with commission  and margininfo' do
 #       :pending => 'API Bug: No commission in what_if for Combo orders' do
       o = IB::Connection.current.received[:OpenOrder].first.order
-			puts o.inspect
+			#puts o.inspect
       expect( o.max_commission).to  be_a BigDecimal
       expect( o.min_commission).to  be_a BigDecimal
       expect( o.commission).to be_zero
@@ -73,27 +73,6 @@ RSpec.describe "Combo Order", :connected => true, :integration => true, :slow =>
     end
   end
 
-  #context "Limit" do # , :if => :us_trading_hours
-    #before(:all) do
-    #  ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
-    #  ib.wait_for :NextValidId
-    #  ib.clear_received # to avoid conflict with pre-existing Orders
-	
-		#	the_order = IB::Limit.order( action: :buy,
-    #              :order_ref => 'Original',
-    #              :limit_price => 0.06,
-    #              :total_quantity => 10,
-		#							account: ACCOUNT )
-
-    #  ib.place_order the_order, the_contract
-
-    #  ib.wait_for :OpenOrder, 6
-    #end
-
-  #  after(:all) { close_connection }
-
-#    it_behaves_like 'Placed Order'
-  #end # Limit
 end # Combo Orders
 
 __END__

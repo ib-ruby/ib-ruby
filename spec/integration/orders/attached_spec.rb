@@ -3,7 +3,7 @@ require 'combo_helper'
 
 def define_contracts
   @contracts = {
-    :stock => IB::Symbols::Stocks[:wfc],
+    :stock => IB::Symbols::Stocks.wfc,
     :butterfly => butterfly('GOOG', '201901', 'CALL', 1000, 1020, 1040)
   }
 end
@@ -86,8 +86,6 @@ describe 'Attached Orders', :connected => true, :integration => true , focus: tr
 																	:tif => tif,
 																	:parent_id => @local_id_placed,
 																	:account => ACCOUNT
-
-
 						end  ## case
 
 					end  # block of »place_the_order«

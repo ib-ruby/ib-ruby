@@ -1,20 +1,31 @@
 require 'integration_helper'
+=begin
+Unified Approach placing an Order
 
-def place_the_order( contract: IB::Symbols::Stocks[:wfc])  
+order_id =  place_the_oder contract:{a valid IB::Contract} do | the_last_market:price |
+			{ modify the price as needed }
+			{ Provide a valid IB::Order, use the appropiate OrderPrototype }
+end
+=end
+def place_the_order( contract: IB::Symbols::Stocks.wfc)  
 		ib =  IB::Connection.current
+		raise 'Unable to place order, no connection' unless ib && ib.connected?
 		ib.send_message :RequestMarketDataType, :market_data_type => :delayed
 		the_id = ib.send_message :RequestMarketData, contract:  contract
 		ib.wait_for :TickPrice
 		ib.send_message :CancelMarketData, id: the_id
 		last_price = ib.received[:TickPrice].price.map(&:to_f).max
 		ib.clear_received :TickPrice
-		last_price =  last_price.nil? ? rand(999).to_f/100 : last_price
+		last_price =  last_price.nil? ? rand(999).to_f/100 : last_price  # use random price for testing
 		order =  yield(last_price)
 
 		the_order_id = ib.place_order order, contract      
 		ib.wait_for :OpenOrder, 3
 		the_order_id  # return value
 end
+
+
+
 RSpec.shared_examples_for 'OpenOrder message' do
 #	let( :subject ){ the_returned_message }
   it { should be_an IB::Messages::Incoming::OpenOrder }

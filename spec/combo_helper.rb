@@ -2,7 +2,7 @@ require 'integration_helper'
 
 # Define butterfly
 def butterfly symbol, expiry, right, *strikes
-		ib = IB::Connection.current
+	ib = IB::Connection.current
   raise 'Unable to create butterfly, no connection' unless ib && ib.connected?
 
   legs = strikes.zip([1, -2, 1]).map do |strike, weight|

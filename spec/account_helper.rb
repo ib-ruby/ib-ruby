@@ -22,9 +22,7 @@ def verify_account
   raise "Unable to verify IB PAPER ACCOUNT" unless ib.received?(:ManagedAccounts)
 
   received = ib.received[:ManagedAccounts].first.accounts_list.split(',')
-
   raise "Connected to wrong account #{received}, expected #{account}" unless received.include?(account)
-
   close_connection
   OPTS[:account_verified] = true
 end
