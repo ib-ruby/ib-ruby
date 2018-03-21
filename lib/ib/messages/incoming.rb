@@ -92,6 +92,36 @@ module IB
                       [:yield, :decimal_max],
                       [:yield_redemption_date, :int] # YYYYMMDD format
 
+				SecurityDefinitionOptionParameter = OptionChainDefinition = def_message [75,0] , 
+																[:request_id, :int],
+																[:exchange, :string],
+																[:con_id, :int],   # underlying_con_id
+																[:trading_class, :string],
+																[:multiplier, :int]
+				class OptionChainDefinition
+					using IBSupport   # defines tws-method for Array  (socket.rb)
+					def load
+						super
+						load_map 	[:expirations, :array, proc {  @buffer.read_date }],
+											[:strikes, :array, proc {  @buffer.read_decimal } ]
+					end
+					def expirations
+						@data[:expirations]
+					end
+					def strikes
+						@data[:strikes]
+					end
+
+					def to_human
+						"OptionChainDefinition #{trading_class}@#{exchange} [#{multiplier}] strikes: #{strikes.first} - #{strikes.last} expirations: #{expirations.first} - #{expirations.last}"
+					end
+				end
+																
+
+
+			 OptionChainDefinitionEnd  = SecurityDefinitionOptionParameterEnd = def_message [76,0 ],
+																[ :request_id, :int ]
+
 
       #<- 1-9-789--USD-CASH-----IDEALPRO--CAD------
       #-> ---81-123-5.0E-5--0-
