@@ -53,7 +53,12 @@ module IB
     end
 
     def to_human
-      "<Option: " + [symbol, expiry, right, strike, exchange, currency].join(" ") + ">"
+			my_expiry = if last_trading_day.present?
+										last_trading_day
+									else
+										expiry
+									end
+      "<TheOption: " + [symbol, my_expiry, right, strike, exchange, currency].join(" ") + ">"
     end
 
   end # class Option

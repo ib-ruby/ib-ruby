@@ -10,7 +10,7 @@ module IB
                     [:request_id, :int], # request id
                     [:contract, :symbol, :string],
                     [:contract, :sec_type, :string],
-                    [:contract, :last_trading_day, :string],
+                    [:contract, :last_trading_day, :date],
                     [:contract, :strike, :decimal],
                     [:contract, :right, :string],
                     [:contract, :exchange, :string],

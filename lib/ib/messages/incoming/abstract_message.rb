@@ -60,6 +60,10 @@ module IBSupport
 			error  "Bool required, #{v} detected instead", :load, false
 		end
 
+		def read_date
+			the_string = read_string
+			the_string.blank? ? nil : Date.parse(the_string)
+		end
 		#    def read_array
 		#      count = read_int
 		#    end
@@ -86,7 +90,7 @@ module IBSupport
 				 expiry: read_string,
 				 strike: read_decimal,
 				 right: read_string,
-				 multiplier: read_string,
+				 multiplier: read_int,
 				 primary_exchange: read_string,
 				 currency: read_string,
 				 local_symbol: read_string,
@@ -190,6 +194,8 @@ module IB
 								data = @buffer.__send__("read_#{type}", &block)
 							rescue IB::LoadError => e
 								puts "TEST"
+								error "Reading #{self.class}: #{e.class}: #{e.message}  --> Instruction: #{name}" , :reader, false 
+							rescue NoMethodError => e
 								error "Reading #{self.class}: #{e.class}: #{e.message}  --> Instruction: #{name}" , :reader, false 
 							end
 							# debug	      puts data.inspect

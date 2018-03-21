@@ -231,13 +231,13 @@ module IB
       @received_hash ||= Hash.new do |hash, message_type| 
 				# enable access to the hash via 
 				# ib.received[:MessageType].attribute  
-					the_array = Array.new 
-					def the_array.method_missing(method, *key)
-						unless method == :to_hash || method == :to_str #|| method == :to_int
-							return self.map{|x| x.public_send(method, *key)}
-						end
+				the_array = Array.new 
+				def the_array.method_missing(method, *key)
+					unless method == :to_hash || method == :to_str #|| method == :to_int
+						return self.map{|x| x.public_send(method, *key)}
 					end
-					hash[message_type] = the_array
+				end
+			hash[message_type] = the_array
 			end
     end
 
@@ -286,6 +286,7 @@ module IB
     ### Sending Outgoing messages to IB
 
     # Send an outgoing message.
+		# returns the used request_id if appropiate, otherwise "true"
     def send_message what, *args
       message =
       case

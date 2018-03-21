@@ -32,7 +32,7 @@ ib = Connection.new client_id: 1113, port: 4002 do | gw |  # :port => 7497 # TWS
 	gw.subscribe(:AccountValue,
 		     :PortfolioValue, :AccountUpdateTime) { |msg| puts msg.to_human }
 
-	## Just in case: put accout-names into accounts-array
+	## Just in case: put account-names into accounts-array
 	gw.subscribe(:ManagedAccounts){  |msg| accounts = msg.accounts_list.split ',' }
 
 	# Set log level

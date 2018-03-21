@@ -89,7 +89,24 @@ module IB
       RequestContractDetails = RequestContractData =
           def_message([9, 8], :request_id , # autoogenerated
                       [:contract, :serialize_long, [:sec_id_type]])
+	
+			# Requests security definition option parameters for viewing a contract's option chain 
+			#  reques_id:   The ID chosen for the request
+      #  underlyingSymbol 
+			#  futFopExchange:  The exchange on which the returned options are trading. 
+			#										Can be set to the empty string "" for all exchanges. 
+			#  underlyingSecType: The type of the underlying security, i.e. STK 
+			#  underlyingConId: the contract ID of the underlying security.
+      #  Response comes via Messages::Incoming::SecurityDefinitionOptionParameter
 
+
+			RequestSecurityDefinitionOptionParameters = ReqSecDefOptParams  = RequestOptionChainDefinition = def_message [78,0],
+																	:request_id,
+																	:symbol,				# underlyingSymbol
+																	[:exchange, ""],			# futOptExchange
+																	:sec_type,			# underlyingSecType
+																	:con_id					# underlyingConId  (required)
+																	
       # data = { :id => ticker_id (int), :contract => Contract, :num_rows => int }
       RequstMarketDepthExchanges =			# requires ServerVersion >= 112
 		 	   def_message 82
@@ -363,7 +380,7 @@ __END__
 
      CANCEL_ACCOUNT_UPDATES_MULTI  = 77   supported now
 
-     REQ_SEC_DEF_OPT_PARAMS        = 78
+     REQ_SEC_DEF_OPT_PARAMS        = 78   supported now
      REQ_SOFT_DOLLAR_TIERS         = 79
      REQ_FAMILY_CODES              = 80
      REQ_MATCHING_SYMBOLS          = 81
