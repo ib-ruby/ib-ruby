@@ -19,6 +19,7 @@ Gem::Specification.new do |gem|
   gem.require_paths = ['lib']
 
   # Dependencies
+  gem.add_dependency 'ox'
   gem.add_dependency 'bundler', '>= 1.1.16'
   gem.add_development_dependency 'rspec','>=3.6'
 end
