@@ -6,16 +6,34 @@ module IBSupport
 		def zero?
 			false
 		end
+		# Returns the integer. 
+		# retuns nil otherwise or if no element is left on the stack
 		def read_int
-			self.shift.to_i rescue 0
+			i= self.shift  rescue nil
+			i = i.to_i unless i.blank?			# this includes conversion of string to zero(0)
+			i.is_a?( Integer ) ?  i : nil
 		end
 
 		def read_decimal
-			i= self.shift.to_d  rescue 0
-			i < IB::TWS_MAX ?  i : nil  # return nil, if a very large number is transmitted
+			i= self.shift  rescue nil
+			i = i.to_d unless i.blank?
+			i.is_a?(Numeric)  && i < IB::TWS_MAX ?  i : nil  # return nil, if a very large number is transmitted
 		end
 
 		alias read_decimal_max read_decimal
+
+		## Values -1 and below indicate: Not computed (TickOptionComputation)
+		def read_decimal_limit_1
+			i= read_decimal
+			i <= -1 ? nil : i
+		end
+
+		## Values -2 and below indicate: Not computed (TickOptionComputation)
+		def read_decimal_limit_2
+			i= read_decimal
+			i <= -2 ? nil : i
+		end
+
 
 		def read_string
 			self.shift rescue ""
@@ -26,11 +44,6 @@ module IBSupport
 			Ox.load( read_string, mode: :hash_no_attrs)
 		end
 
-		def read_required_string
-			v = read_string
-			error( "requiredString not filled", :load, false)  if v.blank?
-			v
-		end
 
 		def read_int_date
 			Time.at read_int
@@ -38,26 +51,14 @@ module IBSupport
 
 		def read_boolean
 
-			v = self.shift rescue nil
-			v.nil? ? false : v.to_i != 0
-		end
-		def read_required_boolean
-			begin
-				if self.empty?
-					logger.error "End of buffer reached"
-					error "End of buffer reached", :load, false
-					return nil
-				else
-					v = self.shift
-					if ["1","0"].include? v
-						return v.to_i
-					else
-						error "bool expected, got #{v} "
-					end
-				end
-			end while v.empty? 
-			logger.error { "Bool required, #{v} detected instead" }
-			error  "Bool required, #{v} detected instead", :load, false
+			v = self.shift  rescue nil
+			case v
+			when "1"
+				true
+			when "0"
+				false
+			else nil
+			end
 		end
 
 		def read_date
@@ -69,17 +70,44 @@ module IBSupport
 		#    end
 
 		## originally provided in socket.rb
-		#    # Returns loaded Array or [] if count was 0
-		def read_array &block
+		#    # Returns loaded Array or [] if count was 0#
+		#
+		#    Without providing a Block, the elements are treated as string
+		def read_array hashmode:false,  &block
 			count = read_int
-			# debug	     STDOUT.puts "ARRAY ----|> #{count}"
-			count > 0 ? Array.new(count, &block) : []
+			case	count 
+			when  0 
+				[]
+			when nil
+				nil
+			else
+				count= count + count if hashmode
+				if block_given?
+					Array.new(count, &block) 
+				else
+					Array.new( count ){ read_string }
+				end
+			end 
 		end
 		#   
-		#       # Returns loaded Hash
+		#  Returns a hash 
+		#  Expected Buffer-Format: 
+		#			count (of Hash-elements)
+		#			count* key|Value
+		#	 Key's are transformed to symbols, values are treated as string
 		def read_hash
-			tags = read_array { |_| [read_string, read_string] }
-			tags.empty? ? Hash.new :  Hash[*tags.flatten]
+			tags = read_array( hashmode: true )  # { |_| [read_string, read_string] }
+		result =   if 	tags.nil? || tags.flatten.empty?
+								 tags
+							 else
+								 interim = if  tags.size.modulo(2).zero? 
+														 Hash[*tags.flatten]
+													 else 
+														 Hash[*tags[0..-2].flatten]  # omit the last element
+													 end
+								 # symbolize Hash
+								 Hash[interim.map { |k, v| [k.to_sym, v] unless k.nil? }.compact]
+							 end
 		end
 		#
 

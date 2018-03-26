@@ -14,6 +14,7 @@ list_of_ids =[]
 
 counter = 0
 
+contracts = [ IB::Option.new( symbol: 'ESTX50', exchange:'DTB', multiplier: 10, currency: 'EUR', strike: 3200, expiry: '20180518', right: :put) ,IB::Symbols::Options.ge20 ]
 # First, connect to IB TWS. Arbitrary :client_id is used to identify your script
 ib = IB::Connection.new( client_id: 1116)  do | gw| #, :port => 7496 # TWS
 

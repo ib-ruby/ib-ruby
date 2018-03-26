@@ -1,6 +1,6 @@
 require 'model_helper'
 
-describe IB::Bar,
+describe IB::Bar, focus: true,
          :props =>
              {:open => 1.31,
               :high => 1.35,

@@ -38,32 +38,17 @@ module IB
                     [:contract_detail, :liquid_hours, :string],
                     [:contract_detail, :ev_rule, :decimal],
                     [:contract_detail, :ev_multipler, :string],
-                    [:sec_id_list_count, :int])
-# additional Fields (from python -- are actually ignored (present in array, but thrown away)
-#	516             if contract.secIdListCount > 0:
-#	  517                 contract.secIdList = []
-#	518                 for idxSecIdList in range(contract.secIdListCount):
-#	  519                     tagValue = TagValue()
-#	520                     tagValue.tag = decode(str, fields)
-#	521                     tagValue.value = decode(str, fields)
-#	522                     contract.secIdList.append(tagValue)
-#	523 
-#	524         if self.serverVersion >= MIN_SERVER_VER_AGG_GROUP:
-#	  525             contract.aggGroup = decode(int, fields)
-#	526 
-#	527         if self.serverVersion >= MIN_SERVER_VER_UNDERLYING_INFO:
-#	  528             contract.underSymbol = decode(str, fields)
-#	529             contract.underSecType = decode(str, fields)
-#	530 
-#	531         if self.serverVersion >= MIN_SERVER_VER_MARKET_RULES:
-#	  532             contract.marketRuleIds = decode(str, fields)
-#	533 
-#	534         if self.serverVersion >= MIN_SERVER_VER_REAL_EXPIRATION_DATE:
-#	  535             contract.realExpirationDate = decode(str, fields)
+										[:contract_detail, :sec_id_list,:hash],
+											[:contract_detail, :agg_group, :int ],
+											[:contract_detail, :under_symbol, :string ],
+											[:contract_detail, :under_sec_type, :string ],
+											[:contract_detail, :market_rule_ids, :string ],
+											[:contract_detail, :real_expiration_date, :string ]
+									 )
 #
 #
       class ContractData
-	using IBSupport   # defines tws-method for Array  (socket.rb)
+				using IBSupport   # defines tws-method for Array  (socket.rb)
         def contract
           @contract = IB::Contract.build @data[:contract].
             merge(:contract_detail => contract_detail)
@@ -74,15 +59,6 @@ module IB
         end
 
         alias contract_details contract_detail
-
-        def load
-          super
-
-          @data[:contract_detail][:sec_id_list] ||= HashWithIndifferentAccess.new
-          @data[:sec_id_list_count].times do
-            @data[:contract_detail][:sec_id_list][buffer.read_string] = buffer.read_string
-          end
-        end
 
       end # ContractData
 

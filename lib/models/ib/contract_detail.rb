@@ -18,6 +18,13 @@ module IB
       :long_name, #         Descriptive name of the asset.
       :contract_month, #    The contract month of the underlying futures contract.
 
+			:agg_group,
+			:under_symbol,
+			:under_sec_type,
+			:market_rule_ids,
+			:real_expiration_date,
+
+
       # For Bonds only
       :valid_next_option_date,
       :valid_next_option_type,
@@ -43,7 +50,7 @@ module IB
       #          to change by 1. It cannot be used to get market value by multiplying
       #          the price by the approximate multiplier.
 
-      :sec_id_list, # Hash with multiple Security ids
+      :sec_id_list, # Array with multiple Security ids
       # MD Size Multiplier. Returns the size multiplier for values returned to tickSize from a market data request. Generally 100 for US stocks and 1 for other instruments.
       :md_size_multiplier,
 #

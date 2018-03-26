@@ -69,7 +69,7 @@ module IB
       RequestNewsBulletins = def_message 12, :all_messages
       # data = { :log_level => int }
       SetServerLoglevel = def_message 14, :log_level
-      # data = { :fa_data_type => int }
+      # data = { :fa_data_type => int }  1 -> groups, 2 -> Profiles, 3 -> Account Aliases
       RequestFA = def_message 18, :fa_data_type
       # data = { :fa_data_type => int, :xml => String }
       ReplaceFA = def_message 19, :fa_data_type, :xml
@@ -150,7 +150,8 @@ module IB
       #                       exercised. Values are:
       #                              - 0 = do not override
       #                              - 1 = override
-      ExerciseOptions = def_message([ 21, 2 ],  # id -> required
+      ExerciseOptions = def_message([ 21, 2 ],  
+																	#		:request_id, # id -> required  # todo : TEST
                                     [:contract, :serialize_short],
                                     :exercise_action,
                                     :exercise_quantity,

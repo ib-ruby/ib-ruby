@@ -1,10 +1,10 @@
 require 'model_helper'
 ## is noct compatible withe RSpec 3
 
-RSpec.describe IB::Order , focus: true do
+RSpec.describe IB::Order , focus: true , #do
 
-  let( :props ) do
-    {
+#  let( :props ) do
+#    {
     :props => 
       {:local_id => 23,
        :order_ref => 'Test',
@@ -84,10 +84,20 @@ RSpec.describe IB::Order , focus: true do
      :shares => 60,
      :cumulative_quantity => 100,
      :side => :buy,
-     :time => "120312  15:41:10"}]
-    }
-    }
-  end   
+     :time => "120312  15:41:10"}]} do
+
+	  context  "test" do
+			it " is a test" do
+				puts subject.attributes
+				puts subject.order_states
+				puts subject.props
+			end
+		 end
+
+=begin
+  #  }
+  #  }
+  #end   
   
   it_behaves_like 'Self-equal Model'
   it_behaves_like 'Model with invalid defaults'
@@ -258,5 +268,5 @@ RSpec.describe IB::Order , focus: true do
       p order.combo_params
     end
   end # DB
-
+=end
 end # describe IB::Order

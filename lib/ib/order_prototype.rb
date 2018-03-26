@@ -22,14 +22,14 @@ Orders can be setup interactively
 
     2.5.0 :001 > d =  Discretionary.order
     Traceback (most recent call last): (..)
-    IB::ArgumentError (IB::Discretionary.order -> A nessesary field is missing: 
+    IB::ArgumentError (IB::Discretionary.order -> A necessary field is missing: 
 		      action: --> {"B"=>:buy, "S"=>:sell, "T"=>:short, "X"=>:short_exempt})
     2.5.0 :002 > d =  Discretionary.order action: :buy
-    IB::ArgumentError (IB::Discretionary.order -> A nessesary field is missing: 
+    IB::ArgumentError (IB::Discretionary.order -> A necessary field is missing: 
 		      total_quantity: --> also aliased as :size)
     2.5.0 :004 > d =  Discretionary.order action: :buy, size: 100
 		      Traceback (most recent call last):
-    IB::ArgumentError (IB::Discretionary.order -> A nessesary field is missing: limit_price: --> decimal)
+    IB::ArgumentError (IB::Discretionary.order -> A necessary field is missing: limit_price: --> decimal)
   
 
 
@@ -49,9 +49,9 @@ can adress and extend similar methods from OrderPrototype.
 			# inlcude defaults (arguments override defaults)
 			the_arguments = defaults.merge fields
 			# check if requirements are fullfilled
-			nessesary = requirements.keys.detect{|y| the_arguments[y].nil?}
-			if nessesary.present?
-				msg =self.name + ".order -> A nessesary field is missing: #{nessesary}: --> #{requirements[nessesary]}"
+			necessary = requirements.keys.detect{|y| the_arguments[y].nil?}
+			if necessary.present?
+				msg =self.name + ".order -> A necessary field is missing: #{necessary}: --> #{requirements[necessary]}"
 				error msg, :args, nil
 			end
 			if alternative_parameters.present?

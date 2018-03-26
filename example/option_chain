@@ -1,0 +1,45 @@
+#!/usr/bin/env ruby
+#
+# Gets the OptionChain of GE
+
+require 'bundler/setup'
+require 'ib-ruby'
+
+# First, connect to IB TWS and subscribe for events. 
+ib = IB::Connection.new :client_id => 1112  do | gw | #, :port => 7497 # TWS
+
+	# Subscribe to TWS alerts/errors
+	gw.subscribe(:Alert, :ContractData, :ContractDataEnd) { |msg| puts msg.to_human }
+	# Set log level
+	gw.logger.level = Logger::DEBUG  # -- INFO -- WARN -- ERROR  -- FATAL
+
+end
+
+TheYear =  2019
+TheStrike = 14
+TheRight =  :put
+
+# get expiries (last-trading-days)
+the_contract =  IB::Option.new symbol: 'GE', currency: 'USD', exchange: 'SMART', strike: TheStrike, expiry: TheYear, right: TheRight
+																
+ib.send_message :RequestContractDetails, contract: the_contract
+ib.wait_for :ContractDataEnd
+
+provided_expiries =  ib.received[:ContractData].map{|c| c.contract:last_trading_day}
+
+
+# get privided strikes
+option_matrix = provided_expiries.map do | expiry |
+	ib.clear_recieved
+	the_contract =  IB::Option.new symbol: 'GE',   expiry: expiry, right: TheRight
+																
+	ib.send_message :RequestContractDetails, contract: the_contract
+	ib.wait_for :ContractDataEnd
+
+	ib.received[:ContractData].map{|c| c.contract.strike}  # return contract-array
+end
+
+option_matrix.zip( provided_expiries) do | strikes, expiry|
+	puts "expiry #{strike}"
+	puts "provided strikes: #{strikes.join(' ')}"
+end

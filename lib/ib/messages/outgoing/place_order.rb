@@ -163,7 +163,10 @@ module IB
 
 
 	   order.ext_operator ,		      # MIN_SERVER_VER_EXT_OPERATOR:
-	   order.serialize_soft_dollar_tier() ,	      # MIN_SERVER_VER_SOFT_DOLLAR_TIER
+		 order.soft_dollar_tier_name,
+		 order.soft_dollar_tier_value,
+		 order.soft_dollar_tier_display_name,
+#	   order.serialize_soft_dollar_tier() ,	      # MIN_SERVER_VER_SOFT_DOLLAR_TIER
 	   order.cash_qty ]		      # MIN_SERVER_VER_CASH_QTY
 	  
 

@@ -16,6 +16,7 @@ OPTS ||= {
   # Connection to IB PAPER ACCOUNT
   ACCOUNT ||=  'DU167348' # 'DF167347' # Set this to your Paper Account Number
   HOST ||= '127.0.0.1'
+#  PORT =  7497
   PORT ||= 4002 # 7497
 
   OPTS[:connection] = {
@@ -41,6 +42,7 @@ RSpec.configure do |config|
 	#
   config.filter_run focus: true
 
+	config.alias_it_should_behave_like_to :it_has_message, 'has message:'
 	config.expose_dsl_globally = true  #+ monkey-patching in rspec 3
 #  config.exclusion_filter = {
 #    :if => proc do |condition|

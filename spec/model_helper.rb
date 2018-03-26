@@ -150,7 +150,7 @@ def test_assigns cases, prop, name
   end
 end
 
-shared_examples_for 'Model with valid defaults' do
+RSpec.shared_examples_for 'Model with valid defaults' do
   context 'instantiation without properties' do
     subject { described_class.new }
     let(:init_with_props?) { false }
@@ -166,7 +166,7 @@ shared_examples_for 'Model with valid defaults' do
   end
 end
 
-shared_examples_for 'Model with invalid defaults' do
+RSpec.shared_examples_for 'Model with invalid defaults' do
   context 'instantiation without properties' do
     subject { described_class.new }
 
@@ -180,7 +180,7 @@ shared_examples_for 'Model with invalid defaults' do
   end
 end
 
-shared_examples_for 'Self-equal Model' do
+RSpec.shared_examples_for 'Self-equal Model' do
   subject { described_class.new props }
 
   it 'is self-equal ' do
@@ -192,7 +192,7 @@ shared_examples_for 'Self-equal Model' do
   end
 end
 
-shared_examples_for 'Model instantiated empty' do
+RSpec.shared_examples_for 'Model instantiated empty' do
   let(:init_with_props?) { false }
   it { should_not be_nil }
 
@@ -212,7 +212,7 @@ shared_examples_for 'Model instantiated empty' do
   it_behaves_like 'Invalid Model'
 end
 
-shared_examples_for 'Model instantiated with properties' do
+RSpec.shared_examples_for 'Model instantiated with properties' do
   let(:init_with_props?) { true }
 
   it 'auto-assigns all properties given to initializer' do
@@ -236,7 +236,7 @@ shared_examples_for 'Model instantiated with properties' do
   it_behaves_like 'Valid Model'
 end
 
-shared_examples_for 'Model properties' do
+RSpec.shared_examples_for 'Model properties' do
 
   it 'leaves order_id alone, no aliasing' do
     if subject.respond_to?(:order_id)
@@ -285,7 +285,7 @@ shared_examples_for 'Model properties' do
 
 end
 
-shared_examples_for 'Valid Model' do
+RSpec.shared_examples_for 'Valid Model' do
 
   it 'validates' do
     subject.should be_valid
@@ -295,7 +295,7 @@ shared_examples_for 'Valid Model' do
   it_behaves_like 'Valid DB-backed Model'
 end
 
-shared_examples_for 'Invalid Model' do
+RSpec.shared_examples_for 'Invalid Model' do
 
   it 'does not validate' do
     subject.should_not be_valid
@@ -307,7 +307,7 @@ shared_examples_for 'Invalid Model' do
   it_behaves_like 'Invalid DB-backed Model'
 end
 
-shared_examples_for 'Contract' do
+RSpec.shared_examples_for 'Contract' do
   it 'becomes invalid if assigned wrong :sec_type property' do
     subject.sec_type = 'FOO'
     subject.should be_invalid

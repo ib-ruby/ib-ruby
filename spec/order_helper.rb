@@ -24,6 +24,15 @@ def place_the_order( contract: IB::Symbols::Stocks.wfc)
 		the_order_id  # return value
 end
 
+RSpec.shared_examples_for "Alert message" do | the_expected_message |
+	  subject { IB::Connection.current.received[:Alert] }
+			it { is_expected.to have_at_least(1).error_message }
+		#	it { puts  subject.to_human }   # debug
+			it "contains a discriptive error message" do
+				expect( subject.any?{|x|  x.message =~  the_expected_message } ).to be_truthy
+			end
+
+end
 
 
 RSpec.shared_examples_for 'OpenOrder message' do
@@ -60,14 +69,16 @@ end
 
 RSpec.shared_examples_for 'Placed Order' do
 
-  context "returned Message" do
+#  context "returned Message" do
+#subject{  the_placed_order }
 
     #it 'sets placement-related properties' do
 		it{ is_expected.to be_a IB::Order }
 		it "got proper id's" do
+#			puts "SUBJECT #{the_placed_order.inspect}"
 			expect( subject.local_id ).to be_an Integer
 			expect( subject.perm_id ).to be_an Integer
-			expect(subject.perm_id.to_s).to  match  /^\d{8,11}$/   # has 9 to 11 numeric charactersa
+			expect( subject.perm_id.to_s).to  match  /^\d{8,11}$/   # has 9 to 11 numeric charactersa
 		end
 		it "has an adequat clearing intent" do
 			expect(IB::VALUES[:clearing_intent].values). to include subject.clearing_intent
@@ -76,7 +87,7 @@ RSpec.shared_examples_for 'Placed Order' do
 			expect( IB::VALUES[:tif].values ).to include subject.tif
 		end
 		its( :clearing_intent ){is_expected.to eq :ib }
-	end
+#	end
 end
 =begin
       @order.modified_at.should be_a Time
@@ -241,17 +252,6 @@ end
 
 ### Helpers for placing and verifying orders
 
-def place_order contract, opts = {}
-  @contract = contract
-  @order = IB::Order.new({:total_quantity => 100,
-                          :limit_price => 49.13,
-                          :action => 'BUY',
-                          :order_type => 'LMT'}.merge(opts))
-  @local_id_before = @ib.next_local_id
-  @local_id_placed = @ib.place_order @order, @contract
-  @local_id_after = @ib.next_local_id
-end
-
 def status_should_be status, order=@order
   msg = @ib.received[:OrderStatus].find do |msg|
     msg.local_id == order.local_id &&
@@ -280,15 +280,5 @@ def status_should_be status, order=@order
     order_state.last_fill_price.should == 0
   end
 end
-
-def order_should_be status, order=@order
-  msg = @ib.received[:OpenOrder].find do |msg|
-    msg.local_id == order.local_id &&
-      status.is_a?(Regexp) ? msg.status =~ status : msg.status == status
-  end
-  msg.should_not be_nil
-  msg.should be_an IB::Messages::Incoming::OpenOrder
-  msg.order.should == order
-  msg.contract.should == @contract
-end
 =end
+
