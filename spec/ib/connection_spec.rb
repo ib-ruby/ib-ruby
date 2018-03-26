@@ -1,8 +1,6 @@
 require 'message_helper'
 require 'account_helper'
 
-### To run the Spec, restart the TWS Gateway. 
-### If a AccountValue-Request is done before, the tests are failing
 
 shared_examples_for 'Connected Connection'  do
 

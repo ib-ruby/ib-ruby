@@ -225,15 +225,20 @@ module IB
 		      # This is a regulartory attribute that applies 
 		      # to all US Commodity (Futures) Exchanges, provided 
 		      # to allow client to comply with CFTC Tag 50 Rules. 
-      :soft_dollar_tier_params,        # 106: MIN_SERVER_VER_SOFT_DOLLAR_TIER
+			:soft_dollar_tier_name,        # 106: MIN_SERVER_VER_SOFT_DOLLAR_TIER
+			:soft_dollar_tier_value,
+			:soft_dollar_tier_display_name,
 		      # Define the Soft Dollar Tier used for the order. 
 		      #	Only provided for registered professional advisors and hedge and mutual funds.
 		      #	format: "#{name}=#{value},#{display_name}", name and value are used in the 
 		      #	      order-specification. Its included as ["#{name}","#{value}"] pair
   
-      :cash_qty                     # 111: MIN_SERVER_VER_CASH_QTY
+      :cash_qty,                     # 111: MIN_SERVER_VER_CASH_QTY
 			# decimal : The native cash quantity
-
+			:mifid_2_decision_maker,
+		  :mifid_2_decision_algo,
+		  :mifid_2_execution_trader,
+			:mifid_2_execution_algo
 
     # Properties with complex processing logics
     prop :tif, #  String: Time in Force (time to market): DAY/GAT/GTD/GTC/IOC
@@ -283,7 +288,7 @@ module IB
     serialize :conditions
     serialize :algo_params, HashWithIndifferentAccess
    # serialize :combo_params
-    serialize :soft_dollar_tier_params, HashWithIndifferentAccess
+ #   serialize :soft_dollar_tier_params, HashWithIndifferentAccess
     serialize :mics_options, HashWithIndifferentAccess
 
     # Order is always placed for a contract. Here, we explicitly set this link.
@@ -384,10 +389,10 @@ module IB
         :leg_prices => [],
         :algo_params => HashWithIndifferentAccess.new, #{},
         :combo_params =>[], #{},
-        :soft_dollar_tier_params => HashWithIndifferentAccess.new( 
-					    :name => "",
-					    :val => "",
-					    :display_name => ''),
+  #      :soft_dollar_tier_params => HashWithIndifferentAccess.new( 
+	#				    :name => "",
+	#				    :val => "",
+	#				    :display_name => ''),
         :order_state => IB::OrderState.new(:status => 'New',
                                            :filled => 0,
                                            :remaining => 0,
@@ -407,14 +412,14 @@ module IB
       end
     end
 
-    def serialize_soft_dollar_tier
-      [soft_dollar_tier_params[:name],soft_dollar_tier_params[:val]]
-    end
+   # def serialize_soft_dollar_tier
+   #   [soft_dollar_tier_params[:name],soft_dollar_tier_params[:val]]
+   # end
 
-    def initialize_soft_dollar_tier *fields
-      self.soft_dollar_tier_params= HashWithIndifferentAccess.new(
-      name:   fields.pop, val:  fields.pop, display_name:  fields.pop )
-    end
+   # def initialize_soft_dollar_tier *fields
+   #   self.soft_dollar_tier_params= HashWithIndifferentAccess.new(
+   #   name:   fields.pop, val:  fields.pop, display_name:  fields.pop )
+   # end
 
     def serialize_misc_options
       ""		  # Vers. 70  

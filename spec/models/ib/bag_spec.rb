@@ -1,6 +1,6 @@
 require 'model_helper'
 
-describe IB::Bag,
+describe IB::Bag, focus: true,
 
          :props =>
              {:symbol => 'GOOG',
