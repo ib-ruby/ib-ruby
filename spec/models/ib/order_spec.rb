@@ -1,7 +1,7 @@
 require 'model_helper'
 ## is noct compatible withe RSpec 3
 
-RSpec.describe IB::Order , focus: true , #do
+RSpec.describe IB::Order , #do
 
 #  let( :props ) do
 #    {

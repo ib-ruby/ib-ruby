@@ -8,27 +8,27 @@ shared_examples_for 'Valid DB-backed Model' do
     it_behaves_like 'Model with associations'
 
     it 'is saved' do
-      subject.save.should be_true
+     expect( subject.save).to  be_truthy
       @saved = subject
     end
 
     it 'does not set created and updated properties to SAVED model' do
-      subject.created_at.should be_a Time
-      subject.updated_at.should be_a Time
+      expect( subject.created_at).to  be_a Time
+#      subject.updated_at.should be_a Time   
     end
 
     it 'saves a single model' do
       all_models = described_class.find(:all)
-      all_models.should have_exactly(1).model
+      expect( all_models).to have_exactly(1).model
     end
 
     it 'loads back in the same valid state as saved' do
       model = described_class.find(:first)
-      model.object_id.should_not == subject.object_id
+      expect( model.object_id).not_to eq subject.object_id
       #model.valid?
       #p model.errors
-      model.should be_valid
-      model.should == subject
+      expect( model).to be_valid
+      expect( model).to eq subject
     end
 
     it 'and with the same properties' do
@@ -37,15 +37,15 @@ shared_examples_for 'Valid DB-backed Model' do
         #p model.attributes
         #p model.content_attributes
         props.each do |name, value|
-          model.send(name).should == value
+          expect( model.send(name)).to eq value
         end
       end
     end
 
     it 'updates timestamps when saving the model' do
       model = described_class.find(:first)
-      model.created_at.usec.should_not == subject.created_at.utc.usec #be_a Time
-      model.updated_at.usec.should_not == subject.updated_at.utc.usec #be_a Time
+     expect( model.created_at.usec).not_to eq subject.created_at.utc.usec #be_a Time
+     # model.updated_at.usec.should_not == subject.updated_at.utc.usec #be_a Time
     end
 
     it 'is loads back with associations, if any' do
@@ -64,12 +64,12 @@ shared_examples_for 'Invalid DB-backed Model' do
     it_behaves_like 'Model with associations'
 
     it 'is not saved' do
-      subject.save.should be_false
+      expect( subject.save).to be_falsy
     end
 
     it 'is not loaded' do
       models = described_class.find(:all)
-      models.should have_exactly(0).model
+      expect( models).to have_exactly(0).model
     end
   end # DB
 end
@@ -84,29 +84,29 @@ shared_examples_for 'Model with associations' do
       item = "IB::#{name.to_s.classify}".constantize.new item_props
       #item = const_get("IB::#{name.to_s.classify}").new item_props
       puts "Testing single association #{name}"
-      subject.association(name).reflection.should_not be_collection
+      expect( subject.association(name).reflection).not_to  be_collection
 
       # Assign item to association
       expect { subject.send "#{name}=", item }.to_not raise_error
 
       association = subject.send name #, :reload
-      association.should == item
-      association.should be_new_record
+      expect( association ).to eq item
+      expect( association ).to be_new_record
 
       # Reverse association does not include subject
       reverse_association = association.send(subject_name_plural)
-      reverse_association.should be_empty
+      expect( reverse_association).to be_empty
 
       # Now let's save subject
       if subject.valid?
         subject.save
 
         association = subject.send name
-        association.should_not be_new_record
+        expect( association ).not_to be_new_record
 
         # Reverse association now DOES include subject (if reloaded!)
         reverse_association = association.send(subject_name_plural, :reload)
-        reverse_association.should include subject
+        expect( reverse_association).to include subject
       end
     end
   end
@@ -116,7 +116,7 @@ shared_examples_for 'Model with associations' do
 
     collections.each do |name, items|
       puts "Testing associated collection #{name}"
-      subject.association(name).reflection.should be_collection
+      expect( subject.association(name).reflection).to be_collection
 
       [items].flatten.each do |item_props|
         item = "IB::#{name.to_s.classify}".constantize.new item_props
@@ -125,7 +125,7 @@ shared_examples_for 'Model with associations' do
 
         # Add item to collection
         expect { association << item }.to_not raise_error
-        association.should include item
+        expect( association).to include item
 
         # Reverse association does NOT point to subject
         reverse_association = association.first.send(subject_name)
@@ -142,11 +142,11 @@ shared_examples_for 'Model with associations' do
           item = "IB::#{name.to_s.classify}".constantize.new item_props
           association = subject.send name #, :reload
 
-          association.should include item
+          expect( association ).to include item
 
           # Reverse association DOES point to subject now
           reverse_association = association.first.send(subject_name)
-          reverse_association.should == subject
+          expect( reverse_association).to eq subject
         end
       end
     end
