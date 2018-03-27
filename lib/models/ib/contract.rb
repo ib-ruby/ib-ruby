@@ -128,12 +128,13 @@ module IB
 =end
     def serialize *fields
       print_default = ->(field, default="") { field.blank? ? default : field }
+      print_not_zero = ->(field, default="") { (field.blank? || field.zero?) ? default : field }
       [(con_id.present? && con_id.to_i > 0 ? con_id : ""),
        print_default[symbol],
        print_default[self[:sec_type]],
        ( fields.include?(:option) ?
         [print_default[expiry], 
-	 print_default[strike], 
+	 print_not_zero[strike], 
 	 print_default[self[:right]], 
 	 print_default[multiplier]] : nil ),
        print_default[exchange],
@@ -256,11 +257,11 @@ module IB
 
     def to_short
       if expiry.blank? && last_trading_day.blank? 
-      "#{symbol}#{exchange}#{currency}"
+      "#{symbol}# {exchange}# {currency}"
       elsif expiry.present?
-      "#{symbol}#{expiry}#{strike}#{right}#{exchange}#{currency}"
+      "#{symbol}(#{strike}) #{right} #{expiry} /#{exchange}/#{currency}"
       elsif last_trading_day.present?
-      "#{symbol}#{last_trading_day}#{strike}#{right}#{exchange}#{currency}"
+      "#{symbol}(#{strike}) #{right} #{last_trading_day.strftime("%Y%m%d")} /#{exchange}/#{currency}"
       else
 	error "#{self.to_s}: either expiry || last trading day must be specified "
       end

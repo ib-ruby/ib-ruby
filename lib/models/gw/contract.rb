@@ -43,9 +43,9 @@ This can be trapped with
 					 raise VerifyError, "#{items_as_string[nessesary_items]} are needed to retrieve Contract,
 																	got: #{item_values[nessesary_items].join(',')}"
 				 end
-				 self.build  item_attributehash[nessesary_items].merge(:sec_type=> sec_type)  # return this
+				 Contract.build  item_attributehash[nessesary_items].merge(:sec_type=> sec_type)  # return this
 			else   # its always possible, to retrieve a Contract if con_id and exchange are present 
-				 self.new  con_id: con_id , :exchange => exchange.presence || item_attributehash[nessesary_items][:exchange].presence || 'SMART'				# return this
+				 Contract.new  con_id: con_id , :exchange => exchange.presence || item_attributehash[nessesary_items][:exchange].presence || 'SMART'				# return this
 			end  # if 
     end # def
 =begin
@@ -164,6 +164,15 @@ s --> <IB::Stock:0x007f3de81a4398
 			#queried_contract # return_value
 			end # def
 
+=begin
+Resets a Contract to force a reniewed ContractData-Request via Contract#verify
+=end
+			def reset_attributes
+				self.con_id = nil
+				self.last_trading_day =  nil
+				self.contract_detail =  nil
+			end
+			
 
 			end # class
 		end # module

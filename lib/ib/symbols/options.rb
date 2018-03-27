@@ -11,7 +11,7 @@ module IB
           :ge20 => IB::Option.new(:symbol => "GE",
                                    :expiry => "20190118",  # use fully qualified expiry, to cover contract-info integration test
                                    :right => "CALL",
-                                   :strike => 14,
+                                   :strike => 13,
 				   :multiplier => 100,
 				   :currency => 'USD',
                                    :description => "General Electric 20 Call 2019-01"),

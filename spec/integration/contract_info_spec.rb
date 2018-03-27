@@ -70,7 +70,7 @@ describe "Request Contract Info", focus:true do #, :connected => true, :integrat
       contract = IB::Symbols::Options.ge20
 		#	Option.new :symbol => "GE", :expiry => "20180615",
     #                             :right => :call, :strike => 17, currency: 'USD'
-      @ib.send_message :RequestContractData, :id => 123, :contract =>  IB::Symbols::Options.ge20
+      @ib.send_message :RequestContractData, id: 123, :contract =>  IB::Symbols::Options.ge20
       @ib.wait_for :ContractDataEnd, 5 # sec
     end
 
@@ -93,7 +93,7 @@ describe "Request Contract Info", focus:true do #, :connected => true, :integrat
 
       expect( contract.symbol).to  eq 'GE'
       expect( contract.local_symbol).to  match  /^GE[ ]{4}[0-9]{6}C[0-9]{8}$/
-      expect( contract.last_trading_day).to  match /^[0-9]{8}$/
+      expect( contract.last_trading_day).to  match /^\d{4}-\d{2}-\d{2}$/
       expect( contract.exchange).to  eq 'SMART'
       expect( contract.con_id).to  be_an Integer
 
