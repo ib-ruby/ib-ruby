@@ -10,7 +10,7 @@ def mock_logger
 
   @logger = Logger.new(@stdout).tap do |logger|
     logger.formatter = proc do |level, time, prog, msg|
-      "#{time.strftime('%H:%M:%S.%N')} #{msg}\n"
+      "#{time.strftime('%H:%M:%S')} #{msg}\n"
     end
     logger.level = Logger::INFO
   end
@@ -20,24 +20,19 @@ def log_entries
   @stdout && @stdout.string.split(/\n/)
 end
 
-# Not using these helpers just use match directly instead e.g.:
-#        it { log_entries.any? { |entry| expect(entry).to match(/No subscribers for message .*:Alert!/) }}
 
-#def should_log *patterns
-#  patterns.each do |pattern|
-    #old should entry
-    #log_entries.any? { |entry| entry =~ pattern }.should be_true
-#    log_entries.any? { |entry| pp (entry =~ pattern); expect(entry =~ pattern).to be_true }
-#  end
-#end
+def should_log *patterns
+  patterns.each do |pattern|
+   expect( log_entries.any? { |entry| entry =~ pattern }).to be_truthy
+  end
+end
 
-#def should_not_log *patterns
-#  patterns.each do |pattern|
-#    log_entries.any? { |entry| pp (entry =~ pattern); expect(entry =~ pattern).to be_false }
-#    #old should entry
-#    #log_entries.any? { |entry| entry =~ pattern }.should be_false
-#  end
-#end
+def should_not_log *patterns
+  patterns.each do |pattern|
+    expect( log_entries.any? { |entry| entry =~ pattern }).to be_falsey
+  end
+end
+
 
 ## Connection helpers
 

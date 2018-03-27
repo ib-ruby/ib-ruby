@@ -39,7 +39,7 @@ module IB
     
     def initialize host: '127.0.0.1',
                    port: '4002', # IB Gateway connection (default)
-                       #:port => '7496', # TWS connection
+                       #:port => '7497', # TWS connection
                    connect: true, # Connect at initialization
                    received:  true, # Keep all received messages in a @received Hash
                    logger: default_logger,
@@ -142,8 +142,8 @@ module IB
         "#{@local_connect_time} local, " +
         "#{@remote_connect_time} remote."}
 
-      # if the client_id is wrong or the port is not accessible, the first read attempt fails
-      # thus get the first message and proceed if something reasonable is recieved
+      # if the client_id is wrong or the port is not accessible the first read attempt fails
+      # get the first message and proceed if something reasonable is recieved
       the_message = process_message   # recieve next_order_id
       error "Check Port/Client_id ", :reader if the_message == " "
 #      start_reader  
@@ -253,6 +253,9 @@ module IB
     # Wait for specific condition(s) - given as callable/block, or
     # message type(s) - given as Symbol or [Symbol, times] pair.
     # Timeout after given time or 1 second.
+		#
+		# wait_for depends heavyly on Connection#received. If collection of messages through recieved
+		# is turned off, wait_for loses most of its functionality
     def wait_for *args, &block
       timeout = args.find { |arg| arg.is_a? Numeric } # extract timeout from args
       end_time = Time.now + (timeout || 1) # default timeout 1 sec

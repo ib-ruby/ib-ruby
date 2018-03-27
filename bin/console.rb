@@ -79,7 +79,7 @@ end # Array
   puts
   puts  "----> C    points to the connection-instance"
   puts
-  puts  "some basic Messages are subcribed and accordingly displayed"
+  puts  "some basic Messages are subscribed and accordingly displayed"
   puts '-'* 45
 
   IRB.start(__FILE__)
