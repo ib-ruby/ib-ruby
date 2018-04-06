@@ -1,4 +1,5 @@
 require 'message_helper'
+require 'account_helper'
 
 RSpec.shared_examples 'Portfolio Value Message' do 
 	subject{ the_portfolio_value }
@@ -49,6 +50,9 @@ RSpec.describe IB::Messages::Incoming do
 			let( :the_account_value ) { IB::Connection.current.received[:AccountValue].first }
 		end
 
+		it_behaves_like 'Valid AccountValue Object' do
+			let( :the_account_value_object ){ IB::Connection.current.received[:AccountValue].first.account_value }  
+		end
   end #
 end # describe IB::Messages:Incoming
 

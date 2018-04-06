@@ -1,10 +1,11 @@
 require 'message_helper'
+require 'account_helper'
 
 shared_examples_for 'AccountSummary message' do
   it { is_expected.to be_an IB::Messages::Incoming::AccountSummary }
   its(:message_type) { is_expected.to eq :AccountSummary }
   its(:message_id) { is_expected.to eq 63 }
-	its(:request_id) {is_expected.to eq 123}
+	its(:request_id) {is_expected.to be_a Integer}
 	its( :buffer  ){ is_expected.to be_empty }
 
   it 'has class accessors as well' do
@@ -13,25 +14,18 @@ shared_examples_for 'AccountSummary message' do
   end
 end
 
+
 describe IB::Messages::Incoming do
 
-  context 'Simulated Response from TWS', focus: false do
-
-    subject do
-      IB::Messages::Incoming::HistogramData.new ["89","123","5","1.2",1,"2.1","2","3.1","3","4.1","4","5.1","5"]
-    end
-
-    it_behaves_like 'AccountSummary message'
-  end
 
   context 'Message received from IB', :connected => true , focus: true do
     before(:all) do
       ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
-			ib.send_message :RequestAccountSummary, request_id: 123, tags: 'RegTMargin,ExcessLiquidity, DayTradesRemaining'
+			req_id= ib.send_message :RequestAccountSummary, tags: 'RegTMargin,ExcessLiquidity, DayTradesRemaining'
 										 
       ib.wait_for :AccountSummary
 			sleep 1
-			ib.send_message :CancelAccountSummary, request_id: 123
+			ib.send_message :CancelAccountSummary, id: req_id
 
     end
 
@@ -41,14 +35,12 @@ describe IB::Messages::Incoming do
 		 
     it_behaves_like 'AccountSummary message'
 
-		it "print recieved messages" do
-			ib =  IB::Connection.current
-			print ib.received[:AccountSummary].account
-			puts
-			print ib.received[:AccountSummary].tag
-			puts
-			print ib.received[:AccountSummary].value
-			puts
+		it_behaves_like 'Valid AccountValue Object' do
+			let( :the_account_value_object ){ IB::Connection.current.received[:AccountSummary].first.account_value  }  
+		end
+		it "has appropiate attributes" do
+			expect( subject.account_value ).to be_a  IB::AccountValue
+			expect( subject.account_name).to be_a String
 		end
   end #
 end # describe IB::Messages:Incoming

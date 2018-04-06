@@ -7,18 +7,7 @@ module IB
                       # The reqID that was specified previously in the call to reqExecution()
                       [:request_id, :int],
                       [:execution, :local_id, :int],
-                      [:contract, :con_id, :int],
-                      [:contract, :symbol, :string],
-                      [:contract, :sec_type, :string],
-                      [:contract, :expiry, :string],
-                      [:contract, :strike, :decimal],
-                      [:contract, :right, :string],
-                      [:contract, :multiplier, :string],
-                      [:contract, :exchange, :string],
-                      [:contract, :currency, :string],
-                      [:contract, :local_symbol, :string],
-                      [:contract, :trading_class, :string],
-
+                      [:contract, :contract],
                       [:execution, :exec_id, :string], # Weird format
                       [:execution, :time, :string],
                       [:execution, :account_name, :string],

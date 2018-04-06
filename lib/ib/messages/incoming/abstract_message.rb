@@ -39,9 +39,13 @@ module IBSupport
 			self.shift rescue ""
 		end
 
+		def read_symbol
+			read_string.to_sym
+		end
+
 		# convert xml into a hash
 		def read_xml
-			Ox.load( read_string, mode: :hash_no_attrs)
+			Ox.load( read_string(), mode: :hash_no_attrs)
 		end
 
 

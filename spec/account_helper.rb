@@ -27,8 +27,21 @@ def verify_account
   OPTS[:account_verified] = true
 end
 
-### Helpers for placing and verifying orders
+##  call with
+## 	it_behaves_like 'Valid AccountValue Object' do
+##			let( :the_account_value_object ){ some_object }
+##		end
 
+shared_examples_for 'Valid AccountValue Object' do
+		subject{ the_account_value_object }
+		it{ is_expected.to be_a IB::AccountValue }
+		its( :key ) { is_expected.to be_a Symbol }
+		its( :value ) { is_expected.to be_a String }
+		its( :currency ) { is_expected.to be_a String }
+end
+
+### Helpers for placing and verifying orders  ### old
+# 
 shared_examples_for 'Valid account data request' do
 
   context "received :AccountUpdateTime message" do
