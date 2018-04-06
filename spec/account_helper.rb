@@ -28,10 +28,19 @@ def verify_account
 end
 
 ##  call with
+## 	it_behaves_like 'Valid Account Object' do
+##			let( :the_account_object ){ some_object }
+##		end
+shared_examples_for 'Valid Account Object' do
+		subject{ the_account_object }
+		it{ is_expected.to be_a IB::Account }
+		its( :account) { is_expected.to be_a String }
+		its( :save ){ is_expected.to be_truthy }
+end
+##  call with
 ## 	it_behaves_like 'Valid AccountValue Object' do
 ##			let( :the_account_value_object ){ some_object }
 ##		end
-
 shared_examples_for 'Valid AccountValue Object' do
 		subject{ the_account_value_object }
 		it{ is_expected.to be_a IB::AccountValue }
