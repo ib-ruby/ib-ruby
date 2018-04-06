@@ -1,10 +1,10 @@
 module IB
 	class Account < IB::Model
 		include BaseProperties
-		#  attr_accessible :name, :account, :connected
+		#  attr_accessible :alias, :account, :connected
 
 		prop :account,  # String 
-			:name,     # 
+			:alias,     # 
 			:type,
 			:connected => :bool
 
@@ -20,7 +20,7 @@ module IB
 
 		def default_attributes
 			super.merge account: 'X000000'
-			super.merge name: ''
+			super.merge alias: ''
 			super.merge type: 'Account'
 			super.merge connected: false
 		end

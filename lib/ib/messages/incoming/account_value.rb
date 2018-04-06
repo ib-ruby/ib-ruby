@@ -17,6 +17,21 @@ module IB
 				end
 			end
 
+      # Receives previously requested FA configuration information from TWS.
+      ReceiveFA =
+          def_message 16, [:type, :int], # type of Financial Advisor configuration data
+                      #                    being received from TWS. Valid values include:
+                      #                    1 = GROUPS, 2 = PROFILE, 3 = ACCOUNT ALIASES
+                      [:xml, :xml] # XML string with requested FA configuration information.
+
+				class ReceiveFA
+					def accounts
+						xml[:ListOfAccountAliases][:AccountAlias].map{|x| Account.new x }
+					end
+				end
+
+
+
 			class AccountMessage < AbstractMessage
         def account_value
           @account_value = IB::AccountValue.new @data[:account_value]

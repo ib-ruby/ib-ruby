@@ -17,14 +17,6 @@ module IB
 
       ### Define short message classes in-line:
 
-     # AccountValue = def_message([6, 2], [:key, :string],
-     #                            [:value, :string],
-     #                            [:currency, :string],
-     #                            [:account_name, :string]) do
-     #   "<AccountValue: #{account_name}, #{key}=#{value} #{currency}>"
-     # end
-
-
 
       NewsBulletins =
           def_message 14, [:request_id, :int], # unique incrementing bulletin ID.
@@ -70,10 +62,10 @@ module IB
       ExecutionDataEnd = def_message 55, [:request_id, :int]
 
       MarketDataType = def_message 58, [:request_id, :int], [:market_data_type, :int] do
-				#def to_human
 					"<#{self.message_type}:" +
-						" switched to »#{MARKET_DATA_TYPES[market_data_type]}«"
+						" switched to »#{MARKET_DATA_TYPES[market_data_type]}«" # to_human
 				end
+
       CommissionReport =
           def_message 59, [:exec_id, :string],
                       [:commission, :decimal], # Commission amount.
@@ -82,13 +74,14 @@ module IB
                       [:yield, :decimal_max],
                       [:yield_redemption_date, :int] # YYYYMMDD format
 
-				SecurityDefinitionOptionParameter = OptionChainDefinition = def_message [75,0] , 
+			SecurityDefinitionOptionParameter = OptionChainDefinition = def_message [75,0] , 
 																[:request_id, :int],
 																[:exchange, :string],
 																[:con_id, :int],   # underlying_con_id
 																[:trading_class, :string],
 																[:multiplier, :int]
-				class OptionChainDefinition
+
+			class OptionChainDefinition
 					using IBSupport   # defines tws-method for Array  (socket.rb)
 					def load
 						super
@@ -103,9 +96,9 @@ module IB
 					end
 
 					def to_human
-						"OptionChainDefinition #{trading_class}@#{exchange} [#{multiplier}] strikes: #{strikes.first} - #{strikes.last} expirations: #{expirations.first} - #{expirations.last}"
+						"OptionChainDefinition #{trading_class}@#{exchange} [#{multiplier} X ] strikes: #{strikes.first} - #{strikes.last} expirations: #{expirations.first} - #{expirations.last}"
 					end
-				end
+			end
 																
 
 
@@ -115,15 +108,15 @@ module IB
 
       #<- 1-9-789--USD-CASH-----IDEALPRO--CAD------
       #-> ---81-123-5.0E-5--0-
-      TickRequestParameters = def_message 81, [ :ticker_id, :int ],
+      TickRequestParameters = def_message [81, 0], [ :ticker_id, :int ],
 					      [ :min_tick, :decimal],
 					      [ :exchange, :string ],
 					      [ :snapshot_prermissions, :int ]
-      class TickRequestParameters 
-	def load
-	  simple_load
-	end
-      end
+#      class TickRequestParameters 
+#	def load
+#	  simple_load
+#	end
+ #     end
 
       ### Require standalone source files for more complex message classes:
 
@@ -187,7 +180,7 @@ __END__
         TICK_SNAPSHOT_END         = 57
         MARKET_DATA_TYPE          = 58
         COMMISSION_REPORT         = 59   ## 
-	### below is new in api 9.71
+	### const below are new in api 9.71
         POSITION_DATA             = 61
         POSITION_END              = 62
         ACCOUNT_SUMMARY           = 63
