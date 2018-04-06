@@ -36,6 +36,10 @@ module IB
       attributes[key.to_sym]
     end
 
+    def update_attribute key, value
+      @attributes[key.to_sym] = value
+    end
+
     def []= key, val
       # p key, val
       attributes[key.to_sym] = val

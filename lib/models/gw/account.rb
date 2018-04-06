@@ -1,6 +1,25 @@
 module IB
 	class Account 
 
+
+		def simple_account_data_scan search_key, search_currency=nil
+			if account_values.is_a? Array
+				if search_currency.present? 
+					account_values.find_all{|x| x.key.match( search_key )  && x.currency == search_currency.upcase }
+				else
+					account_values.find_all{|x| x.key.match( search_key ) }
+				end
+
+			else  # not tested!!
+				if search_currency.present?
+					account_values.where( ['key like %', search_key] ).where( currency: search_currency )
+				else  # any currency
+					account_values.where( ['key like %', search_key] )
+				end
+			end
+		end
+
+
 =begin
 returns the last update date of any account-value
 =end
@@ -59,8 +78,8 @@ Limit- and Aux-Prices are adjusted to Min-Tick, if auto_adjust is specified
 				order.auto_adjust if auto_adjust
 				c=  order.contract
 				#  con_id and exchange fully qualify a contract, no need to transmit other data
-				tws_contract =  IB::Contract.new con_id: c.con_id, exchange: c.exchange
-				local_id = IB::Gateway.current.place_order order, tws_contract
+				tws_contract =  Contract.new con_id: c.con_id, exchange: c.exchange
+				local_id = Connection.current.place_order order, tws_contract
 			end 
 			local_id  # return_value
 
