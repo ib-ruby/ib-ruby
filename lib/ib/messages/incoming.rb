@@ -35,8 +35,6 @@ module IB
                       [:text, :string], # The bulletin's message text.
                       [:exchange, :string] # Exchange from which this message originated.
 
-      ManagedAccounts =
-          def_message 15, [:accounts_list, :string]
 
       # Receives previously requested FA configuration information from TWS.
       ReceiveFA =

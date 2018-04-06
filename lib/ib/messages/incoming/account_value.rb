@@ -4,6 +4,18 @@ module IB
 
       AccountUpdateTime = def_message 8, [:time_stamp, :string]
 
+      ManagedAccounts =
+          def_message 15, [:accounts_list, :string]
+
+			class ManagedAccounts
+				def accounts
+					accounts_list.split(',').map{|a| IB::Account.new account: a}
+				end
+
+				def to_human
+					"< ManagedAccounts: #{accounts.map(&:account).join(" - ")}>"
+				end
+			end
 
 			class AccountMessage < AbstractMessage
         def account_value

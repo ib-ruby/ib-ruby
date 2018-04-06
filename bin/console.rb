@@ -54,6 +54,7 @@ end # Array
 					end
   ARGV.clear
   logger = Logger.new  STDOUT
+		logger.level = Logger::FATAL 
 	
   ## The Block takes instructions which are executed  after initializing all instance-variables
   ## and prior to the connection-process
@@ -65,12 +66,13 @@ end # Array
     c.subscribe( :PortfolioValue, :AccountValue, :OrderStatus, :OpenOrderEnd, :ExecutionData ) {| m| logger.info { m.to_human }}
     c.subscribe :ManagedAccounts do  |msg|
         puts "------------------------------- Managed Accounts ----------------------------------"
-	puts "Detected Accounts: #{msg.accounts_list.split(',').join(' -- ')} " 
+	puts "Detected Accounts: #{msg.accounts.account.join(' -- ')} " 
 	puts
     end
 
     c.subscribe( :OpenOrder){ |msg|  "Open Order detected and stored: C.received[:OpenOrders] " }
-  end 
+		c.logger.level = Logger::INFO 
+	end 
   unless  C.received[:OpenOrder].blank?
         puts "------------------------------- OpenOrders ----------------------------------"
     puts C.received[:OpenOrder].to_human.join "\n"
