@@ -94,5 +94,15 @@ module IB
         :next_option_partial => false
     end
 
+		def to_human
+			ret = "<ContractDetails  #{long_name}, market-name:#{market_name}, "
+			ret << "category:#{category}, industry:#{industry} / #{subcategory}, " if category.present?
+			ret << "underlying: con_id:#{under_con_id} , sec_type:#{under_sec_type}, symbol:#{under_symbol} " unless under_con_id.zero?
+      ret << "ev_multiplier:#{ev_multiplier}, convertible:#{convertible}, cupon:#{coupon}, "
+			ret << "md_size_multiplier:#{md_size_multiplier}, min_tick:#{min_tick}, next_option_partial:#{next_option_partial} "
+			ret <<"price_magnifier:#{price_magnifier}, puttable:#{puttable}, sec_id-list:#{sec_id_list}, "
+			ret <<"valid exchanges: #{ valid_exchanges}, order types: #{order_types} >"
+		end
+
   end # class ContractDetail
 end # module IB

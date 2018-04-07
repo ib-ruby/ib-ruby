@@ -44,8 +44,10 @@ class Gateway
 
 =begin
 ActiveAccounts returns a list of Account-Objects 
-Thus orders can be verified in a FA-environment
+Thus orders can be verified in a FA-environment.
+
 If only one Account is transmitted,  User and Advisor are identical.
+
 (returns an empty array if the array is not initialized, eg not connected)
 =end
   def active_accounts
@@ -55,14 +57,15 @@ If only one Account is transmitted,  User and Advisor are identical.
 ForSelectAccount provides  an Account-Object-Environment 
 (with AccountValues, Portfolio-Values, Contracts and Orders)
 to deal with in the specifed block.
+
 It returns an Array of the return-values of the block
 =end
 
   def for_active_accounts &b
     active_accounts.map{|y| for_selected_account y.account,  &b }
   end
-  def for_selected_account account_id
-    sa =  @accounts.detect{|x| x.account == account_id }
+  def for_selected_account account_or_id
+		sa = account_or_id.is_a?(IB::Account) ? account_or_id :  @accounts.detect{|x| x.account == account_or_id }
     @account_lock.synchronize do
       yield sa if block_given? && sa.is_a?( IB::Account )
     end
@@ -324,7 +327,7 @@ Its always active. If the connection is interrupted and
 
       else
 	logger.info {"already #{accounts.size} initialized "}
-	@accounts.each{|x| x.update_attrubute :connected ,  true }
+	@accounts.each{|x| x.update_attribute :connected ,  true }
       end # if
     end # subscribe do
   end # def

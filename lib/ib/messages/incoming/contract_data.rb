@@ -60,6 +60,10 @@ module IB
 
         alias contract_details contract_detail
 
+				def to_human
+					"<Contract #{contract.to_human}   #{contract_detail.to_human}>"
+				end
+
       end # ContractData
 
       BondContractData =
