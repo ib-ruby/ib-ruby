@@ -58,7 +58,7 @@ module IB
 									else
 										expiry
 									end
-      "<TheOption: " + [symbol, my_expiry, right, strike, exchange, currency].join(" ") + ">"
+      "<Option: " + [symbol, my_expiry, right, strike, exchange, currency].join(" ") + ">"
     end
 
   end # class Option

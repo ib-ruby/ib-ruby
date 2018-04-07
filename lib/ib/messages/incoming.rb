@@ -28,13 +28,6 @@ module IB
                       [:exchange, :string] # Exchange from which this message originated.
 
 
-      # Receives previously requested FA configuration information from TWS.
-      ReceiveFA =
-          def_message 16, [:type, :int], # type of Financial Advisor configuration data
-                      #                    being received from TWS. Valid values include:
-                      #                    1 = GROUPS, 2 = PROFILE, 3 = ACCOUNT ALIASES
-                      [:xml, :xml] # XML string with requested FA configuration information.
-
       # Receives an XML document that describes the valid parameters that a scanner
       # subscription can have (for outgoing RequestScannerSubscription message).
       ScannerParameters = def_message 19, [:xml, :string]

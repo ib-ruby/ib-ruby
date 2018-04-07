@@ -11,4 +11,4 @@
   require 'models/ib/combo_leg'
   require 'models/ib/execution'
   require 'models/ib/bar'
-	require 'models/gw/contract'
+	require 'models/gw/contract' # provides Contract#Verify

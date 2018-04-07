@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 require 'thread'
 require 'active_support'
 require 'ib/socket'
@@ -19,15 +18,13 @@ module IB
   ## public data-queue: received,  received?, wait_for, clear_received
   ## misc:	      reader_running? 
 
-  #include LogDev   # provides default_logger
+  include LogDev   # provides default_logger
 
     mattr_accessor :current
     mattr_accessor :logger  ## borrowed from active_support
     # Please note, we are realizing only the most current TWS protocol versions,
     # thus improving performance at the expense of backwards compatibility.
     # Older protocol versions support can be found in older gem versions.
-
-
 
     attr_accessor  :socket #   Socket to IB server (TWS or Gateway)
     attr_accessor  :next_local_id # Next valid order id 
@@ -42,6 +39,7 @@ module IB
                        #:port => '7497', # TWS connection
                    connect: true, # Connect at initialization
                    received:  true, # Keep all received messages in a @received Hash
+																		# implies: start reader-thread
                    logger: default_logger,
                    client_id: random_id, 
                    client_version: IB::Messages::CLIENT_VERSION,
@@ -49,105 +47,105 @@ module IB
 		   **any_other_parameters_which_are_ignored
 
     # convert parameters into instance-variables and assign them
-    method(__method__).parameters.each do |type, k|
-      next unless type == :key
-      case k
-      when :logger
-	self.logger = logger  
-      else
-	v = eval(k.to_s)
-	instance_variable_set("@#{k}", v) unless v.nil?
-      end
-    end
+		method(__method__).parameters.each do |type, k|
+			next unless type == :key
+			case k
+			when :logger
+				self.logger = logger  
+			else
+				v = eval(k.to_s)
+				instance_variable_set("@#{k}", v) unless v.nil?
+			end
+		end
 
-      # A couple of locks to avoid race conditions in JRuby
-      @subscribe_lock = Mutex.new
-      @receive_lock = Mutex.new
-      @message_lock = Mutex.new
+		# A couple of locks to avoid race conditions in JRuby
+		@subscribe_lock = Mutex.new
+		@receive_lock = Mutex.new
+		@message_lock = Mutex.new
 
-      @connected = false
-      self.next_local_id = nil
-      
-#     self.subscribe(:Alert) do |msg|
-#       puts msg.to_human
-#     end
+		@connected = false
+		self.next_local_id = nil
 
-      # TWS always sends NextValidId message at connect -subscribe once and  save this id
-      self.subscribe(:NextValidId) do |msg|
-	logger.progname = "Connection#connect"
-        self.next_local_id = msg.local_id
-        logger.info { "Got next valid order id: #{next_local_id}." }
-      end
-  
-	## this block is executed after the tws-communications are established
-	yield self if block_given?
-      # Ensure the transmission of NextValidId.
-      # Try 5 reconnection-attemps. 
-      # Then the TWS has to be restarted
-      if connect
-	a = 0
-	begin
-	  disconnect if connected?
-	  open() 
-	  wait_for  :NextValidId, 1
-	  a += 1
-	  if a == 5
-	    error 'Next Order ID not transmitted,  restart TWS/Gateway'
-	    Kernel.exit
-	  end
-	end while self.next_local_id.nil?
-      end
-      start_reader
-      Connection.current = self
-    end
+		#     self.subscribe(:Alert) do |msg|
+		#       puts msg.to_human
+		#     end
 
-    ### Working with connection
+		# TWS always sends NextValidId message at connect -subscribe once and  save this id
+		self.subscribe(:NextValidId) do |msg|
+			logger.progname = "Connection#connect"
+			self.next_local_id = msg.local_id
+			logger.info { "Got next valid order id: #{next_local_id}." }
+		end
 
-    def connect
-	logger.progname='IB::Connection#connect' if logger.is_a?(Logger)
-	if connected?
-	  error  "Already connected!"
-	  return
-	end
+		## this block is executed before tws-communication is established
+		yield self if block_given?
+		# Ensure the transmission of NextValidId.
+		# Try 5 reconnection-attemps. 
+		# Then the TWS has to be restarted
+		if connect
+			a = 0
+			begin
+				disconnect if connected?
+				open() 
+				wait_for  :NextValidId, 1
+				a += 1
+				if a == 5
+					error 'Next Order ID not transmitted,  restart TWS/Gateway'
+					Kernel.exit
+				end
+			end while self.next_local_id.nil?
+		end
+		start_reader if @received
+		Connection.current = self
+		end
+
+		### Working with connection
+
+		def connect
+			logger.progname='IB::Connection#connect' 
+			if connected?
+				error  "Already connected!"
+				return
+			end
 
 
-      self.socket = IBSocket.open(@host, @port)
+			self.socket = IBSocket.open(@host, @port)
 
-      socket.initialising_handshake
-      socket.decode_message( socket.recieve_messages ) do  | the_message |
-#      ib_server_version = socket.read_int
-      #     todo:  hier so etwas wie: Server-Version wird nicht unterstützt einfügen,
-      #		   falls eine ServerVersion <> 136 zurück gegeben wird.
-#      if @server_version > ib_server_version
-#        logger.error { "Server version #{ib_server_version}, #{@server_version} required." }
-#      end
-	@server_version =  the_message.shift.to_i
-	@remote_connect_time = DateTime.parse the_message.shift
-	@local_connect_time = Time.now
-      end
+			socket.initialising_handshake
+			socket.decode_message( socket.recieve_messages ) do  | the_message |
+				#      ib_server_version = socket.read_int
+				#     todo:  hier so etwas wie: Server-Version wird nicht unterstützt einfügen,
+				#		   falls eine ServerVersion <> 136 zurück gegeben wird.
+				#      if @server_version > ib_server_version
+				#        logger.error { "Server version #{ib_server_version}, #{@server_version} required." }
+				#      end
+				@server_version =  the_message.shift.to_i
+				@remote_connect_time = DateTime.parse the_message.shift
+				@local_connect_time = Time.now
+			end
 
-      # Sending (arbitrary) client ID to identify subsequent communications.
-      # The client with a client_id of 0 can manage the TWS-owned open orders.
-      # Other clients can only manage their own open orders.
+			# Sending (arbitrary) client ID to identify subsequent communications.
+			# The client with a client_id of 0 can manage the TWS-owned open orders.
+			# Other clients can only manage their own open orders.
 
-      # V100 initial handshake
-      # Parameters borrowed from the python client
-      start_api = 71
-      version = 2
-      optcapab =  ""
+			# V100 initial handshake
+			# Parameters borrowed from the python client
+			start_api = 71
+			version = 2
+			optcapab =  ""
 
-      socket.send_messages start_api, version, @client_id  , optcapab 
-      @connected = true
-      logger.info { "Connected to server, version: #{@server_version},\n connection time: " +
-        "#{@local_connect_time} local, " +
-        "#{@remote_connect_time} remote."}
+			socket.send_messages start_api, version, @client_id  , optcapab 
+			@connected = true
+			logger.info { "Connected to server, version: #{@server_version},\n connection time: " +
+								 "#{@local_connect_time} local, " +
+									 "#{@remote_connect_time} remote."}
 
-      # if the client_id is wrong or the port is not accessible the first read attempt fails
-      # get the first message and proceed if something reasonable is recieved
-      the_message = process_message   # recieve next_order_id
-      error "Check Port/Client_id ", :reader if the_message == " "
-#      start_reader  
-    end
+			# if the client_id is wrong or the port is not accessible the first read attempt fails
+			# get the first message and proceed if something reasonable is recieved
+			the_message = process_message   # recieve next_order_id
+			error "Check Port/Client_id ", :reader if the_message == " "
+			#      start_reader  
+		end
 
     alias open connect # Legacy alias
 
@@ -343,6 +341,21 @@ module IB
       end
     end
 
+    # Start reader thread that continuously reads messages from @socket in background.
+    # If you don't start reader, you should manually poll @socket for messages
+    # or use #process_messages(msec) API.
+    def start_reader
+			if connected?
+				Thread.abort_on_exception = true
+				@reader_running = true
+				@reader_thread = Thread.new do
+					process_messages while @reader_running
+				end
+			else
+				logger.fatal {"Could not start reader, not connected!"}
+			end
+    end
+
     protected
     # Message subscribers. Key is the message class to listen for.
     # Value is a Hash of subscriber Procs, keyed by their subscription id.
@@ -361,7 +374,7 @@ module IB
 	msg_id = the_decoded_message.shift.to_i
 
 	# Debug:
-	logger.info { "Got message #{msg_id} (#{Messages::Incoming::Classes[msg_id]})"}
+	logger.debug { "Got message #{msg_id} (#{Messages::Incoming::Classes[msg_id]})"}
 
 	# Create new instance of the appropriate message type,
 	# and have it read the message from socket.
@@ -386,17 +399,6 @@ module IB
       end
     end
     
-    # Start reader thread that continuously reads messages from @socket in background.
-    # If you don't start reader, you should manually poll @socket for messages
-    # or use #process_messages(msec) API.
-    def start_reader
-      Thread.abort_on_exception = true
-      @reader_running = true
-      @reader_thread = Thread.new do
-        process_messages while @reader_running
-      end
-    end
-
     def random_id
       rand 999999999
     end
