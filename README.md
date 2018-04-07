@@ -13,7 +13,7 @@ You've been warned.
 
 This code is not sanctioned or supported by Interactive Brokers.
 
-## API v.9.72+ & inclusion of Gateway-Application
+## API v.9.72+ & Inclusion of Gateway-Application
 The master-branch covers the most recent versions of Ruby and TWS. Ruby 2.4 and TWS Vers. 969 
 are needed. It provides active-model objects which behave as thread-safe and lightweight acitve-record's. 
 
