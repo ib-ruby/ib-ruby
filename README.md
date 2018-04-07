@@ -1,6 +1,6 @@
 # ib-ruby
 
-Ruby Implementation of the Interactive Brokers Trader Workstation (TWS) API v.972+.
+Ruby Implementation of the Interactive Brokers Trader Workstation (TWS) API v.9.72+.
 
 Copyright (C) 2006-2018 Paul Legato, Wes Devauld, Ar Vicco and Hartmut Bischoff.
 
@@ -13,11 +13,12 @@ You've been warned.
 
 This code is not sanctioned or supported by Interactive Brokers.
 
-## TESTING API v. 9.72+
+## API v.9.72+ & inclusion of Gateway-Application
 The master-branch covers the most recent versions of Ruby and TWS. Ruby 2.4 and TWS Vers. 969 
-are needed. Most of the Rails-stuff is gone. However, ib-ruby provides active-model objects, which
-can easily used in Rails. 
-Most features of the latest gem are covered, still some testing is required.
+are needed. It provides active-model objects which behave as thread-safe and lightweight acitve-record's. 
+
+The IB::Connection-Application stores any response from the TWS in a _received_-Array. Its not intended for 24/7-applications 
+but ideal for quick-queries. The IB::Gateway-Application provides a ready-to-go solution for reliable automated claims. 
 
 ## SUMMARY:
 
@@ -75,13 +76,10 @@ other API implementations. The choice is yours.
 
     | ib-ruby gem | TWS version | API version  |
     |:------------|------------:|:------------:|
-    | 0.5.21      |    918-920  |    965       |
-    | 0.6.1       |    921-923  |    966       |
-    | 0.7.1       |    924-925  |    966       |
-    | 0.8.1       |    926-930  |    967 beta  |
     | 0.9.2       |    931-     |    967 final |
     | 0.9.5+      |    968      |    971       |
-
+    | master-branch |  969      |    972+      |
+  
 4. Start Interactive Broker's Trader Work Station or Gateway before your code
    attempts to connect to it. Note that TWS and Gateway listen to different ports,
    this library assumes connection to Gateway on the same machine (localhost:4002)
@@ -90,7 +88,7 @@ other API implementations. The choice is yours.
 ## SYNOPSIS:
 To play around, a console-app is included. Change to the bin-directory and call 
   
-  ./console
+  ./console.rb  ("t" if a tws(GUI) is running on localhost)
 
 After startup, ib-ruby is running, the Connection ist active and accessible via the global Constant »C».
 Any message to the TWS, any subscription to incomming messages can initialized. (Details in [Wiki(Console)](https://github.com/ib-ruby/ib-ruby/wiki/Console))
