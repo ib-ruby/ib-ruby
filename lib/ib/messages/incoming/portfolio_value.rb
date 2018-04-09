@@ -22,20 +22,27 @@ module IB
 				class PortfolioValue
 
 
-					def to_human
-					"<PortfolioValue: #{contract.to_human} #{portfolio_value}>"
-					end
+				#	def to_human
+				#	"<PortfolioValue: #{contract.to_human} #{portfolio_value}>"
+				#	end
 					
 					def portfolio_value
-						@portfolio_value =  IB::PortfolioValue.new   @data[:portfolio_value] 
+						unless @portfolio_value.present?
+							@portfolio_value =  IB::PortfolioValue.new   @data[:portfolio_value] 
+							@portfolio_value.contract = contract
+						end
+						@portfolio_value # return_value
 					end
 
 					def contract
-						@contract = IB::Contract.build @data[:contract]
+						@contract = @contract.presence || IB::Contract.build( @data[:contract] )
 					end
 
 					def account_name
 						@account_name =  @data[:account]
+					end
+					def to_human
+						portfolio_value.to_human
 					end
 				end # PortfolioValue
 

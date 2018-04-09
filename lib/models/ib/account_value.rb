@@ -10,7 +10,7 @@ module IB
 	  :currency
 
 
-    # Order comparison
+    #  comparison
     def == other
       super(other) ||
         other.is_a?(self.class) &&

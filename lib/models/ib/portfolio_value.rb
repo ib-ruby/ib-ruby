@@ -27,9 +27,12 @@ class PortfolioValue < IB::Model
         contract == other.contract
     end
     def to_human
-      " <#{position}): Market #{market_price}" +
-      " price #{market_value} value; PnL: #{unrealized_pnl} unrealized," +
-      " #{realized_pnl} realized;>"
+			account.to_human +
+      "<Pos:#{ "%8.2f " % position}; Price: #{market_price}" +
+      " Value: #{market_value}; PNL:" + 
+			( unrealized_pnl.zero? ? "": " #{unrealized_pnl} unrealized,") +
+      ( realized_pnl.zero? ? "" : " #{realized_pnl} realized;>" ) + 
+			" Contract: #{contract.to_human}"
     end
     alias to_s to_human
 

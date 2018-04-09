@@ -8,7 +8,7 @@ def define_contracts
   }
 end
 
-describe 'Attached Orders', :connected => true, :integration => true , focus: true do
+describe 'Attached Orders', :connected => true, :integration => true  do
 
   before(:all) do
     verify_account
@@ -25,10 +25,10 @@ describe 'Attached Orders', :connected => true, :integration => true , focus: tr
   [
     [:stock, 100, 'DAY', 'LMT'], # Parent + takeprofit target
     [:stock, 100, 'DAY', 'STP'], # Parent + stoploss
-    [:stock, 100, 'GTC', 'LMT'], # GTC Parent + target
+    [:stock, 100, 'GTC', 'STPLMT'], # GTC Parent + target
     [:butterfly, 10, 'DAY', 'LMT'], # Combo Parent + target
     [:butterfly, 10, 'GTC', 'LMT'], # GTC Combo Parent + target
-    [:butterfly, 100, 'GTC', 'STPLMT'], # GTC Combo Parent + stoplimit target
+    [:butterfly, 10, 'GTC', 'STPLMT'], # GTC Combo Parent + stoplimit target
   ].each do |(contract, qty, tif, attach_type)|
     context "#{tif} BUY (#{contract}) limit order with attached #{attach_type} SELL" do
 
@@ -49,6 +49,9 @@ describe 'Attached Orders', :connected => true, :integration => true , focus: tr
 
       it 'does not transmit original Order before attach' do
         ib = IB::Connection.current
+				if ib.received[:OpenOrder].size > 0
+					puts ib.received[:OpenOrder].map(&:to_human)
+				end
         expect( ib.received[:OpenOrder]).to  have_exactly(0).order_message
         expect( ib.received[:OrderStatus]).to  have_exactly(0).status_message
       end
@@ -101,7 +104,7 @@ describe 'Attached Orders', :connected => true, :integration => true , focus: tr
       end
 
 			# only works if the markets are open
-      context 'When original Order cancels' do
+      context 'When original Order cancels', if: :us_trading_hours do
         it 'attached takeprofit is cancelled implicitly' do
         ib = IB::Connection.current
 					ib.clear_received :OpenOrder, :OrderStatus

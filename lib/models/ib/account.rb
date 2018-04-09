@@ -53,6 +53,15 @@ module IB
 			super(other) ||
 				other.is_a?(self.class) && account == other.account
 		end 
+
+		def to_human
+			a = if self.alias.present? 
+						" alias: "+ self.alias
+					else
+						""
+					end
+				"<#{account}#{a}>"
+		end
 end # class
 
 end # module

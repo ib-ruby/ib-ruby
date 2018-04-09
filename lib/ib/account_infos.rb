@@ -27,6 +27,7 @@ module AccountInfos
 	  for_selected_account( msg.account_name ) do | ac |
 	    ac.contracts.update_or_create  msg.contract
 	    ac.portfolio_values.update_or_create( msg.portfolio_value ){ :contract }
+			msg.portfolio_value.account = ac
 	  end
       end # case
     end # do block

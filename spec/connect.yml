@@ -1,0 +1,13 @@
+---
+:connection:
+ :port: 4002 # 7497
+ :host: 127.0.0.1
+ :client_id: 2111
+ :reuters: false
+ :account: DU167348   # Set this to your Paper Account Number
+:gateway:
+ :port: 4002 # 7497
+ :host: 127.0.0.1
+ :client_id: 990
+ :reuters: false
+ :account: DU167348   # Set this to your Paper Account Number
