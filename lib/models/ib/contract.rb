@@ -69,6 +69,7 @@ module IB
     ### Associations
 
     has_many :orders # Placed for this Contract
+		has_many :portfolio_values
 
     has_many :bars # Possibly representing trading history for this Contract
 
@@ -313,7 +314,9 @@ module IB
     end
 
     # This returns a Contract initialized from the serialize_ib_ruby format string.
-    def self.from_ib_ruby string
+    def self.from_ib_ruby stri
+			:q
+			ng
       keys = [:con_id, :symbol, :sec_type, :expiry, :strike, :right, :multiplier,
               :exchange, :primary_exchange, :currency, :local_symbol]
       props = Hash[keys.zip(string.split(":"))]

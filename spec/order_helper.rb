@@ -24,10 +24,18 @@ def place_the_order( contract: IB::Symbols::Stocks.wfc)
 		the_order_id  # return value
 end
 
+def remove_open_orders
+	ib =  IB::Connection.current
+		ib.send_message :RequestOpenOrders
+		ib.wait_for :OpenOrderEnd
+		open_order_ids =  ib.received[:OpenOrder].map{|msg| msg.order[:local_id]}
+		ib.cancel_order *open_order_ids
+end
+
 RSpec.shared_examples_for "Alert message" do | the_expected_message |
 	  subject { IB::Connection.current.received[:Alert] }
 			it { is_expected.to have_at_least(1).error_message }
-		#	it { puts  subject.to_human }   # debug
+#			it { puts "ALERT: "+ subject.inspect }   # debug
 			it "contains a discriptive error message" do
 				expect( subject.any?{|x|  x.message =~  the_expected_message } ).to be_truthy
 			end
@@ -45,13 +53,14 @@ RSpec.shared_examples_for 'OpenOrder message' do
   its(:buffer ) { is_expected.to be_empty }  # Work on openOrder-Message has to be finished.
   							## Integration of Conditions !
   its(:local_id) { is_expected.to be_an Integer }
+	its(:order){ is_expected.to be_an IB::Order }
   its(:status) { is_expected.to match( /Submit/).or match( /Filled/ ) }
   #its(:to_human) { is_expected.to match /<OpenOrder: <Stock: WFC USD> <Order: LMT DAY buy 100.0 49.13 .*Submit.* #\d+\/\d+ from 1111/ }
 
 
   it 'has proper order accessor' do
     o = subject.order
-    expect( o.client_id ).to eq OPTS[:connection][:client_id]
+    expect( o.client_id ).to eq(OPTS[:connection][:client_id]).or be_zero 
     expect( o.parent_id ).to be_zero
   end
 
@@ -60,7 +69,7 @@ RSpec.shared_examples_for 'OpenOrder message' do
     expect(os.local_id).to be_an Integer
     expect(os.perm_id).to  be_an Integer 
     expect(os.perm_id.to_s).to  match  /^\d{8,11}$/   # has 9 to 11 numeric characters
-    expect(os.client_id).to eq OPTS[:connection][:client_id]
+    expect(os.client_id).to eq( OPTS[:connection][:client_id] ).or be_zero
     expect(os.parent_id).to be_zero
   end
 end
@@ -68,15 +77,9 @@ end
 
 RSpec.shared_examples_for 'Placed Order' do
 
-#  context "returned Message" do
-#subject{  the_placed_order }
 
-    #it 'sets placement-related properties' do
 		it{ is_expected.to be_a IB::Order }
-	#	its( :placed_at ) { is_expected.to be_a DateTime }
 		it "got proper id's" do
-#			puts "SUBJECT #{the_placed_order.inspect}"
-
 			expect( subject.local_id ).to be_an Integer
 			expect( subject.perm_id ).to be_an Integer
 			expect( subject.perm_id.to_s).to  match  /^\d{8,11}$/   # has 9 to 11 numeric characters
@@ -91,36 +94,50 @@ RSpec.shared_examples_for 'Placed Order' do
 		it "mysterious trailing stop price is absent", :pending => true do
 			pending "seems to be irrelevant, but needs clarification"
 			expect( subject.trail_stop_price  ).to be_nil.or be_zero
-			fail
 		end
 #	end
 end
 
+RSpec.shared_examples_for 'Presubmitted what-if Order' do | used_contract |
+	its( :status ){ is_expected.to eq 'PreSubmitted' }
+	if used_contract.is_a? IB::Bag  ## Combos dont have fixed commissions
+		its( :commission ){ is_expected.to be_nil.or be_zero } 
+	else
+		its( :commission ){ is_expected.to be_a( BigDecimal ).and be > 0 } 
+	end
+
+	its( :what_if ){  is_expected.to be_truthy }
+	its( :equity_with_loan  ){ is_expected.to be_a( BigDecimal ).and be > 0 } 
+	its( :init_margin  ){ is_expected.to be_a( BigDecimal ).and be > 0 }
+	its( :maint_margin ){ is_expected.to be_a( BigDecimal ).and be > 0 }
+	it "mysterious trailing stop price is absent", pending: true do
+		pending "seems to be irrelevant, but needs clarification"
+		expect( subject.trail_stop_price ).to be_nil.or be_zero
+	end
+
+end
 
 RSpec.shared_examples_for 'Filled Order' do
-		its( :commission){ is_expected.not_to be_zero }
+		its( :commission){ is_expected.to be_a( BigDecimal ).and be > 0 }
 #		its( :average_fill_price ){ is_expected.not_to be_nil.or be_zero }
 #		its( :average_fill_price ){is_expected.to be_a BigDecimal  }
 		its( :status ) { is_expected.to eq 'Filled' }
 		it "mysterious trailing stop price is absent", pending: true do
 			pending "seems to be irrelevant, but needs clarification"
 			expect( subject.trail_stop_price ).to be_nil.or be_zero
-			fail
 		end
 end
 
 
 RSpec.shared_examples_for "Proper Execution Record" do | side |
 
-
-  #msg = @ib.received[:ExecutionData][opts[:index] || -1]
   its( :request_id){ is_expected.to  eq( OPTS[:connection][:request_id] ).or eq(-1) }
   its( :contract){ is_expected.to eq contract }
 
 	it " has meaningful attributes " do
   exec = subject.execution
   expect(  exec.perm_id).to be_an Integer
-  expect(  exec.client_id).to eq OPTS[:connection][:client_id]
+  expect(  exec.client_id).to eq( OPTS[:connection][:client_id] ).or be_zero
   expect(  exec.local_id).to be_an Integer
   expect(  exec.exec_id).to be_a String
   expect(  exec.time).to match /\d\d:\d\d:\d\d/

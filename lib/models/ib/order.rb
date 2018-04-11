@@ -279,7 +279,7 @@ module IB
 				#			 CondPriceMin.;60.0
 
 
-    prop :misc1, :misc2, :misc3, :misc4, :misc5, :misc6, :misc7, :misc8 # just 4 debugging
+#    prop :misc1, :misc2, :misc3, :misc4, :misc5, :misc6, :misc7, :misc8 # just 4 debugging
 
     alias order_combo_legs leg_prices
     alias smart_combo_routing_params combo_params

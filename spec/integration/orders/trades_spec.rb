@@ -14,8 +14,7 @@ describe "Trades", :connected => true, :integration => true, :slow => true do
 			@initial_order_id =  ib.next_local_id
     end
 
-    after(:all) { close_connection }
-
+    after(:all) { remove_open_orders; close_connection }
 
      let(:contract) { IB::Symbols::Forex[:eurusd] }   # referenced by shared examples
 		 [ :buy, :sell ].each_with_index do | the_action, count |
@@ -30,7 +29,6 @@ describe "Trades", :connected => true, :integration => true, :slow => true do
 																		:account => ACCOUNT
 				end
 
-        #:what_if => true
 
         ib.wait_for(5, :ExecutionData, :OpenOrder) do
           ib.received[:OpenOrder].last && ib.received[:OpenOrder].last.order.commission
@@ -81,7 +79,6 @@ describe "Trades", :connected => true, :integration => true, :slow => true do
 		 end # each
 
     context "Request executions" do
-      # TODO: RequestExecutions with filters?
 
       before(:all) do
 				ib =  IB::Connection.current
@@ -92,7 +89,7 @@ describe "Trades", :connected => true, :integration => true, :slow => true do
         ib.wait_for :ExecutionData, 3 # sec
       end
 
-      #after(:all) { clean_connection }
+      after(:all) { clean_connection }
 
       it 'does not receive Order-related messages' do
 				puts "time"
@@ -105,16 +102,9 @@ describe "Trades", :connected => true, :integration => true, :slow => true do
         expect( IB::Connection.current.received[:ExecutionData]).to have_at_least(1).execution_data
       end
 
-     # it 'receives Execution Data' do
-     #   execution_should_be :buy, :index => 0, :request_id => 456
-     #   execution_should_be :sell, :request_id => 456
-     # end
 
       it 'also receives Commission Reports' do
         expect( IB::Connection.current.received[:CommissionReport]).to have_exactly(2).reports
-
-       # commission_report_should_be :no_pnl, @ib.received[:ExecutionData].first.execution
-       # commission_report_should_be :with_pnl, @ib.received[:ExecutionData].last.execution
       end
 
     end # Request executions
@@ -124,16 +114,3 @@ end # Trades
 
 __END__
 
-Actual message exchange for "Request executions" (TWS 925):
-10:57:41:348 <- 7-3-456-1111--20120430 10:57:31-----
-10:57:41:349 -> 11-9-456-1-12087792-EUR-CASH--0.0--IDEALPRO-USD-EUR.USD-0001f4e8.4f9dbb0b.01.01-20120430  10:57:36-DU118180-IDEALPRO-BOT-20000-1.32540-474073463-1111-0-20000-1.32540--
-10:57:41:350 -> 11-9-456-2-12087792-EUR-CASH--0.0--IDEALPRO-USD-EUR.USD-0001f4e8.4f9dbb0c.01.01-20120430  10:57:36-DU118180-IDEALPRO-SLD-20000-1.32540-474073464-1111-0-20000-1.32540--
-10:57:41:350 -> 59-1-0001f4e8.4f9dbb0b.01.01-2.5-USD-1.7976931348623157E308-1.7976931348623157E308--
-10:57:41:350 -> 59-1-0001f4e8.4f9dbb0c.01.01-2.5-USD-27.7984-1.7976931348623157E308--
-10:57:41:351 -> 55-1-456-
-
-Actual message exchange for "Request executions" (TWS 923):
-11:11:45:436 <- 7-3-456-1111--20120430 11:11:36-----
-11:11:45:439 -> 11-8-456-1-12087792-EUR-CASH--0.0--IDEALPRO-USD-EUR.USD-0001f4e8.4f9dbc96.01.01-20120430  11:11:43-DU118180-IDEALPRO-BOT-20000-1.32485-308397342-1111-0-20000-1.32485--
-11:11:45:439 -> 11-8-456-2-12087792-EUR-CASH--0.0--IDEALPRO-USD-EUR.USD-0001f4e8.4f9dbc9a.01.01-20120430  11:11:45-DU118180-IDEALPRO-SLD-20000-1.32480-308397343-1111-0-20000-1.32480--
-11:11:45:439 -> 55-1-456-
