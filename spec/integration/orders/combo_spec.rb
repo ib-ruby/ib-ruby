@@ -1,7 +1,7 @@
 require 'order_helper'
 require 'combo_helper'
 
-RSpec.describe "What IF  Order",  focus: true do
+RSpec.describe "What IF  Order"   do
 
 
   before(:all) { verify_account }

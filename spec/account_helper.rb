@@ -9,7 +9,7 @@ def verify_account
   puts 'WARNING: FINANCIAL LOSSES MAY RESULT IF YOU RUN TESTS WITH REAL IB ACCOUNT!'
   puts 'WARNING: YOU HAVE BEEN WARNED!'
   puts
-  puts 'Configure your connection to IB PAPER ACCOUNT in spec/spec_helper.rb'
+  puts 'Configure your connection to IB PAPER ACCOUNT in spec/connect.yml'
   puts
 
   account = OPTS[:connection][:account] || OPTS[:connection][:account_name]

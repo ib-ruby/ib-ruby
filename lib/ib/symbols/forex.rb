@@ -25,11 +25,10 @@ module IB
 
         # now define each contract
         pairs.each do |pair|
-          @contracts[pair.downcase.to_sym] = IB::Contract.new(
+          @contracts[pair.downcase.to_sym] = IB::Forex.new(
             :symbol => pair[0..2],
             :exchange => "IDEALPRO",
             :currency => pair[3..5],
-            :sec_type => :forex,
             :description => pair
           )
         end

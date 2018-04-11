@@ -37,21 +37,21 @@ end
 
 RSpec.shared_examples_for 'OpenOrder message' do
 #	let( :subject ){ the_returned_message }
-  it { should be_an IB::Messages::Incoming::OpenOrder }
+  it { is_expected.to be_an IB::Messages::Incoming::OpenOrder }
   its(:message_type) { is_expected.to eq :OpenOrder }
   its(:message_id) { is_expected.to eq 5 }
   its(:version) { is_expected.to eq 34}
   its(:data) { is_expected.not_to  be_empty }
-  its(:buffer, pending: true ) { is_expected.to be_empty }  # Work on openOrder-Message has to be finished.
+  its(:buffer ) { is_expected.to be_empty }  # Work on openOrder-Message has to be finished.
   							## Integration of Conditions !
   its(:local_id) { is_expected.to be_an Integer }
-  its(:status) { is_expected.to match /Submit/ }
+  its(:status) { is_expected.to match( /Submit/).or match( /Filled/ ) }
   #its(:to_human) { is_expected.to match /<OpenOrder: <Stock: WFC USD> <Order: LMT DAY buy 100.0 49.13 .*Submit.* #\d+\/\d+ from 1111/ }
 
 
   it 'has proper order accessor' do
     o = subject.order
-    expect( o.client_id ).to eq(1111) or eq(2000)
+    expect( o.client_id ).to eq OPTS[:connection][:client_id]
     expect( o.parent_id ).to be_zero
   end
 
@@ -60,9 +60,8 @@ RSpec.shared_examples_for 'OpenOrder message' do
     expect(os.local_id).to be_an Integer
     expect(os.perm_id).to  be_an Integer 
     expect(os.perm_id.to_s).to  match  /^\d{8,11}$/   # has 9 to 11 numeric characters
-    expect(os.client_id).to eq(1111)  or eq(2000)
+    expect(os.client_id).to eq OPTS[:connection][:client_id]
     expect(os.parent_id).to be_zero
-    expect(os.submitted?).to be_truthy
   end
 end
 
@@ -74,21 +73,91 @@ RSpec.shared_examples_for 'Placed Order' do
 
     #it 'sets placement-related properties' do
 		it{ is_expected.to be_a IB::Order }
+	#	its( :placed_at ) { is_expected.to be_a DateTime }
 		it "got proper id's" do
 #			puts "SUBJECT #{the_placed_order.inspect}"
+
 			expect( subject.local_id ).to be_an Integer
 			expect( subject.perm_id ).to be_an Integer
-			expect( subject.perm_id.to_s).to  match  /^\d{8,11}$/   # has 9 to 11 numeric charactersa
+			expect( subject.perm_id.to_s).to  match  /^\d{8,11}$/   # has 9 to 11 numeric characters
 		end
 		it "has an adequat clearing intent" do
 			expect(IB::VALUES[:clearing_intent].values). to include subject.clearing_intent
 		end
-		it" the Time in Force is valid" do
+		it " the Time in Force is valid" do
 			expect( IB::VALUES[:tif].values ).to include subject.tif
 		end
 		its( :clearing_intent ){is_expected.to eq :ib }
+		it "mysterious trailing stop price is absent", :pending => true do
+			pending "seems to be irrelevant, but needs clarification"
+			expect( subject.trail_stop_price  ).to be_nil.or be_zero
+			fail
+		end
 #	end
 end
+
+
+RSpec.shared_examples_for 'Filled Order' do
+		its( :commission){ is_expected.not_to be_zero }
+#		its( :average_fill_price ){ is_expected.not_to be_nil.or be_zero }
+#		its( :average_fill_price ){is_expected.to be_a BigDecimal  }
+		its( :status ) { is_expected.to eq 'Filled' }
+		it "mysterious trailing stop price is absent", pending: true do
+			pending "seems to be irrelevant, but needs clarification"
+			expect( subject.trail_stop_price ).to be_nil.or be_zero
+			fail
+		end
+end
+
+
+RSpec.shared_examples_for "Proper Execution Record" do | side |
+
+
+  #msg = @ib.received[:ExecutionData][opts[:index] || -1]
+  its( :request_id){ is_expected.to  eq( OPTS[:connection][:request_id] ).or eq(-1) }
+  its( :contract){ is_expected.to eq contract }
+
+	it " has meaningful attributes " do
+  exec = subject.execution
+  expect(  exec.perm_id).to be_an Integer
+  expect(  exec.client_id).to eq OPTS[:connection][:client_id]
+  expect(  exec.local_id).to be_an Integer
+  expect(  exec.exec_id).to be_a String
+  expect(  exec.time).to match /\d\d:\d\d:\d\d/
+  expect(  exec.account_name).to eq OPTS[:connection][:account]
+  expect(  exec.exchange).to eq contract.exchange
+  expect(  exec.side).to eq side
+  expect(  exec.shares).to eq  order.total_quantity
+  expect(  exec.cumulative_quantity).to eq order.total_quantity
+  expect(  exec.price).to be > 1	# assuming EUR/USD stays in the range 1 --- 2
+  expect(  exec.price).to be < 2
+  expect(  exec.price).to eq exec.average_price
+  expect(  exec.liquidation).to be_falsy
+	end
+end
+
+# parameter pnl: true: there is a realized pnl
+# takes the last ExecutionData-record as reference for exec_id
+	RSpec.shared_examples 'Valid CommissionReport' do |  pnl |
+		it{ is_expected.to be_an  IB::Messages::Incoming::CommissionReport }
+		# data.keys: [:version, :exec_id, :commission, :currency, :realized_pnl, :yield, :yield_redemption_date] 
+	  it " has a proper execution id" do
+			e=  IB::Connection.current.received[:ExecutionData].last.execution.exec_id
+			expect( subject.exec_id  ).to eq e 	
+		end
+		its( :commission ){is_expected.to be_a BigDecimal}
+		its( :currency ){ is_expected.to eq OPTS[:connection][:base_currency] }
+		its( :yield ){ is_expected.to be_nil  }
+		its( :yield_redemption_date){ is_expected.to be_nil}  # no date, YYYYMMDD format for bonds
+		if pnl>0
+			its( :realized_pnl ){is_expected.to be_a BigDecimal}
+		else
+			its( :realized_pnl ){is_expected.to be_nil}
+		end
+
+	end 
+
+
 =begin
       @order.modified_at.should be_a Time
       @order.placed_at.should == @order.modified_at

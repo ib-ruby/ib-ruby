@@ -26,7 +26,7 @@ end
 
 
   # Configure settings in connect.yml
-	  OPTS[:connection] = read_yml[:gateway]
+	  OPTS[:connection] = read_yml[:connection]
 		ACCOUNT =  OPTS[:connection][:account]   # shortcut for active account (orders portfolio_values ect.)
 
 	

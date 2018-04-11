@@ -3,6 +3,7 @@
  :port: 4002 # 7497
  :host: 127.0.0.1
  :client_id: 2111
+ :base_currency: EUR
  :reuters: false
  :account: DU167348   # Set this to your Paper Account Number
 :gateway:

@@ -1,193 +1,120 @@
 require 'order_helper'
 
-def commission_report_should_be status=:with_pnl, exec=@ib.received[:ExecutionData].last.execution
-  msg = @ib.received[:CommissionReport].find { |msg| msg.exec_id == exec.exec_id }
-  msg.should_not be_nil
-  msg.should be_an IB::Messages::Incoming::CommissionReport
 
-  msg.exec_id.should == exec.exec_id
-  msg.commission.should == 2.5 # Fixed commission for Forex
-  msg.currency.should == 'USD'
-  msg.yield.should be_nil
-  msg.yield_redemption_date.should == 0 # no date, YYYYMMDD format for bonds
-
-  if status == :with_pnl
-    msg.realized_pnl.should be_a Float
-    msg.realized_pnl.should be < 10000 # Not Double.MAX_VALUE
-  else
-    msg.realized_pnl.should be_nil
-  end
-end
-
-def execution_should_be side, opts={}
-  msg = @ib.received[:ExecutionData][opts[:index] || -1]
-  msg.request_id.should == (opts[:request_id] || -1)
-  msg.contract.should == @contract
-
-  exec = msg.execution
-  exec.perm_id.should be_an Integer
-  exec.perm_id.should == @ib.received[:OpenOrder].last.order.perm_id if @ib.received?(:OpenOrder)
-  exec.client_id.should == OPTS[:connection][:client_id]
-  exec.local_id.should be_an Integer
-  exec.local_id.should == @order.local_id if @order
-  exec.exec_id.should be_a String
-  exec.time.should =~ /\d\d:\d\d:\d\d/
-  exec.account_name.should == OPTS[:connection][:account]
-  exec.exchange.should == 'IDEALPRO'
-  exec.side.should == side
-  exec.shares.should == 20000
-  exec.cumulative_quantity.should == 20000
-  exec.price.should be > 1
-  exec.price.should be < 2
-  exec.price.should == exec.average_price
-  exec.liquidation.should == false
-end
 
 describe "Trades", :connected => true, :integration => true, :slow => true do
 
-  before(:all) { verify_account }
+  before(:all) { verify_account;  IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)  }
 
   context "Trading Forex", :if => :forex_trading_hours do
 
     before(:all) do
-      @contract = IB::Symbols::Forex[:eurusd]
-      @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
-      @ib.wait_for :NextValidId
+      ib = IB::Connection.current
+      ib.wait_for :NextValidId
+			@initial_order_id =  ib.next_local_id
     end
 
     after(:all) { close_connection }
 
-    context "Placing BUY order" do
 
+     let(:contract) { IB::Symbols::Forex[:eurusd] }   # referenced by shared examples
+		 [ :buy, :sell ].each_with_index do | the_action, count |
+    context "Placing #{the_action.to_s.upcase} order"  do
+
+			let(:order) { IB::Market.order( size: 20000, action: the_action, account: ACCOUNT ) } # referenced by shared examples
       before(:all) do
-        place_order @contract,
-                    :total_quantity => 20000,
-                    :limit_price => 2,
-                    :action => 'BUY'
+				ib = IB::Connection.current
+        @local_id_placed = place_the_order contract: IB::Symbols::Forex.eurusd do | price |
+          @order=  IB::Market.order :size => 20000,				# order and contract cannot be uised on this level
+																	  :action => the_action,
+																		:account => ACCOUNT
+				end
+
         #:what_if => true
 
-        @ib.wait_for(5, :ExecutionData, :OpenOrder) do
-          @ib.received[:OpenOrder].last &&
-              @ib.received[:OpenOrder].last.order.commission
+        ib.wait_for(5, :ExecutionData, :OpenOrder) do
+          ib.received[:OpenOrder].last && ib.received[:OpenOrder].last.order.commission
         end
       end
 
       after(:all) do
         clean_connection # Clear logs and message collector
-        @ib.cancel_order @local_id_placed # Just in case...
+   #     IB::Connection.current.cancel_order @local_id_placed # Just in case...
       end
 
-      it 'changes client`s next_local_id' do
-        @local_id_placed = @local_id_before
-        @ib.next_local_id.should == @local_id_before + 1
-      end
+			context IB::Connection  do
+			subject{  IB::Connection.current  }
+			its( :next_local_id ){ is_expected.to eq @initial_order_id +1 + count  }
+      it { expect( subject.received[:OpenOrder]).to have_at_least(1).open_order_message }
+      it { expect( subject.received[:OrderStatus]).to have_at_least(1).status_message }
+      it { expect( subject.received[:ExecutionData]).to have_exactly(1).execution_data }
+      it { expect( subject.received[:CommissionReport]).to have_exactly(1).report }
 
-      it { @ib.received[:OpenOrder].should have_at_least(1).open_order_message }
-      it { @ib.received[:OrderStatus].should have_at_least(1).status_message }
-      it { @ib.received[:ExecutionData].should have_exactly(1).execution_data }
-      it { @ib.received[:ExecutionDataEnd].should be_empty }
+			end 
 
-      it 'receives filled OpenOrder' do
-        order_should_be 'Filled'
-        msg = @ib.received[:OpenOrder].last
-        msg.order.commission.should == 2.5
-      end
 
-      it 'receives Execution Data' do
-        execution_should_be :buy
-      end
 
-      it 'receives OrderStatus with fill details' do
-        status_should_be 'Filled'
-      end
+			context IB::Messages::Incoming::OpenOrder do
+				subject{ IB::Connection.current.received[:OpenOrder].last }
+				it_behaves_like 'OpenOrder message'
+			end
 
-      it 'also receives Commission Reports' do
-        @ib.received[:CommissionReport].should have_exactly(1).report
+			context IB::Order do
+				subject{ IB::Connection.current.received[:OpenOrder].last.order }
+#				it{ is_expected.to eql @order  }  uncomment to display the difference between the
+				#																	order send to the tws and the response after filling
+				it_behaves_like 'Placed Order'
+				it_behaves_like 'Filled Order'
+			end
 
-        commission_report_should_be :no_pnl, @ib.received[:ExecutionData].last.execution
-      end
-    end # Placing BUY
+			context IB::Messages::Incoming::ExecutionData do
+				subject { IB::Connection.current.received[:ExecutionData].last }
+				it_behaves_like 'Proper Execution Record' , the_action 
+			end
 
-    context "Placing SELL order" do
+			context IB::Messages::Incoming::CommissionReport do
+				subject{ IB::Connection.current.received[:CommissionReport].last }
+				it_behaves_like 'Valid CommissionReport' , count
+			end
 
-      before(:all) do
-        place_order @contract,
-                    :total_quantity => 20000,
-                    :limit_price => 1,
-                    :action => 'SELL'
-
-        @ib.wait_for(:ExecutionData, :OpenOrder, 5) do
-          @ib.received[:OpenOrder].last.order.commission
-        end
-      end
-
-      after(:all) do
-        clean_connection # Clear logs and message collector
-        @ib.cancel_order @local_id_placed # Just in case...
-      end
-
-      it 'changes client`s next_local_id' do
-        @local_id_placed = @local_id_before
-        @ib.next_local_id.should == @local_id_before + 1
-      end
-
-      it { @ib.received[:OpenOrder].should have_at_least(1).open_order_message }
-      it { @ib.received[:OrderStatus].should have_at_least(1).status_message }
-      it { @ib.received[:ExecutionData].should have_exactly(1).execution_data }
-
-      it 'receives filled OpenOrder' do
-        order_should_be 'Filled'
-        msg = @ib.received[:OpenOrder].last
-        msg.order.commission.should == 2.5
-      end
-
-      it 'receives Execution Data' do
-        execution_should_be :sell
-      end
-
-      it 'receives OrderStatus with fill details' do
-        status_should_be 'Filled'
-      end
-
-      it 'also receives Commission Reports' do
-        @ib.received[:CommissionReport].should have_exactly(1).report
-
-        commission_report_should_be :with_pnl, @ib.received[:ExecutionData].last.execution
-      end
-    end # Placing SELL
+    end # Placing 
+		 end # each
 
     context "Request executions" do
       # TODO: RequestExecutions with filters?
 
       before(:all) do
-        @ib.send_message :RequestExecutions,
-                         :request_id => 456,
+				ib =  IB::Connection.current
+        @request_id = ib.send_message :RequestExecutions,
                          :client_id => OPTS[:connection][:client_id],
-                         :time => (Time.now-10).to_ib # Time zone problems possible
-        @ib.wait_for :ExecutionData, 3 # sec
+												  account: OPTS[:connection][:account],
+                         :time => (Time.now.utc-10).to_ib # Time zone problems possible
+        ib.wait_for :ExecutionData, 3 # sec
       end
 
       #after(:all) { clean_connection }
 
       it 'does not receive Order-related messages' do
-        @ib.received[:OpenOrder].should be_empty
-        @ib.received[:OrderStatus].should be_empty
+				puts "time"
+				puts  (Time.now.utc-10).to_ib
+        expect( IB::Connection.current.received[:OpenOrder]).to be_empty
+        expect( IB::Connection.current.received[:OrderStatus]).to be_empty
       end
 
       it 'receives ExecutionData messages' do
-        @ib.received[:ExecutionData].should have_at_least(1).execution_data
+        expect( IB::Connection.current.received[:ExecutionData]).to have_at_least(1).execution_data
       end
 
-      it 'receives Execution Data' do
-        execution_should_be :buy, :index => 0, :request_id => 456
-        execution_should_be :sell, :request_id => 456
-      end
+     # it 'receives Execution Data' do
+     #   execution_should_be :buy, :index => 0, :request_id => 456
+     #   execution_should_be :sell, :request_id => 456
+     # end
 
       it 'also receives Commission Reports' do
-        @ib.received[:CommissionReport].should have_exactly(2).reports
+        expect( IB::Connection.current.received[:CommissionReport]).to have_exactly(2).reports
 
-        commission_report_should_be :no_pnl, @ib.received[:ExecutionData].first.execution
-        commission_report_should_be :with_pnl, @ib.received[:ExecutionData].last.execution
+       # commission_report_should_be :no_pnl, @ib.received[:ExecutionData].first.execution
+       # commission_report_should_be :with_pnl, @ib.received[:ExecutionData].last.execution
       end
 
     end # Request executions

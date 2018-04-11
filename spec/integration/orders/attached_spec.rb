@@ -4,7 +4,7 @@ require 'combo_helper'
 def define_contracts
   @contracts = {
     :stock => IB::Symbols::Stocks.wfc,
-    :butterfly => butterfly('GOOG', '201901', 'CALL', 1000, 1020, 1040)
+    :butterfly => butterfly('GOOG', '201901', 'CALL', 1000, 1020, 1040) # defined in Combo_helper
   }
 end
 

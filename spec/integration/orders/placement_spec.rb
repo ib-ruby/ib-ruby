@@ -1,11 +1,11 @@
 require 'order_helper'
 
-describe 'Order placement' , focus: true do # :connected => true, :integration => true do
+describe 'Order placement'  do # :connected => true, :integration => true do
   let(:contract_type) { :stock }
 
   before(:all) { verify_account }
 
-  context 'Placing wrong order', :slow => true, focus: true do
+  context 'Placing wrong order', :slow => true do
 
     before(:all) do
       ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)

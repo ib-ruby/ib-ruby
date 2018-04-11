@@ -456,8 +456,7 @@ module IB
          action == other.action &&
          order_type == other.order_type &&
          quantity == other.quantity &&
-         (limit_price == other.limit_price || # TODO Floats should be Decimals!
-          (limit_price - other.limit_price).abs < 0.00001) &&
+         limit_price == other.limit_price  &&
          aux_price == other.aux_price &&
          origin == other.origin &&
          designated_location == other.designated_location &&
