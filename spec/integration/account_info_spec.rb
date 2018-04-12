@@ -1,6 +1,6 @@
 require 'integration_helper'
 
-describe "Request Account Data", :connected => true, :integration => true , focus: true do
+describe "Request Account Data", :connected => true, :integration => true  do
 
   before(:all) do
     verify_account

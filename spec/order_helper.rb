@@ -39,7 +39,6 @@ RSpec.shared_examples_for "Alert message" do | the_expected_message |
 			it "contains a discriptive error message" do
 				expect( subject.any?{|x|  x.message =~  the_expected_message } ).to be_truthy
 			end
-
 end
 
 

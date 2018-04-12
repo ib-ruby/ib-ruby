@@ -7,18 +7,17 @@ module IB
 
       ContractDetails = ContractData =
         def_message([10, [6, 8]],
-                    [:request_id, :int], # request id
-                    [:contract, :symbol, :string],
-                    [:contract, :sec_type, :string],
-                    [:contract, :last_trading_day, :date],
-                    [:contract, :strike, :decimal],
-                    [:contract, :right, :string],
-                    [:contract, :exchange, :string],
-                    [:contract, :currency, :string],
+                    [:request_id, :int], # request id 
+                    [:contract, :symbol, :string],								## next the major contract-fields
+                    [:contract, :sec_type, :string],							## are transmitted
+                    [:contract, :last_trading_day, :date],				## difference to the array.get_contract
+                    [:contract, :strike, :decimal],								## method: con_id is transmitted
+                    [:contract, :right, :string],									## AFTER the main fields
+                    [:contract, :exchange, :string],							##
+                    [:contract, :currency, :string],							## thus we have to read the fields separately
                     [:contract, :local_symbol, :string],
                     [:contract_detail, :market_name, :string], # extended
-		    [:contract, :trading_class, :string],  # new Version 8
-
+										[:contract, :trading_class, :string],  # new Version 8
                     [:contract, :con_id, :int],
                     [:contract_detail, :min_tick, :decimal],
                     [:contract_detail, :md_size_multiplier, :int],
@@ -39,11 +38,11 @@ module IB
                     [:contract_detail, :ev_rule, :decimal],
                     [:contract_detail, :ev_multipler, :string],
 										[:contract_detail, :sec_id_list,:hash],
-											[:contract_detail, :agg_group, :int ],
-											[:contract_detail, :under_symbol, :string ],
-											[:contract_detail, :under_sec_type, :string ],
-											[:contract_detail, :market_rule_ids, :string ],
-											[:contract_detail, :real_expiration_date, :string ]
+										[:contract_detail, :agg_group, :int ],
+										[:contract_detail, :under_symbol, :string ],
+										[:contract_detail, :under_sec_type, :string ],
+										[:contract_detail, :market_rule_ids, :string ],
+										[:contract_detail, :real_expiration_date, :date ]
 									 )
 #
 #

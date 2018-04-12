@@ -34,15 +34,11 @@ module IB
 						@portfolio_value # return_value
 					end
 
-					def contract
-						@contract = @contract.presence || IB::Contract.build( @data[:contract] )
-					end
-
 					def account_name
 						@account_name =  @data[:account]
 					end
 					def to_human
-						portfolio_value.to_human
+						"<Message: #{portfolio_value.to_human }>"
 					end
 				end # PortfolioValue
 

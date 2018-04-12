@@ -261,10 +261,8 @@ module IB
       "#{symbol}# {exchange}# {currency}"
       elsif expiry.present?
       "#{symbol}(#{strike}) #{right} #{expiry} /#{exchange}/#{currency}"
-      elsif last_trading_day.present?
-      "#{symbol}(#{strike}) #{right} #{last_trading_day.strftime("%Y%m%d")} /#{exchange}/#{currency}"
-      else
-	error "#{self.to_s}: either expiry || last trading day must be specified "
+			else
+      "#{symbol}(#{strike}) #{right} #{last_trading_day} /#{exchange}/#{currency}"
       end
     end
     # Testing for type of contract:
@@ -284,6 +282,32 @@ module IB
     def option?
       self[:sec_type] == 'OPT'
     end
+
+=begin
+From the release notes of TWS 9.50
+
+Within TWS and Mosaic, we use the last trading day and not the actual expiration date for futures, options and futures options contracts. To be more accurate, all fields and selectors throughout TWS that were labeled Expiry or Expiration have been changed to Last Trading Day. Note that the last trading day and the expiration date may be the same or different dates.
+
+In many places, such as the OptionTrader, Probability Lab and other options/futures tools, this is a simple case of changing the name of a field to Last Trading Day. In other cases the change is wider-reaching. For example, basket files that include derivatives were previously saved using the Expiry header. When you try to import these legacy .csv files, you will now receive a message requiring that you change this column title to LastTradingDayorContractMonth before the import will be accepted. New basket files that include derivatives will use this correct header. Additionally, this new field serves two functions. If you use the format YYYYMMDD, we understand you are identifying the last trading day for a contract. If you use the format YYYYMM, we understand you are identifying the contract month.
+
+In places where these terms are used to indicate a concept, we have left them as Expiry or Expiration. For example in the Option Chain settings where we allow you to "Load the nearest N expiries" we have left the word expiries. Additionally, the Contract Description window will show both the Last Trading Date and the Expiration Date. Also in cases where it's appropriate, we have replaced Expiry or Expiration with Contract Month.
+
+
+IB-ruby uses expiry to query Contracts.
+
+The response from the TWS is stored in 'last_trading_day' (Contract) and 'real_expiration_data' (ContractDetails)
+
+However, after querying a contract, 'expiry' ist overwritten by 'last_trading_day'. The original 'expiry'
+is still available through 'attributes[:expiry]'
+
+=end
+		def expiry
+			if self.last_trading_day.present?
+				last_trading_day.gsub(/-/,'')
+			else
+				@attributes[:expiry]
+			end
+		end
 
   end # class Contract
 
@@ -314,9 +338,7 @@ module IB
     end
 
     # This returns a Contract initialized from the serialize_ib_ruby format string.
-    def self.from_ib_ruby stri
-			:q
-			ng
+    def self.from_ib_ruby 
       keys = [:con_id, :symbol, :sec_type, :expiry, :strike, :right, :multiplier,
               :exchange, :primary_exchange, :currency, :local_symbol]
       props = Hash[keys.zip(string.split(":"))]

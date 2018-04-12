@@ -51,14 +51,22 @@ module IB
       super.merge :sec_type => :option
       #self[:description] ||= osi ? osi : "#{symbol} #{strike} #{right} #{expiry}"
     end
+		def == other
+       super(other) || (  # finish positive, if contract#== is true
+												  # otherwise, we most probably compare the response from IB with our selfmade input
+			exchange == other.exchange &&
+			include_expired == other.include_expired &&
+			sec_type == other.sec_type  &&
+			multiplier == other.multiplier &&
+			strike == other.strike &&
+			right == other.right &&
+			multiplier == other.multiplier &&
+			expiry == other.expiry )
+
+		end
 
     def to_human
-			my_expiry = if last_trading_day.present?
-										last_trading_day
-									else
-										expiry
-									end
-      "<Option: " + [symbol, my_expiry, right, strike, exchange, currency].join(" ") + ">"
+      "<Option: " + [symbol, expiry, right, strike, exchange, currency].join(" ") + ">"
     end
 
   end # class Option
