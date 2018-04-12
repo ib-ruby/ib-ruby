@@ -7,17 +7,17 @@ shared_examples_for 'OpenOrder message' do
   its(:message_id) { is_expected.to eq 5 }
   its(:version) { is_expected.to eq 34}
   its(:data) { is_expected.not_to  be_empty }
-  its(:buffer, pending: true ) { is_expected.to be_empty }  # Work on openOrder-Message has to be finished.
+  its(:buffer ) { is_expected.to be_empty }  # Work on openOrder-Message has to be finished.
   							## Integration of Conditions !
   its(:local_id) { is_expected.to be_an Integer }
   its(:status) { is_expected.to match /Submit/ }
-  #its(:to_human) { is_expected.to match /<OpenOrder: <Stock: WFC USD> <Order: LMT DAY buy 100.0 49.13 .*Submit.* #\d+\/\d+ from 1111/ }
+  its(:to_human) { is_expected.to match /<OpenOrder/ }
 
 
   it 'has proper order accessor' do
     o = subject.order
     expect( o ).to be_an IB::Order
-    expect( o.client_id ).to eq 1111
+    expect( o.client_id ).to eq(1111).or eq(2111)
     expect( o.parent_id ).to be_zero
     expect( o.local_id ).to be_an Integer
     expect( o.perm_id ).to  be_an Integer
@@ -33,7 +33,7 @@ shared_examples_for 'OpenOrder message' do
     expect(os.local_id).to be_an Integer
     expect(os.perm_id).to  be_an Integer 
     expect(os.perm_id.to_s).to  match  /^\d{9,11}$/   # has 9 to 11 numeric characters
-    expect(os.client_id).to eq(1111)  or eq(2000)
+    expect(os.client_id).to eq(1111).or eq(2111)
     expect(os.parent_id).to be_zero
     expect(os.submitted?).to be_truthy
   end
@@ -41,7 +41,7 @@ shared_examples_for 'OpenOrder message' do
 
 end
 
-describe IB::Messages::Incoming::OpenOrder, focus: true do
+describe IB::Messages::Incoming::OpenOrder do
 
   context 'Instantiated with buffer data'  do
     subject do
@@ -114,14 +114,15 @@ describe IB::Messages::Incoming::OpenOrder, focus: true do
       verify_account
       ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
       ib.wait_for :NextValidId
-      order = IB::Limit.order price: 56 , action: :buy, size: 100, account: ACCOUNT
-      ib.place_order order, IB::Symbols::Stocks[:wfc]
-      ib.wait_for :OpenOrder, 3
+      @order_id =  place_the_order do | the_price| 
+				IB::Limit.order price: the_price -2 , action: :buy, size: 100, account: ACCOUNT
+			end
       expect(ib.received?(:OpenOrder)).to  be_truthy
     end
 
-    after(:all) { close_connection } # implicitly cancels order
+    after(:all) { IB::Connection.current.cancel_order(@order_id); close_connection } 
 
+		context IB::Messages::Incoming::OpenOrder do
     subject { IB::Connection.current.received[:OpenOrder].first }
 
     it 'has proper contract accessor' do
@@ -133,7 +134,7 @@ describe IB::Messages::Incoming::OpenOrder, focus: true do
      
 
     it_behaves_like 'OpenOrder message'
-
+		end
     #it 'has extended order_state attributes' do
   end
 
@@ -187,7 +188,7 @@ describe IB::Messages::Incoming::OpenOrder, focus: true do
     it "has essential fields"  do
       
       expect(subject.order.limit_price).to eq 5.45
-      expect(subject.order.client_id).to eq  1111
+      expect(subject.order.client_id).to eq(1111).or eq(2111)
       expect(subject.order.oca_type).to eq  :reduce_no_block
       expect(subject.order.delta_neutral_order_type).to eq :none
       expect(subject.status).to match /Submit/
@@ -195,14 +196,14 @@ describe IB::Messages::Incoming::OpenOrder, focus: true do
 #      expect(subject.buffer).to be_empty 
       puts subject.contract.combo_legs.to_s
       expect( subject.contract.combo_legs).to have(2).items
-      expect( subject.order.combo_params ).to eq "NonGuaranteed"=>"1"
+      expect( subject.order.combo_params ).to eq :NonGuaranteed=>"1"
       expect( subject.order.clearing_intent ).to eq  :ib
     end
 
     it_behaves_like 'OpenOrder message'
     
   end
-    context "OptionSpread recieved from IB", focus: true do
+    context "OptionSpread recieved from IB" do
 			subject do 
 				IB::Messages::Incoming::OpenOrder.new ["34", "7", 
 							"17356630", "DBK", "BAG", "", "0", "?", "", 
@@ -227,11 +228,11 @@ describe IB::Messages::Incoming::OpenOrder, focus: true do
 			#
 
     it_behaves_like 'OpenOrder message'
-		it{ puts subject.inspect  }
+#		it{ puts subject.inspect  }
     end
 
 
-    context "Forex cash_qty order recieved from IB", focus: true do
+    context "Forex cash_qty order recieved from IB" do
 # to generate the order:
       # o = ForexLimit.order action: :buy, size: 15000, cash_qty: true
       # c =  Symbols::Forex.eurusd

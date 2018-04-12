@@ -21,7 +21,7 @@ shared_examples_for 'Alert message' do
   end
 end
 
-describe IB::Messages::Incoming, focus: true do
+describe IB::Messages::Incoming::Alert do
 
   context 'Newly instantiated Message' do
 

@@ -151,7 +151,7 @@ def test_assigns cases, prop, name
 end
 
 RSpec.shared_examples_for 'Model with valid defaults' do
-  context 'instantiation without properties' do
+  context 'instantiation without properties' , focus: true do
     subject { described_class.new }
     let(:init_with_props?) { false }
 

@@ -6,7 +6,7 @@ RSpec.shared_examples_for "simple_instruction" do
 	its(:data) { is_expected.not_to  be_empty }
 	its( :buffer  ){ is_expected.to be_empty }
 end 
-RSpec.describe IB::Messages::Incoming , focus: true  do
+RSpec.describe IB::Messages::Incoming   do
 
 		let( :simple_instruction ){   IB::Messages::Incoming.def_message  10  }
 		let( :int_instruction ){   IB::Messages::Incoming.def_message 10, [:the_integer, :int] }

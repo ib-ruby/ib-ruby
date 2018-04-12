@@ -25,7 +25,7 @@ end
 
 RSpec.describe IB::Messages::Incoming::OptionChainDefinition do
 
-  context 'Message received from IB', :connected => true , focus: true do
+  context 'Message received from IB', :connected => true  do
     before(:all) do
       ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
 			contract= IB::Stock.new symbol: 'GOOG'

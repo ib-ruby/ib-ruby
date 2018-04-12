@@ -1,6 +1,6 @@
 require 'integration_helper'
 
-require 'ib-ruby'
+require 'spec_helper'
 
 describe 'Request Market Data', :connected => true, :integration => true do
 

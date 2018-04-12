@@ -63,13 +63,13 @@ RSpec.configure do |config|
         # 17:15 - 17:00 (ET) Sunday-Friday Forex  22:15 - 22:00 (UTC)
         !(t.wday > 0 && t.wday < 5 || t.wday == 5 && t.hour < 22)
       end
-    end  #  , (to continuie, include tthe komma, its a hash.)
-#
-#    :db => false,  #proc { |condition| IB.db_backed? != condition }, # true/false
-#
-#    :rails => false, # proc { |condition| IB.rails? != condition }, # false or "Dummy"/"Combustion"
-#
-#    :reuters => proc { |condition| !OPTS[:connection][:reuters] == condition }, # true/false
+    end    , 
+# true --> exclude db => true tests
+    :db => true,  #proc { |condition| IB.db_backed? != condition }, # true/false
+
+    :rails => true, # proc { |condition| IB.rails? != condition }, # false or "Dummy"/"Combustion"
+
+    :reuters => proc { |condition| !OPTS[:connection][:reuters] == condition }, # true/false
   }
 
   #  not used anymore

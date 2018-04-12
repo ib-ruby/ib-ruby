@@ -15,7 +15,7 @@ end
 
 describe IB::Messages::Incoming do
 
-  context 'Message received from IB', :connected => true , focus: true do
+  context 'Message received from IB', :connected => true  do
 #
 ##
     before(:all) do

@@ -16,7 +16,7 @@ end
 
 RSpec.describe IB::Messages::Incoming::PositionsMulti do
 
-	context "Syntetic Message", focus: true do
+	context "Syntetic Message" do
 		let( :the_message ) do 
 			IB::Messages::Incoming::PositionsMulti.new(
 			["1", "204", "DU167348", "14171", "LHA", "STK", "", "0.0", "", "", "IBIS", "EUR", "LHA", "XETRA", "10124", "15.39373125"])

@@ -18,7 +18,7 @@ end
 describe IB::Messages::Incoming do
 
 
-  context 'Message received from IB', :connected => true , focus: true do
+  context 'Message received from IB', :connected => true  do
     before(:all) do
       ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
 			req_id= ib.send_message :RequestAccountSummary, tags: 'RegTMargin,ExcessLiquidity, DayTradesRemaining'

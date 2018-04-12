@@ -1,7 +1,7 @@
 require 'integration_helper'
 
 describe 'Request Depth of Market Data', :connected => true,
-         :integration => true, :if => :forex_trading_hours,  focus: true  do
+         :integration => true, :if => :forex_trading_hours  do
 
   before(:all) do
     verify_account

@@ -1,53 +1,52 @@
 require 'integration_helper'
 # todo:  run with a real account with marketdata subsriptions
-describe 'Request Market Data for Options',# :if => :us_trading_hours,
-         :connected => true, :integration => true , focus: true do
+describe 'Request Market Data for Options', :if => :us_trading_hours,
+         :connected => true, :integration => true  do
 
   before(:all) do
     verify_account
-    @ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
-		@ib.send_message :RequestMarketDataType, :market_data_type => :delayed
-    @ib.send_message :RequestMarketData, :id => 456,
-                     :contract => IB::Symbols::Options.aapl200
-    @ib.wait_for :TickPrice, :TickSize, :TickString, :TickOption, 5 # sec
+    ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
+		ib.send_message :RequestMarketDataType, :market_data_type => :delayed
+    @req = ib.send_message :RequestMarketData, :contract => IB::Symbols::Options.aapl200
+    ib.wait_for :TickPrice, :TickSize, :TickString, :TickOption, 5 # sec
   end
 
   after(:all) do
-    @ib.send_message :CancelMarketData, :id => 456
+    IB::Connection.current.send_message :CancelMarketData, :id =>  @req
     close_connection
   end
 
-  it_behaves_like 'Received Market Data'
+  it_behaves_like 'Received Market Data', @req
 
-  context "received :TickOption message" do
-    subject { @ib.received[:TickOption].first }
+  context IB::Messages::Incoming::TickOption do
+    subject { IB::Connection.current.received[:TickOption].first }
 
-    it { should be_an IB::Messages::Incoming::TickOption }
-    its(:type) { should_not be_nil }
-    its(:data) { should be_a Hash }
-    its(:tick_type) { should be_an Integer }
-    its(:type) { should be_a Symbol }
-    its(:under_price) { should be_a BigDecimal }
-    its(:option_price) { should be_a BigDecimal }
-    its(:pv_dividend) { should be_a BigDecimal }
-    its(:implied_volatility) { should be_a BigDecimal }
-    its(:gamma) { should be_a BigDecimal }
-    its(:vega) { should be_a BigDecimal }
-    its(:theta) { should be_a BigDecimal }
-    its(:ticker_id) { should == 456 }
-    its(:to_human) { should =~ /TickOption/ }
+    it { is_expected.to be_an IB::Messages::Incoming::TickOption }
+    its(:type) { is_expected.not_to be_nil }
+    its(:data) { is_expected.to be_a Hash }
+    its(:tick_type) { is_expected.to be_an Integer }
+    its(:type) { is_expected.to be_a Symbol }
+    its(:under_price) { is_expected.to be_a BigDecimal }
+    its(:option_price) { is_expected.to be_a BigDecimal }
+    its(:pv_dividend) { is_expected.to be_a BigDecimal }
+    its(:implied_volatility) { is_expected.to be_a BigDecimal }
+    its(:gamma) { is_expected.to be_a BigDecimal }
+    its(:vega) { is_expected.to be_a BigDecimal }
+    its(:theta) { is_expected.to be_a BigDecimal }
+    its(:ticker_id) { is_expected.to eq @req  }
+    its(:to_human) { is_expected.to match /TickOption/ }
   end
 
-  context "received :TickString message" do
-    subject { @ib.received[:TickString].first }
+  context IB::Messages::Incoming::TickString  do
+    subject { IB::Connection.current.received[:TickString].first }
 
-    it { should be_an IB::Messages::Incoming::TickString }
-    its(:type) { should_not be_nil }
-    its(:data) { should be_a Hash }
-    its(:tick_type) { should be_an Integer }
-    its(:type) { should be_a Symbol }
-    its(:value) { should be_a String }
-    its(:ticker_id) { should == 456 }
-    its(:to_human) { should =~ /TickString/ }
+    it { is_expected.to be_an IB::Messages::Incoming::TickString }
+    its(:type) { is_expected.not_to be_nil }
+    its(:data) { is_expected.to be_a Hash }
+    its(:tick_type) { is_expected.to be_an Integer }
+    its(:type) { is_expected.to be_a Symbol }
+    its(:value) { is_expected.to be_a String }
+    its(:ticker_id) { is_expected.to eq @req }
+    its(:to_human) { is_expected.to match /TickString/ }
   end
 end # Request Options Market Data

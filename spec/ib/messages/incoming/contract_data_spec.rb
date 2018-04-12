@@ -18,7 +18,7 @@ end
 
 RSpec.describe IB::Messages::Incoming::ContractData do
 
-  context IB::Stock, :connected => true , focus: true do
+  context IB::Stock, :connected => true do
     before(:all) do
       ib = IB::Connection.new OPTS[:connection].merge(:logger => mock_logger)
 			ib.send_message :RequestContractDetails, contract: IB::Symbols::Stocks.wfc

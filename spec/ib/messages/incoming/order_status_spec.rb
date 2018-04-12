@@ -33,7 +33,7 @@ shared_examples_for 'OrderStatus message' do
 
 end
 
-describe IB::Messages::Incoming::OrderStatus , focus: true  do
+describe IB::Messages::Incoming::OrderStatus   do
 
 	context 'Instantiated with raw data' do
 		subject do

@@ -16,7 +16,7 @@ end
 
 describe IB::Messages::Incoming do
 
-  context 'Newly instantiated Message', focus: true do
+  context 'Newly instantiated Message' do
 
     subject do
       IB::Messages::Incoming::HeadTimeStamp.new(
