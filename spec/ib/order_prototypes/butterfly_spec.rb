@@ -1,71 +1,52 @@
 require 'order_helper'
 require 'combo_helper'
 ### passes only during regular trading hours of the google-butterfly
-RSpec.describe IB::Limit do
+RSpec.describe IB::Limit , if: :us_trading_hours do
 
-  let(:contract_type) { :butterfly }
+  #let(:contract_type) { :butterfly }
 	before(:all) do
+		@the_open_order_message = nil
 		verify_account
 		ib = IB::Connection.new OPTS[:connection] do | gw| 
 			gw.logger = mock_logger
 			# put the most recent received OpenOrder-Message to an instance-variable
 			gw.subscribe( :OpenOrder ){|msg| @the_open_order_message = msg}
+			gw.subscribe( :Alert ){ |msg| puts msg.to_human }
 		end
 		ib.wait_for :NextValidId
-		place_the_order  contract:  butterfly('GOOG', '201901', 'CALL', 1130, 1150, 1170)  do | last_price |
+		@order_id = place_the_order( contract:  butterfly('GOOG', '201901', 'CALL', 1030, 1050, 1070) ) do | last_price |
 
-			@the_order_price = last_price.nil? ? 5 : last_price -0.4    # set a limit price that 
+			@the_order_price = last_price.nil? ? 5 : (last_price/2).round(1)    # set a limit price that 
+			puts "TheOrderPrice #{@the_order_price} "
 			# is well below the actual price
 			# The Order will become visible only if the market-price is below the trigger-price
 			#
-		  IB::Limit.order price: @the_order_price , action: :buy, size: 10, account: ACCOUNT, order_ref: 'What_if'
+			IB::Limit.order price: @the_order_price , action: :buy, size: 10, account: ACCOUNT, order_ref: 'What_if', 
+				what_if: true
 		end
 	end
-	context 'Initiate Order' , focus: true  do
 
-			@the_open_order_message = nil
+	after(:all){ IB::Connection.current.cancel_order @order_id }
 
-		it 'place the order' do
 
-			ib = IB::Connection.current
-			#		subject{  IB::Connection.current.received }
-			expect( ib.received[:OpenOrder]).to have_at_least(1).open_order_message 
-			expect( ib.received[:OrderStatus]).to have_exactly(0).status_messages 
+		context IB::Connection do
+			subject { IB::Connection.current }
+			it { expect( subject.received[:OpenOrder]).to have_at_least(1).open_order_message  }
+			it { expect( subject.received[:OrderStatus]).to have_exactly(0).status_messages  }
 		end
-		subject{ @the_open_order_message }
-		it_behaves_like 'OpenOrder message'
-	end
 
-	context "the placed order",  focus: true  do
+		context IB::Messages::Incoming::OpenOrder do
+			#subject { @the_open_order_message }
+			subject{ IB::Connection.current.received[:OpenOrder].last }
+			it_behaves_like 'OpenOrder message'
+		end
 
-
-    it 'responds with margin info' do
-			ib =  IB::Connection.current
-#
-			#order_should_be /PreSubmitted/
-#      order = ib.received[:OpenOrder].first.order
-      order = @the_open_order_message.order
-      expect( order.what_if).to be_truthy
-      expect( order.equity_with_loan).to be_a BigDecimal
-      expect( order.init_margin).to be_a BigDecimal
-      expect( order.maint_margin).to be_a BigDecimal
-      expect( order.equity_with_loan).to be  > 0
-      expect( order.what_if).to  be_truthy
+		context IB::Order do
+     subject { @the_open_order_message.order }
+		 it_behaves_like 'Presubmitted what-if Order', IB::Bag.new
     end
 
-    it 'responds with commission  and margininfo' do
-#       :pending => 'API Bug: No commission in what_if for Combo orders' do
-      o = @the_open_order_message.order
-    #  o = IB::Connection.current.received[:OpenOrder].first.order
-			puts o.inspect
-      expect( o.max_commission).to  be_a BigDecimal
-      expect( o.min_commission).to  be_a BigDecimal
-      expect( o.commission).to be_zero
-      expect( o.init_margin).to be > 0
-      expect( o.maint_margin).to be  > 0
-
-    end
-
+		context "finalize" do
     it 'is not actually being placed though' do
 			ib = IB::Connection.current
       ib.clear_received

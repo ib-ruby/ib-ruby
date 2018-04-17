@@ -7,8 +7,9 @@ require 'order_helper'
 
 
 
-RSpec.describe IB::Limit do
+RSpec.describe IB::SimpleStop do
 	before(:all) do
+		@the_open_order_message = nil
 		verify_account
 		ib = IB::Connection.new OPTS[:connection] do | gw| 
 			gw.logger = mock_logger
@@ -27,23 +28,24 @@ RSpec.describe IB::Limit do
 		
 	after(:all) { IB::Connection.current.send_message(:RequestGlobalCancel); close_connection; } 
 
-	context 'Initiate Order' , focus: true  do
+	context  IB::Connection  do
+			subject { IB::Connection.current }
+			it { expect( subject.received[:OpenOrder]).to have_at_least(1).open_order_message  }
+			it { expect( subject.received[:OrderStatus]).to have_exactly(1).status_messages  }
+			it { expect(subject.received[:OpenOrder].last).to  eq @the_open_order_message }
+		end
 		# reset open_order_message variable
 		# this is done before(:all) ist triggered
-		@the_open_order_message = nil
-		it  'place the order' do
-			expect(IB::Connection.current.received?(:OpenOrder)).to  be_truthy
-			expect(IB::Connection.current.received[:OpenOrder].last).to  eq @the_open_order_message
-		end
 
+	context IB::Order do
 		subject{ @the_open_order_message }
 		it_behaves_like 'OpenOrder message'
 	end
 
-	context "the placed order",  focus: true  do
+	context IB::Order do
 
 		subject{ @the_open_order_message.order }
-#		subject{ IB::Connection.current.received[:OpenOrder].order.last }
+		#		subject{ IB::Connection.current.received[:OpenOrder].order.last }
 		it_behaves_like 'Placed Order' 
 		its( :aux_price ){ is_expected.not_to  be_zero }  # trigger-price => aux-price
 		its( :action ){ is_expected.to  eq( :buy ) or eq( :sell ) }
@@ -55,8 +57,7 @@ RSpec.describe IB::Limit do
 
 	end
 
-	context "the returned contract" , focus: true do
-
+	context IB::Contract do
 		subject{ @the_open_order_message.contract }
 		it 'has proper contract accessor' do
 			c = subject
@@ -64,8 +65,6 @@ RSpec.describe IB::Limit do
 			expect(c.symbol).to eq  'WFC'
 			expect(c.exchange).to eq 'SMART'
 		end
-
-
 	end	
 
 #it 'has extended order_state attributes' do

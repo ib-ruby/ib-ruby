@@ -1,13 +1,7 @@
 require 'order_helper'
 
-## Notice
-## The first Test-run fails, if active OpenOrder-Messages are recieved 
-## and no OpenOrder-Message is returned immideately.
-## Simply repeat the Execution of the Test
 
-
-
-RSpec.describe IB::Limit do
+RSpec.describe IB::LimitIfTouched do
 	before(:all) do
 		verify_account
 		ib = IB::Connection.new OPTS[:connection] do | gw| 
@@ -35,20 +29,19 @@ RSpec.describe IB::Limit do
 		
 	after(:all) { IB::Connection.current.send_message(:RequestGlobalCancel); close_connection; } 
 
-	context 'Initiate Order' , focus: true  do
-		# reset open_order_message variable
-		# this is done before(:all) ist triggered
-		@the_open_order_message = nil
-		it  'place the order' do
-			expect(IB::Connection.current.received?(:OpenOrder)).to  be_truthy
-			expect(IB::Connection.current.received[:OpenOrder].last).to  eq @the_open_order_message
-		end
+	context  IB::Connection  do
+		subject { IB::Connection.current }
+		it( "received an OpenOrder message" ) { expect( subject.received[:OpenOrder]).to have_at_least(1).open_order_message  }
+		it("received a Status message") { expect( subject.received[:OrderStatus]).to have_exactly(1).status_messages  }
+		it("The correct OpenOrder exists") { expect(subject.received[:OpenOrder].last).to  eq @the_open_order_message }
+	end
 
+		context IB::Messages::Incoming::OpenOrder do
 		subject{ @the_open_order_message }
 		it_behaves_like 'OpenOrder message'
 	end
 
-	context "the placed order",  focus: true  do
+	context IB::Order do
 
 		subject{ @the_open_order_message.order }
 #		subject{ IB::Connection.current.received[:OpenOrder].order.last }
@@ -57,13 +50,13 @@ RSpec.describe IB::Limit do
 		its( :action ){ is_expected.to  eq( :buy ) or eq( :sell ) }
 		its( :order_type ){ is_expected.to  eq :limit_if_touched }
 		its( :account ){ is_expected.to  eq ACCOUNT }
-		its( :limit_price ){ is_expected.to eq @the_order_price }
-		its( :aux_price ){ is_expected.to eq @the_trigger_price }
+		its( :limit_price ){ is_expected.to be == @the_order_price }  # eq is not working, DibDecimal !eq Float
+		its( :aux_price ){ is_expected.to  be == @the_trigger_price }
 		its( :total_quantity ){ is_expected.to eq 100 }
 
 	end
 
-	context "the returned contract" , focus: true do
+	context IB::Contract do
 
 		subject{ @the_open_order_message.contract }
 		it 'has proper contract accessor' do

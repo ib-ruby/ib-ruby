@@ -8,6 +8,7 @@ require 'order_helper'
 
 RSpec.describe IB::Limit do
 	before(:all) do
+		@the_open_order_message = nil
 		verify_account
 		ib = IB::Connection.new OPTS[:connection] do | gw| 
 			gw.logger = mock_logger
@@ -29,21 +30,27 @@ RSpec.describe IB::Limit do
 		
 	after(:all) { IB::Connection.current.send_message(:RequestGlobalCancel); close_connection; } 
 
-	context 'Initiate Order' , focus: true  do
-		# reset open_order_message variable
-		# this is done before(:all) ist triggered
-		@the_open_order_message = nil
-		it  'place the order' do
-			expect(IB::Connection.current.received?(:OpenOrder)).to  be_truthy
-			expect(IB::Connection.current.received[:OpenOrder].last).to  eq @the_open_order_message
-		end
+	#context  IB::Connection  do
+	#	# reset open_order_message variable
+	#	# this is done before(:all) ist triggered
+	#	it  'place the order' do
+	#		expect(IB::Connection.current.received?(:OpenOrder)).to  be_truthy
+	#		expect(IB::Connection.current.received[:OpenOrder].last).to  eq @the_open_order_message
+	#	end
+	#end
+	context  IB::Connection  do
+		subject { IB::Connection.current }
+		it { expect( subject.received[:OpenOrder]).to have_at_least(1).open_order_message  }
+		it { expect( subject.received[:OrderStatus]).to have_exactly(1).status_messages  }
+		it { expect(subject.received[:OpenOrder].last).to  eq @the_open_order_message }
+	end
 
+	context IB::Messages::Incoming::OpenOrder do
 		subject{ @the_open_order_message }
 		it_behaves_like 'OpenOrder message'
 	end
 
-	context "the placed order",  focus: true  do
-
+	context IB::Order do
 		subject{ @the_open_order_message.order }
 #		subject{ IB::Connection.current.received[:OpenOrder].order.last }
 		it_behaves_like 'Placed Order' 
@@ -59,15 +66,12 @@ RSpec.describe IB::Limit do
 		end
 	end
 
-	context "the returned contract" do
+	context IB::Contract do
 
 		subject{ @the_open_order_message.contract }
-		it 'has proper contract accessor' do
-			c = subject
-			expect(c).to be_an IB::Contract
-			expect(c.symbol).to eq  'WFC'
-			expect(c.exchange).to eq 'SMART'
-		end
+		it{ is_expected.to be_an IB::Contract }
+			its( :symbol ){ is_expected.to eq  'WFC' }
+			its( :exchange ){ is_expected.to eq 'SMART' }
 
 
 	end	
