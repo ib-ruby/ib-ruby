@@ -18,7 +18,7 @@ The master-branch covers the most recent versions of Ruby and TWS. Ruby 2.4 and 
 are needed. It provides active-model objects which behave as thread-safe and lightweight acitve-record's. 
 
 The IB::Connection-Application stores any response from the TWS in a _received_-Array. Its not intended for 24/7-applications 
-but ideal for quick-queries. The IB::Gateway-Application provides a ready-to-go solution for reliable automated claims. 
+but ideal for quick-queries. The [IB::Gateway-Application]( https://github.com/ib-ruby/ib-ruby/wiki/Gateway) provides a ready-to-go solution for reliable automated claims. 
 
 ## SUMMARY:
 
