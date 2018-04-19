@@ -165,11 +165,24 @@ s --> <IB::Stock:0x007f3de81a4398
 			end # def
 
 =begin
-Resets a Contract to force a reniewed ContractData-Request via Contract#verify
+Resets a Contract to enable a renewed ContractData-Request via Contract#verify
+
+Standardattributes to reset: :con_id, :last_trading_day, :contract_detail
+
+Additional Attributes can be specified ie.
+
+	e =  IB::Symbols::Futures.es
+	e.verify  
+	--> 1
+	e.reset_attributes :expiry
+	e.verify
+	--> IB::VerifyError (Currency, Exchange, Expiry, Symbol are needed to retrieve Contract,).
 =end
-			def reset_attributes
-				self.con_id = nil
-				self.last_trading_day =  nil
+			def reset_attributes *attributes
+				attributes = ( attributes +  [:con_id, :last_trading_day ]).uniq
+				attributes.each{|y| @attributes[y] = nil }
+#				self.con_id = nil
+#				self.last_trading_day =  nil
 				self.contract_detail =  nil
 			end
 			

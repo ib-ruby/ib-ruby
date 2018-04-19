@@ -97,7 +97,7 @@ module IB
       :exempt_code, #       int
 
       #  Clearing info
-      :account, #  String: The account. For institutional customers only.
+      :account, #  String: The account number (Uxxx). For institutional customers only.
       :settling_firm, #    String: Institutional only
       :clearing_account, # String: For IBExecution customers: Specifies the
       #                  true beneficiary of the order. This value is required
@@ -284,6 +284,7 @@ module IB
     alias order_combo_legs leg_prices
     alias smart_combo_routing_params combo_params
 
+		# serialize is included for active_record compatibility
     serialize :leg_prices
     serialize :conditions
     serialize :algo_params, HashWithIndifferentAccess
@@ -299,6 +300,8 @@ module IB
 
     # Order has a collection of OrderStates, last one is always current
     has_many :order_states
+		# Order can have multible conditions 
+    has_many  :order_conditions
 
     def order_state
       order_states.last
@@ -350,56 +353,60 @@ module IB
     validates_numericality_of :limit_price, :aux_price, :allow_nil => true
 
 
-    def default_attributes    # default valus are taken from order.java 
-			      #  public Order() { }
+    def default_attributes				# default valus are taken from order.java 
+																	#  public Order() { }
       super.merge(
-      :active_start_time => "",  # order.java # 470		# Vers 69
-      :active_stop_time => "",	 #order.java # 471	# Vers 69
-        :algo_strategy => '',
-	:algo_id => '' , # order.java # 495
-	:auction_strategy => :none,
-	:conditions => [],
-        :continuous_update => 0,
-        :designated_location => '', # order.java # 487
-        :display_size => 0,
-        :discretionary_amount => 0,
-	:etrade_only => true,	# stolen from python client
-        :exempt_code => -1,
-	:ext_operator  => '' ,  # order.java # 499
-	:firm_quote_only  => true,  # stolen from python client
-	:not_held => false,  # order.java # 494
-        :oca_type => :none,
-	:order_type => :limit,
-        :open_close => :open,	  # order.java # 
-	:opt_out_smart_routing => false,
-        :origin => :customer,
-	:outside_rth => false, # order.java # 472
-        :parent_id => 0,
-	:random_size => false,	  #oder.java 497			# Vers 76
-	:random_price => false,	  # order.java # 498		# Vers 76
-	:scale_auto_reset => false,  # order.java # 490
-	:scale_random_percent => false, # order.java # 491
-	:scale_table => "", # order.java # 492
-        :short_sale_slot => :default,
-        :solicided =>  false,  # order.java #  496
-        :tif => :day,
-        :transmit => true,
-	:trigger_method => :default,
-        :what_if => false,  # order.java # 493
-        :leg_prices => [],
-        :algo_params => HashWithIndifferentAccess.new, #{},
-        :combo_params =>[], #{},
+      :active_start_time => "",		# order.java # 470		# Vers 69
+      :active_stop_time => "",		#order.java # 471	# Vers 69
+      :algo_strategy => '',
+			:algo_id => '' ,								# order.java # 495
+			:auction_strategy => :none,
+			:conditions => [],
+      :continuous_update => 0,
+      :designated_location => '', # order.java # 487
+      :display_size => 0,
+      :discretionary_amount => 0,
+			:etrade_only => true,	# stolen from python client
+      :exempt_code => -1,
+			:ext_operator  => '' ,  # order.java # 499
+			:firm_quote_only  => true,  # stolen from python client
+			:not_held => false,  # order.java # 494
+      :oca_type => :none,
+			:order_type => :limit,
+      :open_close => :open,	  # order.java # 
+			:opt_out_smart_routing => false,
+      :origin => :customer,
+			:outside_rth => false, # order.java # 472
+      :parent_id => 0,
+			:random_size => false,	  #oder.java 497			# Vers 76
+			:random_price => false,	  # order.java # 498		# Vers 76
+			:scale_auto_reset => false,  # order.java # 490
+			:scale_random_percent => false, # order.java # 491
+			:scale_table => "", # order.java # 492
+      :short_sale_slot => :default,
+      :solicided =>  false,  # order.java #  496
+      :tif => :day,
+      :transmit => true,
+			:trigger_method => :default,
+      :what_if => false,  # order.java # 493
+      :leg_prices => [],
+      :algo_params => HashWithIndifferentAccess.new, #{},
+      :combo_params =>[], #{},
   #      :soft_dollar_tier_params => HashWithIndifferentAccess.new( 
 	#				    :name => "",
 	#				    :val => "",
 	#				    :display_name => ''),
-        :order_state => IB::OrderState.new(:status => 'New',
+       :order_state => IB::OrderState.new(:status => 'New',
                                            :filled => 0,
                                            :remaining => 0,
                                            :price => 0,
                                            :average_price => 0)
       )  # closing of merge
         end
+
+		def serialize_conditions
+			0
+		end
 
     def serialize_algo
       if algo_strategy.nil? || algo_strategy.empty?
@@ -408,7 +415,7 @@ module IB
         [algo_strategy,
          algo_params.size,
          algo_params.to_a,
-	algo_id ]	    # Vers 71
+				 algo_id ]	    # Vers 71
       end
     end
 

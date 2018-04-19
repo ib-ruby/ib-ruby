@@ -150,9 +150,7 @@ module IB
 	    order.pegged_change_amount,
 	    order.reference_change_amount,
 	    order.reference_exchange_id ] : [] ),
-
-	   order.conditions.size,  ##  todo:  include conditions-serialisation
-
+		 order.serialize_conditions ,   # this is  actual a dummy method
 	   order.adjusted_order_type ,
 	   order.trigger_price ,
 	   order.limit_price_offset ,
