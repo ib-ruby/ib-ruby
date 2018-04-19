@@ -12,7 +12,7 @@ module OrderPlacement
 	# User has to specify order in the block provided
 	# returns the order_id
 	#
-	def place_the_order( contract: IB::Symbols::Stocks.wfc )  
+	def place_the_order( contract: IB::Symbols::Stocks.wfc, modus: :place )  # modus: place or modify 
 		# First, get the current connection
 		ib =  IB::Connection.current
 		raise 'Unable to place order, no connection' unless ib && ib.connected?
@@ -29,10 +29,13 @@ module OrderPlacement
 		ib.clear_received :TickPrice
 		# let the calling method decide how to use the price 
 		# the calling method should return a valid order
-		puts "last_price #{last_price}"
-		order =  yield(last_price)
+		order =  yield(last_price.presence || 47)
 		# to finish, we place the order using the given contract and return the order_id
-		the_order_id = ib.place_order order, contract      
+		the_order_id = if modus == :place
+		 ib.place_order order, contract      
+									 else
+		 ib.modify_order order, contract
+									 end
 		ib.wait_for :OpenOrder, 3
 		the_order_id  # return value
 	end
@@ -63,32 +66,32 @@ end
 
 buy_order = nil  # placeholder for buy_order defined in the block
 contract =  IB::Symbols::Stocks.wfc
-the_order_id = place_the_order do | asset_price |
 			puts '*'*10 + ' Introduction '+ '*'*10
 			puts IB::Limit.summary
 			puts "\nSupported Parameter \n -------------------------- "
 			puts IB::Limit.parameters
 
-			puts "Last-Price: #{asset_price}"
-
 			buy_order = IB::Limit.order size: 100,
-				price: ( asset_price -( asset_price * 0.1)).round , 
-			action:  :buy,
+				price: 0,  # dummy, specified later 
+				action:  :buy,
 				account: account_code
-			puts buy_order.to_human
-			buy_order  # return_value
-end
+
+			the_initial_order_id = place_the_order( contract: contract ) do | asset_price |
+				buy_order.limit_price =   ( asset_price -( asset_price * 0.1)).round 
+				puts buy_order.to_human
+				buy_order  # return_value
+			end
 
 
 puts "going to modify the order "
 puts "changing price by 1$"
 
+			the_modified_order_id = place_the_order( contract: contract, modus: :modify ) do | asset_price |
+				buy_order.limit_price =   ( asset_price - 1 - ( asset_price * 0.1)).round 
+				puts buy_order.to_human
+				buy_order  # return_value
+			end
 
-buy_order.limit_price -= 1
-
-the_new_order_id =  ib.modify_order buy_order, contract
-
-ib.wait_for :OpenOrder, 3
 
 ib.send_message :RequestAllOpenOrders
 
