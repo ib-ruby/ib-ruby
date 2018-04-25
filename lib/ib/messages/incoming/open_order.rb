@@ -245,14 +245,14 @@ module IB
 		    [:order, :adjusted_trailing_amount,  :decimal],
 		    [:order, :adjustable_trailing_unit,  :int],
 
-		    [:order, :soft_dollar_tier_name,  :string],
-		    [:order, :soft_dollar_tier_value, :string],
-		    [:order, :soft_dollar_tier_display_name,  :string],
+		    [:order, :soft_dollar_tier_name,  :string_not_null],
+		    [:order, :soft_dollar_tier_value, :string_not_null],
+		    [:order, :soft_dollar_tier_display_name,  :string_not_null],
 		    [:order, :cash_qty,  :decimal],
-				[:order, :mifid_2_decision_maker, :string ],
-				[:order, :mifid_2_decision_algo, :string ],
+				[:order, :mifid_2_decision_maker, :string_not_null ],
+				[:order, :mifid_2_decision_algo, :string_not_null ],
 				[:order, :mifid_2_execution_trader, :string ],
-				[:order, :mifid_2_execution_algo, :string ]
+				[:order, :mifid_2_execution_algo, :string_not_null ]
 
 #		     if self.serverVersion() >= MIN_SERVER_VER_DECISION_MAKER:
 #            flds.append(make_field( order.mifid2DecisionMaker))

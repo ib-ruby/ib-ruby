@@ -39,6 +39,12 @@ module IBSupport
 			self.shift rescue ""
 		end
 
+		def read_string_not_null
+			r = read_string
+			rd = r.to_d  unless r.blank?
+			rd.is_a?(Numeric) && rd >= IB::TWS_MAX ? nil : r
+		end
+
 		def read_symbol
 			read_string.to_sym
 		end
