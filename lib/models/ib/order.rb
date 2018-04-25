@@ -301,7 +301,7 @@ module IB
     # Order has a collection of OrderStates, last one is always current
     has_many :order_states
 		# Order can have multible conditions 
-    has_many  :order_conditions
+    has_many  :conditions
 
     def order_state
       order_states.last
@@ -404,6 +404,13 @@ module IB
       )  # closing of merge
         end
 
+def add_condition 
+end
+
+=begin
+todo
+Include conditions here
+=end
 		def serialize_conditions
 			0
 		end
@@ -434,6 +441,7 @@ module IB
     # Placement
     def place contract, connection
       error "Unable to place order, next_local_id not known" unless connection.next_local_id
+			error "local_id present. Order is already placed" unless  local_id.nil?
       self.client_id = connection.client_id
       self.local_id = connection.next_local_id
       connection.next_local_id += 1
@@ -443,6 +451,7 @@ module IB
 
     # Modify Order (convenience wrapper for send_message :PlaceOrder). Returns local_id.
     def modify contract, connection, time=Time.now
+			error "Unable to modify order; local_id not specified" if local_id.nil?
       self.modified_at = time
       connection.send_message :PlaceOrder,
         :order => self,

@@ -20,7 +20,6 @@ RSpec.describe IB::Limit do
 
 			@the_order_price = last_price.nil? ? 56 : last_price -2    # set a limit price that 
 			# is well below the actual price
-			# The Order will become visible only if the market-price is below the trigger-price
 			#
 		  IB::Limit.order price: @the_order_price , action: :buy, size: 100, account: ACCOUNT
 		end
@@ -30,14 +29,6 @@ RSpec.describe IB::Limit do
 		
 	after(:all) { IB::Connection.current.send_message(:RequestGlobalCancel); close_connection; } 
 
-	#context  IB::Connection  do
-	#	# reset open_order_message variable
-	#	# this is done before(:all) ist triggered
-	#	it  'place the order' do
-	#		expect(IB::Connection.current.received?(:OpenOrder)).to  be_truthy
-	#		expect(IB::Connection.current.received[:OpenOrder].last).to  eq @the_open_order_message
-	#	end
-	#end
 	context  IB::Connection  do
 		subject { IB::Connection.current }
 		it { expect( subject.received[:OpenOrder]).to have_at_least(1).open_order_message  }

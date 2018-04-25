@@ -2,7 +2,7 @@ module IB
   module Messages
     module Incoming
 
-      # :status - String: Displays the order status. Possible values include:
+      # :status - Displays the order status. Possible values include:
       # - PendingSubmit - indicates that you have transmitted the order, but
       #   have not yet received confirmation that it has been accepted by the
       #   order destination. NOTE: This order status is NOT sent back by TWS

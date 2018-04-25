@@ -1,4 +1,44 @@
+#module GWSupport
+# provide  AR4- ActiveRelation-like-methods to Array-Class
+#refine  Array do
+	class Array 
+  # returns the item (in case of first) or the hole array (in case of create)
+  def first_or_create item, *condition, &b
+    int_array = if condition.empty? 
+	       [ find_all{ |x| x == item } ] if !block_given?
+	     else
+	       condition.map{ |c| find_all{|x| x[ c ] == item[ c ] }}
+	     end || []
+    if block_given?
+      relation = yield
+      part_2 = find_all{ |x| x.send( relation ) == item.send( relation ) }
+      int_array <<  part_2 unless part_2.empty?
+    end
+    # reduce performs a logical "&" between the array-elements
+    # we are only interested in the first entry
+    r= int_array.reduce( :& )
+    r.present? ? r.first : self.push( item ) 
+  end
+  def update_or_create item, *condition, &b
+    member = first_or_create( item, *condition, &b) 
+    self[ index( member ) ] = item  unless member == self
+    self  # always returns the array 
+  end
+
+  # performs [ [ array ] & [ array ] & [..] ].first
+  def intercept
+    a = self.dup
+    s = a.pop
+    while a.present?
+      s = s & a.pop
+    end
+    s.first unless s.nil?  # return_value (or nil)
+  end
+end # refine
+#end # module
+
 module IB
+
 =begin
 The  Gateway-Class defines anything which has to be done before a connection can be established.
 The Default Skeleton can easily be substituted by customized actions
@@ -17,24 +57,28 @@ Independently IB::Alert.alert_#{nnn} should be defined for a proper response to 
 and system-messages. 
   
 
-The Connection to the TWS is realized throught IB::Connection. Instead of the previous
-Singleton IB::Connection.current
-now IB::Gateway.tws points to the active Connection.
-However, to support asynchronic access, the :recieved-Array of the Connection-Class is not active.
-The Array is easily confused, if used in production mode with a FA-Account.
-IB::Conncetion.wait_for(message) is not available until the programm is called with
-IB::Connection.new  serial_array: false, (...)
+The Connection to the TWS is realized throught IB::Connection. Additional to __IB::Connection.current__
+IB::Gateway.tws points to the active Connection.
+
+To support asynchronic access, the :recieved-Array of the Connection-Class is not active.
+The Array is easily confused, if used in production mode with a FA-Account and has limit.
+Thus IB::Conncetion.wait_for(message) is not available until the programm is called with
+IB::Gateway.new  serial_array: true (, ...)
 
 
 
 =end
 
 class Gateway
+
  require 'active_support'
 
  include LogDev   # provides default_logger
  include AccountInfos  # provides Handling of Account-Data provided by the tws
  include OrderHandling 
+
+# include GWSupport   # introduces update_or_create, first_or_create and intercept to the Array-Class
+
   # from active-support. Add Logging at Class + Instance-Level
   mattr_accessor :logger
   # similar to the Connection-Class: current represents the active instance of Gateway
@@ -53,6 +97,14 @@ If only one Account is transmitted,  User and Advisor are identical.
   def active_accounts
       @accounts.size > 1 ? @accounts[1..-1] : @accounts[0..0] 
   end
+	
+=begin
+ForActiveAccounts enables a thread-safe access to account-data
+=end
+
+  def for_active_accounts &b
+    active_accounts.map{|y| for_selected_account y.account,  &b }
+  end
 =begin
 ForSelectAccount provides  an Account-Object-Environment 
 (with AccountValues, Portfolio-Values, Contracts and Orders)
@@ -61,9 +113,6 @@ to deal with in the specifed block.
 It returns an Array of the return-values of the block
 =end
 
-  def for_active_accounts &b
-    active_accounts.map{|y| for_selected_account y.account,  &b }
-  end
   def for_selected_account account_or_id
 		sa = account_or_id.is_a?(IB::Account) ? account_or_id :  @accounts.detect{|x| x.account == account_or_id }
     @account_lock.synchronize do
@@ -89,13 +138,18 @@ The Advisor is always the first account
 		  get_account_data: false,
 		  serial_array: false, 
 		  logger: default_logger
+
     host, port = (host+':'+port.to_s).split(':') 
-    self.logger = logger
+    
+		self.logger = logger
     logger.info { '-' * 20 +' initialize ' + '-' * 20 }
     logger.tap{|l| l.progname =  'Gateway#Initialize' }
-    @connection_parameter = { received: serial_array, port: port, host: host, connect: false, logger: logger, client_id: client_id }
-    @account_lock = Mutex.new
-    @gateway_parameter = { s_m_a: subscribe_managed_accounts, 
+    
+		@connection_parameter = { received: serial_array, port: port, host: host, connect: false, logger: logger, client_id: client_id }
+    
+		@account_lock = Mutex.new
+    
+		@gateway_parameter = { s_m_a: subscribe_managed_accounts, 
 			   s_a: subscribe_alerts,
 			   s_a_i: subscribe_account_infos, 
 			   s_o_m: subscribe_order_messages,
@@ -131,7 +185,8 @@ The Advisor is always the first account
     
   end
 
-  def update_local_order order
+  def update_local_order ordera
+		# @local_orders is initialized by #PrepareConnection
     @local_orders.update_or_create order, :local_id
   end
   
@@ -378,39 +433,4 @@ end  # class
 
 end # module
 
-# provide  AR4- ActiveRelation-like-methods to Array-Class
-class Array
-  # returns the item (in case of first) or the hole array (in case of create)
-  def first_or_create item, *condition, &b
-    int_array = if condition.empty? 
-	       [ find_all{ |x| x == item } ] if !block_given?
-	     else
-	       condition.map{ |c| find_all{|x| x[ c ] == item[ c ] }}
-	     end || []
-    if block_given?
-      relation = yield
-      part_2 = find_all{ |x| x.send( relation ) == item.send( relation ) }
-      int_array <<  part_2 unless part_2.empty?
-    end
-    # reduce performs a logical "&" between the array-elements
-    # we are only interested in the first entry
-    r= int_array.reduce( :& )
-    r.present? ? r.first : self.push( item ) 
-  end
-  def update_or_create item, *condition, &b
-    member = first_or_create( item, *condition, &b) 
-    self[ index( member ) ] = item  unless member == self
-    self  # always returns the array 
-  end
-
-  # performs [ [ array ] & [ array ] & [..] ].first
-  def intercept
-    a = self.dup
-    s = a.pop
-    while a.present?
-      s = s & a.pop
-    end
-    s.first unless s.nil?  # return_value (or nil)
-  end
-end
 __END__

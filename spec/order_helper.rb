@@ -6,8 +6,10 @@ order_id =  place_the_oder contract:{a valid IB::Contract} do | the_last_market:
 			{ modify the price as needed }
 			{ Provide a valid IB::Order, use the appropiate OrderPrototype }
 end
+
+if the order-object provides a local_id, the order is modified.
 =end
-def place_the_order( contract: IB::Symbols::Stocks.wfc)  
+def place_the_order( contract: IB::Symbols::Stocks.wfc )  
 		ib =  IB::Connection.current
 		raise 'Unable to place order, no connection' unless ib && ib.connected?
 		ib.send_message :RequestMarketDataType, :market_data_type => :delayed
@@ -19,7 +21,11 @@ def place_the_order( contract: IB::Symbols::Stocks.wfc)
 		last_price =  last_price.nil? ? rand(999).to_f/100 : last_price  # use random price for testing
 		order =  yield(last_price)
 
-		the_order_id = ib.place_order order, contract      
+		the_order_id =  if order.local_id.present? 
+			ib.modify_order order, contract      
+		else
+			ib.place_order order, contract      
+		end
 		ib.wait_for :OpenOrder, 3
 		the_order_id  # return value
 end

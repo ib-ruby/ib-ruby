@@ -25,6 +25,10 @@ module IB
 			super.merge connected: false
 		end
 
+		def logger
+			Connection.logger
+		end
+
 		# Setze Account connected/disconnected und undate!
 		def connected!
 			update_attribute :connected , true

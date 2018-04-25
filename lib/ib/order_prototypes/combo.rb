@@ -1,10 +1,7 @@
 module IB
-#  module UseOrder
 
-=begin
-Combo-Orders are used for NonGuaranteed Orders only.
-»Normal« Option-Spreads are transmited by ordinary Limit-Orders
-=end
+#Combo-Orders are used for NonGuaranteed Orders only.
+#»Normal« Option-Spreads are transmited by ordinary Limit-Orders
     module Combo
       ### Basic Order Prototype: Combo with two limits
       extend OrderPrototype

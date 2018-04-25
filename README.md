@@ -87,8 +87,10 @@ other API implementations. The choice is yours.
 
 ## SYNOPSIS:
 To play around, a console-app is included. Change to the bin-directory and call 
-  
+
+```  
   ./console.rb  ("t" if a tws(GUI) is running on localhost)
+```
 
 After startup, IB-Ruby is running, the Connection ist active and accessible via the global Constant »C».
 Any message to the TWS, any subscription to incomming messages can be initialized. (Details in [Wiki(Console)](https://github.com/ib-ruby/ib-ruby/wiki/Console))

@@ -51,38 +51,63 @@ module IBSupport
   end
 end
 module IB
+  # includes methods from IBSupport 
+	# which adds a tws-method to  
+	# - Array
+	# - Symbol
+	# - String
+	# - Numeric
+	# - TrueClass, FalseClass and NilClass
+	# 
   module PrepareData
-
     using IBSupport
-    def prepare_message data
-      data =  data.tws unless data.is_a?(String) && data[-1]== EOL
-      matrize = [data.size,data]
-      if block_given?	    # A user defined decoding-sequence is accepted via block
-	matrize.pack yield
-      else
-	matrize.pack  "Na*"
-      end
-    end
+		# First call the method #tws on the data-object
+		#
+		# Then transfom into an Array using the #Pack-Method
+		#
+		# The optional Block introduces a user-defined pattern to pack the data.
+		#
+		# Default is "Na*"
+		def prepare_message data
+			data =  data.tws unless data.is_a?(String) && data[-1]== EOL
+			matrize = [data.size,data]
+			if block_given?	    # A user defined decoding-sequence is accepted via block
+				matrize.pack yield
+			else
+				matrize.pack  "Na*"
+			end
+		end
 
-    def decode_message msg
-      m = Hash.new
-      while not msg.blank?
-	# the first item is the length
-	size= msg[0..4].unpack("N").first
-	msg =  msg[4..-1]
-	# followed by a sequence of characters
-	message =  msg.unpack("A#{size}").first.split("\0")
-	if block_given?
-	  yield message
-	else
-	  m[message.shift.to_i] = message
+			# The received package is decoded. The parameter (msg) is an Array
+			#
+			# The protocol is simple: Every Element is treated as Character. 
+			# Exception: The first Element determines the expected length. 
+			#
+			# The decoded raw-message can further modified by the optional block.
+			# 
+			# The default is to instantiate a Hash: message_id becomes the key.
+			# The Hash is returned
+			#
+			# If a block is provided, no Hash is build and the modified raw-message is returned
+		def decode_message msg
+			m = Hash.new
+			while not msg.blank?
+				# the first item is the length
+				size= msg[0..4].unpack("N").first
+				msg =  msg[4..-1]
+				# followed by a sequence of characters
+				message =  msg.unpack("A#{size}").first.split("\0")
+				if block_given?
+					yield message
+				else
+					m[message.shift.to_i] = message
+				end
+				msg =  msg[size..-1]
+			end
+			return m unless block_given?
+		end
+
 	end
-	msg =  msg[size..-1]
-      end
-      return m unless block_given?
-      end
-    
-  end
 
   class IBSocket < TCPSocket
     include PrepareData
@@ -92,7 +117,6 @@ module IB
       v100_prefix = "API".tws.encode 'ascii' 
       v100_version = self.prepare_message Messages::SERVER_VERSION
       write_data v100_prefix+v100_version
-    end
     ## start tws-log
     # [QO] INFO  [JTS-SocketListener-49] - State: HEADER, IsAPI: UNKNOWN
     # [QO] INFO  [JTS-SocketListener-49] - State: STOP, IsAPI: YES
@@ -104,6 +128,7 @@ module IB
     # [QO] INFO  [JTS-EServerSocket-287] - [2147483647:136:136:1:0:0:0:SYS] Client version is 136
     # [QO] INFO  [JTS-EServerSocket-287] - [2147483647:136:136:1:0:0:0:SYS] is 3rdParty true
     ## end tws-log
+    end
 
 
     def read_string
