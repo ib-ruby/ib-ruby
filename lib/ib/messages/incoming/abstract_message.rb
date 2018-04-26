@@ -38,7 +38,8 @@ module IBSupport
 		def read_string
 			self.shift rescue ""
 		end
-
+		## reads a string and proofs if NULL ==  IB::TWS_MAX is present.
+		## in that case: returns nil. otherwise: returns the string
 		def read_string_not_null
 			r = read_string
 			rd = r.to_d  unless r.blank?

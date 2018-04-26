@@ -47,9 +47,6 @@ module IB
 				[:order_state, :market_cap_price, :decimal] 
       class OrderStatus
 
-	def load
-	  simple_load
-	end
 
         def order_state
           @order_state ||= IB::OrderState.new @data[:order_state]
@@ -79,7 +76,7 @@ module IB
         end
 
         def to_human
-          "<OrderStatus: #{order_state}>"
+          order_state.to_human
         end
 
       end # class OrderStatus

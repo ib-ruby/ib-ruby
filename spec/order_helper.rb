@@ -12,14 +12,7 @@ if the order-object provides a local_id, the order is modified.
 def place_the_order( contract: IB::Symbols::Stocks.wfc )  
 		ib =  IB::Connection.current
 		raise 'Unable to place order, no connection' unless ib && ib.connected?
-		ib.send_message :RequestMarketDataType, :market_data_type => :delayed
-		the_id = ib.send_message :RequestMarketData, contract:  contract
-		ib.wait_for :TickPrice
-		ib.send_message :CancelMarketData, id: the_id
-		last_price = ib.received[:TickPrice].price.map(&:to_f).max
-		ib.clear_received :TickPrice
-		last_price =  last_price.nil? ? rand(999).to_f/100 : last_price  # use random price for testing
-		order =  yield(last_price)
+		order =  yield( get_contract_price( contract: contract) )
 
 		the_order_id =  if order.local_id.present? 
 			ib.modify_order order, contract      
@@ -30,6 +23,17 @@ def place_the_order( contract: IB::Symbols::Stocks.wfc )
 		the_order_id  # return value
 end
 
+def get_contract_price contract: IB::Symbols::Stocks.wfc
+	ib =  IB::Connection.current
+	ib.send_message :RequestMarketDataType, :market_data_type => :delayed
+	the_id = ib.send_message :RequestMarketData, contract:  contract
+	ib.wait_for :TickPrice
+	ib.send_message :CancelMarketData, id: the_id
+	last_price = ib.received[:TickPrice].price.map(&:to_f).max
+	ib.clear_received :TickPrice
+	last_price =  last_price.nil? ? rand(999).to_f/100 : last_price  # use random price for testing
+
+end
 def remove_open_orders
 	ib =  IB::Connection.current
 		ib.send_message :RequestOpenOrders
@@ -51,18 +55,19 @@ end
 RSpec.shared_examples_for 'OpenOrder message' do
 #	let( :subject ){ the_returned_message }
   it { is_expected.to be_an IB::Messages::Incoming::OpenOrder }
-  its(:message_type) { is_expected.to eq :OpenOrder }
-  its(:message_id) { is_expected.to eq 5 }
-  its(:version) { is_expected.to eq 34}
-  its(:data) { is_expected.not_to  be_empty }
-  its(:buffer ) { is_expected.to be_empty }  # Work on openOrder-Message has to be finished.
+	it "has appropiate attributes" do
+		o = subject
+   expect(o.message_type).to eq :OpenOrder 
+   expect( o.message_id).to eq 5 
+	 expect( o.version).to eq 34
+	 expect( o.data).not_to  be_empty
+   expect( o.buffer ).to be_empty   # Work on openOrder-Message has to be finished.
   							## Integration of Conditions !
-  its(:local_id) { is_expected.to be_an Integer }
-	its(:order){ is_expected.to be_an IB::Order }
-  its(:status) { is_expected.to match( /Submit/).or match( /Filled/ ) }
+   expect( o.local_id).to be_an Integer 
+	 expect( o.order).to be_an IB::Order 
+   expect( o.status).to match( /Submit/).or match( /Filled/ ) 
   #its(:to_human) { is_expected.to match /<OpenOrder: <Stock: WFC USD> <Order: LMT DAY buy 100.0 49.13 .*Submit.* #\d+\/\d+ from 1111/ }
-
-
+	end
   it 'has proper order accessor' do
     o = subject.order
     expect( o.client_id ).to eq(OPTS[:connection][:client_id]).or be_zero 
