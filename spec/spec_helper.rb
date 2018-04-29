@@ -51,6 +51,7 @@ RSpec.configure do |config|
 
 	config.alias_it_should_behave_like_to :it_has_message, 'has message:'
 	config.expose_dsl_globally = true  #+ monkey-patching in rspec 3
+	config.order = 'defined' # "random"
 	#
 	config.exclusion_filter = {
     :if => proc do |condition|

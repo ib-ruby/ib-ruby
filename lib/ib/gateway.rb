@@ -155,6 +155,8 @@ The Advisor is always the first account
 			   s_o_m: subscribe_order_messages,
 			    g_a_d: get_account_data }
 
+		Thread.report_on_exception = true
+		# https://blog.bigbinary.com/2018/04/18/ruby-2-5-enables-thread-report_on_exception-by-default.html
     Gateway.current = self
     # establish Alert-framework
     IB::Alert.logger = logger

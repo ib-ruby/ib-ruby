@@ -85,7 +85,7 @@ RSpec.describe IB::Limit do
 			the_modified_order.limit_price = the_modified_order_price
 			expect{ place_the_order{ the_modified_order} }.not_to change {  IB::Connection.current.next_local_id }
 			the_received_open_order = IB::Connection.current.received[:OpenOrder].first 
-			puts "RECEIVED MODIFIED ORDER: #{the_received_open_order.order.to_human}"
+			puts "RECEIVED MODIFIED: #{the_received_open_order.order.to_human}"
 		end
 #
 		context IB::Messages::Incoming::OpenOrder do
@@ -99,7 +99,7 @@ RSpec.describe IB::Limit do
 			subject{ IB::Connection.current.received[:OpenOrder].first.order }
 #		subject{@the_received_open_order.order }
 #			#		subject{ IB::Connection.current.received[:OpenOrder].order.last }
-			it{ puts "RECEIVED ORDER: #{ subject.to_human}" }
+			it{ puts "RECEIVED: #{ subject.to_human}" }
 			it_behaves_like 'Placed Order' 
 
 			its( :limit_price ){ is_expected.not_to eq the_order_price }
@@ -136,7 +136,7 @@ RSpec.describe IB::Limit do
 		recieved_order =  ib.received[:OpenOrder].first.order
 		expect( recieved_order).to be == modified_order
 		expect( recieved_order.limit_price ).to eq the_order_price
-		puts "RECEIVED ORDER: #{ recieved_order.to_human}" 
+		puts "RECEIVED: #{ recieved_order.to_human}" 
 	end 
 
 	it " modify the amount, submit and receive the modified order" do
@@ -156,7 +156,7 @@ RSpec.describe IB::Limit do
 		expect( recieved_order).to be == modified_order
 		expect( recieved_order.limit_price ).to eq @the_received_order.limit_price
 		expect( recieved_order.total_quantity ).to eq @the_received_order.total_quantity
-		puts "RECEIVED ORDER: #{ recieved_order.to_human}" 
+		puts "RECEIVED: #{ recieved_order.to_human}" 
 	end 
 	it " modify  amount and price, submit and receive the modified order" do
 		# initial price
@@ -175,7 +175,7 @@ RSpec.describe IB::Limit do
 		expect( recieved_order).to be == modified_order
 		expect( recieved_order.limit_price ).to eq @the_received_order.limit_price
 		expect( recieved_order.total_quantity ).to eq @the_received_order.total_quantity
-		puts "RECEIVED ORDER: #{ recieved_order.to_human}" 
+		puts "RECEIVED: #{ recieved_order.to_human}" 
 	end 
 	it " modifying  action is not supported"  do
 		# initial price

@@ -136,7 +136,7 @@ module IB
 IB::Alert#AddOrderstateAlert
 
 The OrderState-Record is used to record the history of the order.
-If selected Alert-Messages appear, they are added added to the Order.OrderState-Array.
+If selected Alert-Messages appear, they are  added to the Order.order_state-Array.
 The last Status is available as Order.order_state, all states are accessible by Order.order_states
 
 The TWS-Message-text is stored to the »warning-text«-field.
