@@ -131,10 +131,13 @@ s --> <IB::Stock:0x007f3de81a4398
 							# if multible contracts are present, all of them are assigned
 							# Only the last contract is saved in self;  'count' is incremented
 							count +=1
-							ib.logger.warn{ "Multible Contracts are detected, only the last is returned, this one is overridden -->#{queried_contract.to_human} "} if count>1
 							## a specified block gets the contract_object on any uniq ContractData-Event
-							yield msg.contract if block_given?
-							queried_contract = msg.contract  # used by the logger in case of mulible contracts
+							if block_given?
+								yield msg.contract
+							elsif count > 1
+								queried_contract = msg.contract  # used by the logger in case of mulible contracts
+								ib.logger.warn{ "Multible Contracts are detected, only the last is returned, this one is overridden -->#{msg_contract.to_human} "} 
+							end
 							self.attributes = msg.contract.attributes
 							self.contract_detail = msg.contract_detail unless msg.contract_detail.nil?
 						end
@@ -155,7 +158,7 @@ s --> <IB::Stock:0x007f3de81a4398
 					ib.unsubscribe a
 
 					ib.logger.error { "NO Contract returned by TWS -->#{self.to_human} "} unless exitcondition
-					ib.logger.error { "Multible Contracts are detected, only the last is returned -->#{queried_contract.to_human} "} if count>1
+					ib.logger.error { "Multible Contracts are detected, only the last is returned -->#{queried_contract.to_human} "} if count>1 && queried_contract.present?
 				else
 					ib.logger.error { "Not a valid Contract-spezification, #{self.to_human}" }
 				end

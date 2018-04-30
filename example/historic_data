@@ -27,7 +27,7 @@ ib = IB::Connection.new( :client_id => 1102, port: 4002  ) do  | gw | #, :port =
 	# Note that we have to look the ticker id of each incoming message
 	# up in local memory to figure out what it's for.
 	gw.subscribe(IB::Messages::Incoming::HistoricalData) do |msg|
-		puts @contracts[msg.request_id].description + ": #{msg.count} items:"
+		puts contracts[msg.request_id].description + ": #{msg.count} items:"
 		msg.results.each { |entry| puts "  #{entry}" }
 	end
 end

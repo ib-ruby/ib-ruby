@@ -4,7 +4,6 @@
 # messages received from IB (update every 3 minute or so)
 
 require 'bundler/setup'
-require 'logger'
 require 'yaml'
 require 'ib-ruby'
 

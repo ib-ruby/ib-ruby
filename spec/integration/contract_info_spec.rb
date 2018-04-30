@@ -108,11 +108,45 @@ describe "Request Contract Info" do
     end
 		end
 	end
+	context "Request OptionChain  by expiry"  do
+    before(:all) do
+			ib =  IB::Connection.current
+			ib.clear_received :ContractData
+      @request_id =  ib.send_message :RequestContractData, :contract => IB::Symbols::Options.ibm_lazy_expiry
+      ib.wait_for :ContractDataEnd, 3 # sec
+		end
 
+		it "has recieved multible contracts" do
+			ib =  IB::Connection.current
+			
+			expect( ib.received[:ContractData]  ).to have_at_least(2).records
+		end
+	end
+
+	context "Request OptionChain  by strike"  do
+    before(:all) do
+			ib =  IB::Connection.current
+			ib.clear_received :ContractData
+      @request_id =  ib.send_message :RequestContractData, :contract => IB::Symbols::Options.ibm_lazy_strike
+      ib.wait_for :ContractDataEnd, 3 # sec
+		end
+
+		it "has recieved multible contracts" do
+			ib =  IB::Connection.current
+			
+			expect( ib.received[:ContractData]  ).to have_at_least(2).records
+		end
+
+#		context IB::Messages::Incoming::ContractData do
+#			subject { IB::Connection.current.received[:ContractData].first }	
+
+
+	end
   context "Request Forex contract data"   do
 
     before(:all) do
 			ib =  IB::Connection.current
+			ib.clear_received :ContractData
       @request_id = ib.send_message :RequestContractData, :contract =>  IB::Symbols::Forex.eurusd
       ib.wait_for :ContractDataEnd, 3 # sec
     end

@@ -2,7 +2,6 @@
 #
 # The Head Time Stamp -Request returns the first available date for historical data requests
 
-require 'rubygems'
 require 'bundler/setup'
 require 'ib-ruby'
 

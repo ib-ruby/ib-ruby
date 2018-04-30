@@ -129,15 +129,15 @@ module IB
 =end
     def serialize *fields
       print_default = ->(field, default="") { field.blank? ? default : field }
-      print_not_zero = ->(field, default="") { (field.blank? || field.zero?) ? default : field }
+      print_not_zero = ->(field, default="") { field.to_i.zero? ? default : field }
       [(con_id.present? && con_id.to_i > 0 ? con_id : ""),
        print_default[symbol],
        print_default[self[:sec_type]],
        ( fields.include?(:option) ?
-        [print_default[expiry], 
-	 print_not_zero[strike], 
-	 print_default[self[:right]], 
-	 print_default[multiplier]] : nil ),
+       [ print_default[expiry], 
+				 print_not_zero[strike], 
+				 print_default[self[:right]], 
+				 print_default[multiplier]] : nil ),
        print_default[exchange],
        ( fields.include?(:primary_exchange) ? print_default[primary_exchange]   : nil ) ,
        print_default[currency],
@@ -195,6 +195,15 @@ module IB
     def serialize_ib_ruby
       serialize_long.join(":")
     end
+
+		def to_yaml
+		 build 	symbol: symbol, con_id: con_id,  right: self.right,
+							  exchange: exchange, sec_type: self.sec_type,  currency: currency,
+								expiry: expiry,  strike: strike,   local_symbol: local_symbol,
+								multiplier: multiplier,  primary_exchange: primary_exchange 
+
+
+		end
 
     # Contract comparison
     def == other
@@ -347,3 +356,14 @@ is still available through 'attributes[:expiry]'
     end
   end # class Contract
 end # module IB
+
+class String
+	def to_contract
+      keys = [:con_id, :symbol, :sec_type, :expiry, :strike, :right, :multiplier,
+              :exchange, :primary_exchange, :currency, :local_symbol]
+      props = Hash[keys.zip(split(":"))]
+      props.delete_if { |k, v| v.nil? || v.empty? }
+      IB::Contract.build props
+
+	end
+end

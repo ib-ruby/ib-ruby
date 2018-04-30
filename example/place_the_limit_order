@@ -1,0 +1,145 @@
+#!/usr/bin/env ruby
+#
+## This script places WFC buy order for 100 lots
+#
+## RUN ONLY ON A DEMO ACCOUNT
+
+module OrderPlacement
+
+	# Utility Method 
+	#
+	# gets the most recent price of the asset
+	# User has to specify order in the block provided
+	# returns the order_id
+	#
+	def place_the_order( contract: IB::Symbols::Stocks.wfc, modus: :place )  # modus: place or modify 
+		# First, get the current connection
+		ib =  IB::Connection.current
+		raise 'Unable to place order, no connection' unless ib && ib.connected?
+		# Ask the TWS for the last available price for the asset, 
+		# Optional: switch to delayed data, if no market-data subscription is booked;
+		# Unsubscribe from the Marketdata-Feed after successfully received the data
+		ib.send_message :RequestMarketDataType, :market_data_type => :delayed
+		the_id = ib.send_message :RequestMarketData, contract:  contract
+		ib.wait_for :TickPrice
+		ib.send_message :CancelMarketData, id: the_id
+		# We received High, Low, (perhaps open and close, too), choose the maximum value for reference
+		# and clear the received-array for proper bookkeeping
+		last_price = ib.received[:TickPrice].price.map(&:to_f).max
+		ib.clear_received :TickPrice
+		# let the calling method decide how to use the price 
+		# the calling method should return a valid order
+		order =  yield( last_price.presence || 47 )
+		# to finish, we place the order using the given contract and return the order_id
+		# always place the order, if there is no reference to an existing one: local_id nust not be nil, 0 or "" 
+		the_order_id = if modus == :place || order.local_id.to_i.zero?  
+		 ib.place_order order, contract      
+									 else
+		 ib.modify_order order, contract
+									 end
+		ib.wait_for :OpenOrder, 3
+		the_order_id  # return value
+	end
+end
+
+
+
+
+
+
+require 'bundler/setup'
+require 'ib-ruby'
+include OrderPlacement
+
+# Only for Advisor accounts: you need to provide account_code such as U666777
+account_code = ARGV[0] || ''
+#
+# First, connect to IB TWS. Arbitrary :client_id is used to identify your script
+ib = IB::Connection.new client_id: 1112  do | gw | #, :port => 7496 # TWS
+
+# Subscribe to TWS alerts/errors and order-related messages prior to the connection of the client
+  gw.subscribe(:Alert, :OpenOrder, :OrderStatus,  :ContractDataEnd ) { |msg| puts msg.to_human }
+  gw.subscribe(:ContractData ) do |msg| 
+    puts msg.contract.to_human + "\n"
+  end
+
+end
+
+buy_order = nil  # placeholder for buy_order defined in the block
+contract =  IB::Symbols::Stocks.wfc
+			puts '*'*10 + ' Introduction '+ '*'*10
+			puts IB::Limit.summary
+			puts "\nSupported Parameter \n -------------------------- "
+			puts IB::Limit.parameters
+
+			buy_order = IB::Limit.order size: 100,
+				price: 0,  # dummy, specified later 
+				action:  :buy,
+				account: account_code
+
+			the_initial_order_id = place_the_order( contract: contract ) do | asset_price |
+				buy_order.limit_price =   ( asset_price -( asset_price * 0.1)).round 
+				puts buy_order.to_human
+				buy_order  # return_value
+			end
+
+
+puts "going to modify the order "
+puts "changing price by 1$"
+
+			the_modified_order_id = place_the_order( contract: contract, modus: :modify ) do | asset_price |
+				buy_order.limit_price =   ( asset_price - 1 - ( asset_price * 0.1)).round 
+				puts buy_order.to_human
+				buy_order  # return_value
+			end
+
+
+ib.send_message :RequestAllOpenOrders
+
+
+puts "\n******** Press <Enter> to cancel... *********\n\n"
+STDIN.gets
+
+
+## RUN ONLY ON A DEMO ACCOUNT
+#
+# expected output
+#
+#12:13:05.096 Got message 15 (IB::Messages::Incoming::ManagedAccounts)
+#12:13:05.097 No subscribers for message IB::Messages::Incoming::ManagedAccounts!
+#12:13:05.137 Got message 9 (IB::Messages::Incoming::NextValidId)
+#12:13:05.137 Got next valid order id: 1.
+#------sendto ---------(debugging output in outgoing/abstract_message)
+#["'9", "8", "56", "", "WFC", "STK", "", "0.0", "", "", "NYSE", "", "USD", "", "", "0", "", "", "\""]
+#------sendto ---------
+#	A Limit order is an order to buy or sell at a specified price or better. 
+#	The Limit order ensures that if the order fills, it will not fill at a price less favorable than 
+#	your limit price, but it does not guarantee a fill. 
+#	It appears in the orderbook.
+#Supported Parameter 
+# -------------------------- 
+#Required : action --> {"B"=>:buy, "S"=>:sell, "T"=>:short, "X"=>:short_exempt}
+#	: total_quantity --> also aliased as :size
+#	: limit_price --> decimal
+# --------------- 
+#Optional : account --> Account(number) to trade on
+# --------------- 
+#<Order: LMT GTC buy 100 1.13 New #/ from /DU167348>
+#------sendto ---------(debugging output in outgoing/abstract_message)
+#["\\xB03", "45", "1", "", "WFC", "STK", "", "0.0", "", "", "NYSE", "", "USD", "", "", "", "", "BUY", "100", "LMT", "1.13", "", "GTC", "", "DU167348", "O", "0", "", "1", "0", "0", "0", "0", "0", "0", "0", "", "0", "", "", "", "", "", "", "", "0", "", "-1", "0", "", "", "0", "", "", "1", "1", "", "0", "", "", "", "", "", "0", "", "", "", "", "0", "", "", "", "", "", "", "", "", "", "", "0", "", "", "0", "0", "", "", "0", "", "0", "0", "0", "0", "", "", "", "", "", "", "", "", "", "", "", "\""]
+#------sendto ---------
+#12:13:05.290 Got message 10 (IB::Messages::Incoming::ContractData)
+#<Stock: WFC USD>
+#12:13:05.291 Got message 52 (IB::Messages::Incoming::ContractDataEnd)
+#<ContractDataEnd: request_id 56 >
+#
+#******** Press <Enter> to cancel... *********
+#
+#12:13:05.303 Got message 3 (IB::Messages::Incoming::OrderStatus)
+#<OrderStatus: <OrderState: ApiPending #1/0 from 1112 filled 0.0/100.0 at 0.0/0.0>>
+#12:13:05.304 Got message 53 (IB::Messages::Incoming::OpenOrderEnd)
+#12:13:05.304 No subscribers for message IB::Messages::Incoming::OpenOrderEnd!
+#12:13:05.712 Got message 5 (IB::Messages::Incoming::OpenOrder)
+#<OpenOrder: <Stock: WFC USD> <Order: LMT GTC buy 100.0 1.13 Submitted #1/1562725191 from 1112/DU167348 fee 0.0>>
+#12:13:05.714 Got message 3 (IB::Messages::Incoming::OrderStatus)
+#<OrderStatus: <OrderState: Submitted #1/1562725191 from 1112 filled 0.0/100.0 at 0.0/0.0 why_held >>

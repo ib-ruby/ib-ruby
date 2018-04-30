@@ -2,7 +2,6 @@
 #
 # This script retrieves list of all Orders from TWS
 
-require 'rubygems'
 require 'bundler/setup'
 require 'ib-ruby'
 
