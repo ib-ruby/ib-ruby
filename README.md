@@ -2,23 +2,6 @@
 
 Ruby Implementation of the Interactive Brokers Trader Workstation (TWS) API v.9.72+.
 
-Copyright (C) 2006-2018 Paul Legato, Wes Devauld, Ar Vicco and Hartmut Bischoff.
-
-https://github.com/ib-ruby/ib-ruby
-
-__WARNING:__ This software is provided __AS-IS__ with __NO WARRANTY__, express or
-implied. Your use of this software is at your own risk. It may contain any number
-of bugs, known or unknown, which might cause you to lose money if you use it.
-You've been warned.
-
-This code is not sanctioned or supported by Interactive Brokers.
-
-## API v.9.72+ & Inclusion of Gateway-Application
-The master-branch covers the most recent versions of Ruby and TWS. Ruby 2.4 and TWS Vers. 969 
-are needed. It provides active-model objects which behave as thread-safe and lightweight acitve-record's. 
-
-The IB::Connection-Application stores any response from the TWS in a _received_-Array. Its not intended for 24/7-applications 
-but ideal for quick-queries. The [IB::Gateway-Application]( https://github.com/ib-ruby/ib-ruby/wiki/Gateway) provides a ready-to-go solution for reliable automated claims. 
 
 ## SUMMARY:
 
@@ -45,17 +28,25 @@ create a mechanical trading system with complex order processing logics, that
 contains 1/10th of code and is 500% more maintaineable than it is possible with
 other API implementations. The choice is yours.
 
+## API v.9.72+ & Inclusion of Gateway-Application
+The master-branch covers the most recent versions of Ruby and TWS. Ruby 2.4 and TWS Vers. 969 
+are needed. It provides active-model objects which behave as thread-safe and lightweight acitve-record's. 
+
+The IB::Connection-Application stores any response from the TWS in a _received_-Array. Its not intended for 24/7-applications 
+but ideal for quick-queries. The [IB::Gateway-Application]( https://github.com/ib-ruby/ib-ruby/wiki/Gateway) provides a ready-to-go solution for reliable automated claims. 
+
+
 ## INSTALLATION:
-
-### From RubyGems
-
-    $ sudo gem install ib-ruby [-v version]
-
-### From Source
 
     $ git clone https://github.com/ib-ruby/ib-ruby
     $ cd ib-ruby
     $ bundle install; bundle update
+    
+    or
+    
+    specify in Gemfile:
+    
+    gem ib-ruby,  :git=> 'git://github.com/ib-ruby/ib-ruby.git'
 
 ## PREREQUISITES:
 
@@ -186,6 +177,19 @@ If you want to contribute to ib-ruby development:
 9. Go to your Github fork and create new Pull Request via Github GUI
 
 ... then proceed from step 5 for more code modifications...
+
+<hr>
+Copyright (C) 2006-2018 Paul Legato, Wes Devauld, Ar Vicco and Hartmut Bischoff.
+
+https://github.com/ib-ruby/ib-ruby
+
+__WARNING:__ This software is provided __AS-IS__ with __NO WARRANTY__, express or
+implied. Your use of this software is at your own risk. It may contain any number
+of bugs, known or unknown, which might cause you to lose money if you use it.
+You've been warned.
+
+This code is not sanctioned or supported by Interactive Brokers.
+
 
 ## LICENSE:
 
