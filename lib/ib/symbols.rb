@@ -71,7 +71,9 @@ module IB
 			if key.empty? 
 				if contracts.has_key?(method)
 					contracts[method]
-				else
+					elsif each.methods.include?(method)
+							each.send method  				
+					else
 					error "contract #{method} not defined. Try »all« for a list of defined Contracts.", :symbol
 				end
 			else

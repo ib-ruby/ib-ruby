@@ -11,6 +11,8 @@ module IB
     validates_format_of :right, :with => /\Aput$|^call\z/,
       :message => "should be put or call"
 
+
+		prop :greeks
     # For Options, this is contract's OSI (Option Symbology Initiative) name/code
     alias osi local_symbol
 
