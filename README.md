@@ -77,7 +77,7 @@ but ideal for quick-queries. The [IB::Gateway-Application]( https://github.com/i
    by default, this can be changed via :host and :port options given to IB::Connection.new.
 
 ## SYNOPSIS:
-To play around, a console-app is included. Change to the bin-directory and call 
+To play around, a [console-app]( https://github.com/ib-ruby/ib-ruby/wiki/Console) is included. Change to the bin-directory and call 
 
 ```  
   ./console.rb  ("t" if a tws(GUI) is running on localhost)
