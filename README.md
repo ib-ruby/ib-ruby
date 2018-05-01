@@ -83,10 +83,10 @@ To play around, a [console-app]( https://github.com/ib-ruby/ib-ruby/wiki/Console
   ./console.rb  ("t" if a tws(GUI) is running on localhost)
 ```
 
-After startup, IB-Ruby is running, the Connection ist active and accessible via the global Constant »C».
+After startup, IB-Ruby is running, the Connection ist active and accessible via the global Constant »`C`».
 Any message to the TWS, any subscription to incomming messages can be initialized. (Details in [Wiki(Console)](https://github.com/ib-ruby/ib-ruby/wiki/Console))
 
-By default, any response from the TWS is stored in the Received-Hash.
+By default, any response from the TWS is stored in the `Connection.received`-Hash.
 It is easily inspected in the [Console](https://github.com/ib-ruby/ib-ruby/wiki/Console)
 
 ``` ruby
