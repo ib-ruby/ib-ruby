@@ -22,7 +22,7 @@ Instead of :volatility, the  :option_price is used as input.
 Both requests are answered by a :TickOption-Message and are thus easily displayed by
 (in console)
  C.send_message :RequestImpliedVolatility, contract: IB::Symbols::Options.aapl200, under_price: 180, option_price: 11.3 
- => 8673   # returns the request_id
+ => 8673   # returns the ticker_id
 C.received[:TickOption].to_human
  => ["<TickOption cust_option_computation for ticker_id: underlying @ 180.0, option @ 11.3, IV 0.16260792724594816%, delta -2.0, gamma -2.0, vega -2.0, theta -2.0, pv_dividend -1.0>"]
 ...(greeks: -2.0  indicates, that IB has not jet calculated anything, but the IV is there ) 
@@ -31,42 +31,51 @@ C.received[:TickOption].to_human
 
 
 # First, connect to IB TWS and subscribe for events. 
+# The output is produced »on the fly« if the tws-response is detected
+#
 ib = IB::Connection.new :client_id => 1112  do | gw | #, :port => 7497 # TWS
 
 	# Subscribe to TWS alerts/errors
-	gw.subscribe(:Alert) { |msg| puts msg.to_human }
+	gw.subscribe(:Alert ) { |msg| puts msg.to_human }
+
+	# the Output
+	gw.subscribe( :TickOption ) do |msg| 
+		print " %3d %% --->    %6.3f  " % [msg.ticker_id.to_i, msg.option_price]
+    puts "   || " + "%7.6f   %6.3f   %6.3f   %6.3f" % [ msg.gamma, msg.delta, msg.theta || -1, msg.vega ]
+	end
 	# Set log level
 	gw.logger.level = Logger::FATAL # DEBUG  -- INFO -- WARN -- ERROR  -- FATAL
 end
 
 	# We use OptionPriceCalculations provided by IB
 	# specify the Option
-	the_option = IB::Symbols::Options.aapl200
+	the_option = IB::Symbols::Options.aapl200  
 
 	# specify the desired Volatility-Range
 	vola_range = ( 2 .. 50 ) # in % p.a.
 
+	# Specify the hypothetical price of the underlying
+
+	underlying_price =  178 
+
+	puts "BASE:  #{the_option.to_human}"
+	puts "Hypothetical price of the underlying: #{underlying_price}"
+	puts
+	puts " We simulate the rise of volatility"
+	puts '-'*66
+	puts  "Vola   --->  Option-Price ||  Gamma     Delta    Theta    Vega "
+	puts '-'*66
 	# get the prices and store in recieved-array
 	vola_range.each do | the_vola |
 		req_id = ib.send_message :RequestOptionPrice, 
+															id:  the_vola,
 															contract: the_option,
 															volatility: the_vola.to_f/100,
-															under_price: 180
-		sleep 0.2
-		print the_vola.to_s+" % "
+															under_price: underlying_price
+		#sleep 0.2
 		ib.wait_for :TickOption
+
 		ib.send_message :CancelOptionPrice, id: req_id
 	end
-	print "\n"
-	# the output 
-	puts "BASE:  #{the_option.to_human}"
-	puts '-'*66
-	puts  "Vola   --->  Option-Price   ||  Gamma   Delta    Theta    Vega "
-	puts '-'*66
-	vola_range.each_with_index do |vola, i|
-		record = ib.received[:TickOption][i]
-		print " %3d %%  --->  %6.3f  " % [vola, record.option_price]
-    print "greeks :" + "%6.3f   %6.3f   %6.3f   %6.3f" % [ record.gamma, record.delta, record.theta, record.vega ]
-		print "\n"
-	end
+	sleep 2
 

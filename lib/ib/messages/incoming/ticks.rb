@@ -119,7 +119,7 @@ module IB
                       [:theta, :decimal_limit_2],					#      -2   -"-
                       [:under_price, :decimal_limit_1]) do
 
-            "<TickOption #{type} for #{:ticker_id}: underlying @ #{under_price}, "+
+            "<TickOption #{type} for #{ticker_id}: underlying @ #{under_price}, "+
                 "option @ #{option_price}, IV #{implied_volatility}%, delta #{delta}, " +
                 "gamma #{gamma}, vega #{vega}, theta #{theta}, pv_dividend #{pv_dividend}>"
           end
