@@ -128,6 +128,9 @@ lines of code - and without sacrificing code readability or flexibility.
     ib.place_order buy_order, contract
     ib.wait_for :ExecutionData
 ```
+_([wiki -> place the order](https://github.com/ib-ruby/ib-ruby/wiki/place_the_order) contains a solution that fetches the market price
+of the asset and proposes this as base for the setting of the order-price.)_
+
 Your code interacts with TWS via exchange of messages. Messages that you send to
 TWS are called 'Outgoing', messages your code receives from TWS - 'Incoming'.
 
