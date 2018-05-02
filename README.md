@@ -48,8 +48,8 @@ but ideal for quick-queries. The [IB::Gateway-Application]( https://github.com/i
     
     gem ib-ruby,  :git=> 'git://github.com/ib-ruby/ib-ruby.git'
     
- detailed documantation in the [wiki](wiki/Setup-Ruby-and-Install-the-Program)
-
+ detailed documentation in the [wiki](https://github.com/ib-ruby/ib-ruby/wiki/Setup-Ruby-and-Install-the-Program) 
+ 
 ## PREREQUISITES:
 
 0. A Ruby Interpreter, at least Version 2.4. We recommend Version 2.5 or above.
