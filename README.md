@@ -53,8 +53,8 @@ but ideal for quick-queries. The [IB::Gateway-Application]( https://github.com/i
 0. A Ruby Interpreter, at least Version 2.4. We recommend Version 2.5 or above.
 
 1. Install Interactive Brokers connectivity software: either
-   [TWS](http://www.interactivebrokers.com/en/p.php?f=tws) or
-   [Gateway](http://www.interactivebrokers.com/en/p.php?f=programInterface&ib_entity=llc)
+   [TWS](https://www.interactivebrokers.com/en/index.php?f=14099#tws-software) or
+   [Gateway](https://www.interactivebrokers.com/en/index.php?f=16454)
 
 2. Configure the software to allow API connections from the computer you plan to run
    ib-ruby on, which is typically localhost (127.0.0.1) if you're running ib-ruby on
