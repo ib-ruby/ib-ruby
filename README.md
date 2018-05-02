@@ -47,6 +47,8 @@ but ideal for quick-queries. The [IB::Gateway-Application]( https://github.com/i
     specify in Gemfile:
     
     gem ib-ruby,  :git=> 'git://github.com/ib-ruby/ib-ruby.git'
+    
+ detailed documantation in the [wiki](wiki/Setup-Ruby-and-Install-the-Program)
 
 ## PREREQUISITES:
 
