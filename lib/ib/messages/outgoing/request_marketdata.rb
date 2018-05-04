@@ -7,6 +7,7 @@ module IB
 
       # @data={:id => int: ticker_id - Must be a unique value. When the market data
       #                                returns, it will be identified by this tag,
+			#                                if omitted, id-autogeneration process is performed
       #      :contract => IB::Contract, requested contract.
       #      :tick_list => String: comma delimited list of requested tick groups:
       #        Group ID - Description - Requested Tick Types

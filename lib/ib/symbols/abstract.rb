@@ -1,18 +1,20 @@
 module IB
 	module Symbols
 
-		def self.allocate_collection name  # name has to ba a capitalized symbol
+		def self.allocate_collection name  # name might be a string or a symbol
 			symbol_table = Module.new do
 				extend Symbols
 				extend Enumerable
 				def self.yml_file
-					File.expand_path("../../../../symbols/#{name.to_s.split("::").last}.yml",__FILE__ )
+					File.expand_path("../../../../symbols/#{name.to_s.downcase.split("::").last}.yml",__FILE__ )
 				end
 
 				def self.each &b
 					contracts.values.each &b
 				end
 			end   # module new
+
+			name =  name.to_s.capitalize.to_sym
 			the_collection = if	IB::Symbols.send  :const_defined?, name  
 												 IB::Symbols.send :const_get, name
 											 else

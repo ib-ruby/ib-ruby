@@ -15,6 +15,10 @@ module IB
                 " #{key} #{value}" unless [:version, :ticker_id, :tick_type].include?(key)
               end.compact.join(',') + " >"
         end
+
+				def the_data
+					@data.reject{|k,_| [:version, :ticker_id].include? k }
+				end
       end
 
       # The IB code seems to dispatch up to two wrapped objects for this message, a tickPrice

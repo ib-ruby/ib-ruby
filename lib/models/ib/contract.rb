@@ -67,7 +67,7 @@ module IB
     attr_accessor :description # NB: local to ib, not part of TWS.
 
     ### Associations
-
+		has_many :misc   # multi purpose association
     has_many :orders # Placed for this Contract
 		has_many :portfolio_values
 

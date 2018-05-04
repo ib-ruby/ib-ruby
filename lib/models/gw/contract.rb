@@ -96,7 +96,7 @@ s --> <IB::Stock:0x007f3de81a4398
 		    "next_option_partial"=>false}>> 
 =end
 
-		def  verify 
+		def  verify update: false
 
 			ib =  Connection.current
 			# we generate a Request-Message-ID on the fly
@@ -134,12 +134,14 @@ s --> <IB::Stock:0x007f3de81a4398
 							## a specified block gets the contract_object on any uniq ContractData-Event
 							if block_given?
 								yield msg.contract
-							elsif count > 1
-								queried_contract = msg.contract  # used by the logger in case of mulible contracts
+							elsif count > 1 
+								queried_contract = msg.contract  # used by the logger (below) in case of mulible contracts
 								ib.logger.warn{ "Multible Contracts are detected, only the last is returned, this one is overridden -->#{msg_contract.to_human} "} 
 							end
-							self.attributes = msg.contract.attributes
-							self.contract_detail = msg.contract_detail unless msg.contract_detail.nil?
+							if update
+								self.attributes = msg.contract.attributes
+								self.contract_detail = msg.contract_detail unless msg.contract_detail.nil?
+							end
 						end
 					when Messages::Incoming::ContractDataEnd
 						exitcondition = true if msg.request_id.to_i ==  message_id
@@ -166,6 +168,10 @@ s --> <IB::Stock:0x007f3de81a4398
 			count # return_value
 			#queried_contract # return_value
 			end # def
+
+			def verify! &b
+				verify update: true, &b
+			end
 
 =begin
 Resets a Contract to enable a renewed ContractData-Request via Contract#verify

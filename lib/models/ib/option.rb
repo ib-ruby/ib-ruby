@@ -1,4 +1,5 @@
 require 'models/ib/contract'
+require 'models/ib/option_detail'
 
 module IB
   class Option < Contract
@@ -12,7 +13,9 @@ module IB
       :message => "should be put or call"
 
 
-		prop :greeks
+		# introduce Option.greek with reference to IB::OptionDetail-dataset
+		#
+		has_one :greek , as: :option_detail
     # For Options, this is contract's OSI (Option Symbology Initiative) name/code
     alias osi local_symbol
 
