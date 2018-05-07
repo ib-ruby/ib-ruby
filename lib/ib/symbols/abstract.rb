@@ -14,7 +14,7 @@ module IB
 				end
 			end   # module new
 
-			name =  name.to_s.capitalize.to_sym
+			name =  name.to_s.camelize.to_sym
 			the_collection = if	IB::Symbols.send  :const_defined?, name  
 												 IB::Symbols.send :const_get, name
 											 else

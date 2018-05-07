@@ -10,9 +10,9 @@ COUNT_OF_EVENTS =  20
 # corresponds to what symbol ourselves, because the ticks don't include any other
 # identifying information. The choice of ticker ids is, as far as I can tell, arbitrary.
 # (note: the forex symbols used here MUST be defined in lib/ib/symbols/forex.rb)
-market = {123 => IB::Symbols::Forex[:gbpusd],
-           456 => IB::Symbols::Forex[:eurusd],
-           789 => IB::Symbols::Forex[:usdcad]}
+market = {123 => IB::Symbols::Forex.gbpusd  ,
+           456 => IB::Symbols::Forex.eurusd ,
+           789 => IB::Symbols::Forex.usdcad }
 
 # connect to IB TWS.
 

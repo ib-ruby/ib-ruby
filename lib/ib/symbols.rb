@@ -82,7 +82,7 @@ module IB
 		end
 
 		def all
-			contracts.keys.sort
+			contracts.keys.sort rescue contracts.keys
 		end
 		def print_all
 			puts contracts.sort.map{|x,y| [x,y.description].join(" -> ")}.join "\n"

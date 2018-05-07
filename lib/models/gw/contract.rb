@@ -96,11 +96,39 @@ s --> <IB::Stock:0x007f3de81a4398
 		    "next_option_partial"=>false}>> 
 =end
 
-		def  verify update: false
+		def  verify update: false, thread:nil,  &b 
+				
+				_verify update: update, thread: thread,  &b  # returns the allocated threads
+			end # def
+
+=begin
+Verify that the contract is a valid IB::Contract, update the Contract-Object and return it
+=end
+			def verify!
+				c =  0
+				_verify( update: true){| response | c+=1 } # wait for the returned thread to finish
+				IB::Connection.logger.error { "Multible Contracts detected during verify!."  } if c > 1
+				con_id.to_i > 0  && contract_detail.is_a?(ContractDetail) ? self : false
+			end
+
+=begin
+Base method to verify a contract
+
+if :thread is given, the method subscribes to messages, fires the request and returns the thread, that 
+receives the exit-condition-message
+
+otherwise the method waits until the response form tws is processed
+
+
+if :update is true, the attributes of the Contract itself are apdated
+
+otherwise the Contract is untouched
+=end
+			def _verify thread: nil , update:,  &b
 
 			ib =  Connection.current
 			# we generate a Request-Message-ID on the fly
-			message_id = 1.times.inject([]) {|r| v = rand(200) until v and not r.include? v; r << v}.pop 			
+			message_id = nil #1.times.inject([]) {|r| v = rand(200) until v and not r.include? v; r << v}.pop 			
 			# define local vars which are updated within the query-block
 			exitcondition, count , queried_contract = false, 0, nil
 
@@ -109,7 +137,7 @@ s --> <IB::Stock:0x007f3de81a4398
 
 			# we cannot rely on Connection.current.recieve, must therefor define our own thread serializer
 			wait_until_exitcondition = -> do 
-																			u=0; while u<10000  do   # wait max 50 sec
+																			u=0; while u<1000  do   # wait max 5 sec
 																				break if exitcondition 
 																				u+=1; sleep 0.05 
 																			end
@@ -136,7 +164,6 @@ s --> <IB::Stock:0x007f3de81a4398
 								yield msg.contract
 							elsif count > 1 
 								queried_contract = msg.contract  # used by the logger (below) in case of mulible contracts
-								ib.logger.warn{ "Multible Contracts are detected, only the last is returned, this one is overridden -->#{msg_contract.to_human} "} 
 							end
 							if update
 								self.attributes = msg.contract.attributes
@@ -153,26 +180,26 @@ s --> <IB::Stock:0x007f3de81a4398
 				contract_to_be_queried =  con_id.present? ? self : query_contract  
 				# if no con_id is present,  the given attributes are checked by query_contract
 				if contract_to_be_queried.present?   # is nil if query_contract fails
-					ib.send_message :RequestContractData, 
-						:id =>  message_id,
+					message_id = ib.send_message :RequestContractData, 
 						:contract => contract_to_be_queried 
-					wait_until_exitcondition[]
-					ib.unsubscribe a
-
-					ib.logger.error { "NO Contract returned by TWS -->#{self.to_human} "} unless exitcondition
-					ib.logger.error { "Multible Contracts are detected, only the last is returned -->#{queried_contract.to_human} "} if count>1 && queried_contract.present?
+					
+					th =  Thread.new do
+						wait_until_exitcondition[]
+						ib.unsubscribe a
+						ib.logger.error { "NO Contract returned by TWS -->#{self.to_human} "} unless exitcondition
+						ib.logger.error { "Multible Contracts are detected, only the last is returned -->#{queried_contract.to_human} "} if count>1 && queried_contract.present?
+					end
+					if thread.nil?
+						th.join    # wait for the thread to finish
+						count			 # return count
+					else
+						th			# return active thread
+					end
 				else
 					ib.logger.error { "Not a valid Contract-spezification, #{self.to_human}" }
 				end
 			end
-			count # return_value
-			#queried_contract # return_value
-			end # def
-
-			def verify! &b
-				verify update: true, &b
 			end
-
 =begin
 Resets a Contract to enable a renewed ContractData-Request via Contract#verify
 
@@ -196,5 +223,72 @@ Additional Attributes can be specified ie.
 			end
 			
 
-			end # class
-		end # module
+
+
+		def market_price delayed: false
+
+			tws=  Connection.current 		 # get the initialized ib-ruby instance
+			the_id =  nil
+			finalize= false
+			s_id = tws.subscribe(:TickSnapshotEnd) { |msg|	finalize = true	if msg.ticker_id == the_id }
+
+			sub_id = tws.subscribe(:TickPrice, :TickSize,  :TickGeneric) do |msg|
+				self.bars << msg.the_data if msg.ticker_id == the_id 
+				if bars.size >=4   # if no :SnapshotEnd message is detected, finish after 4 received items
+					tws.send_message :CancelMarketData, id: the_id
+					finalize = true
+				end
+			end
+
+			#  switch to delayed data
+			tws.send_message :RequestMarketDataType, :market_data_type => :delayed if delayed
+			# initialize »the_id« that is used to identify the received tick messages
+			# by firing the market data request
+			the_id = tws.send_message :RequestMarketData,  contract: self , snapshot: true 
+
+			#keep the method-call running until the request finished
+			#and cancel subscriptions to the message handler
+			# method returns the (running) thread
+			Thread.new do
+				loop{ sleep 0.1; break if finalize } 
+				tws.unsubscribe sub_id  
+				tws.unsubscribe s_id 
+				prices = bars.map do | element | 
+					element[:price] 	if [:delayed_last, :last_price].include? IB::TICK_TYPES[element[:tick_type ]] 
+				end.compact
+				self.misc << ( prices.sum / prices.size )
+			end
+		end #
+
+			def option_chain ref_price: :request, count: 0
+
+				ib =  Connection.current
+				option_chain_definition = nil; my_req = nil; finalize= false
+				sub_sdop = ib.subscribe( :SecurityDefinitionOptionParameterEnd) { |msg| finalize = true if msg.request_id == my_req }
+				sub_ocd =  ib.subscribe( :OptionChainDefinition ) do | msg |
+					if msg.request_id == my_req
+						self.misc =  msg.data
+						finalize = true
+					end
+				end
+
+				verify! if con_id.to_i.zero?
+
+				my_req = ib.send_message :RequestOptionChainDefinition, con_id: con_id,
+					symbol: symbol,
+					#	 exchange: 'BOX,CBOE',
+					sec_type: self[:sec_type]
+
+
+				Thread.new do  
+					loop{ sleep 0.1; break if finalize } 
+					ib.unsubscribe sub_sdop 
+					ib.unsubscribe sub_ocd 
+				end.join
+			end
+
+			def option_expiries
+
+			end
+		end # class
+end # module
