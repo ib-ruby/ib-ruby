@@ -6,7 +6,7 @@ Ruby Implementation of the Interactive Brokers Trader Workstation (TWS) API v.9.
 ## SUMMARY:
 
 This is a pure Ruby implementation of Interactive Brokers API. It uses socket API directly. 
-So it does not have any dependencies other than TWS/Gateway itself.
+So it does not have any dependencies other than TWS/Gateway itself. API Version 973.04  is supported. 
 
 Why Ruby? Many people are put off by the amount of boilerplate code/plumbing required
 by Python, Java, ActiveX or C++ API to do even the simplest of things, like getting account
