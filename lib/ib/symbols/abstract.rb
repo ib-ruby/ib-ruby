@@ -30,9 +30,33 @@ module IB
 				@contracts =  nil
 		end
 
+=begin
+cuts the Collection in `bunch_count` pieces. Each bunch is delivered to the block.
+
+Sleeps fpr `sleeping time` between processing bunches
+
+Returns count of created bunches
+=end
+		def bunch( bunch_count = 50 , sleeping_time = 1)
+			en = self.each
+			the_size =  en.size
+			i =  0 
+			loop do
+				the_start = i * bunch_count
+				the_end =  the_start + bunch_count
+				the_end = the_size -1 if the_end >= the_size
+				it  = the_start .. the_end
+				yield it.map{|x| en.next rescue nil}.compact
+				break if  the_end == the_size -1 
+				i+=1
+				sleep sleeping_time
+			end 
+			 i -1  # return counts of bunches
+		end
+
 		def read_collection
 			if File.exist? yml_file
-				contracts.merge! YAML.load_file yml_file
+				contracts.merge! YAML.load_file yml_file rescue contracts
 			else
 				`touch #{yml_file}`
 			end

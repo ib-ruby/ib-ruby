@@ -154,10 +154,10 @@ module IB
     def send_messages *data
       self.syswrite prepare_message(data)
     rescue Errno::ECONNRESET =>  e
-      logger.error{ "Data not accepted by IB \n
+      Connection.logger.error{ "Data not accepted by IB \n
 		    #{data.inspect} \n
 		    Backtrace:\n "}
-      logger.error   e.backtrace
+      Connection.logger.error   e.backtrace
     end
 
     def recieve_messages
@@ -172,7 +172,7 @@ module IB
 	end while buffer.size == 4096
 	complete_message_buffer.join('')
       rescue Errno::ECONNRESET =>  e
-	IB::Connection.logger.error{ "Data Buffer is not filling \n
+	    Connection.logger.error{ "Data Buffer is not filling \n
 		    The Buffer: #{buffer.inspect} \n
 		    Backtrace:\n 
 	 #{e.backtrace.join("\n") } " }

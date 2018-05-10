@@ -356,67 +356,67 @@ module IB
 			end
     end
 
-    protected
-    # Message subscribers. Key is the message class to listen for.
-    # Value is a Hash of subscriber Procs, keyed by their subscription id.
-    # All subscriber Procs will be called with the message instance
-    # as an argument when a message of that type is received.
-    def subscribers
-      @subscribers ||= Hash.new { |hash, subs| hash[subs] = Hash.new }
-    end
+		protected
+		# Message subscribers. Key is the message class to listen for.
+		# Value is a Hash of subscriber Procs, keyed by their subscription id.
+		# All subscriber Procs will be called with the message instance
+		# as an argument when a message of that type is received.
+		def subscribers
+			@subscribers ||= Hash.new { |hash, subs| hash[subs] = Hash.new }
+		end
 
-    # Process single incoming message (blocking!)
-    def process_message
-      logger.progname='IB::Connection#process_message' if logger.is_a?(Logger)
+		# Process single incoming message (blocking!)
+		def process_message
+			logger.progname='IB::Connection#process_message' if logger.is_a?(Logger)
 
-      socket.decode_message(  socket.recieve_messages ) do | the_decoded_message |
-#	puts "THE deCODED MESSAGE #{ the_decoded_message.inspect}"
-	msg_id = the_decoded_message.shift.to_i
+			socket.decode_message(  socket.recieve_messages ) do | the_decoded_message |
+				#	puts "THE deCODED MESSAGE #{ the_decoded_message.inspect}"
+				msg_id = the_decoded_message.shift.to_i
 
-	# Debug:
-	logger.debug { "Got message #{msg_id} (#{Messages::Incoming::Classes[msg_id]})"}
+				# Debug:
+				logger.debug { "Got message #{msg_id} (#{Messages::Incoming::Classes[msg_id]})"}
 
-	# Create new instance of the appropriate message type,
-	# and have it read the message from socket.
-	# NB: Failure here usually means unsupported message type received
-	logger.error { "Got unsupported message #{msg_id}" } unless Messages::Incoming::Classes[msg_id]
-	msg = Messages::Incoming::Classes[msg_id].new(the_decoded_message)
+				# Create new instance of the appropriate message type,
+				# and have it read the message from socket.
+				# NB: Failure here usually means unsupported message type received
+				logger.error { "Got unsupported message #{msg_id}" } unless Messages::Incoming::Classes[msg_id]
+				msg = Messages::Incoming::Classes[msg_id].new(the_decoded_message)
 
-	# Deliver message to all registered subscribers, alert if no subscribers
-	# Ruby 2.0 and above: Hashes are ordered. 
-	# Thus first declared subscribers of  a class are executed first 
-	@subscribe_lock.synchronize do
-	  subscribers[msg.class].each { |_, subscriber| subscriber.call(msg) }
+				# Deliver message to all registered subscribers, alert if no subscribers
+				# Ruby 2.0 and above: Hashes are ordered. 
+				# Thus first declared subscribers of  a class are executed first 
+				@subscribe_lock.synchronize do
+					subscribers[msg.class].each { |_, subscriber| subscriber.call(msg) }
+				end
+				logger.warn { "No subscribers for message #{msg.class}!" } if subscribers[msg.class].empty?
+
+				# Collect all received messages into a @received Hash
+				if @received
+					@receive_lock.synchronize do
+						received[msg.message_type] << msg
+					end
+				end
+			end
+		end
+
+		def random_id
+			rand 999999999
+		end
+
+		# Check if all given conditions are satisfied
+		def satisfied? *conditions
+			!conditions.empty? &&
+				conditions.inject(true) do |result, condition|
+				result && if condition.is_a?(Symbol)
+				received?(condition)
+			elsif condition.is_a?(Array)
+				received?(*condition)
+			elsif condition.respond_to?(:call)
+				condition.call
+			else
+				logger.error { "Unknown wait condition #{condition}" }
+			end
+		end
 	end
-	logger.warn { "No subscribers for message #{msg.class}!" } if subscribers[msg.class].empty?
-
-	# Collect all received messages into a @received Hash
-	if @received
-	  @receive_lock.synchronize do
-	    received[msg.message_type] << msg
-	  end
-	end
-      end
-    end
-    
-    def random_id
-      rand 999999999
-    end
-
-    # Check if all given conditions are satisfied
-    def satisfied? *conditions
-      !conditions.empty? &&
-      conditions.inject(true) do |result, condition|
-        result && if condition.is_a?(Symbol)
-        received?(condition)
-        elsif condition.is_a?(Array)
-          received?(*condition)
-        elsif condition.respond_to?(:call)
-          condition.call
-        else
-          logger.error { "Unknown wait condition #{condition}" }
-        end
-      end
-    end
-  end # class Connection
+end # class Connection
 end # module IB
