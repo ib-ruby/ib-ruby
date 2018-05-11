@@ -96,7 +96,7 @@ s --> <IB::Stock:0x007f3de81a4398
 		    "next_option_partial"=>false}>> 
 =end
 
-		def  verify update: false, thread:nil,  &b 
+		def  verify update: false, thread: nil,  &b 
 				
 				_verify update: update, thread: thread,  &b  # returns the allocated threads
 			end # def
@@ -108,9 +108,8 @@ Verify that the contract is a valid IB::Contract, update the Contract-Object and
 				c =  0
 				_verify( update: true){| response | c+=1 } # wait for the returned thread to finish
 				IB::Connection.logger.error { "Multible Contracts detected during verify!."  } if c > 1
-				con_id.to_i > 0  && contract_detail.is_a?(ContractDetail) ? self : false
+				con_id.to_i > 0  && contract_detail.is_a?(ContractDetail) ? self :  nil
 			end
-
 =begin
 Base method to verify a contract
 
@@ -225,23 +224,19 @@ Additional Attributes can be specified ie.
 
 
 
-		def market_price delayed: false
+		def market_price delayed:  true, thread: false
 
 			tws=  Connection.current 		 # get the initialized ib-ruby instance
 			the_id =  nil
 			finalize= false
-			s_id = tws.subscribe(:TickSnapshotEnd) { |msg|	finalize = true	if msg.ticker_id == the_id }
-
-			sub_id = tws.subscribe(:TickPrice, :TickSize,  :TickGeneric) do |msg|
-				self.bars << msg.the_data if msg.ticker_id == the_id 
-				if bars.size >=4   # if no :SnapshotEnd message is detected, finish after 4 received items
-					tws.send_message :CancelMarketData, id: the_id
-					finalize = true
-				end
-			end
-
 			#  switch to delayed data
 			tws.send_message :RequestMarketDataType, :market_data_type => :delayed if delayed
+			s_id = tws.subscribe(:TickSnapshotEnd) { |msg|	finalize = true	if msg.ticker_id == the_id }
+			tickdata = []
+			sub_id = tws.subscribe(:TickPrice, :TickSize,  :TickGeneric) do |msg|
+				tickdata << msg.the_data if msg.ticker_id == the_id 
+			end
+
 			# initialize »the_id« that is used to identify the received tick messages
 			# by firing the market data request
 			the_id = tws.send_message :RequestMarketData,  contract: self , snapshot: true 
@@ -249,46 +244,136 @@ Additional Attributes can be specified ie.
 			#keep the method-call running until the request finished
 			#and cancel subscriptions to the message handler
 			# method returns the (running) thread
-			Thread.new do
-				loop{ sleep 0.1; break if finalize } 
-				tws.unsubscribe sub_id  
-				tws.unsubscribe s_id 
-				prices = bars.map do | element | 
-					element[:price] 	if [:delayed_last, :last_price].include? IB::TICK_TYPES[element[:tick_type ]] 
+			th = Thread.new do
+				i = 0
+				loop{ i+=1; sleep 0.1; break if finalize || i > 1000  } 
+				prices = tickdata.map do | element | 
+					element[:price] 	if [:delayed_close, :close_price ,:delayed_last, :last_price].include?( IB::TICK_TYPES[element[:tick_type ]]) # && element[:price] > 0  removed to enable request of prices for bags
 				end.compact
-				self.misc << ( prices.sum / prices.size )
+				# store result in misc
+				self.misc << ( prices.sum / prices.size ) rescue 0
+				tws.unsubscribe sub_id, s_id
+			end
+			if thread
+				th		# return thread
+			else
+				th.join
+				misc.last	# return 
 			end
 		end #
 
-			def option_chain ref_price: :request, count: 0
+=begin
 
-				ib =  Connection.current
-				option_chain_definition = nil; my_req = nil; finalize= false
-				sub_sdop = ib.subscribe( :SecurityDefinitionOptionParameterEnd) { |msg| finalize = true if msg.request_id == my_req }
-				sub_ocd =  ib.subscribe( :OptionChainDefinition ) do | msg |
-					if msg.request_id == my_req
-						self.misc =  msg.data
-						finalize = true
+count = 0 --> return complete option chain
+right= :call, :put, :straddle
+ref_price = :request or a numeric value
+sort = :strike, :expiry 
+=end
+		def option_chain ref_price: :request, right: :put, sort: :strike
+			ib =  Connection.current
+
+			option_chain_definition = nil; my_req = nil; finalize= false
+			# get OptionChainDefinition from IB
+
+			sub_sdop = ib.subscribe( :SecurityDefinitionOptionParameterEnd) { |msg| finalize = true if msg.request_id == my_req }
+			sub_ocd =  ib.subscribe( :OptionChainDefinition ) do | msg |
+				if msg.request_id == my_req
+					option_chain_definition =  msg.data
+					finalize = true
+				end
+			end
+
+			verify! if con_id.to_i.zero?
+			my_req = ib.send_message :RequestOptionChainDefinition, con_id: con_id,
+				symbol: symbol,
+				#	 exchange: 'BOX,CBOE',
+				sec_type: self[:sec_type]
+
+
+			Thread.new do  
+				loop{ sleep 0.1; break if finalize } 
+				ib.unsubscribe sub_sdop , sub_ocd
+			end.join
+
+			requested_strikes =  if block_given?
+						 ref_price = market_price if ref_price == :request
+						 atm_strike = option_chain_definition[:strikes].min_by { |x| (x - ref_price).abs }
+						 the_grouped_strikes = option_chain_definition[:strikes].group_by{|e| e <=> atm_strike}
+						 the_strikes =		yield the_grouped_strikes
+						 the_strikes.unshift atm_strike	  # the first item is the atm-strike
+													 else
+						 option_chain_definition[:strikes]
+					 end
+
+			# third friday of a month
+			monthly_expirations =  option_chain_definition[:expirations].find_all{|y| (15..21).include? y.day }
+
+
+			options_by_expiry = -> ( schema ) do
+				Hash[  monthly_expirations.map do | l_t_d |
+					[  l_t_d.strftime('%m%y').to_i , schema.map do | strike |
+						IB::Option.new( symbol: symbol, 
+													 currency: currency,  
+													 last_trading_day: l_t_d, 
+													 strike: strike, 
+													 right: right )
+						end ]
+					# Array: [ mmyy -> Optionis] prepares for the correct conversion to a Hash
+				end  ]                         # by Hash[ ]
+			end
+			options_by_strike = -> ( schema ) do
+				Hash[ schema.map do | strike |
+					[  strike ,   monthly_expirations.map do | l_t_d |
+						IB::Option.new( symbol: symbol, 
+													 currency: currency,  
+													 last_trading_day: l_t_d, 
+													 strike: strike, 
+													 right: right )
+				end ] 
+					# Array: [strike -> Options] prepares for the correct conversion to a Hash
+				end  ]                         # by Hash[ ]
+			end
+
+			if sort == :strike
+				options_by_strike[ requested_strikes ] 
+			else 
+				options_by_expiry[ requested_strikes ] 
+			end
+		end  # def
+
+			def itm_options count:  5, right: :put, ref_price: :request, sort: :strike
+				option_chain(  right: :put, ref_price: ref_price, sort: sort ) do | chain |
+					if right == :put
+						 above_market_price_strikes = chain[1][0..count-1]
+					else
+						 below_market_price_strikes = chain[-1][-(count)..-1].reverse
 					end
 				end
-
-				verify! if con_id.to_i.zero?
-
-				my_req = ib.send_message :RequestOptionChainDefinition, con_id: con_id,
-					symbol: symbol,
-					#	 exchange: 'BOX,CBOE',
-					sec_type: self[:sec_type]
-
-
-				Thread.new do  
-					loop{ sleep 0.1; break if finalize } 
-					ib.unsubscribe sub_sdop 
-					ib.unsubscribe sub_ocd 
-				end.join
 			end
 
-			def option_expiries
-
+			def otm_options count:  5,  right: :put, ref_price: :request, sort: :strike
+				option_chain( right: :put, ref_price: ref_price, sort: sort ) do | chain |
+					if right == :put
+						 below_market_price_strikes = chain[-1][-(count)..-1].reverse
+					else
+						 above_market_price_strikes = chain[1][0..count-1]
+					end
+				end
 			end
+										 
+
 		end # class
+
+
+	class Alert
+
+		def self.alert_100 msg
+			Gateway.current.reconnect
+		end
+
+		def self.alert_10167 msg
+			puts "TEST 10167"
+		end
+	end  # class
+
 end # module

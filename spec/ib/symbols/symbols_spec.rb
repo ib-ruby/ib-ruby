@@ -19,7 +19,7 @@ describe IB::Symbols   do
 
 
 		it '#add_contract' do
-			expect {  subject.add_contract :testcontract , IB::Stock.new( symbol: 'TAP') }.to change { subject.contracts  }
+			expect {  subject.add_contract :testcontract , IB::Stock.new( symbol: 'TAP') }.to change( subject, :size).by 1  
 			expect( subject.testcontract ).to be_a IB::Stock
 			expect { subject.testcontract }.not_to raise_error
 		end
@@ -30,9 +30,16 @@ describe IB::Symbols   do
 
 		end
 
-
 	end
 	
+	context 'Test.each' do
+		subject { IB::Symbols::Test.each }
+		it{ is_expected.to be_an Enumerator }
+		its(:first){ is_expected.to be_a IB::Contract }
+		its(:next){ is_expected.to be_a IB::Contract }	
+		its(:size ){ is_expected.to be  > 0 }
+
+	end
 
 end
 

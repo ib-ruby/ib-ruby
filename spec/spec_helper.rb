@@ -1,7 +1,7 @@
 require 'rspec'
 require 'rspec/its'
 require 'rspec/collection_matchers'
-require 'ib'
+require 'ib-ruby'
 require 'pp'
 require 'yaml'
 
