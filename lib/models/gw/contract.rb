@@ -7,6 +7,7 @@ end
 ## Extends IB::Contract
 ## must required after models in models/ib
 class Contract
+
 =begin
 Generates an IB::Contract with the required attributes to retrieve a unique contract from the TWS
 
@@ -272,108 +273,124 @@ sort = :strike, :expiry
 		def option_chain ref_price: :request, right: :put, sort: :strike
 			ib =  Connection.current
 
-			option_chain_definition = nil; my_req = nil; finalize= false
+			@option_chain_definition ||= [] 
+			my_req = nil; finalize= false
 			# get OptionChainDefinition from IB
+			if @option_chain_definition.blank?
+				sub_sdop = ib.subscribe( :SecurityDefinitionOptionParameterEnd) { |msg| finalize = true if msg.request_id == my_req }
+				sub_ocd =  ib.subscribe( :OptionChainDefinition ) do | msg |
+					if msg.request_id == my_req
+						message =  msg.data
+						# transfer the the first record to @option_chain_definition
+						if @option_chain_definition.blank?
+							@option_chain_definition =  msg.data
 
-			sub_sdop = ib.subscribe( :SecurityDefinitionOptionParameterEnd) { |msg| finalize = true if msg.request_id == my_req }
-			sub_ocd =  ib.subscribe( :OptionChainDefinition ) do | msg |
-				if msg.request_id == my_req
-					option_chain_definition =  msg.data
-					finalize = true
+						end
+							# override @option_chain_definition if a decent combintion of attributes is met
+							# us- options:  use the smart dataset
+							# other options: prefer options of the default trading class 
+							if message[:currency] == 'USD' && message[:exchange] == 'SMART'	 || message[:trading_class] == symbol 
+								@option_chain_definition =  msg.data
+
+								finalize = true
+							end
+						end
+					end
+
+					verify! if con_id.to_i.zero?
+					my_req = ib.send_message :RequestOptionChainDefinition, con_id: con_id,
+						symbol: symbol,
+						#	 exchange: 'BOX,CBOE',
+						sec_type: self[:sec_type]
+
+
+					Thread.new do  
+						loop{ sleep 0.1; break if finalize } 
+						ib.unsubscribe sub_sdop , sub_ocd
+					end.join
+				else
+					Connection.logger.error { "#{to_human} : using cached data" }
 				end
-			end
+			unless @option_chain_definition.blank? 
+				requested_strikes =  if block_given?
+															 ref_price = market_price if ref_price == :request
+															 atm_strike = @option_chain_definition[:strikes].min_by { |x| (x - ref_price).abs }
+															 the_grouped_strikes = @option_chain_definition[:strikes].group_by{|e| e <=> atm_strike}	
+															 begin
+																 the_strikes =		yield the_grouped_strikes
+																 puts "The strikes: #{the_strikes.inspect}"
+																 the_strikes.unshift atm_strike	  # the first item is the atm-strike
+															 rescue
+																 Connection.logger.error "#{to_human} :: not enough strikes :#{@option_chain_definition[:strikes].map(&:to_f).join(',')} "
+																 []
+															 end
+														 else
+															 @option_chain_definition[:strikes]
+														 end
 
-			verify! if con_id.to_i.zero?
-			my_req = ib.send_message :RequestOptionChainDefinition, con_id: con_id,
-				symbol: symbol,
-				#	 exchange: 'BOX,CBOE',
-				sec_type: self[:sec_type]
+				# third friday of a month
+				monthly_expirations =  @option_chain_definition[:expirations].find_all{|y| (15..21).include? y.day }
 
-
-			Thread.new do  
-				loop{ sleep 0.1; break if finalize } 
-				ib.unsubscribe sub_sdop , sub_ocd
-			end.join
-
-			requested_strikes =  if block_given?
-						 ref_price = market_price if ref_price == :request
-						 atm_strike = option_chain_definition[:strikes].min_by { |x| (x - ref_price).abs }
-						 the_grouped_strikes = option_chain_definition[:strikes].group_by{|e| e <=> atm_strike}
-						 the_strikes =		yield the_grouped_strikes
-						 the_strikes.unshift atm_strike	  # the first item is the atm-strike
-													 else
-						 option_chain_definition[:strikes]
-					 end
-
-			# third friday of a month
-			monthly_expirations =  option_chain_definition[:expirations].find_all{|y| (15..21).include? y.day }
-
-
-			options_by_expiry = -> ( schema ) do
-				Hash[  monthly_expirations.map do | l_t_d |
-					[  l_t_d.strftime('%m%y').to_i , schema.map do | strike |
+				options_by_expiry = -> ( schema ) do
+					Hash[  monthly_expirations.map do | l_t_d |
+						[  l_t_d.strftime('%m%y').to_i , schema.map do | strike |
 						IB::Option.new( symbol: symbol, 
 													 currency: currency,  
 													 last_trading_day: l_t_d, 
 													 strike: strike, 
 													 right: right )
-						end ]
-					# Array: [ mmyy -> Optionis] prepares for the correct conversion to a Hash
-				end  ]                         # by Hash[ ]
-			end
-			options_by_strike = -> ( schema ) do
-				Hash[ schema.map do | strike |
-					[  strike ,   monthly_expirations.map do | l_t_d |
+					end ]
+						# Array: [ mmyy -> Optionis] prepares for the correct conversion to a Hash
+					end  ]                         # by Hash[ ]
+				end
+				options_by_strike = -> ( schema ) do
+					Hash[ schema.map do | strike |
+						[  strike ,   monthly_expirations.map do | l_t_d |
 						IB::Option.new( symbol: symbol, 
 													 currency: currency,  
 													 last_trading_day: l_t_d, 
 													 strike: strike, 
 													 right: right )
-				end ] 
-					# Array: [strike -> Options] prepares for the correct conversion to a Hash
-				end  ]                         # by Hash[ ]
-			end
+					end ] 
+						# Array: [strike -> Options] prepares for the correct conversion to a Hash
+					end  ]                         # by Hash[ ]
+				end
 
-			if sort == :strike
-				options_by_strike[ requested_strikes ] 
-			else 
-				options_by_expiry[ requested_strikes ] 
+				if sort == :strike
+					options_by_strike[ requested_strikes ] 
+				else 
+					options_by_expiry[ requested_strikes ] 
+				end
+			else
+				Connection.logger.error "#{to_human} ::No Options available"
+				nil # return_value
 			end
 		end  # def
 
-			def itm_options count:  5, right: :put, ref_price: :request, sort: :strike
-				option_chain(  right: :put, ref_price: ref_price, sort: sort ) do | chain |
+		def itm_options count:  5, right: :put, ref_price: :request, sort: :strike
+			option_chain(  right: :put, ref_price: ref_price, sort: sort ) do | chain |
 					if right == :put
-						 above_market_price_strikes = chain[1][0..count-1]
+						above_market_price_strikes = chain[1][0..count-1]
 					else
-						 below_market_price_strikes = chain[-1][-(count)..-1].reverse
-					end
-				end
+						below_market_price_strikes = chain[-1][-count..-1].reverse
+				end # branch
 			end
+		end		# def
 
-			def otm_options count:  5,  right: :put, ref_price: :request, sort: :strike
-				option_chain( right: :put, ref_price: ref_price, sort: sort ) do | chain |
+		def otm_options count:  5,  right: :put, ref_price: :request, sort: :strike
+			option_chain( right: :put, ref_price: ref_price, sort: sort ) do | chain |
 					if right == :put
-						 below_market_price_strikes = chain[-1][-(count)..-1].reverse
+						#			puts "Chain: #{chain}"
+						below_market_price_strikes = chain[-1][-count..-1].reverse
 					else
-						 above_market_price_strikes = chain[1][0..count-1]
+						above_market_price_strikes = chain[1][0..count-1]
 					end
-				end
 			end
-										 
+		end
 
 		end # class
 
 
-	class Alert
 
-		def self.alert_100 msg
-			Gateway.current.reconnect
-		end
-
-		def self.alert_10167 msg
-			puts "TEST 10167"
-		end
-	end  # class
 
 end # module
