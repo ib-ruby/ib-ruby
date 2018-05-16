@@ -32,8 +32,7 @@ other API implementations. The choice is yours.
 The master-branch covers the most recent versions of Ruby and TWS. Ruby 2.4 and TWS Vers. 969 
 are needed. It provides active-model objects which behave as thread-safe and lightweight acitve-record's. 
 
-The IB::Connection-Application stores any response from the TWS in the `received`-Array. Its not intended for 24/7-applications 
-but ideal for quick-queries. The [IB::Gateway-Application]( https://github.com/ib-ruby/ib-ruby/wiki/Gateway) provides a ready-to-go solution for reliable automated claims. 
+`IB-Ruby Core`(IB::Connection) serializes any response from the TWS into a `received`-Array. Its not intended for 24/7-applications but ideal for quick-queries. [IB::Gateway]( https://github.com/ib-ruby/ib-ruby/wiki/Gateway) provides a ready-to-go solution for reliable automated claims. 
 
 
 ## INSTALLATION:
@@ -48,7 +47,7 @@ but ideal for quick-queries. The [IB::Gateway-Application]( https://github.com/i
     
     gem ib-ruby,  :git=> 'git://github.com/ib-ruby/ib-ruby.git'
     
- detailed documentation in the [wiki](https://github.com/ib-ruby/ib-ruby/wiki/Setup-Ruby-and-Install-the-Program) 
+ Detailed documentation: [wiki](https://github.com/ib-ruby/ib-ruby/wiki/Setup-Ruby-and-Install-the-Program) 
  
 ## PREREQUISITES:
 
@@ -59,12 +58,12 @@ but ideal for quick-queries. The [IB::Gateway-Application]( https://github.com/i
    [Gateway](https://www.interactivebrokers.com/en/index.php?f=16454)
 
 2. Configure the software to allow API connections from the computer you plan to run
-   ib-ruby on, which is typically localhost (127.0.0.1) if you're running ib-ruby on
+   `IB-Ruby` on, which is typically localhost (127.0.0.1) if you're running ib-ruby on
    the same machine as TWS/Gateway. [Here](http://www.youtube.com/watch?v=53tmypRq5wI)
    you can see how this is done for TWS.
 
-3. Make sure sure your ib-ruby gem version is compatible with your software version.
-   As a rule of thumb, most recent ib-ruby gem only supports latest versions of
+3. Make sure sure your `IB-Ruby` gem version is compatible with your software version.
+   As a rule of thumb, most recent `IB-Ruby` gem only supports latest versions of
    TWS/Gateway API. Older versions of API are supported by previous gem versions:
 
     | ib-ruby gem | TWS version | API version  |
@@ -76,7 +75,7 @@ but ideal for quick-queries. The [IB::Gateway-Application]( https://github.com/i
 4. Start Interactive Broker's Trader Work Station or Gateway before your code
    attempts to connect to it. Note that TWS and Gateway listen to different ports,
    this library assumes connection to Gateway on the same machine (localhost:4002)
-   by default, this can be changed via :host and :port options given to IB::Connection.new.
+   by default, this can be changed via :host and :port options given to `IB::Connection.new` or `IB::Gateway.new`.
 
 ## SYNOPSIS:
 To play around, a [Console-App]( https://github.com/ib-ruby/ib-ruby/wiki/Console) is included. Change to the bin-directory and run 
@@ -85,10 +84,10 @@ To play around, a [Console-App]( https://github.com/ib-ruby/ib-ruby/wiki/Console
   ./console.rb  ("t" if a tws(GUI) is running on localhost)
 ```
 
-After startup, IB-Ruby is running, the Connection ist active and accessible via the global Constant »`C`».
-Any message to the TWS, any subscription to incomming messages can be initialized. (Details in [Wiki(Console)](https://github.com/ib-ruby/ib-ruby/wiki/Console))
+After startup, `IB-Ruby` is running, the Connection ist active and accessible via the global Constant »`C`».
+Any outgoing message to send, any subscription to incomming messages can be initialized. (Details in [Wiki(Console)](https://github.com/ib-ruby/ib-ruby/wiki/Console))
 
-By default, any response from the TWS is stored in the `Connection.received`-Hash.
+By default, any response from TWS is stored in the `Connection.received`-Hash.
 It is easily inspected in the [Console](https://github.com/ib-ruby/ib-ruby/wiki/Console)
 
 ``` ruby
