@@ -32,7 +32,7 @@ other API implementations. The choice is yours.
 The master-branch covers the most recent versions of Ruby and TWS. Ruby 2.4 and TWS Vers. 969 
 are needed. It provides active-model objects which behave as thread-safe and lightweight acitve-record's. 
 
-The IB::Connection-Application stores any response from the TWS in a _received_-Array. Its not intended for 24/7-applications 
+The IB::Connection-Application stores any response from the TWS in the `received`-Array. Its not intended for 24/7-applications 
 but ideal for quick-queries. The [IB::Gateway-Application]( https://github.com/ib-ruby/ib-ruby/wiki/Gateway) provides a ready-to-go solution for reliable automated claims. 
 
 
@@ -79,7 +79,7 @@ but ideal for quick-queries. The [IB::Gateway-Application]( https://github.com/i
    by default, this can be changed via :host and :port options given to IB::Connection.new.
 
 ## SYNOPSIS:
-To play around, a [console-app]( https://github.com/ib-ruby/ib-ruby/wiki/Console) is included. Change to the bin-directory and call 
+To play around, a [Console-App]( https://github.com/ib-ruby/ib-ruby/wiki/Console) is included. Change to the bin-directory and run 
 
 ```  
   ./console.rb  ("t" if a tws(GUI) is running on localhost)
@@ -133,39 +133,7 @@ lines of code - and without sacrificing code readability or flexibility.
 _([wiki -> place the order](https://github.com/ib-ruby/ib-ruby/wiki/place_the_order) contains a solution that fetches the market price
 of the asset and proposes this as base for the setting of the order-price.)_
 
-Your code interacts with TWS via exchange of messages. Messages that you send to
-TWS are called 'Outgoing', messages your code receives from TWS - 'Incoming'.
 
-First, you need to subscribe to incoming message types you're interested in
-using `Connection#subscribe`. This can be done anywhere. Permanent subscriptions
-can be entered before the connection itself is established. This is realized 
-through the block when instantiating the Object. The code block (or proc) given to `#subscribe`
-will be executed when an incoming message of the this type is received from the TWS,
-with the received message as its argument.
-
-Then, you request specific data from TWS using `Connection#send_message` or place
-your order using `Connection#place_order`. TWS will respond with messages that you
-should have subscribed for, and these messages will be processed in a code block
-given to `#subscribe`.
-
-In order to give TWS time to respond, you either run a message processing loop or
-just wait until Connection receives the messages type you requested.
-
-See `lib/ib/messages` for a full list of supported incoming/outgoing messages
-and their attributes. The original TWS docs and code samples can also be found
-in `misc` directory.
-
-Sample scripts in `example` directory demonstrate common ib-ruby use cases. Examples
-show you how to access account info, print real time quotes, retrieve historic or
-fundamental data, request options calculations, place, list, and cancel orders.
-You may also want to look into `spec/integration` directory for more scenarios,
-use cases and examples of handling IB messages.
-
-## RUNNING TESTS:
-
-The gem comes with a spec suit that may be used to test ib-ruby compatibility with your
-specific TWS/Gateway installation. Please read 'spec/Readme.md' for more details about
-running specs.
 
 ## CONTRIBUTING:
 
