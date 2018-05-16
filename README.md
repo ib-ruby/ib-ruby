@@ -1,6 +1,6 @@
-# ib-ruby
+# IB-Ruby
 
-Ruby Implementation of the Interactive Brokers Trader Workstation (TWS) API v.9.72+.
+Ruby Implementation of the Interactive Brokers Trader Workstation (TWS) API.
 
 ![Screenshot](ib-ruby.png)
 ## SUMMARY:
