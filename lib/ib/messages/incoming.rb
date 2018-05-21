@@ -28,9 +28,40 @@ module IB
                       [:exchange, :string] # Exchange from which this message originated.
 
 
-      # Receives an XML document that describes the valid parameters that a scanner
+      # Receives an converted XML document that describes the valid parameters that a scanner
       # subscription can have (for outgoing RequestScannerSubscription message).
-      ScannerParameters = def_message 19, [:xml, :string]
+      ScannerParameters = def_message 19, [:xml, :xml]
+
+			class  ScannerParameters 
+				# returns a List of Hashes specifing Instruments. 
+				# >  C.received[:ScannerParameters].first.instruments.first
+				# => {:name=>"US Stocks", 
+				#     :type=>"STK", 
+				#     :filters=>"AFTERHRSCHANGEPERC,AVGOPTVOLUME,AVGPRICETARGET,AVGRATING,AVGTARGET2PRICERATIO,AVGVOLUME,AVGVOLUME_USD,CHANGEOPENPERC,CHANGEPERC,EMA_20,EMA_50,EMA_100,EMA_200,PRICE_VS_EMA_20,PRICE_VS_EMA_50,PRICE_VS_EMA_100,PRICE_VS_EMA_200,DAYSTOCOVER,DIVIB,DIVYIELD,DIVYIELDIB,FEERATE,FIRSTTRADEDATE,GROWTHRATE,HALTED,HASOPTIONS,HISTDIVIB,HISTDIVYIELDIB,IMBALANCE,IMBALANCEADVRATIOPERC,IMPVOLAT,IMPVOLATOVERHIST,INSIDEROFFLOATPERC,INSTITUTIONALOFFLOATPERC,MACD,MACD_SIGNAL,MACD_HISTOGRAM,MKTCAP,MKTCAP_USD,NEXTDIVAMOUNT,NEXTDIVDATE,NUMPRICETARGETS,NUMRATINGS,NUMSHARESINSIDER,NUMSHARESINSTITUTIONAL,NUMSHARESSHORT,OPENGAPPERC,OPTVOLUME,OPTVOLUMEPCRATIO,PERATIO,PILOT,PPO,PPO_SIGNAL,PPO_HISTOGRAM,PRICE,PRICE2BK,PRICE2TANBK,PRICERANGE,PRICE_USD,QUICKRATIO,REBATERATE,REGIMBALANCE,REGIMBALANCEADVRATIOPERC,RETEQUITY,SHORTABLESHARES,SHORTOFFLOATPERC,SHORTSALERESTRICTED,SIC,ISSUER_COUNTRY_CODE,SOCSACT,SOCSNET,STKTYPE,STVOLUME_3MIN,STVOLUME_5MIN,STVOLUME_10MIN,TRADECOUNT,TRADERATE,UNSHORTABLE,VOLUME,VOLUMERATE,VOLUME_USD,RCGLTCLASS,RCGLTENDDATE,RCGLTIVALUE,RCGLTTRADE,RCGITCLASS,RCGITENDDATE,RCGITIVALUE,RCGITTRADE,RCGSTCLASS,RCGSTENDDATE,RCGSTIVALUE,RCGSTTRADE", 
+				#     :group=>"STK.GLOBAL", 
+				#     :shortName=>"US", 
+				#     :cloudScanNotSupported=>"false"}
+				def instruments
+					@data[:xml][:ScanParameterResponse][:InstrumentList].first[:Instrument]
+				end
+
+				# returns a List of Hashes specifing ScanTypes
+				# >  C.received[:ScannerParameters].first.scan_types.first
+				# => {:displayName=>"Assets Under Management (AltaVista) Desc", 
+				#			:scanCode=>"SCAN_etfAssets_DESC", 
+				#			:instruments=>"ETF.EQ.US,ETF.FI.US", 
+				#			:absoluteColumns=>"false", 
+				#			:Columns=>{:ColumnSetRef=>{:colId=>"0", :name=>"PctPerf", :display=>"false", :displayType=>"DATA"}, 
+				#			:Column=>{:colId=>"6031", :name=>"Assets Under Management", :display=>"true", :displayType=>"DATA"}}, 
+				#			:supportsSorting=>"true", 
+				#			:respSizeLimit=>"2147483647", :snapshotSizeLimit=>"2147483647", 
+				#			:searchDefault=>"false", :access=>"unrestricted"} 
+# 
+
+				def scan_types
+					@data[:xml][:ScanParameterResponse][:ScanTypeList][:ScanType]
+				end
+			end
 
       # Receives the current system time on the server side.
       CurrentTime = def_message 49, [:time, :int] # long!
@@ -44,7 +75,7 @@ module IB
 
       # Receive Reuters global fundamental market data. There must be a subscription to
       # Reuters Fundamental set up in Account Management before you can receive this data.
-      FundamentalData = def_message 51, [:request_id, :int], [:xml, :string]
+      FundamentalData = def_message 51, [:request_id, :int], [:xml, :xml]
 
       ContractDataEnd = def_message 52, [:request_id, :int]
 

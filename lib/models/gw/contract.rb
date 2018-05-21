@@ -234,8 +234,9 @@ Additional Attributes can be specified ie.
 			tws.send_message :RequestMarketDataType, :market_data_type => :delayed if delayed
 			s_id = tws.subscribe(:TickSnapshotEnd) { |msg|	finalize = true	if msg.ticker_id == the_id }
 			tickdata = []
-			sub_id = tws.subscribe(:TickPrice, :TickSize,  :TickGeneric) do |msg|
+			sub_id = tws.subscribe(:TickPrice, :TickSize,  :TickGeneric, :TickOption) do |msg|
 				tickdata << msg.the_data if msg.ticker_id == the_id 
+				puts msg.to_human if msg.ticker_id == the_id 
 			end
 
 			# initialize »the_id« that is used to identify the received tick messages
@@ -271,11 +272,16 @@ ref_price = :request or a numeric value
 sort = :strike, :expiry 
 =end
 		def option_chain ref_price: :request, right: :put, sort: :strike
+
 			ib =  Connection.current
 
+			## Enable Cashing of Definition-Matrix
 			@option_chain_definition ||= [] 
+
 			my_req = nil; finalize= false
-			# get OptionChainDefinition from IB
+			
+			# -----------------------------------------------------------------------------------------------------
+			# get OptionChainDefinition from IB ( instantiate cashed Hash )
 			if @option_chain_definition.blank?
 				sub_sdop = ib.subscribe( :SecurityDefinitionOptionParameterEnd) { |msg| finalize = true if msg.request_id == my_req }
 				sub_ocd =  ib.subscribe( :OptionChainDefinition ) do | msg |
@@ -311,15 +317,26 @@ sort = :strike, :expiry
 				else
 					Connection.logger.error { "#{to_human} : using cached data" }
 				end
+
+			# -----------------------------------------------------------------------------------------------------
+			# select values and assign to options
+			#
 			unless @option_chain_definition.blank? 
 				requested_strikes =  if block_given?
 															 ref_price = market_price if ref_price == :request
+															 if ref_price.nil?
+																 ref_price =	 @option_chain_definition[:strikes].min  +
+																	 ( @option_chain_definition[:strikes].max -  
+																		@option_chain_definition[:strikes].min ) / 2 
+																 Connection.logger.error{  "#{to_human} :: market price not set – using midpoint of avaiable strikes instead: #{ref_price.to_f}" }
+															 end
 															 atm_strike = @option_chain_definition[:strikes].min_by { |x| (x - ref_price).abs }
 															 the_grouped_strikes = @option_chain_definition[:strikes].group_by{|e| e <=> atm_strike}	
 															 begin
 																 the_strikes =		yield the_grouped_strikes
-																 puts "The strikes: #{the_strikes.inspect}"
-																 the_strikes.unshift atm_strike	  # the first item is the atm-strike
+#																 puts "TheStrikes #{the_strikes}"
+																 the_strikes.unshift atm_strike unless the_strikes.first == atm_strike	  # the first item is the atm-strike
+																 the_strikes
 															 rescue
 																 Connection.logger.error "#{to_human} :: not enough strikes :#{@option_chain_definition[:strikes].map(&:to_f).join(',')} "
 																 []
@@ -330,29 +347,26 @@ sort = :strike, :expiry
 
 				# third friday of a month
 				monthly_expirations =  @option_chain_definition[:expirations].find_all{|y| (15..21).include? y.day }
-
-				options_by_expiry = -> ( schema ) do
-					Hash[  monthly_expirations.map do | l_t_d |
-						[  l_t_d.strftime('%m%y').to_i , schema.map do | strike |
+#				puts @option_chain_definition.inspect
+				option_prototype = -> ( ltd, strike ) do 
 						IB::Option.new( symbol: symbol, 
+													 exchange: @option_chain_definition[:exchange],
+													 trading_class: @option_chain_definition[:trading_class],
+													 multiplier: @option_chain_definition[:multiplier],
 													 currency: currency,  
-													 last_trading_day: l_t_d, 
+													 last_trading_day: ltd, 
 													 strike: strike, 
 													 right: right )
-					end ]
-						# Array: [ mmyy -> Optionis] prepares for the correct conversion to a Hash
+				end
+				options_by_expiry = -> ( schema ) do
+					# Array: [ mmyy -> Options] prepares for the correct conversion to a Hash
+					Hash[  monthly_expirations.map do | l_t_d |
+						[  l_t_d.strftime('%m%y').to_i , schema.map{ | strike | option_prototype[ l_t_d, strike ]}.compact ]
 					end  ]                         # by Hash[ ]
 				end
 				options_by_strike = -> ( schema ) do
 					Hash[ schema.map do | strike |
-						[  strike ,   monthly_expirations.map do | l_t_d |
-						IB::Option.new( symbol: symbol, 
-													 currency: currency,  
-													 last_trading_day: l_t_d, 
-													 strike: strike, 
-													 right: right )
-					end ] 
-						# Array: [strike -> Options] prepares for the correct conversion to a Hash
+						[  strike ,   monthly_expirations.map{ | l_t_d | option_prototype[ l_t_d, strike ]}.compact ]
 					end  ]                         # by Hash[ ]
 				end
 
@@ -367,6 +381,13 @@ sort = :strike, :expiry
 			end
 		end  # def
 
+		def atm_options ref_price: :request, right: :put
+			option_chain(  right: right, ref_price: ref_price, sort: :expiry) do | chain |
+								chain[0]
+			end
+
+				
+			end
 		def itm_options count:  5, right: :put, ref_price: :request, sort: :strike
 			option_chain(  right: :put, ref_price: ref_price, sort: sort ) do | chain |
 					if right == :put
