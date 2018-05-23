@@ -165,7 +165,7 @@ The Advisor is always the first account
     # finally connect to the tws
     if connect || get_account_data
       if connect(100)  # tries to connect for about 2h
-				get_account_data()  if get_account_data
+				get_account_data().join  if get_account_data
 				#    request_open_orders() if request_open_orders || get_account_data 
       else
 				@accounts = []   # definitivley reset @accounts
@@ -187,7 +187,7 @@ The Advisor is always the first account
     
   end
 
-  def update_local_order ordera
+  def update_local_order order
 		# @local_orders is initialized by #PrepareConnection
     @local_orders.update_or_create order, :local_id
   end
@@ -327,6 +327,8 @@ Weiterhin meldet sich die Anwendung zur Auswertung von Messages der TWS an.
 			break if tws.next_local_id.present?
 			sleep 0.1
 		end
+		# initialize @accounts (incl. aliases)
+		tws.send_message :RequestFA, fa_data_type: 3
 		logger.debug { "Communications successfully established" }
 	end	# def
 
@@ -334,59 +336,66 @@ Weiterhin meldet sich die Anwendung zur Auswertung von Messages der TWS an.
 =begin
 InitializeManagedAccounts 
 defines the Message-Handler for :ManagedAccounts
-Its always active. If the connection is interrupted and
+Its always active. 
 =end
 
   def initialize_managed_accounts
+		tws.subscribe( :ReceiveFA )  do |msg|
+			unless IB.db_backed?
+				msg.accounts.each do |a|
+					for_selected_account( a.account  ){| the_account | the_account.update_attribute :alias, a.alias }
+				end
+				logger.info { "Accounts initialized \n #{@accounts.map( &:to_human  ).join " \n " }" }
+			end
+		end
 
+		tws.subscribe( :ManagedAccounts ) do |msg| 
+			logger.progname =  'Gateway#InitializeManagedAccounts' 
+			if @accounts.empty?
+				unless IB.db_backed?
+					# just validate the message and put all together into an array
+					@accounts =  msg.accounts_list.split(',').map do |a| 
+						account = IB::Account.new( account: a.upcase ,  connected: true )
+						if account.save 
+							logger.debug {"new #{account.print_type} detected => #{account.account}"}
+							account
+						else
+							logger.fatal {"invalid Account #{account.print_type} => #{account.account}"}
+							nil
+						end
+					end.compact
+				else ## Sort into a DB
+					# an advisor-user-hierachie ist build.
+					# the database can distingush between several Advisor-Accounts.
+					advisor_id , *user_id =  msg.accounts_list.split(',')
+					Account.update_all :connected => false
 
-    tws.subscribe(:ManagedAccounts) do |msg| 
-      logger.progname =  'Gateway#InitializeManagedAccounts' 
-      if @accounts.empty?
-	unless IB.db_backed?
-	  # just validate the mmessage and put all together into an array
-	@accounts =  msg.accounts_list.split(',').map do |a| 
-	    account = IB::Account.new( account: a.upcase ,  connected: true )
-	    if account.save 
-		     logger.info {"new #{account.print_type} detected => #{account.account}"}
-		     account
-	    else
-		     logger.fatal {"invalid Account #{account.print_type} => #{account.account}"}
-		     nil
-	    end
-	end.compact
-	else
-	  # an advisor-user-hierachie ist build.
-	  # the database can distingush between several Advisor-Accounts.
-	  advisor_id , *user_id =  msg.accounts_list.split(',')
-	  Account.update_all :connected => false
-
-	  # alle Konten auf disconnected setzen
-	  advisor =  if (a= Advisor.of_ib_user_id(advisor_id)).empty?
-		       logger.info {"creating a new advisor #{advisor_id}"}
-		       Advisor.create( :account => advisor_id.upcase, :connected => true, :name => 'advisor' )
-		     else
-		       logger.info {"updating active-Advisor-Flag #{advisor_id}"}
-		       a.first.update_attribute :connected , true
-		       a.first # return-value
-		     end
-	  user_id.each do | this_user_id |
-	    if (a= advisor.users.of_ib_user_id(this_user_id)).empty?
-	      logger.info {"creating a new user #{this_user_id}"}
-	      advisor.users << User.new( :account => this_user_id.upcase, :connected => true , :name =>    "user#{this_user_id[-2 ..-1]}")
-	    else
-	      a.first.update_attribute :connected, true
-	      logger.info {"updating active-User-Flag #{this_user_id}"}
-	    end
-	  end
-	  @accounts = [advisor] | advisor.users 
-	end
+					# alle Konten auf disconnected setzen
+					advisor =  if (a= Advisor.of_ib_user_id(advisor_id)).empty?
+											 logger.info {"creating a new advisor #{advisor_id}"}
+											 Advisor.create( :account => advisor_id.upcase, :connected => true, :name => 'advisor' )
+										 else
+											 logger.info {"updating active-Advisor-Flag #{advisor_id}"}
+											 a.first.update_attribute :connected , true
+											 a.first # return-value
+										 end
+					user_id.each do | this_user_id |
+						if (a= advisor.users.of_ib_user_id(this_user_id)).empty?
+							logger.info {"creating a new user #{this_user_id}"}
+							advisor.users << User.new( :account => this_user_id.upcase, :connected => true , :name =>    "user#{this_user_id[-2 ..-1]}")
+						else
+							a.first.update_attribute :connected, true
+							logger.info {"updating active-User-Flag #{this_user_id}"}
+						end
+					end
+					@accounts = [advisor] | advisor.users 
+				end
 
       else
-	logger.info {"already #{accounts.size} initialized "}
-	@accounts.each{|x| x.update_attribute :connected ,  true }
-      end # if
-    end # subscribe do
+				logger.info {"already #{accounts.size} initialized "}
+				@accounts.each{|x| x.update_attribute :connected ,  true }
+			end # if
+		end # subscribe do
   end # def
 
 

@@ -6,6 +6,7 @@ module IB
 		prop :account,  # String 
 			:alias,     # 
 			:type,
+			:last_updated,
 			:connected => :bool
 
 
@@ -59,12 +60,12 @@ module IB
 		end 
 
 		def to_human
-			a = if self.alias.present? 
+			a = if self.alias.present?  && self.alias != account
 						" alias: "+ self.alias
 					else
 						""
 					end
-				"<#{account}#{a}>"
+				"<#{print_type} #{account}#{a}>"
 		end
 end # class
 

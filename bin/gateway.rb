@@ -8,7 +8,7 @@ require 'bundler/setup'
 require 'yaml'
 
 require 'logger'
-LogLevel = Logger::ERROR  # INFO
+LogLevel = Logger::INFO # DEBUG # ERROR  # INFO
 #require File.expand_path(File.dirname(__FILE__) + "/../config/boot")
 
 require 'ib-gateway'
@@ -61,6 +61,7 @@ end # Array
   ## Here we just subscribe to some events  
   G =  Gateway.new  get_account_data: true,
 										client_id: client_id, port: port 
+	G.logger.level = Logger::INFO 
 
 	C =  G.tws
   unless  C.received[:OpenOrder].blank?

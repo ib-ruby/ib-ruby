@@ -208,6 +208,7 @@ module IB
     # Contract comparison
     def == other
       return true if super(other)
+			return true if con_id.to_i != 0 && con_id == other.con_id
 
       return false unless other.is_a?(self.class)
 
