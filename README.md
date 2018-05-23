@@ -34,6 +34,9 @@ are needed. It provides active-model objects which behave as thread-safe and lig
 
 `IB-Ruby Core`(IB::Connection) serializes any response from the TWS into a `received`-Array. Its not intended for 24/7-applications but ideal for quick-queries. [IB::Gateway]( https://github.com/ib-ruby/ib-ruby/wiki/Gateway) provides a ready-to-go solution for reliable automated claims. 
 
+## Simple Monitor Demo Application
+__`IB-Ruby`__ integrates easily into common Web-Frameworks. This is demonstrated in the [Simple-Monitor](https://github.com/ib-ruby/simple-monitor) Application. It displays current portfolio positions and some account-measures in any browser. 
+
 
 ## INSTALLATION:
 
