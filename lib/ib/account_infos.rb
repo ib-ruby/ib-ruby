@@ -52,7 +52,7 @@ for sequencial processing
 			logger.info{ "#{account.account} :: Requesting AccountData " }
 			account.update_attribute :connected, false
 			send_message :RequestAccountData, subscribe: true, account_code: account.account
-				sleep 0.4  ## the delay is essential. Otherwise the requests are not processed correctly
+				sleep 0.3  ## the delay is essential. Otherwise the requests are not processed correctly
 			account  # return value to be included in selected_accounts-Array
 		end
 
@@ -62,7 +62,8 @@ for sequencial processing
 				break if selected_accounts.map( &:connected ).all?( true  ) 
 				i+=1
 				sleep 0.2
-				error "Account Infos not correctly processed. Increase delay time in \'lib/ib/account_info.rbs#49\'" if i > 10
+				error "Account Infos not correctly processed. Please restart TWS/Gateway. 
+				If this is not successful increase delay time in \'lib/ib/account_info.rb#49\'" if i > 10
 			end 
 		end
 	

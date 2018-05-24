@@ -26,6 +26,13 @@ module IB
       end]
     end
 
+=begin
+Remove all Time-Stamps from the list of Attributes
+=end
+		def invariant_attributes
+				attributes.reject{|x| x =~ /_at/}
+		end
+
     # Update nil attributes from given Hash or model
     def update_missing attrs
       attrs = attrs.content_attributes unless attrs.kind_of?(Hash)
