@@ -48,7 +48,7 @@ __`IB-Ruby`__ integrates easily into common Web-Frameworks. This is demonstrated
     
     specify in Gemfile:
     
-    gem ib-ruby,  :git=> 'git://github.com/ib-ruby/ib-ruby.git'
+    gem 'ib-ruby', git: 'https://github.com/ib-ruby/ib-ruby.git'
     
  Detailed documentation: [wiki](https://github.com/ib-ruby/ib-ruby/wiki/Setup-Ruby-and-Install-the-Program) 
  
