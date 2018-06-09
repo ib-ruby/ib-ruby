@@ -66,7 +66,7 @@ end
   request_id = ib.send_message :RequestAccountSummary, tags: tags.join(',')
 
 STDIN.gets
- puts "\n *** canceling Reqest ..." 
+ puts "\n *** canceling Request ..."
 		ib.send_message :CancelAccountSummary, id: request_id
 sleep 1
 puts "done."	
