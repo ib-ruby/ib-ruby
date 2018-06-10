@@ -8,7 +8,10 @@ PATH
   remote: .
   specs:
     ib-ruby (0.9.7.2)
+      activemodel
+      activesupport
       bundler (>= 1.1.16)
+      ox
 
 GEM
   remote: https://rubygems.org/
@@ -98,8 +101,6 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  activemodel
-  activesupport
   getopt
   guard
   guard-rspec
