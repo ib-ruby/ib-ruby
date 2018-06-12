@@ -132,12 +132,12 @@ The Advisor is always the first account
 		  client_id:  random_id,
 		  subscribe_managed_accounts: true, 
 		  subscribe_alerts: true, 
-		  subscribe_account_infos: true,
 		  subscribe_order_messages: true, 
 		  connect: true, 
 		  get_account_data: false,
 		  serial_array: false, 
-		  logger: default_logger
+		  logger: default_logger,
+			&b
 
     host, port = (host+':'+port.to_s).split(':') 
     
@@ -150,10 +150,9 @@ The Advisor is always the first account
 		@account_lock = Mutex.new
     
 		@gateway_parameter = { s_m_a: subscribe_managed_accounts, 
-			   s_a: subscribe_alerts,
-			   s_a_i: subscribe_account_infos, 
-			   s_o_m: subscribe_order_messages,
-			    g_a_d: get_account_data }
+													 s_a: subscribe_alerts,
+													 s_o_m: subscribe_order_messages,
+													 g_a_d: get_account_data }
 
 		Thread.report_on_exception = true
 		# https://blog.bigbinary.com/2018/04/18/ruby-2-5-enables-thread-report_on_exception-by-default.html
@@ -161,7 +160,7 @@ The Advisor is always the first account
     # establish Alert-framework
     IB::Alert.logger = logger
     # initialise Connection without connecting
-    prepare_connection
+    prepare_connection &b
     # finally connect to the tws
     if connect || get_account_data
       if connect(100)  # tries to connect for about 2h
@@ -250,7 +249,7 @@ for interal use. To place an Order properly, use Account#PlaceOrder
     end
 
 
-  def prepare_connection
+  def prepare_connection &b
     tws.disconnect if tws.is_a? IB::Connection
     self.tws = IB::Connection.new  @connection_parameter do |c|
     # the accounts-array keeps any account tranmitted first after connecting 
@@ -266,13 +265,12 @@ for interal use. To place an Order properly, use Account#PlaceOrder
     # prepare Advisor-User hierachie
     initialize_managed_accounts if @gateway_parameter[:s_m_a]
     initialize_alerts  if  @gateway_parameter[:s_a]
-    initialize_account_infos if @gateway_parameter[:s_a_i] || @gateway_parameter[:g_a_d]
     initialize_order_handling if@gateway_parameter[:s_o_m] || @gateway_parameter[:g_a_d] 
     ## apply other initialisations which should apper before the connection as block
     ## i.e. after connection order-state events are fired if an open-order is pending
     ## a possible response is best defined before the connect-attempt is done
     if block_given? 
-      yield self, tws
+      yield tws
     
     end
   end
@@ -340,7 +338,7 @@ Its always active.
 =end
 
   def initialize_managed_accounts
-		tws.subscribe( :ReceiveFA )  do |msg|
+		rec_id = tws.subscribe( :ReceiveFA )  do |msg|
 			unless IB.db_backed?
 				msg.accounts.each do |a|
 					for_selected_account( a.account  ){| the_account | the_account.update_attribute :alias, a.alias }
@@ -349,7 +347,7 @@ Its always active.
 			end
 		end
 
-		tws.subscribe( :ManagedAccounts ) do |msg| 
+		man_id = tws.subscribe( :ManagedAccounts ) do |msg| 
 			logger.progname =  'Gateway#InitializeManagedAccounts' 
 			if @accounts.empty?
 				unless IB.db_backed?
@@ -402,6 +400,7 @@ Its always active.
 
   def initialize_alerts
 
+		tws.subscribe(  :AccountUpdateTime  ){| msg | logger.debug{ msg.to_human }}
     tws.subscribe(:Alert) do |msg| 
       logger.progname = 'Gateway#Alerts'
       logger.debug " ----------------#{msg.code}-----"

@@ -24,11 +24,13 @@ module IB
 =begin
 Account#LocateOrder
 given any key of local_id, perm_id and order_ref
-(If multible keys are specified, only the first is used for the searching )
-and an optional status, which can be a string or a regexp ( status: /mitted/ matches Submitted and Presubmitted) 
+and an optional status, which can be a string or a 
+regexp ( status: /mitted/ matches Submitted and Presubmitted) 
+the last associated Orderrecord is returned.
 
-The last associated Orderrecord is returned.
 Thus if several Orders are placed with the same order_ref, the active one is returned
+
+(If multible keys are specified, local_id preceeds perm_id)
 
 =end
 		def locate_order local_id: nil, perm_id: nil, order_ref: nil, status: nil
