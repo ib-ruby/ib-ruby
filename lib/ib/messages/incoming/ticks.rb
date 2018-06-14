@@ -19,7 +19,8 @@ module IB
 				def the_data
 					@data.reject{|k,_| [:version, :ticker_id].include? k }
 				end
-      end
+			end	
+				
 
       # The IB code seems to dispatch up to two wrapped objects for this message, a tickPrice
       # and sometimes a tickSize, which seems to be identical to the TICK_SIZE object.
@@ -68,6 +69,11 @@ module IB
                               [:price, :decimal],
                               [:size, :int],
                               [:can_auto_execute, :int]
+			class TickPrice
+				def valid?
+					!price.zero?
+				end
+			end
 
       TickSize = def_message [2, 6], AbstractTick,
                              [:ticker_id, :int],

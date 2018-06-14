@@ -142,28 +142,27 @@ module IBSupport
 	end
 end
 module IB
-  module Messages
-    module Incoming
+	module Messages
+		module Incoming
+			using IBSupport
 
-    using IBSupport
-  
 
-      # Container for specific message classes, keyed by their message_ids
-      Classes = {}
+			# Container for specific message classes, keyed by their message_ids
+			Classes = {}
 
-      class AbstractMessage < IB::Messages::AbstractMessage
+			class AbstractMessage < IB::Messages::AbstractMessage
 
-        attr_accessor :buffer # is an array
+				attr_accessor :buffer # is an array
 
-        def version # Per message, received messages may have the different versions
-          @data[:version]
-        end
+				def version # Per message, received messages may have the different versions
+					@data[:version]
+				end
 
-        def check_version actual, expected
-          unless actual == expected || expected.is_a?(Array) && expected.include?(actual)
-            error "Unsupported version #{actual} received, expected #{expected}"
-          end
-        end
+				def check_version actual, expected
+					unless actual == expected || expected.is_a?(Array) && expected.include?(actual)
+						error "Unsupported version #{actual} received, expected #{expected}"
+					end
+				end
 
 				# Create incoming message from a given source (IB Socket or data Hash)
 				def initialize source
@@ -174,37 +173,41 @@ module IB
 					else
 						@buffer = source
 						#  if uncommented, the raw-input from the tws is displayed, logger does not work on this level
-				#		puts "BUFFER"
-				#		puts buffer.inspect #.join(" :\n ")
-				#		puts "BUFFER END"
+						#		puts "BUFFER"
+						#		puts buffer.inspect #.join(" :\n ")
+						#		puts "BUFFER END"
 						@data = Hash.new
 						self.load
 					end
 				end
 
-	## more recent messages omit the transmission of a version
-	## thus just load the parameter-map 
-	def simple_load
-            load_map *self.class.data_map
-        rescue IB::Error  => e
-          error "Reading #{self.class}: #{e.class}: #{e.message}", :load, e.backtrace
-	end
-        # Every message loads received message version first
-        # Override the load method in your subclass to do actual reading into @data.
-        def load
-	    unless self.class.version.zero?
-            @data[:version] = buffer.read_int
-            check_version @data[:version], self.class.version
-	    end
-	    simple_load
-        end
+				def valid?
+					@buffer.empty? 
+				end
 
-        # Load @data from the buffer according to the given data map.
-        #
-        # map is a series of Arrays in the format of
-        #   [ :name, :type ], [  :group, :name, :type]
-        # type identifiers must have a corresponding read_type method on the buffer-class (read_int, etc.).
-        # group is used to lump together aggregates, such as Contract or Order fields
+				## more recent messages omit the transmission of a version
+				## thus just load the parameter-map 
+				def simple_load
+					load_map *self.class.data_map
+				rescue IB::Error  => e
+					error "Reading #{self.class}: #{e.class}: #{e.message}", :load, e.backtrace
+				end
+				# Every message loads received message version first
+				# Override the load method in your subclass to do actual reading into @data.
+				def load
+					unless self.class.version.zero?
+						@data[:version] = buffer.read_int
+						check_version @data[:version], self.class.version
+					end
+					simple_load
+				end
+
+				# Load @data from the buffer according to the given data map.
+				#
+				# map is a series of Arrays in the format of
+				#   [ :name, :type ], [  :group, :name, :type]
+				# type identifiers must have a corresponding read_type method on the buffer-class (read_int, etc.).
+				# group is used to lump together aggregates, such as Contract or Order fields
 				def load_map(*map)
 					map.each do |instruction|
 						# We determine the function of the first element
@@ -228,13 +231,9 @@ module IB
 								else
 									instruction # [ :group, :name, :type, (:block)]
 								end
-							# debug	      print "Name: #{name}   "
 							begin
 								data = @buffer.__send__("read_#{type}", &block)
-							rescue IB::LoadError => e
-								puts "TEST"
-								error "Reading #{self.class}: #{e.class}: #{e.message}  --> Instruction: #{name}" , :reader, false 
-							rescue NoMethodError => e
+							rescue IB::LoadError, NoMethodError => e
 								error "Reading #{self.class}: #{e.class}: #{e.message}  --> Instruction: #{name}" , :reader, false 
 							end
 							# debug	      puts data.inspect
@@ -250,7 +249,7 @@ module IB
 					end
 				end
 
-      end # class AbstractMessage
-    end # module Incoming
-  end # module Messages
+			end # class AbstractMessage
+		end # module Incoming
+	end # module Messages
 end # module IB
