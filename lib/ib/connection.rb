@@ -280,20 +280,24 @@ module IB
       time_out = Time.now + poll_time/1000.0
       while (time_left = time_out - Time.now) > 0
         # If socket is readable, process single incoming message
-        if select [socket], nil, nil, time_left
-          # Peek at the message from the socket; if it's blank then the
-          # server side of connection (TWS) has likely shut down.
-          socket_likely_shutdown = socket.recvmsg(100, Socket::MSG_PEEK)[0] == ""
-
-          # We go ahead process messages regardless (a no-op if socket_likely_shutdown).
-          process_message
-          
-          # After processing, if socket has shut down we sleep for 100ms
-          # to avoid spinning in a tight loop. If the server side somehow
-          # comes back up (gets reconnedted), normal processing
-          # (without the 100ms wait) should happen.
-          sleep(0.1) if socket_likely_shutdown
-        end
+				process_message if select [socket], nil, nil, time_left
+				# the following  checks for shutdown of TWS side; ensures we don't run in a spin loop.
+				# unfortunately, it raises Errors in windows environment
+				# disabled for now 
+        #if select [socket], nil, nil, time_left
+        #  # Peek at the message from the socket; if it's blank then the
+        #  # server side of connection (TWS) has likely shut down.
+        #  socket_likely_shutdown = socket.recvmsg(100, Socket::MSG_PEEK)[0] == ""
+				#
+        #  # We go ahead process messages regardless (a no-op if socket_likely_shutdown).
+        #  process_message
+        #  
+        #  # After processing, if socket has shut down we sleep for 100ms
+        #  # to avoid spinning in a tight loop. If the server side somehow
+        #  # comes back up (gets reconnedted), normal processing
+        #  # (without the 100ms wait) should happen.
+        #  sleep(0.1) if socket_likely_shutdown
+        #end
       end
     end
 

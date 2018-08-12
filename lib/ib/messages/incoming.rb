@@ -132,6 +132,10 @@ module IB
 
       #<- 1-9-789--USD-CASH-----IDEALPRO--CAD------
       #-> ---81-123-5.0E-5--0-
+
+			MarketDepthExchanges =  def_message [80,0], 
+																[ :request_id, :int ]
+
       TickRequestParameters = def_message [81, 0], [ :ticker_id, :int ],
 					      [ :min_tick, :decimal],
 					      [ :exchange, :string ],

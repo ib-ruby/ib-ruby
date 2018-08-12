@@ -71,7 +71,7 @@ module IB
                               [:can_auto_execute, :int]
 			class TickPrice
 				def valid?
-					!price.zero?
+				super &&	!price.zero?
 				end
 			end
 
