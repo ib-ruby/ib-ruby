@@ -21,7 +21,7 @@
   end
   def update_or_create item, *condition, &b
     member = first_or_create( item, *condition, &b) 
-    self[ index( member ) ] = item  unless member == self
+    self[ index( member ) ] = item  unless member.is_a?(Array)
     self  # always returns the array 
   end
 
