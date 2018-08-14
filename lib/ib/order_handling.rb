@@ -188,7 +188,7 @@ Otherwise only the last action is not applied and the order is unchanged.
 			end
 
 			# ensure that contract_details are present
-			contract.verify if  contract.contract_detail.blank?
+			contract.verify! if  contract.contract_detail.blank?
 
 			# there are two attribute to consider: limit_price and aux_price
 			# limit_price +  aux_price may be nil or an empty string. Then ".to_f.zero?" becomes true 
