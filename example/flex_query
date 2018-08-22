@@ -1,8 +1,4 @@
 #!/usr/bin/env ruby
-# THIS SCRIPT IS NOT MAINTAINED
-# IB::Flex has to be ported to use the fast Ox-XML-Parsing library 
-#
-#
 #
 # FLEX is a web-based service from IB that helps you to retrieve your activity,
 # trades and positions. It is working independently from TWS or Gateway, using your
@@ -15,43 +11,32 @@
 # Create new Flex query and make sure to set its output format to XML.
 #
 # This script runs your pre-defined FLEX query and prints the resulting report.
-# You may want to put your favorite FLEX queries info into a separate yaml file, such as:
-# -------------config/flex.yml---------------
-# last_orders:
-#   :token: 1111111111111111111111111111111111
-#   :query_id: 79999
-#   :format: :csv
-# --------------------------------------------
 
-require 'rubygems'
 require 'bundler/setup'
 require 'ib-ruby'
 require 'yaml'
-
-if File.exists? "config/flex.yml"
-  # You may want to put your favorite FLEX queries info into a separate yaml file, such as:
-  # -------------config/flex.yml---------------
-  # last_orders:
-  #   :token: 1111111111111111111111111111111111
-  #   :query_id: 79999
-  #   :format: :csv
-  # --------------------------------------------
-  #
-  query_name = ARGV[0] || 'default'
-  query = YAML::load_file('config/flex.yml')[query_name]
-  raise "FLEX error: no query #{query_name} in 'config/flex.yml'" unless query
-  raise "FLEX error: no token/query_id for #{query_name}" unless query[:token] && query[:query_id]
-else
-  # ... or just hardcode your token and query_id here:
-  query = {
-    :token => 1111111111111111111111111111111111, # CHANGE to your actual token!
-    :query_id => ARGV[0] || 11111, # CHANGE to actual query id!
-    :format => :xml # or :csv
-  }
-end
+#### deactivated for now
+#if File.exists? "config/flex.yml"
+#  # You may want to put your favorite FLEX queries info into a separate yaml file, such as:
+#  # -------------config/flex.yml---------------
+#  # last_orders:
+#  #   :token: 1111111111111111111111111111111111
+#  #   :query_id: 79999
+#  #   :format: :csv
+#  # --------------------------------------------
+#  #
+#  query_name = ARGV[0] || 'default'
+#  query = YAML::load_file('config/flex.yml')[query_name]
+#  raise "FLEX error: no query #{query_name} in 'config/flex.yml'" unless query
+#  raise "FLEX error: no token/query_id for #{query_name}" unless query[:token] && query[:query_id]
+#else
+#end
 
 # Initiate FLEX request at a known FLEX Web Service URI
-report = IB::Flex.new(query).run
+pp IB::Flex.new( token: , # 1111111111111111111111111111111111, # CHANGE to your actual token!
+						    query_id: ARGV[0] || 328761, # CHANGE to actual query id!
+							  verbose: true,
+								return_hash: 1,
+						    format: :xml ).run
 
-# Now you have to extract all the data you need from the report
-puts report
+
