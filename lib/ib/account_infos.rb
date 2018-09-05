@@ -5,7 +5,7 @@ module AccountInfos
 
 	end  # def
 =begin
-Query's the tws for Account- and PortfolioValues
+Queries the tws for Account- and PortfolioValues
 The parameter can either be the account_id, the IB::Account-Object or 
 an Array of account_id and IB::Account-Objects.
 
@@ -23,7 +23,7 @@ for sequencial processing
 		
 		subscribe_id = tws.subscribe( :AccountValue, :PortfolioValue,:AccountDownloadEnd )  do | msg |
 
-			for_selected_account( msg.account_name ) do | account |
+			for_selected_account( msg.account_name ) do | account |   # enter mutex controlled zone
 				case msg
 				when IB::Messages::Incoming::AccountValue
 					# debugging:  puts "#{account.account} => AccountValue "
@@ -33,7 +33,6 @@ for sequencial processing
 					account.update_attribute :connected, true   ## flag: Account is completely initialized
 					logger.info{ "#{account.account} => Count of AccountValues: #{account.account_values.size} "  }
 					send_message :RequestAccountData, subscribe: false, account_code: account.account
-
 				when IB::Messages::Incoming::PortfolioValue
 					account.contracts.update_or_create  msg.contract
 					account.portfolio_values.update_or_create( msg.portfolio_value ){ :contract }
@@ -42,6 +41,7 @@ for sequencial processing
 					account.contracts.find{|x| x.con_id == msg.contract.con_id}.portfolio_values << account.portfolio_values.find{|y| y == msg.portfolio_value}
 				end # case
 			end # for_selected_account 
+
 		end # subscribe
 
 		accounts =  active_accounts if accounts.empty?
@@ -59,13 +59,12 @@ for sequencial processing
 				break if accounts.map( &:connected ).all?( true  ) 
 				i+=1
 				sleep 0.2
-				error "Account Infos not correctly processed. Please restart TWS/Gateway. 
-				If this is not successful increase delay time in \'lib/ib/account_info.rb#49\'" if i > 10
+				error "Account Infos not correctly processed. Please restart TWS/Gateway." if i > 100
 			end 
 			tws.unsubscribe subscribe_id
+			logger.debug { "Accountdata successfully read" }
 		end
-
-	
+		# the thread is returned, thus the calling object can perform a 'join'
 	end
 
 

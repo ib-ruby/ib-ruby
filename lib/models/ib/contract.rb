@@ -113,7 +113,7 @@ module IB
       super.merge :con_id => 0,
         :strike => 0.0,
         :right => :none, # Not an option
-        :exchange => 'SMART',
+       # :exchange => 'SMART',
         :include_expired => false
     end
 =begin
@@ -344,7 +344,7 @@ is still available through 'attributes[:expiry]'
 
     # This builds an appropriate Contract subclass based on its type
     def self.build opts = {}
-      subclass = VALUES[:sec_type][opts[:sec_type]] || opts[:sec_type].to_sym
+      subclass =( VALUES[:sec_type][opts[:sec_type]] || opts['sec_type'] || opts[:sec_type]).to_sym
       Contract::Subclasses[subclass].new opts
     end
 

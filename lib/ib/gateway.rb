@@ -224,30 +224,6 @@ is copied from connection
 
   end
 
-=begin
-ModifyOrder, PlaceOrder
-hold an exact copy of the code of connection
-instead of a connection object a gateway-instance is used to connect, which provides Gateway#SendMessage
-
-
-for interal use. To place an Order properly, use Account#ModifyOrder
-=end
-    def modify_order order, contract
-    @account_lock.synchronize do
-      order.modify contract, self  if contract.is_a?( IB::Contract )
-    end
-    end
-=begin
-Gateway#PlaceOrder
-
-for interal use. To place an Order properly, use Account#PlaceOrder
-=end
-    def place_order order, contract
-    @account_lock.synchronize do
-       order.place contract, self  if order.is_a? IB::Order
-    end
-    end
-
 
   def prepare_connection &b
     tws.disconnect if tws.is_a? IB::Connection
@@ -341,7 +317,7 @@ Its always active.
 		rec_id = tws.subscribe( :ReceiveFA )  do |msg|
 			unless IB.db_backed?
 				msg.accounts.each do |a|
-					for_selected_account( a.account  ){| the_account | the_account.update_attribute :alias, a.alias }
+					for_selected_account( a.account  ){| the_account | the_account.update_attribute :alias, a.alias } unless a.alias.blank?
 				end
 				logger.info { "Accounts initialized \n #{@accounts.map( &:to_human  ).join " \n " }" }
 			end
@@ -419,21 +395,41 @@ Its always active.
     connect
   end
 
-  def disconnect
-    logger.progname = 'Gateway#disconnect'
-    if tws.present?
-      tws.disconnect 
-      #	@imap_accounts.each{|account,imap| imap.stop }
-      if IB.db_backed?
-      	Account.update_all :connected => false
-      else
-#	@accounts.each{|y| y.update_attribute :connected,  false }
-	@accounts = []
-      end
-      logger.info "Connection closed"
-    end
+	def disconnect
+		logger.progname = 'Gateway#disconnect'
 
-  end
+		tws.disconnect if tws.present?
+		@accounts.each{|y| y.update_attribute :connected,  false }
+		logger.info "Connection closed"
+	end
+
+
+
+private
+=begin
+ModifyOrder, PlaceOrder
+hold an exact copy of the code of connection
+instead of a connection object a gateway-instance is used to connect, which provides Gateway#SendMessage
+and the hole operation is protected via mutex
+
+
+for interal use. To place an Order properly, use Account#ModifyOrder
+=end
+    def modify_order order, contract
+			@account_lock.synchronize do
+				order.modify contract, self  if contract.is_a?( IB::Contract )
+			end
+    end
+=begin
+Gateway#PlaceOrder
+
+for interal use. To place an Order properly, use Account#PlaceOrder
+=end
+    def place_order order, contract
+    @account_lock.synchronize do
+       order.place contract, self  if order.is_a? IB::Order
+    end
+    end
 
   def random_id
     rand 99999
