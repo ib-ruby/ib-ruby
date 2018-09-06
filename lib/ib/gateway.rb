@@ -366,7 +366,7 @@ Its always active.
 				end
 
       else
-				logger.info {"already #{accounts.size} initialized "}
+				logger.info {"already #{@accounts.size} initialized "}
 				@accounts.each{|x| x.update_attribute :connected ,  true }
 			end # if
 		end # subscribe do
