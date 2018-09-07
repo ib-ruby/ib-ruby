@@ -27,13 +27,18 @@ for sequencial processing
 			for_selected_account( msg.account_name ) do | account |   # enter mutex controlled zone
 				case msg
 				when IB::Messages::Incoming::AccountValue
-					# debugging:  puts "#{account.account} => AccountValue "
 					account.account_values.update_or_create msg.account_value, :currency, :key
 					account.update_attribute :last_updated, Time.now
 				when IB::Messages::Incoming::AccountDownloadEnd
-					account.update_attribute :connected, true   ## flag: Account is completely initialized
-					logger.info{ "#{account.account} => Count of AccountValues: #{account.account_values.size} "  }
 					send_message :RequestAccountData, subscribe: false, account_code: account.account
+					if account.account_values.size > 100
+						account.update_attribute :connected, true   ## flag: Account is completely initialized
+						logger.debug{ "#{account.account} => Count of AccountValues: #{account.account_values.size} "  }
+					else # unreasonable account_data recieved -  try again
+						logger.fatal{ "#{account.account} => Count of AccountValues too small: #{account.account_values.size} "  }
+						send_message :RequestAccountData, subscribe: true, account_code: account.account
+						error "#{account.account} --> #{account.acount_values.size} unreasonable, its most likely that the ib-ruby-client and or the tws has to be restarted"
+					end
 				when IB::Messages::Incoming::PortfolioValue
 					account.contracts.update_or_create  msg.contract
 					account.portfolio_values.update_or_create( msg.portfolio_value ){ :contract }
@@ -52,7 +57,7 @@ for sequencial processing
 			# On a slow hardware, the multithreaded approach fails
 		accounts.each do | ac |
 			account =  ac.is_a?( IB::Account ) ?  ac  : active_accounts.find{|x| x.account == ac } 
-			logger.info{ "#{account.account} :: Requesting AccountData " }
+			logger.debug{ "#{account.account} :: Requesting AccountData " }
 			account.update_attribute :connected, false  # indicates: AccountUpdate in Progress
 			send_message :RequestAccountData, subscribe: true, account_code: account.account
 			i = 0
