@@ -37,7 +37,7 @@ for sequencial processing
 					else # unreasonable account_data recieved -  try again
 						logger.fatal{ "#{account.account} => Count of AccountValues too small: #{account.account_values.size} "  }
 						send_message :RequestAccountData, subscribe: true, account_code: account.account
-						error "#{account.account} --> #{account.acount_values.size} unreasonable, its most likely that the ib-ruby-client and or the tws has to be restarted"
+						error "#{account.account} --> #{account.account_values.size} unreasonable, its most likely that the ib-ruby-client and or the tws has to be restarted"
 					end
 				when IB::Messages::Incoming::PortfolioValue
 					account.contracts.update_or_create  msg.contract
