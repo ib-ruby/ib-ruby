@@ -21,6 +21,7 @@ for sequencial processing
 	def get_account_data *accounts
 		logger.progname = 'Gateway#get_account_data'
 		
+			
 		subscribe_id = tws.subscribe( :AccountValue, :PortfolioValue,:AccountDownloadEnd )  do | msg |
 
 			for_selected_account( msg.account_name ) do | account |   # enter mutex controlled zone
@@ -45,24 +46,26 @@ for sequencial processing
 		end # subscribe
 
 		accounts =  active_accounts if accounts.empty?
+		
+		Thread.new do 
+			# Account-infos are requested sequencially.
+			# On a slow hardware, the multithreaded approach fails
 		accounts.each do | ac |
 			account =  ac.is_a?( IB::Account ) ?  ac  : active_accounts.find{|x| x.account == ac } 
 			logger.info{ "#{account.account} :: Requesting AccountData " }
 			account.update_attribute :connected, false  # indicates: AccountUpdate in Progress
 			send_message :RequestAccountData, subscribe: true, account_code: account.account
-				sleep 0.3  ## the delay is essential. Otherwise the requests are not processed correctly
+			i = 0
+			loop do
+				break if account.connected 
+				i +=1
+				sleep 0.1
+				error "Account Infos not correctly processed. Please restart TWS/Gateway." if i > 20
+			end	
 		end
 
-		Thread.new do 
-			i =  0
-			loop do
-				break if accounts.map( &:connected ).all?( true  ) 
-				i+=1
-				sleep 0.2
-				error "Account Infos not correctly processed. Please restart TWS/Gateway." if i > 100
-			end 
-			tws.unsubscribe subscribe_id
-			logger.debug { "Accountdata successfully read" }
+		       tws.unsubscribe subscribe_id
+		       logger.debug { "Accountdata successfully read" }
 		end
 		# the thread is returned, thus the calling object can perform a 'join'
 	end
