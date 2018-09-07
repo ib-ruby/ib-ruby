@@ -60,7 +60,7 @@ for sequencial processing
 				break if account.connected 
 				i +=1
 				sleep 0.1
-				error "Account Infos not correctly processed. Please restart TWS/Gateway." if i > 20
+				error "Account Infos not correctly processed. Please restart TWS/Gateway." if i > 50
 			end	
 		end
 
