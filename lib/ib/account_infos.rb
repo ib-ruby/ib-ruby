@@ -15,12 +15,15 @@ returns the thread waiting for completing the request
 call it via
 
 	G.get_account_data.join 
+	or
+	G.get_account_data("account-number" ord IB::Account-Object).join
 
 for sequencial processing
 =end
 	def get_account_data *accounts
 		logger.progname = 'Gateway#get_account_data'
-		
+		Delay =  100   #  set the max waiting time (in 1/10-seconds) 
+									 #  in order to set the timeframe before raising an IB::Error	
 			
 		subscribe_id = tws.subscribe( :AccountValue, :PortfolioValue,:AccountDownloadEnd )  do | msg |
 
@@ -64,7 +67,7 @@ for sequencial processing
 				break if account.connected 
 				i +=1
 				sleep 0.1
-				error "Account Infos not correctly processed. Please restart TWS/Gateway." if i > 50
+				error "Account Infos not correctly processed. Please restart TWS/Gateway." if i > Delay
 			end	
 		end
 
