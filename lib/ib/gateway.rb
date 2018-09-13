@@ -164,7 +164,7 @@ The Advisor is always the first account
     # finally connect to the tws
     if connect || get_account_data
       if connect(100)  # tries to connect for about 2h
-				get_account_data().join  if get_account_data
+				get_account_data()  if get_account_data
 				#    request_open_orders() if request_open_orders || get_account_data 
       else
 				@accounts = []   # definitivley reset @accounts

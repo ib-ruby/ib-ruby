@@ -41,7 +41,7 @@ module IB
 				end
 
 				def to_human
-        "<AccountValue: #{account_name}, #{account_value}>"  
+        "<AccountValue: #{account_name}, #{account_value}"  
 				end
 			end
 			AccountSummary = def_message(63, AccountMessage,
@@ -60,6 +60,15 @@ module IB
 																 [:account, :string]) 
 
 
+			AccountUpdatesMulti =  def_message( 73,
+																[ :request_id, :int ],
+																[ :account , :string ],
+																[ :model, :string ],
+																[ :key		,  :string ],
+																[ :value ,	 :decimal],
+																[ :currency, :string ])
+
+					AccountUpdatesMultiEnd =  def_message 74
     end # module Incoming
   end # module Messages
 end # module IB

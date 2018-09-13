@@ -30,6 +30,7 @@ module IB
 						unless @portfolio_value.present?
 							@portfolio_value =  IB::PortfolioValue.new   @data[:portfolio_value] 
 							@portfolio_value.contract = contract
+							@portfolio_value.account =  account
 						end
 						@portfolio_value # return_value
 					end
@@ -37,9 +38,8 @@ module IB
 					def account_name
 						@account_name =  @data[:account]
 					end
-					def to_human
-						"<Message: #{portfolio_value.to_human }>"
-					end
+
+					alias :to_human :portfolio_value 
 				end # PortfolioValue
 
 
@@ -69,14 +69,6 @@ module IB
 			PositionsMultiEnd =  def_message 72
 	
 					
-					AccountUpdatesMulti =  def_message( 73,
-							[ :request_id, :int ],
-							[ :account , :string ],
-							[ :key		,  :string ],
-							[ :value ,	 :decimal],
-							[ :currency, :string ])
-
-					AccountUpdatesMultiEnd =  def_message 74
 
 
 

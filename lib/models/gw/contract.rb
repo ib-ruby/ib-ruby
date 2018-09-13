@@ -217,8 +217,6 @@ Additional Attributes can be specified ie.
 			def reset_attributes *attributes
 				attributes = ( attributes +  [:con_id, :last_trading_day ]).uniq
 				attributes.each{|y| @attributes[y] = nil }
-#				self.con_id = nil
-#				self.last_trading_day =  nil
 				self.contract_detail =  nil
 			end
 			
