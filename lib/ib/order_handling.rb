@@ -76,12 +76,12 @@ Everything is carried out in a mutex-synchonized environment
 				success= update_order_dependent_object( msg.execution) do |o|
 					logger.progname = 'Gateway#order_handling::ExecutionData '
 					o.executions << msg.execution 
-					if  msg.execution.cumulative_quantity.to_i == o.quantity.abs
+					if  msg.execution.cumulative_quantity.to_i == o.total_quantity.abs
 						logger.info{ "#{o.account} --> #{o.contract.symbol}: Execution completed" }
 						o.order_states.first_or_create(  IB::OrderState.new( perm_id: o.perm_id, local_id: o.local_id,
 																																status: 'Filled' ),  :status )
 					else
-						logger.debug{ "#{o.account} --> #{o.contract.symbol}: Execution not completed (#{msg.execution.cumulative_quantity.to_i}/#{o.quantity.abs})" }
+						logger.debug{ "#{o.account} --> #{o.contract.symbol}: Execution not completed (#{msg.execution.cumulative_quantity.to_i}/#{o.total_quantity.abs})" }
 					end  # branch
 				end # block
 
