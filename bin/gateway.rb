@@ -8,7 +8,7 @@ require 'bundler/setup'
 require 'yaml'
 
 require 'logger'
-LogLevel = Logger::INFO # DEBUG # ERROR  # INFO
+LogLevel = Logger::DEBUG  ##INFO # DEBUG # ERROR 
 #require File.expand_path(File.dirname(__FILE__) + "/../config/boot")
 
 require 'ib-gateway'
@@ -53,15 +53,23 @@ end # Array
 						7497
 					end
   ARGV.clear
-#  logger = Logger.new  STDOUT
-#		logger.level = Logger::DEBUG 
+  logger = Logger.new  STDOUT
+  logger.formatter = proc do |level, time, prog, msg|
+      "#{time.strftime('%H:%M:%S')} #{msg}\n"
+	end
+			logger.level = Logger::DEBUG 
 	
   ## The Block takes instructions which are executed  after initializing all instance-variables
   ## and prior to the connection-process
   ## Here we just subscribe to some events  
-  G =  Gateway.new  get_account_data: true,
-										client_id: client_id, port: port 
-	G.logger.level = Logger::INFO 
+	begin
+		G =  Gateway.new  get_account_data: true,
+			client_id: client_id, port: port, logger: logger
+	rescue IB::TransmissionError => e
+		puts "E: #{e.inspect}"
+		puts "Enter »CRTL C« to exit"
+		resume
+	end
 
 	C =  G.tws
   unless  C.received[:OpenOrder].blank?

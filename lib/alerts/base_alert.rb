@@ -45,22 +45,22 @@ be closed manually with
 
     mattr_accessor :logger
 
-      def self.method_missing( method_id, msg , *args, &block )
-	if msg.is_a?  IB::Messages::Incoming::Alert
-	      logger.debug { msg.to_human }
-	else
-	      logger.error { "Argument to IB::Alert is not a IB::Messages::Incoming::Alert" }
-	      logger.error { "The object: #{msg.inspect} " }
-	end
-      rescue NoMethodError
-	unless logger.nil?
-	logger.error { "The Argument is not a valid  IB::Messages:Incoming::Alert object"}
-	logger.error { "The object: #{msg.inspect} " }
-	else
-	  puts "No Logging-Device specified"
-	  puts "The object: #{msg.inspect} "
-	end
-      end
+		def self.method_missing( method_id, msg , *args, &block )
+			if msg.is_a?  IB::Messages::Incoming::Alert
+				logger.debug { msg.to_human }
+			else
+				logger.error { "Argument to IB::Alert is not a IB::Messages::Incoming::Alert" }
+				logger.error { "The object: #{msg.inspect} " }
+			end
+		rescue NoMethodError
+			unless logger.nil?
+				logger.error { "The Argument is not a valid  IB::Messages:Incoming::Alert object"}
+				logger.error { "The object: #{msg.inspect} " }
+			else
+				puts "No Logging-Device specified"
+				puts "The object: #{msg.inspect} "
+			end
+		end
 
 
 
