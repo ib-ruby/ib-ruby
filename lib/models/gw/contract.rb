@@ -228,15 +228,23 @@ Additional Attributes can be specified ie.
 			tws=  Connection.current 		 # get the initialized ib-ruby instance
 			the_id =  nil
 			finalize= false
-			#  switch to delayed data
-			tws.send_message :RequestMarketDataType, :market_data_type => :delayed if delayed
-			s_id = tws.subscribe(:TickSnapshotEnd) { |msg|	finalize = true	if msg.ticker_id == the_id }
-			tickdata = []
-			sub_id = tws.subscribe(:TickPrice, :TickSize,  :TickGeneric, :TickOption) do |msg|
-				tickdata << msg.the_data if msg.ticker_id == the_id 
-				puts msg.to_human if msg.ticker_id == the_id 
-			end
+			tickdata =  Hash.new
+			# define requested tick-attributes
+			last, close, request_data_type  = if !!delayed 
+											 [ :delayed_last ,  :delayed_close , :delayed ]
+										 else
+											 [:last_price, :close_price, :realtime ]
+										 end
 
+			tws.send_message :RequestMarketDataType, :market_data_type =>  request_data_type
+
+			# subscribe to TickPrices
+			s_id = tws.subscribe(:TickSnapshotEnd) { |msg|	finalize = true	if msg.ticker_id == the_id }
+			sub_id = tws.subscribe(:TickPrice ) do |msg| #, :TickSize,  :TickGeneric, :TickOption) do |msg|
+				if  msg.ticker_id == the_id 
+				[last,close].each{|x| tickdata[x] = msg.the_data[:price] if  IB::TICK_TYPES[ msg.the_data[:tick_type]] == x } 
+				end
+			end
 			# initialize »the_id« that is used to identify the received tick messages
 			# by firing the market data request
 			the_id = tws.send_message :RequestMarketData,  contract: self , snapshot: true 
@@ -247,18 +255,14 @@ Additional Attributes can be specified ie.
 			th = Thread.new do
 				i = 0
 				loop{ i+=1; sleep 0.1; break if finalize || i > 1000  } 
-				prices = tickdata.map do | element | 
-					element[:price] 	if [:delayed_close, :close_price ,:delayed_last, :last_price].include?( IB::TICK_TYPES[element[:tick_type ]]) # && element[:price] > 0  removed to enable request of prices for bags
-				end.compact
-				# store result in misc
-				self.misc << ( prices.sum / prices.size ) rescue 0
+				self.misc =  tickdata[last].present? && !tickdata[last].zero? ? tickdata[last] : tickdata[close]
 				tws.unsubscribe sub_id, s_id
 			end
 			if thread
 				th		# return thread
 			else
 				th.join
-				misc.last	# return 
+				misc	# return 
 			end
 		end #
 
