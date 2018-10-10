@@ -1,6 +1,11 @@
 module IB
 	module Symbols
 
+=begin
+Creates a Class and associates it with a filename
+
+raises an IB::Error in case of a conflict with existing class-names 
+=end
 		def self.allocate_collection name  # name might be a string or a symbol
 			symbol_table = Module.new do
 				extend Symbols
@@ -20,9 +25,13 @@ module IB
 											 else
 												 IB::Symbols.const_set  name, symbol_table   	
 											 end
-			the_collection.send :read_collection
-			the_collection # return_value
-		 
+			if the_collection.is_a? IB::Symbols
+				the_collection.send :read_collection
+				the_collection # return_value
+			else
+				error "#{the_collection} is already a Class" 
+				nil
+			end
 		end
 
 		def purge_collection
