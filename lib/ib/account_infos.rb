@@ -45,6 +45,7 @@ raises an IB::Error if less then 100 items are recieved-
 				send_message :RequestAccountData, subscribe: true, account_code: account.account
 				i=0; loop{ sleep 0.1; i+=1; break if i>600 || account.connected || IB::Alert.status_2101(account) } # initialize requests sequencially 
 			end
+			send_message :RequestAccountData, subscribe: false  ## do this only once
 		end
 
 		logger.debug { "Accountdata successfully read" }

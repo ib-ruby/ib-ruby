@@ -63,12 +63,10 @@ end # Array
   ## and prior to the connection-process
   ## Here we just subscribe to some events  
 	begin
-		G =  Gateway.new  get_account_data: true,
+		G =  Gateway.new  get_account_data: true, serial_array: true,
 			client_id: client_id, port: port, logger: logger
 	rescue IB::TransmissionError => e
 		puts "E: #{e.inspect}"
-		puts "Enter »CRTL C« to exit"
-		resume
 	end
 
 	C =  G.tws
