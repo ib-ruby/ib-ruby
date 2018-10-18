@@ -79,7 +79,7 @@ raises an IB::Error if less then 100 items are recieved-
 						account.update_attribute :connected, true   ## flag: Account is completely initialized
 						logger.info { "#{account.account} => Count of AccountValues: #{account.account_values.size}"  }
 					else # unreasonable account_data recieved -  request is still active
-						error  "#{account.account} => Count of AccountValues too small: #{account.account_values.size}" , reader 
+						error  "#{account.account} => Count of AccountValues too small: #{account.account_values.size}" , :reader 
 					end
 				when IB::Messages::Incoming::PortfolioValue
 						account.contracts.update_or_create  msg.contract
