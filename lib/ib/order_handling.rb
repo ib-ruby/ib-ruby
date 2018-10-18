@@ -47,7 +47,6 @@ Everything is carried out in a mutex-synchonized environment
 					# now save the order-record
 						msg.order.contract = msg.contract
 						this_account.orders.update_or_create msg.order, :perm_id
-					end
 				end
 
 				#     update_ib_order msg  ## aus support 
