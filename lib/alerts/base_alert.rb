@@ -24,13 +24,13 @@ IB::Gateway calls the methods in response of subscribing to the :Alert signal by
    IB::Alert.send("alert_#{msg.code}", msg )
 
 To define a response to the code 134 ( Modify order failed)  a method like
-    module IB
-      class Alert
-	def self.alert_134 msg
-	(your code)
-	end
-      end
-    end
+		module IB
+			class Alert
+				def self.alert_134 msg
+					(your code)
+				end
+			end
+		end
 has to be written. 
 
 Important: The class is accessed asynchronically.

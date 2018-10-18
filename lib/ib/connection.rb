@@ -35,11 +35,12 @@ module IB
     alias next_order_id= next_local_id=
     
     def initialize host: '127.0.0.1',
-                   port: '4002', # IB Gateway connection (default)
-                       #:port => '7497', # TWS connection
+                   port: '4002', # IB Gateway connection (default --> demo) 4001:  production
+                       #:port => '7497', # TWS connection  --> demo				  7496:  production
                    connect: true, # Connect at initialization
                    received:  true, # Keep all received messages in a @received Hash
 																		# implies: start reader-thread
+#									 redis: false,    # future plans
                    logger: default_logger,
                    client_id: random_id, 
                    client_version: IB::Messages::CLIENT_VERSION,
@@ -203,15 +204,15 @@ module IB
     end
 
     # Remove all subscribers with specific subscriber id
-    def unsubscribe *ids
-      @subscribe_lock.synchronize do
-	ids.collect do |id|
-	  removed_at_id = subscribers.map { |_, subscribers| subscribers.delete id }.compact
-	  logger.error  "No subscribers with id #{id}"   if removed_at_id.empty?
-	  removed_at_id # return_value
-	end.flatten
-      end
-    end
+		def unsubscribe *ids
+			@subscribe_lock.synchronize do
+				ids.collect do |id|
+					removed_at_id = subscribers.map { |_, subscribers| subscribers.delete id }.compact
+					logger.error  "No subscribers with id #{id}"   if removed_at_id.empty?
+					removed_at_id # return_value
+				end.flatten
+			end
+		end
     ### Working with received messages Hash
 
     # Clear received messages Hash
@@ -357,6 +358,7 @@ module IB
 				end
 			else
 				logger.fatal {"Could not start reader, not connected!"}
+				nil  # return_value
 			end
     end
 
@@ -384,6 +386,7 @@ module IB
 				# and have it read the message from socket.
 				# NB: Failure here usually means unsupported message type received
 				logger.error { "Got unsupported message #{msg_id}" } unless Messages::Incoming::Classes[msg_id]
+				error "Something strange happened - Reader has to be restarted" , :reader if msg_id.to_i.zero?
 				msg = Messages::Incoming::Classes[msg_id].new(the_decoded_message)
 
 				# Deliver message to all registered subscribers, alert if no subscribers

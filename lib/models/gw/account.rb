@@ -51,30 +51,43 @@ Thus if several Orders are placed with the same order_ref, the active one is ret
 Account#PlaceOrder
 requires an IB::Order as parameter. 
 If attached, the associated IB::Contract is used to specify the tws-command
-The associated Contract overtakes a parallel specified one
+The associated Contract overtakes  the specified (as parameter)
 
-The method validates the contract and returns the local_id of the submitted order
+auto_adjust: Limit- and Aux-Prices are adjusted to Min-Tick
 
-Limit- and Aux-Prices are adjusted to Min-Tick, if auto_adjust is specified
+convert_size: The action-attribute (:buy  :sell) is associated according the content of :total_quantity.
+
 
 =end
 
-		def place_order  order:, contract: nil, auto_adjust: true
+		def place_order  order:, contract: nil, auto_adjust: true, convert_size:  false
 			# adjust the orderprice to  min-tick
 			logger.progname =  'Account#PlaceOrder' 
-
-			order.contract =  contract if order.contract.nil?
-			order.contract.verify if  order.contract.con_id.blank?
+			qualified_contract = -> do
+													order.contract.is_a?( IB::Bag )  ||  # Bags are always qualified
+													(order.contract.con_id.present? 	 && order.contract.con_id.to_i >0)
+			end
+			order.contract =  contract if order.contract.nil?   # no verification at this piont
 			order.account =  account  # assign the account_id to the account-field of IB::Order
 			local_id =  nil
 			self.orders.update_or_create order, :order_ref
-			if order.contract.nil? || order.contract.con_id.blank?
-				error "No Contract specified .::. #{order.to_human}"
+			if order.contract.nil? || !qualified_contract[]
+				error "No qualified Contract specified .::. #{order.to_human}"
 			else
-				order.auto_adjust if auto_adjust
+				order.auto_adjust if auto_adjust && !(order.contract.is_a?( IB::Bag ))
+				if convert_size 
+					order.action =  order.total_quantity.to_i > 0  ? 	:buy  : :sell 
+		      order.total_quantity =  order.total_quantity.to_i.abs
+			  end
 				c=  order.contract
 				#  con_id and exchange fully qualify a contract, no need to transmit other data
-				tws_contract =  Contract.new con_id: c.con_id, exchange: c.exchange
+				tws_contract =  if c.con_id.present? 
+													Contract.new con_id: c.con_id, exchange: c.exchange
+												else
+													c.contract  # encodes via order#serial_short
+												end
+				puts "order: #{order.action}"
+				puts "order: #{order.total_quantity}"
 				local_id = Connection.current.place_order order, tws_contract
 			end 
 			local_id  # return_value

@@ -212,13 +212,22 @@ allows reconnection if a socket_error occurs
   end
 
 =begin
-The code to translate the wrappers into a message 
-is copied from connection
+Cancels one or multible orders
+
+Argument is either an order-object or a local_id
 =end
 
-  def cancel_order *local_ids
+  def cancel_order *order 
 
-     local_ids.each do |local_id|
+    logger.tap{|l| l.progname =  'Gateway#CancelOrder' }
+	
+     order.each do |o|
+			 local_id = if o.is_a? (IB::Order)
+										logger.info{ "Cancelling #{o.to_human}" }
+										o.local_id
+									else
+										o
+									end
          send_message :CancelOrder, :local_id => local_id.to_i
      end
 
@@ -399,8 +408,8 @@ Its always active.
 		logger.progname = 'Gateway#disconnect'
 
 		tws.disconnect if tws.present?
-		@accounts.each{|y| y.update_attribute :connected,  false }
-		logger.info "Connection closed"
+		@accounts = [] # each{|y| y.update_attribute :connected,  false }
+		logger.info "Connection closed" 
 	end
 
 

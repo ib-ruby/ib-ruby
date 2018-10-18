@@ -42,7 +42,7 @@ raises an IB::Error in case of a conflict with existing class-names
 =begin
 cuts the Collection in `bunch_count` pieces. Each bunch is delivered to the block.
 
-Sleeps fpr `sleeping time` between processing bunches
+Sleeps for `sleeping time` between processing bunches
 
 Returns count of created bunches
 =end

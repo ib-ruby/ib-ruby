@@ -39,33 +39,18 @@ Everything is carried out in a mutex-synchonized environment
 				logger.info {  "Order State not assigned-- #{msg.order_state.to_human} ----------" } if success.nil?
 
 			when IB::Messages::Incoming::OpenOrder
+				## todo --> handling of bags --> no con_id
 				for_selected_account(msg.order.account) do | this_account |
 					# first update the contracts
-					#
-					if this_account.contracts.is_a?(Array)
 						msg.contract.orders.update_or_create msg.order, :perm_id
 						this_account.contracts.first_or_create msg.contract, :con_id
-					else
-						this_account.contracts.where( con_id: msg.contract.con_id ).first_or_create do |new_contract|
-							new_contract.attributes.merge msg_contract.attributes
-						end
-					end
 					# now save the order-record
-
-					if this_account.orders.is_a?(Array)
 						msg.order.contract = msg.contract
 						this_account.orders.update_or_create msg.order, :perm_id
-
-					else
-						this_account.orders.where( perm_id: msg.order.perm_id ).first_or_create do | new_order |
-							new_order.attributes.merge msg.order.attributes
-							new_order.contract =  msg.contract
-						end
 					end
 				end
 
 				#     update_ib_order msg  ## aus support 
-				#      ActiveRecord::Base.connection.close
 			when  IB::Messages::Incoming::OpenOrderEnd
 				#             exitcondition=true
 				logger.debug { "OpenOrderEnd" }
@@ -96,11 +81,17 @@ Gateway#RequestOpenOrders  aliased as UpdateOrders
 Resets the order-array for each account first.
 Requests all open (eg. pending)  orders from the tws 
 
+Waits until the OpenOrder-Request is registered, ie. after the call, accounts.orders is updated
+
 =end
 
 	def request_open_orders
+
+		exit_condition = false
+		tws.subscribe(  :OpenOrderEnd ){ exit_condition = true }
 		for_active_accounts{| account | account.orders=[] }
 		send_message :RequestAllOpenOrders
+		i=0; loop{ i=i+1; sleep 0.1; break if exit_condition || i>100 }
 	end
 
 	alias update_orders request_open_orders 
@@ -172,8 +163,8 @@ Otherwise only the last action is not applied and the order is unchanged.
 			201,  # deleted object
 			105,  # Order being modified does not match original order
 			462,  # Cannot change to the new Time in Force:GTD
-			329   # Cannot change to the new order type:STP
-
+			329,  # Cannot change to the new order type:STP
+			10147 # OrderId 0 that needs to be cancelled is not found.
 	end  # class Alert
 
 
