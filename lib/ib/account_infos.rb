@@ -46,6 +46,9 @@ raises an IB::Error if less then 100 items are recieved-
 				i=0; loop{ sleep 0.1; i+=1; break if i>600 || account.connected || IB::Alert.status_2101(account) } # initialize requests sequencially 
 			end
 			send_message :RequestAccountData, subscribe: false  ## do this only once
+		
+		rescue IB::TransmissionError  
+			 @accounts.delete ac #  if an error occurs, just delete the account form the selected_accounts-Array
 		end
 
 		logger.debug { "Accountdata successfully read" }
