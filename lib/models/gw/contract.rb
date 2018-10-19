@@ -285,7 +285,7 @@ sort = :strike, :expiry
 			# -----------------------------------------------------------------------------------------------------
 			# get OptionChainDefinition from IB ( instantiate cashed Hash )
 			if @option_chain_definition.blank?
-				sub_sdop = ib.subscribe( :SecurityDefinitionOptionParameterEnd) { |msg| finalize = true if msg.request_id == my_req }
+				sub_sdop = ib.subscribe( :SecurityDefinitionOptionParameterEnd ) { |msg| finalize = true if msg.request_id == my_req }
 				sub_ocd =  ib.subscribe( :OptionChainDefinition ) do | msg |
 					if msg.request_id == my_req
 						message =  msg.data
@@ -308,7 +308,7 @@ sort = :strike, :expiry
 					verify! if con_id.to_i.zero?
 					my_req = ib.send_message :RequestOptionChainDefinition, con_id: con_id,
 						symbol: symbol,
-						#	 exchange: 'BOX,CBOE',
+							 exchange: 'SMART', # BOX,CBOE',
 						sec_type: self[:sec_type]
 
 

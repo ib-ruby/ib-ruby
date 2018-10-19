@@ -294,6 +294,10 @@ module IB
       self[:sec_type] == 'OPT'
     end
 
+    def index?
+      self[:sec_type] == 'IND'
+    end
+
 =begin
 From the release notes of TWS 9.50
 
@@ -330,6 +334,7 @@ is still available through 'attributes[:expiry]'
   require 'models/ib/forex'
   require 'models/ib/future'
   require 'models/ib/stock'
+  require 'models/ib/index'
 
   class Contract
     # Contract subclasses representing specialized security types.
@@ -340,6 +345,7 @@ is still available through 'attributes[:expiry]'
     Subclasses[:future] = IB::Future
     Subclasses[:stock] = IB::Stock
     Subclasses[:forex] = IB::Forex
+    Subclasses[:index] = IB::Index
 
 
     # This builds an appropriate Contract subclass based on its type
