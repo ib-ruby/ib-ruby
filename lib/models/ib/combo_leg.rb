@@ -6,9 +6,9 @@ module IB
     include BaseProperties
 
     # BAG Combo Contract that contains this Leg
-    belongs_to :combo, :class_name => 'Contract'
+#    belongs_to :combo, :class_name => 'Contract'
     # Contract that constitutes this Leg
-    belongs_to :leg_contract, :class_name => 'Contract', :foreign_key => :leg_contract_id
+#    belongs_to :leg_contract, :class_name => 'Contract', :foreign_key => :leg_contract_id
 
     # General Notes:
     # 1. The exchange for the leg definition must match that of the combination order.

@@ -75,12 +75,12 @@ module IB
 
     has_one :contract_detail # Volatile info about this Contract
 
-    # For Contracts that are part of BAG
-    has_one :leg, :class_name => 'ComboLeg', :foreign_key => :leg_contract_id
-    has_one :combo, :class_name => 'Contract', :through => :leg
+    # For Contracts that are part of BAGaa ## leg is now a method of contract
+#   has_one :leg #, :class_name => 'ComboLeg', :foreign_key => :leg_contract_id
+   # has_one :combo, :class_name => 'Contract', :through => :leg
 
     # for Combo/BAG Contracts that contain ComboLegs
-    has_many :combo_legs, :foreign_key => :combo_id
+    has_many :combo_legs#, :foreign_key => :combo_id
     has_many :leg_contracts, :class_name => 'Contract', :through => :combo_legs
     alias legs combo_legs
     alias legs= combo_legs=

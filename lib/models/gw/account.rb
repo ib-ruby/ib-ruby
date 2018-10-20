@@ -64,31 +64,27 @@ convert_size: The action-attribute (:buy  :sell) is associated according the con
 			# adjust the orderprice to  min-tick
 			logger.progname =  'Account#PlaceOrder' 
 			qualified_contract = -> do
-													order.contract.is_a?( IB::Bag )  ||  # Bags are always qualified
-													(order.contract.con_id.present? 	 && order.contract.con_id.to_i >0)
+													contract.is_a?( IB::Bag )  ||  # Bags are always qualified
+													(contract.con_id.present? 	 && contract.con_id.to_i >0)
 			end
-			order.contract =  contract if order.contract.nil?   # no verification at this piont
+			contract ||= order.contract   # no verification at this piont
 			order.account =  account  # assign the account_id to the account-field of IB::Order
 			local_id =  nil
 			self.orders.update_or_create order, :order_ref
-			if order.contract.nil? || !qualified_contract[]
+			if !qualified_contract[]
 				error "No qualified Contract specified .::. #{order.to_human}"
 			else
-				order.auto_adjust if auto_adjust && !(order.contract.is_a?( IB::Bag ))
+				order.auto_adjust if auto_adjust && !(contract.is_a?( IB::Bag ))
 				if convert_size 
 					order.action =  order.total_quantity.to_i > 0  ? 	:buy  : :sell 
 		      order.total_quantity =  order.total_quantity.to_i.abs
 			  end
-				c=  order.contract
 				#  con_id and exchange fully qualify a contract, no need to transmit other data
-				tws_contract =  if c.con_id.present? 
-													Contract.new con_id: c.con_id, exchange: c.exchange
-												else
-													c.contract  # encodes via order#serial_short
-												end
+				order.contract =  contract.con_id.to_i > 0 ?  Contract.new( con_id: contract.con_id, exchange: contract.exchange)  :  contract
 				puts "order: #{order.action}"
 				puts "order: #{order.total_quantity}"
-				local_id = Connection.current.place_order order, tws_contract
+				puts "order : #{order.inspect}"
+				local_id = Connection.current.place_order order, order.contract
 			end 
 			local_id  # return_value
 

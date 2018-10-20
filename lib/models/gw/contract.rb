@@ -273,7 +273,7 @@ right= :call, :put, :straddle
 ref_price = :request or a numeric value
 sort = :strike, :expiry 
 =end
-		def option_chain ref_price: :request, right: :put, sort: :strike
+		def option_chain ref_price: :request, right: :put, sort: :strike, exchange: ''
 
 			ib =  Connection.current
 
@@ -308,7 +308,7 @@ sort = :strike, :expiry
 					verify! if con_id.to_i.zero?
 					my_req = ib.send_message :RequestOptionChainDefinition, con_id: con_id,
 						symbol: symbol,
-							 exchange: 'SMART', # BOX,CBOE',
+							 exchange: exchange, # BOX,CBOE',
 						sec_type: self[:sec_type]
 
 
