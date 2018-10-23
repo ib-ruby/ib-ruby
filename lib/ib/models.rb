@@ -14,3 +14,4 @@
 	require 'models/gw/contract' # provides Contract#Verify
   require 'models/ib/straddle'
   require 'models/ib/strangle'
+  require 'models/ib/calendar'

@@ -1,0 +1,87 @@
+module IB
+	class Calendar <  Bag 
+
+=begin
+Macro-Class to simplify the definition of Calendar-Spreads
+
+Initialize with
+
+	calendar =  IB::Calendar.new underlying: Symbols::Index.stoxx,
+															 strike: 3000, right: :put
+															 front: 201901, back: 291903
+	or
+ 
+	master = IB::Option.new symbol: :Estx50, right: :put, multiplier: 10, exchange: 'DTB', currency: 'EUR'
+													strike: 3000, expiry: 201812
+	calendar =  IB::Calendar.new master, back: 201903
+
+=end
+
+		
+		has_many :legs
+
+		def initialize  master=nil,   # provides strike, front-month, right, trading-class
+										underlying: nil, 
+										strike: 0, 
+										right: :put,
+										front: IB::Symbols::Futures.next_expiry, 
+										back: ,   # has to be specified
+										trading_class: nil
+
+			master_option, msg = if master.present? 
+															if master.is_a?(IB::Option)
+																[ master, nil ]
+															else
+																[ nil, "First Argument is no IB::Option" ]
+															end
+														elsif underlying.present?
+															if underlying.is_a?(IB::Contract)
+																master = IB::Option.new underlying.attributes.slice( :currency, :symbol, :exchange )
+																master.strike, master.right, master.expiry = strike, right, front
+																[master, strike.zero? ? "strike has to be specified" : nil]
+															else
+																[nil, "Underlying has to be an IB::Contract"]
+															end
+														else
+															[ nil, "Required parameters: Master-Option or Underlying, strike" ]  
+														end
+
+			error msg, :args, nil  if msg.present?
+			master_option.reset_attributes
+			master_option.trading_class = trading_class unless trading_class.nil?
+			master_option.expiry = front if master_option.expiry.nil? || master_option.expiry == ''
+			l=[] ; master_option.verify{|x| l << x }
+			if l.empty?
+				error "Invalid Parameters. No Contract found #{master_option.to_human}"
+			elsif l.size > 2
+				available_trading_classes = l.map( &:trading_class ).uniq
+				if available_trading_classes.size >1
+					error "Refine Specification with trading_class: #{available_trading_classes.join('; ')} "
+				else
+					error "Respecify expiry, verification reveals #{l.size} contracts  (only 2 are allowed) #{master_option.to_human}"
+				end
+			end
+
+			master_option.expiry = back
+			puts "back: #{back} ... master_option: #{master_option.inspect}"
+			master_option.verify{|x| l << x }
+			error "Two legs are required, \n Verifiying the master-option exposed #{l.size} legs" unless l.size ==2
+
+			master_option.exchange ||= l.first.exchange
+			master_option.currency ||= l.first.currency
+
+			# default is to sell the front month
+			c_l = l.map.with_index{ |l,i| ComboLeg.new con_id: l.con_id, action: i.zero? ? :sell : :buy, exchange: l.exchange, ratio:  1 }
+
+			super  exchange: master_option.exchange, 
+							 symbol: master_option.symbol.to_s,
+						 currency: master_option.currency,
+						 legs: l,
+						 combo_legs: c_l
+		end
+		def to_human
+			x= [ combo_legs.map(&:weight) , legs.map( &:last_trading_day )].transpose
+			 "<Calendar #{symbol} #{legs.first.right}(#{legs.first.strike})[#{x.map{|w,l_t_d| "#{w} :#{Date.parse(l_t_d).strftime("%b %Y")} "}.join( '|+|' )} >"
+		end
+	end
+end
