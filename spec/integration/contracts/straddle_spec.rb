@@ -18,14 +18,18 @@ RSpec.describe "IB::Straddle" do
 	context "initialize with master-option" do
 		subject { IB::Straddle.new the_option }
 		
-		its( :bag ) { should eq the_bag }
+		its( :sec_type ) { should eq :bag }
+		its( :exchange ) { should eq 'DTB' }
+		its( :symbol )   { should eq "Estx50" }
 			
 	end
 
 	context "initialize with underlying" do
-		subject{ IB::Straddle.new underlying: IB::Symbols::Index.stoxx, strike: 3000 }
+		subject{ IB::Straddle.new( underlying: IB::Symbols::Index.stoxx, strike: 3000) }
 
 		it{ is_expected.to be_a IB::Straddle }
-		its( :bag ) { should eq the_bag }
+		its( :sec_type ) { should eq :bag }
+		its( :exchange ) { should eq 'DTB' }
+		its( :symbol )   { should eq "Estx50" }
 	end
 end

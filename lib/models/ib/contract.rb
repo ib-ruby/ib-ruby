@@ -75,18 +75,18 @@ module IB
 
     has_one :contract_detail # Volatile info about this Contract
 
-    # For Contracts that are part of BAGaa ## leg is now a method of contract
+    # For Contracts that are part of BAa ## leg is now a method of contract
 #   has_one :leg #, :class_name => 'ComboLeg', :foreign_key => :leg_contract_id
    # has_one :combo, :class_name => 'Contract', :through => :leg
 
     # for Combo/BAG Contracts that contain ComboLegs
     has_many :combo_legs#, :foreign_key => :combo_id
-    has_many :leg_contracts, :class_name => 'Contract', :through => :combo_legs
-    alias legs combo_legs
-    alias legs= combo_legs=
+ #   has_many :leg_contracts, :class_name => 'Contract', :through => :combo_legs
+#    alias legs combo_legs
+ #   alias legs= combo_legs=
 
-      alias combo_legs_description legs_description
-    alias combo_legs_description= legs_description=
+  #    alias combo_legs_description legs_description
+  #  alias combo_legs_description= legs_description=
 
       # for Delta-Neutral Combo Contracts
       has_one :underlying
@@ -173,10 +173,10 @@ module IB
       case
       when !bag?
        [] 
-      when legs.empty?
+      when combo_legs.empty?
         [0]
       else
-        [legs.size, legs.map { |leg| leg.serialize *fields }].flatten
+        [combo_legs.size, combo_legs.map { |the_leg| the_leg.serialize *fields }].flatten
       end
     end
 

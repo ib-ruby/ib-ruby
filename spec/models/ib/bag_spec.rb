@@ -5,7 +5,7 @@ describe IB::Bag do
         let(:props ){ {:symbol => 'GOOG',
               :exchange => 'SMART',
               :currency => 'USD',
-              :legs => [IB::ComboLeg.new(:con_id => 81032967, :weight => 1),
+              :combo_legs => [IB::ComboLeg.new(:con_id => 81032967, :weight => 1),
                         IB::ComboLeg.new(:con_id => 81032968, :weight => -2),
                         IB::ComboLeg.new(:con_id => 81032973, :weight => 1)]
              } }

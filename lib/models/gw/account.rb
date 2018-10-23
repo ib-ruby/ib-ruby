@@ -81,9 +81,6 @@ convert_size: The action-attribute (:buy  :sell) is associated according the con
 			  end
 				#  con_id and exchange fully qualify a contract, no need to transmit other data
 				order.contract =  contract.con_id.to_i > 0 ?  Contract.new( con_id: contract.con_id, exchange: contract.exchange)  :  contract
-				puts "order: #{order.action}"
-				puts "order: #{order.total_quantity}"
-				puts "order : #{order.inspect}"
 				local_id = Connection.current.place_order order, order.contract
 			end 
 			local_id  # return_value

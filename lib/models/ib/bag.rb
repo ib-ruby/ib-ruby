@@ -33,12 +33,12 @@ module IB
     # TODO: Find a way to serialize legs without references...
     # IB-equivalent leg description.
     def legs_description
-      self[:legs_description] || legs.map { |leg| "#{leg.con_id}|#{leg.weight}" }.join(',')
+      self[:legs_description] || combo_legs.map { |the_leg| "#{the_leg.con_id}|#{the_leg.weight}" }.join(',')
     end
 
     # Check if two Contracts have same legs (maybe in different order)
     def same_legs? other
-      legs == other.legs ||
+      combo_legs == other.combo_legs ||
         legs_description.split(',').sort == other.legs_description.split(',').sort
     end
 

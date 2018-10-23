@@ -144,7 +144,7 @@ module IB
                    # As of client v.55, we receive in OpenOrder for Combos:
                    #    Contract.orderComboLegs Array
                    #    Order.leg_prices Array
-                   [:contract, :legs, :array, proc do |_|
+                   [:contract, :combo_legs, :array, proc do |_|
                      IB::ComboLeg.new :con_id => @buffer.read_int,
                                       :ratio => @buffer.read_int,
                                       :action => @buffer.read_string,

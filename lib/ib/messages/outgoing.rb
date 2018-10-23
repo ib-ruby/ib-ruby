@@ -108,13 +108,14 @@ module IB
                       [:contract, :serialize_long, [:sec_id_type]])
 	
 			# Requests security definition option parameters for viewing a contract's option chain 
-			#  reques_id:   The ID chosen for the request
+			#  request_id:   The ID chosen for the request
       #  underlyingSymbol 
 			#  futFopExchange:  The exchange on which the returned options are trading. 
 			#										Can be set to the empty string "" for all exchanges. 
 			#  underlyingSecType: The type of the underlying security, i.e. STK 
 			#  underlyingConId: the contract ID of the underlying security.
-      #  Response comes via Messages::Incoming::SecurityDefinitionOptionParameter
+			#  con_id:	
+      #  Responses via Messages::Incoming::SecurityDefinitionOptionParameter
 
 
 			RequestSecurityDefinitionOptionParameters = ReqSecDefOptParams  = RequestOptionChainDefinition = def_message [78,0],
