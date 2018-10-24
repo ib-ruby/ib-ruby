@@ -338,6 +338,7 @@ is still available through 'attributes[:expiry]'
 	require 'models/ib/straddle'
   require 'models/ib/strangle'
   require 'models/ib/calendar'
+  require 'models/ib/vertical'
   class Contract
     # Contract subclasses representing specialized security types.
     # Most security types do not have their own subclass, they use generic Contract class.
