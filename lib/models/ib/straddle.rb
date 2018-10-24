@@ -1,3 +1,4 @@
+require_relative 'contract'
 module IB
 	class Straddle <  Bag 
 
@@ -46,7 +47,7 @@ or
 
 			error msg, :args, nil  if msg.present?
 			master_option.trading_class = trading_class unless trading_class.nil?
-			l=[] ; master_option.verify{|x| l << x }
+			l=[] ; master_option.verify{|x| x.contract_detail= nil; l << x }
 			if l.size < 2
 				error "Invalid Parameters. Two legs are required, \n Verifiying the master-option exposed #{l.size} legs", :args, nil 
 			elsif l.size > 2

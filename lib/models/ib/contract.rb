@@ -197,7 +197,7 @@ module IB
     end
 
 		def to_yaml
-		 build 	symbol: symbol, con_id: con_id,  right: self.right,
+		 self.class.new 	symbol: symbol, con_id: con_id,  right: self.right,
 							  exchange: exchange, sec_type: self.sec_type,  currency: currency,
 								expiry: expiry,  strike: strike,   local_symbol: local_symbol,
 								multiplier: multiplier,  primary_exchange: primary_exchange 
@@ -335,7 +335,9 @@ is still available through 'attributes[:expiry]'
   require 'models/ib/future'
   require 'models/ib/stock'
   require 'models/ib/index'
-
+	require 'models/ib/straddle'
+  require 'models/ib/strangle'
+  require 'models/ib/calendar'
   class Contract
     # Contract subclasses representing specialized security types.
     # Most security types do not have their own subclass, they use generic Contract class.
@@ -346,6 +348,9 @@ is still available through 'attributes[:expiry]'
     Subclasses[:stock] = IB::Stock
     Subclasses[:forex] = IB::Forex
     Subclasses[:index] = IB::Index
+    Subclasses[:straddle] = IB::Straddle
+    Subclasses[:strangle] = IB::Strangle
+    Subclasses[:calendar] = IB::Calendar
 
 
     # This builds an appropriate Contract subclass based on its type

@@ -1,3 +1,6 @@
+require_relative 'contract'
+
+
 module IB
 	class Calendar <  Bag 
 
@@ -47,10 +50,10 @@ Initialize with
 														end
 
 			error msg, :args, nil  if msg.present?
-			master_option.reset_attributes
+			master_option.reset_attributes 
 			master_option.trading_class = trading_class unless trading_class.nil?
 			master_option.expiry = front if master_option.expiry.nil? || master_option.expiry == ''
-			l=[] ; master_option.verify{|x| l << x }
+			l=[] ; master_option.verify{|x| x.contract_detail = nil; l << x }
 			if l.empty?
 				error "Invalid Parameters. No Contract found #{master_option.to_human}"
 			elsif l.size > 2
@@ -64,7 +67,7 @@ Initialize with
 
 			master_option.expiry = back
 			puts "back: #{back} ... master_option: #{master_option.inspect}"
-			master_option.verify{|x| l << x }
+			master_option.verify{|x| x.contract_detail =  nil; l << x }
 			error "Two legs are required, \n Verifiying the master-option exposed #{l.size} legs" unless l.size ==2
 
 			master_option.exchange ||= l.first.exchange
