@@ -1,7 +1,7 @@
 require_relative 'contract'
 
 module IB
-	class Strangle <  Bag 
+	class Strangle <   Spread
 
 =begin
 Macro-Class to simplify the definition of Strangles
@@ -15,18 +15,15 @@ Initialize with
 =end
 
 		
-		has_many :legs
 
 		def initialize  underlying: , 
 										p: , c: ,
 										expiry: IB::Symbols::Futures.next_expiry, 
-										trading_class: nil
-
+										**args  # trading-class and others
 
 			error "Underlying has to be an IB::Contract" unless underlying.is_a? IB::Contract
-			master_option = IB::Option.new underlying.attributes.slice( :currency, :symbol, :exchange )
+			master_option = IB::Option.new underlying.attributes.slice( :currency, :symbol, :exchange ).merge(args)
 			master_option.expiry = expiry
-			master_option.trading_class = trading_class unless trading_class.nil?
 
 		  leg_option = ->(strike, kind) do
 				l=[];  master_option.strike =  strike; master_option.verify{|c|  c.contract_detail =  nil; l <<c if c.right== kind }

@@ -197,13 +197,17 @@ module IB
     end
 
 		def to_yaml
-		 self.class.new 	symbol: symbol, con_id: con_id,  right: self.right,
-							  exchange: exchange, sec_type: self.sec_type,  currency: currency,
-								expiry: expiry,  strike: strike,   local_symbol: local_symbol,
-								multiplier: multiplier,  primary_exchange: primary_exchange 
 
+			self_attributes = [ :right, :sec_type]
+			the_attributes = [ :symbol , :con_id,   :exchange, 
+									  :currency, :expiry,  :strike,   :local_symbol,
+								:multiplier,  :primary_exchange, :trading_class ]
+			the_hash= the_attributes.map{|x| y= attributes[x];  [x,y] if y.present?  }.compact.to_h
+			self.class.new   the_hash.merge( self_attributes.map{|x| y = self.send(x);  [x,y] unless y == :none}.compact.to_h )
 
 		end
+	
+		alias essential  to_yaml
 
     # Contract comparison
     def == other
@@ -335,10 +339,12 @@ is still available through 'attributes[:expiry]'
   require 'models/ib/future'
   require 'models/ib/stock'
   require 'models/ib/index'
+	require 'models/ib/spread'
 	require 'models/ib/straddle'
   require 'models/ib/strangle'
   require 'models/ib/calendar'
   require 'models/ib/vertical'
+  require 'models/ib/butterfly'
   class Contract
     # Contract subclasses representing specialized security types.
     # Most security types do not have their own subclass, they use generic Contract class.
@@ -352,6 +358,7 @@ is still available through 'attributes[:expiry]'
     Subclasses[:straddle] = IB::Straddle
     Subclasses[:strangle] = IB::Strangle
     Subclasses[:calendar] = IB::Calendar
+    Subclasses[:vertical] = IB::Vertical
 
 
     # This builds an appropriate Contract subclass based on its type

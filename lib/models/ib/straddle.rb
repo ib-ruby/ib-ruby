@@ -1,6 +1,6 @@
 require_relative 'contract'
 module IB
-	class Straddle <  Bag 
+	class Straddle <   Spread
 
 =begin
 Macro-Class to simplify the definition of Straddles
@@ -18,25 +18,23 @@ or
 =end
 
 		
-		has_many :legs
 
 		def initialize  master=nil, 
 										underlying: nil, 
 										strike: 0, 
 										expiry: IB::Symbols::Futures.next_expiry, 
-										trading_class: nil
+										**args  # trading-class and others
 
 			master_option, msg = if master.present? 
 															if master.is_a?(IB::Option)
-																[ master, nil ]
+																[ master.essential, nil ]
 															else
 																[ nil, "First Argument is no IB::Option" ]
 															end
 														elsif underlying.present?
 															if underlying.is_a?(IB::Contract)
-																master = IB::Option.new underlying.attributes.slice( :currency, :symbol, :exchange )
-																master.strike = strike 
-																master.expiry = expiry
+																master = IB::Option.new underlying.attributes.slice( :currency, :symbol, :exchange ).merge(args)
+																master.strike, master.expiry = strike , expiry
 																[master, strike.zero? ? "strike has to be specified" : nil]
 															else
 																[nil, "Underlying has to be an IB::Contract"]
@@ -46,11 +44,13 @@ or
 														end
 
 			error msg, :args, nil  if msg.present?
-			master_option.trading_class = trading_class unless trading_class.nil?
+			master_option.trading_class = args[:trading_class] if args[:trading_class].present?
+			master_option.right = nil; master_option.con_id = 0;
 			l=[] ; master_option.verify{|x| x.contract_detail= nil; l << x }
 			if l.size < 2
 				error "Invalid Parameters. Two legs are required, \n Verifiying the master-option exposed #{l.size} legs", :args, nil 
 			elsif l.size > 2
+				Connection.logger.error "ambigous contract-specification: #{l.map(&:to_human).join(';')}"
 				available_trading_classes = l.map( &:trading_class ).uniq
 				if available_trading_classes.size >1
 					error "Refine Specification with trading_class: #{available_trading_classes.join('; ')} "

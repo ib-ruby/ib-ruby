@@ -217,12 +217,20 @@ Additional Attributes can be specified ie.
 			def reset_attributes *attributes
 				attributes = ( attributes +  [:con_id, :last_trading_day ]).uniq
 				attributes.each{|y| @attributes[y] = nil }
-				self.contract_detail =  nil
+				self.contract_detail =  nil if contract_detail.present?
 			end
 			
+=begin
+Ask for the Market-Price and store item in IB::Contract.misc
 
+For valid contracts, either bid/ask or last_price and close_price are transmitted.
 
+If last_price is recieved, its returned. 
+If not, midpoint (bid+ask/2) is used. Else the closing price will be returned.
 
+Any  value (even 0.0) which is stored in IB::Contract.misc indicates that the contract is 
+accepted by `place_order`.
+=end
 		def market_price delayed:  true, thread: false
 
 			tws=  Connection.current 		 # get the initialized ib-ruby instance
@@ -230,19 +238,21 @@ Additional Attributes can be specified ie.
 			finalize= false
 			tickdata =  Hash.new
 			# define requested tick-attributes
-			last, close, request_data_type  = if !!delayed 
-											 [ :delayed_last ,  :delayed_close , :delayed ]
+			last, close, bid, ask, request_data_type  = if !!delayed 
+											 [ :delayed_last ,  :delayed_close , :delayed_bid, :delayed_ask, :delayed ]
 										 else
-											 [:last_price, :close_price, :realtime ]
+											 [:last_price, :close_price, :bid, :ask, :realtime ]
 										 end
 
 			tws.send_message :RequestMarketDataType, :market_data_type =>  request_data_type
 
 			# subscribe to TickPrices
 			s_id = tws.subscribe(:TickSnapshotEnd) { |msg|	finalize = true	if msg.ticker_id == the_id }
+			e_id =  tws.subscribe(:Alert){|x|  finalize = true if x.code == 354  }  
+			# TWS Error 354: Requested market data is not subscribed.
 			sub_id = tws.subscribe(:TickPrice ) do |msg| #, :TickSize,  :TickGeneric, :TickOption) do |msg|
 				if  msg.ticker_id == the_id 
-				[last,close].each{|x| tickdata[x] = msg.the_data[:price] if  IB::TICK_TYPES[ msg.the_data[:tick_type]] == x } 
+					[last,close,bid,ask].each{|x| tickdata[x] = msg.the_data[:price] if  IB::TICK_TYPES[ msg.the_data[:tick_type]] == x } 
 				end
 			end
 			# initialize »the_id« that is used to identify the received tick messages
@@ -254,9 +264,17 @@ Additional Attributes can be specified ie.
 			# method returns the (running) thread
 			th = Thread.new do
 				i = 0
-				loop{ i+=1; sleep 0.1; break if finalize || i > 1000  } 
-				self.misc =  tickdata[last].present? && !tickdata[last].zero? ? tickdata[last] : tickdata[close]
-				tws.unsubscribe sub_id, s_id
+				loop{ i+=1; sleep 0.1; break if finalize || i > 100  } 
+				self.misc =  if tickdata[last].present? && !tickdata[last].zero? 
+											 tickdata[last] 
+										 elsif tickdata[bid].present? && tickdata[ask].present?
+											tickdata[bid]+tickdata[ask]/2
+										 elsif tickdata[close].present? && !tickdata[close].zero?
+										  tickdata[close]
+										 else
+											 nil
+										 end
+				tws.unsubscribe sub_id, s_id, e_id
 			end
 			if thread
 				th		# return thread

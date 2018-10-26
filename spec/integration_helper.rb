@@ -1,7 +1,7 @@
 require 'message_helper'
 require 'account_helper'
 
-shared_examples_for 'Received Market Data' do  | request_id |
+RSpec.shared_examples_for 'Received Market Data' do  | request_id |
   context IB::Messages::Incoming::Alert  do
     subject { IB::Connection.current.received[:Alert].first }
 

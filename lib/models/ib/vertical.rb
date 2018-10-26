@@ -2,7 +2,7 @@ require_relative 'contract'
 
 
 module IB
-	class Vertical <  Bag 
+	class Vertical <   Spread
 
 =begin
 Macro-Class to simplify the definition of Vertical-Spreads
@@ -21,7 +21,6 @@ Initialize with
 =end
 
 		
-		has_many :legs
 
 		def initialize  master=nil,   # provides strike, front-month, right, trading-class
 										underlying: nil, 
@@ -29,22 +28,22 @@ Initialize with
 										expiry: IB::Symbols::Futures.next_expiry, 
 										buy: 0 ,   # has to be specified
 										sell: 0,
-										trading_class: nil,
-										**args  # future-use
+							#			trading_class: nil,
+										**args  # trading-class and others
 
 			master_option, side, msg = if master.present? 
 															if master.is_a?(IB::Option) 
-																[ master,-1, nil ]
+																[ master.essential,-1, nil ]
 															else
 																[ nil, 0,"First Argument is no IB::Option" ]
 															end
 														elsif  buy.is_a?(IB::Option) && !sell.zero?  
-															 [ buy,1, nil ]
+															 [ buy.essentail,1, nil ]
 														elsif  sell.is_a?(IB::Option) && !buy.zero? 
-															 [ sell, -1, nil  ]
+															 [ sell.essential, -1, nil  ]
 														elsif	underlying.present?
 															if underlying.is_a?(IB::Contract)
-																master = IB::Option.new underlying.attributes.slice( :currency, :symbol, :exchange )
+																master = IB::Option.new underlying.attributes.slice( :currency, :symbol, :exchange ).merge(args) 
 																master.strike, master.expiry, master.right = buy, expiry, right
 																[master, 1, buy.to_i >0 && sell.to_i >0 ? nil : "buy and sell strikes have to be specified"]
 															else
@@ -55,16 +54,15 @@ Initialize with
 														end
 
 			error msg, :args, nil  if msg.present?
-			master_option.con_id = nil; master_option.contract_detail =  nil
-			puts master_option.inspect
-			master_option.trading_class = trading_class unless trading_class.nil?
+			master_option.trading_class = args[:trading_class] if args[:trading_class].present?
 			l=[] ; master_option.verify{|x| x.contract_detail = nil; l << x }
 			if l.empty?
 				error "Invalid Parameters. No Contract found #{master_option.to_human}"
 			elsif l.size > 2
+				Connection.logger.error "ambigous contract-specification: #{l.map(&:to_human).join(';')}"
 				available_trading_classes = l.map( &:trading_class ).uniq
 				if available_trading_classes.size >1
-					error "Refine Specification with trading_class: #{available_trading_classes.join('; ')} "
+					error "Refine Specification with trading_class: #{available_trading_classes.join('; ')}  (details in log)"
 				else
 					error "Respecify expiry, verification reveals #{l.size} contracts  (only 2 are allowed) #{master_option.to_human}"
 				end
@@ -91,7 +89,7 @@ Initialize with
 		end
 		def to_human
 			x= [ combo_legs.map(&:weight) , legs.map( &:strike )].transpose
-			 "<Vertical #{symbol} #{legs.first.right}(  )[#{Date.parse(legs.first.last_trading_day).strftime("%b %Y")}][#{x.map{|w,strike| "#{w} :#{strike} "}.join( '|+|' )} >"
+			 "<Vertical #{symbol} #{legs.first.right}(#{x.map{|w,strike| "#{w} :#{strike} "}.join( '|+|' )} )[#{Date.parse(legs.first.last_trading_day).strftime("%b %Y")}]>"
 		end
 	end
 end

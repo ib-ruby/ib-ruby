@@ -1,4 +1,4 @@
-require 'integration_helper'
+require 'combo_helper'
 
 RSpec.describe "IB::Straddle" do
 	let ( :the_option ){ IB::Option.new  symbol: :Estx50, strike: 3000, expiry: IB::Symbols::Futures.next_expiry }
@@ -17,10 +17,9 @@ RSpec.describe "IB::Straddle" do
 
 	context "initialize with master-option" do
 		subject { IB::Straddle.new the_option }
+		it{ is_expected.to be_a IB::Straddle }
+		it_behaves_like 'a valid Estx Combo'
 		
-		its( :sec_type ) { should eq :bag }
-		its( :exchange ) { should eq 'DTB' }
-		its( :symbol )   { should eq "Estx50" }
 			
 	end
 
@@ -28,8 +27,6 @@ RSpec.describe "IB::Straddle" do
 		subject{ IB::Straddle.new( underlying: IB::Symbols::Index.stoxx, strike: 3000) }
 
 		it{ is_expected.to be_a IB::Straddle }
-		its( :sec_type ) { should eq :bag }
-		its( :exchange ) { should eq 'DTB' }
-		its( :symbol )   { should eq "Estx50" }
+		it_behaves_like 'a valid Estx Combo'
 	end
 end

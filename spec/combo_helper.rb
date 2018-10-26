@@ -26,6 +26,14 @@ def butterfly symbol, expiry, right, *strikes
   IB::Bag.new :symbol => symbol,
               :currency => "USD", # Only US options in combo Contracts
               :exchange => "SMART",
-              :legs => legs
+              :combo_legs => legs
+end
+
+RSpec.shared_examples 'a valid Estx Combo' do
+
+		its( :sec_type ) { should eq :bag }
+		its( :exchange ) { should eq 'DTB' }
+		its( :symbol )   { should eq "Estx50" }
+		its( :market_price )   { should be_a Numeric }
 end
 
