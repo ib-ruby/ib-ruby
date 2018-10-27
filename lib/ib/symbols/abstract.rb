@@ -83,7 +83,8 @@ Returns count of created bunches
 			else
 				symbol.to_i
 			end
-			contracts[ symbol ] = contract
+			# overwrite contract if existing
+			contracts[ symbol ] = contract.essential
 			store_collection
 		end
 

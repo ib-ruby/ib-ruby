@@ -17,14 +17,14 @@ Adds (or substracts) relative (back) measures to the front month, just passes ab
 			#	                      20180989 ---> 20.000.000
 			start_date = front.to_i < 20000000 ?  Date.strptime(front.to_s,"%Y%m") :  Date.strptime(front.to_s,"%Y%m%d") 
 			nb = if back.to_i > 200000 
-				back.to_i
-			elsif back[-1] == "w" && front.to_i > 20000000
-				  start_date + (back.to_i * 7)
-			elsif back[-1] == "m" && front.to_i > 200000
-				  start_date >> back.to_i
-			else
-				error "Wrong date #{back} required format YYYMM, YYYYMMDD ord {n}w or {n}m"
-			end
+						 back.to_i
+					 elsif back[-1] == "w" && front.to_i > 20000000
+						 start_date + (back.to_i * 7)
+					 elsif back[-1] == "m" && front.to_i > 200000
+						 start_date >> back.to_i
+					 else
+						 error "Wrong date #{back} required format YYYMM, YYYYMMDD ord {n}w or {n}m"
+					 end
 			if nb.is_a?(Date)	
 				if back[-1]=='w'
 					nb.strftime("%Y%m%d")
@@ -35,5 +35,14 @@ Adds (or substracts) relative (back) measures to the front month, just passes ab
 				nb
 			end 
 		end # def 
+	
+	
+		def essential
+				legs.each{ |x| x.contract_detail =  nil }
+				self
+		end
+	
 	end
+
+
 end
