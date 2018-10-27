@@ -58,18 +58,20 @@ raises an IB::Error if less then 100 items are recieved-
 
 	#returns an hash where portfolio_positions are grouped into Watchlists.
 	#
-	# Watchlist => [ [watchlist, contract, portfoliopositon] , ... ]
+	# Watchlist => [  contract => [ portfoliopositon] , ... ] ]
 	#
 	def organize_portfolio_positions  account, *watchlists
 		account.portfolio_values.map do | pw |
 			z=	watchlists.map do | w |		
 				ref_con_id = pw.contract.con_id
-				watchlist_contract = w.find{ |c| c.is_a?(IB::Bag) ? c.combo_legs.map(&:con_id).include?(ref_con_id) : c.con_id == ref_con_id }	
+				watchlist_contract = w.find{ |c| c.is_a?(IB::Bag) ? c.combo_legs.map(&:con_id).include?(ref_con_id) : c.con_id == ref_con_id }rescue nil	
 				watchlist_contract.present? ? [w,watchlist_contract] : nil
 			end.compact
 
 			z.empty? ? ["Unspecified", pw.contract, pw ] : z.first << pw
-		end.group_by{|a,b,c| a }.map{| _,b,c | [b,c]}
+		end.group_by{|a,_,_| a }.map{|x,y|[x, y.map{|_,d,e|[d,e]}.group_by{|e,_| e}.map{|f,z| [f, z.map(&:last)]} ] }.to_h
+			# group:by --> [a,b,c] .group_by {|_g,_| g} --->{ a => [a,b,c] }
+			# group_by+map --> removes "a" from the resulting array
 
 
 	end
