@@ -137,6 +137,7 @@ The Advisor is always the first account
 		  get_account_data: false,
 		  serial_array: false, 
 		  logger: default_logger,
+			watchlists: [] ,  # array of watchlists (IB::Symbols::{watchlist}) containing descriptions for complex positions
 			&b
 
     host, port = (host+':'+port.to_s).split(':') 
@@ -164,7 +165,8 @@ The Advisor is always the first account
     # finally connect to the tws
     if connect || get_account_data
       if connect(100)  # tries to connect for about 2h
-				get_account_data()  if get_account_data
+				
+				get_account_data(watchlists.map{|b| IB::Symbols.allocate_collection b})  if get_account_data
 				#    request_open_orders() if request_open_orders || get_account_data 
       else
 				@accounts = []   # definitivley reset @accounts

@@ -6,12 +6,23 @@ Creates a Class and associates it with a filename
 
 raises an IB::Error in case of a conflict with existing class-names 
 =end
+	
+# set the Pathname to "ib-ruby/symbols" by default
+		@@dir= Pathname.new File.expand_path("../../../../symbols/", __FILE__ ) 
+
+		def self.set_origin directory
+			p = Pathname.new directory
+			@@dir = p if p.directory? 
+		rescue Errno::ENOENT
+			error "Setting up origin for symbol-files --> Directory (#{directory}) does not exist" 
+		end
+
 		def self.allocate_collection name  # name might be a string or a symbol
 			symbol_table = Module.new do
 				extend Symbols
 				extend Enumerable
 				def self.yml_file
-					File.expand_path("../../../../symbols/#{name.to_s.downcase.split("::").last}.yml",__FILE__ )
+					@@dir + name.to_s.downcase.split("::").last.concat( ".yml" )
 				end
 
 				def self.each &b
@@ -35,7 +46,7 @@ raises an IB::Error in case of a conflict with existing class-names
 		end
 
 		def purge_collection
-				`rm #{yml_file}`
+				yml_file.delete
 				@contracts =  nil
 		end
 
@@ -64,15 +75,15 @@ Returns count of created bunches
 		end
 
 		def read_collection
-			if File.exist? yml_file
+			if  yml_file.exist?
 				contracts.merge! YAML.load_file yml_file rescue contracts
 			else
-				`touch #{yml_file}`
+			 yml_file.open( "w"){}
 			end
 		end
 
 		def store_collection
-			File.open( yml_file, 'w' ){|f| f.write @contracts.to_yaml}
+			 yml_file.open( 'w' ){|f| f.write @contracts.to_yaml}
 		end
 
 		def add_contract symbol, contract
@@ -94,9 +105,15 @@ Returns count of created bunches
 		end
 
 
+		def to_human
+			self.to_s.split("::").last
+		end
 
 
 
+		module Unspecified
+			extend Symbols
+		end
 
 	end # module Symbols
 end #  module IB

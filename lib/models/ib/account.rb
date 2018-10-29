@@ -1,6 +1,7 @@
 module IB
 	class Account < IB::Model
 		include BaseProperties
+#		include Redis::Objects
 		#  attr_accessible :alias, :account, :connected
 
 		prop :account,  # String 
@@ -8,6 +9,11 @@ module IB
 			:type,
 			:last_updated,
 			:connected => :bool
+
+#		redis_id_field :account
+#		value :my_alias
+#		value :the_account
+#		value :active
 
 
 		validates_format_of :account, :with =>  /\A[D]?[UF]{1}\d{5,8}\z/ , :message => 'should be (X)X00000'
@@ -18,6 +24,7 @@ module IB
 		has_many :portfolio_values
 		has_many :contracts
 		has_many :orders
+		has_many :focuses
 
 		def default_attributes
 			super.merge account: 'X000000'
@@ -67,6 +74,8 @@ module IB
 					end
 				"<#{print_type} #{account}#{a}>"
 		end
+
+#		alias :id :account
 end # class
 
 end # module

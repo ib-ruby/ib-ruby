@@ -25,7 +25,7 @@ raises an IB::TransmissionError if the account-data are not transmitted in time
 
 raises an IB::Error if less then 100 items are recieved-
 =end
-	def get_account_data *accounts
+	def get_account_data watchlists = [], *accounts
 		logger.progname = 'Gateway#get_account_data'
 
 		@account_data_subscription ||=   subscribe_account_updates
@@ -44,6 +44,7 @@ raises an IB::Error if less then 100 items are recieved-
 				account.update_attribute :connected, false  # indicates: AccountUpdate in Progress
 				send_message :RequestAccountData, subscribe: true, account_code: account.account
 				i=0; loop{ sleep 0.1; i+=1; break if i>600 || account.connected || IB::Alert.status_2101(account) } # initialize requests sequencially 
+				account.organize_portfolio_positions watchlists  unless  watchlists.empty?
 			end
 			send_message :RequestAccountData, subscribe: false  ## do this only once
 		end
@@ -56,25 +57,7 @@ raises an IB::Error if less then 100 items are recieved-
 		active_accounts.map(&:contracts).flat_map(&:itself).uniq(&:con_id)
   end
 
-	#returns an hash where portfolio_positions are grouped into Watchlists.
-	#
-	# Watchlist => [  contract => [ portfoliopositon] , ... ] ]
-	#
-	def organize_portfolio_positions  account, *watchlists
-		account.portfolio_values.map do | pw |
-			z=	watchlists.map do | w |		
-				ref_con_id = pw.contract.con_id
-				watchlist_contract = w.find{ |c| c.is_a?(IB::Bag) ? c.combo_legs.map(&:con_id).include?(ref_con_id) : c.con_id == ref_con_id }rescue nil	
-				watchlist_contract.present? ? [w,watchlist_contract] : nil
-			end.compact
 
-			z.empty? ? ["Unspecified", pw.contract, pw ] : z.first << pw
-		end.group_by{|a,_,_| a }.map{|x,y|[x, y.map{|_,d,e|[d,e]}.group_by{|e,_| e}.map{|f,z| [f, z.map(&:last)]} ] }.to_h
-			# group:by --> [a,b,c] .group_by {|_g,_| g} --->{ a => [a,b,c] }
-			# group_by+map --> removes "a" from the resulting array
-
-
-	end
 	private
 
 	# The subscription method should called only once per session.
@@ -103,11 +86,11 @@ raises an IB::Error if less then 100 items are recieved-
 				when IB::Messages::Incoming::PortfolioValue
 						account.contracts.update_or_create  msg.contract
 						account.portfolio_values.update_or_create( msg.portfolio_value ){ :contract }
-						msg.portfolio_value.account = account
+#						msg.portfolio_value.account = account
 						# link contract -> portfolio value
-						account.contracts.find{ |x| x.con_id == msg.contract.con_id }
-								.portfolio_values
-								.update_or_create( msg.portfolio_value ) { :account } 
+#						account.contracts.find{ |x| x.con_id == msg.contract.con_id }
+#								.portfolio_values
+#								.update_or_create( msg.portfolio_value ) { :account } 
 						logger.debug { "#{ account.account } :: #{ msg.contract.to_human }" }
 					end # case
 			end # for_selected_account 
