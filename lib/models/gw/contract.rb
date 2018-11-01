@@ -1,3 +1,13 @@
+module CoreExtensions
+  module Array
+    module DuplicatesCounter
+      def count_duplicates
+        self.each_with_object(Hash.new(0)) { |element, counter| counter[element] += 1 }.sort_by{|k,v| -v}.to_h
+      end
+    end
+  end
+end
+Array.include CoreExtensions::Array::DuplicatesCounter
 module IB
 
 # define a custom ErrorClass which can be fired if a verification fails
@@ -230,6 +240,11 @@ If not, midpoint (bid+ask/2) is used. Else the closing price will be returned.
 
 Any  value (even 0.0) which is stored in IB::Contract.misc indicates that the contract is 
 accepted by `place_order`.
+
+A Block can be provided to extract TickTypes:
+	IB::Symbols::Stocks.sie.market_price{ |x| puts x.inspect }.to_f
+	-> {"bid"=>0.10142e3, "ask"=>0.10144e3, "last"=>0.10142e3, "close"=>0.10172e3}
+	-> 101.42 
 =end
 		def market_price delayed:  true, thread: false
 
@@ -263,12 +278,17 @@ accepted by `place_order`.
 			th = Thread.new do
 				i = 0
 				loop{ i+=1; sleep 0.1; break if finalize || i > 100  } 
-				self.misc =  if tickdata[last].present? && !tickdata[last].zero? 
-											 tickdata[last] 
-										 elsif tickdata[bid].present? && tickdata[ask].present?
-											tickdata[bid]+tickdata[ask]/2
-										 elsif tickdata[close].present? && !tickdata[close].zero?
-										  tickdata[close]
+				# reduce :close_price delayed_close  to close a.s.o 
+				tz = -> (z){ z.map{|y| y.to_s.split('_')}.flatten.count_duplicates.max_by{|k,v| v}.first.to_sym}
+				data =  tickdata.map{|x,y| [tz[x],y]}.to_h
+				yield data if block_given?
+ # yields {"bid"=>0.10142e3, "ask"=>0.10144e3, "last"=>0.10142e3, "close"=>0.10172e3}
+				self.misc =  if data[:last].present? && !data[:last].zero? 
+											 data[:last] 
+										 elsif data[:bid].present? && data[:ask].present?
+											(data[:bid]+data[:ask])/2
+										 elsif data[:close].present? 
+										  data[:close]
 										 else
 											 nil
 										 end
