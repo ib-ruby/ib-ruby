@@ -238,22 +238,20 @@ accepted by `place_order`.
 			finalize= false
 			tickdata =  Hash.new
 			# define requested tick-attributes
-			last, close, bid, ask, request_data_type  = if !!delayed 
-											 [ :delayed_last ,  :delayed_close , :delayed_bid, :delayed_ask, :delayed ]
-										 else
-											 [:last_price, :close_price, :bid, :ask, :realtime ]
-										 end
+			last, close, bid, ask	 = 	[ [ :delayed_last , :last_price ] , [:delayed_close , :close_price ],
+												[  :delayed_bid , :bid ], [  :delayed_ask , :ask ]] 
+			request_data_type =  delayed ? :frozen_delayed :  :frozen
 
-			tws.send_message :RequestMarketDataType, :market_data_type =>  request_data_type
+			tws.send_message :RequestMarketDataType, :market_data_type =>  IB::MARKET_DATA_TYPES.rassoc( request_data_type).first
 
 			# subscribe to TickPrices
 			s_id = tws.subscribe(:TickSnapshotEnd) { |msg|	finalize = true	if msg.ticker_id == the_id }
 			e_id =  tws.subscribe(:Alert){|x|  finalize = true if x.code == 354  }  
 			# TWS Error 354: Requested market data is not subscribed.
 			sub_id = tws.subscribe(:TickPrice ) do |msg| #, :TickSize,  :TickGeneric, :TickOption) do |msg|
-				if  msg.ticker_id == the_id 
-					[last,close,bid,ask].each{|x| tickdata[x] = msg.the_data[:price] if  IB::TICK_TYPES[ msg.the_data[:tick_type]] == x } 
-				end
+				[last,close,bid,ask].each do |x| 
+					tickdata[x] = msg.the_data[:price] if x.include?( IB::TICK_TYPES[ msg.the_data[:tick_type]]) 
+				end if  msg.ticker_id == the_id 
 			end
 			# initialize »the_id« that is used to identify the received tick messages
 			# by firing the market data request
