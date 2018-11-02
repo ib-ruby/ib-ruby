@@ -130,7 +130,7 @@ module IB
     def serialize *fields
       print_default = ->(field, default="") { field.blank? ? default : field }
       print_not_zero = ->(field, default="") { field.to_i.zero? ? default : field }
-      [(con_id.present? && con_id.to_i > 0 ? con_id : ""),
+      [(con_id.present? && !con_id.is_a?(Symbol) && con_id.to_i > 0 ? con_id : ""),
        print_default[symbol],
        print_default[self[:sec_type]],
        ( fields.include?(:option) ?
@@ -213,7 +213,7 @@ module IB
     def == other
 			return false if !other.is_a?(Contract)
       return true if super(other)
-			return true if con_id.to_i != 0 && con_id == other.con_id
+			return true if con_id.to_s.to_i != 0 && con_id == other.con_id
 
       return false unless other.is_a?(self.class)
 

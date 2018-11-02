@@ -36,12 +36,37 @@ Adds (or substracts) relative (back) measures to the front month, just passes ab
 			end 
 		end # def 
 	
+
+		def calculate_spread_value( array_of_portfolio_values )
+			array_of_portfolio_values.map{|x| x.send yield }.sum if block_given?
+		end
 	
+		def fake_portfolio_position(  array_of_portfolio_values )
+				calculate_spread_value= ->( array_of_portfolio_values, attribute ) do
+							array_of_portfolio_values.map{|x| x.send attribute }.sum 
+				end
+				ar=array_of_portfolio_values
+				IB::PortfolioValue.new  contract: self, 
+					average_cost: 	calculate_spread_value[ar, :average_cost],
+					market_price: 	calculate_spread_value[ar, :market_price],
+					market_value: 	calculate_spread_value[ar, :market_value],
+					unrealized_pnl: 	calculate_spread_value[ar, :unrealized_pnl],
+					realized_pnl: 	calculate_spread_value[ar, :realized_pnl],
+					position: 0
+
+		end
 		def essential
 				legs.each{ |x| x.contract_detail =  nil }
 				self
 		end
-	
+		def  multiplier
+			(legs.map(&:multiplier).sum/legs.size).to_i
+		end
+		
+		# provide a negative con_id 
+		def con_id
+			-legs.map(&:con_id).sum
+		end
 	end
 
 

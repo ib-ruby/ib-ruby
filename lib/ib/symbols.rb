@@ -60,13 +60,10 @@ module IB
   module Symbols
     using SymbolExtention
 
-  #  def contracts
-  #    if @contracts.present? 
-  #        @contracts
-  #    else
-  #       @contrats= HashWithindifferentAccess.new
-  #    end
-  #  end
+
+		def hardcoded?
+			!self.methods.include? :yml_file
+		end
 		def method_missing(method, *key)
 			if key.empty? 
 				if contracts.has_key?(method)

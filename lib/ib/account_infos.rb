@@ -25,7 +25,8 @@ raises an IB::TransmissionError if the account-data are not transmitted in time
 
 raises an IB::Error if less then 100 items are recieved-
 =end
-	def get_account_data watchlists = [], *accounts
+	def get_account_data  *accounts,  watchlists: []
+
 		logger.progname = 'Gateway#get_account_data'
 
 		@account_data_subscription ||=   subscribe_account_updates
@@ -44,7 +45,10 @@ raises an IB::Error if less then 100 items are recieved-
 				account.update_attribute :connected, false  # indicates: AccountUpdate in Progress
 				send_message :RequestAccountData, subscribe: true, account_code: account.account
 				i=0; loop{ sleep 0.1; i+=1; break if i>600 || account.connected || IB::Alert.status_2101(account) } # initialize requests sequencially 
-				account.organize_portfolio_positions watchlists  unless  watchlists.empty?
+				unless watchlists.empty?
+					watchlists.each{|w| error "Watchlists must be IB::Symbols--Classes :.#{w.inspect}" unless w.is_a? IB::Symbols }
+					account.organize_portfolio_positions watchlists  
+				end
 			end
 			send_message :RequestAccountData, subscribe: false  ## do this only once
 		end

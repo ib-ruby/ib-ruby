@@ -64,25 +64,27 @@ convert_size: The action-attribute (:buy  :sell) is associated according the con
 		def place_order  order:, contract: nil, auto_adjust: true, convert_size:  false
 			# adjust the orderprice to  min-tick
 			logger.progname =  'Account#PlaceOrder' 
-			qualified_contract = -> do
-													contract.is_a?( IB::Bag )  ||  # Bags are always qualified
-													(contract.con_id.present? 	 && contract.con_id.to_i >0)
-			end
-			contract ||= order.contract   # no verification at this piont
+			#·IB::Symbols are always qualified. They carry a description-field
+			qualified_contract = ->(c) { c.description.present? || c.con_id.present?  &&  !c.con_id.to_s.to_i.zero? }
+			order.contract = contract unless contract.nil?  # no verification at this piont
 			order.account =  account  # assign the account_id to the account-field of IB::Order
 			local_id =  nil
-			self.orders.update_or_create order, :order_ref
-			if !qualified_contract[]
-				error "No qualified Contract specified .::. #{order.to_human}"
-			else
-				order.auto_adjust if auto_adjust && !(contract.is_a?( IB::Bag ))
+			if qualified_contract[order.contract]
+				self.orders.update_or_create order, :order_ref
+				order.auto_adjust if auto_adjust &&  order.contract.con_id.to_s.to_i > 0 # not for Bag's
 				if convert_size 
 					order.action =  order.total_quantity.to_i > 0  ? 	:buy  : :sell 
-		      order.total_quantity =  order.total_quantity.to_i.abs
-			  end
+					order.total_quantity =  order.total_quantity.to_i.abs
+				end
+				the_contract =  if order.contract.description.nil? || order.contract.con_id.to_s.to_i > 0 
+													Contract.new( con_id: order.contract.con_id, exchange: order.contract.exchange)  
+												else
+													order.contract
+												end
+				local_id = Connection.current.place_order order, the_contract
+			else
+				error "No qualified Contract specified .::. #{order.to_human}"
 				#  con_id and exchange fully qualify a contract, no need to transmit other data
-				order.contract =  contract.con_id.to_i > 0 ?  Contract.new( con_id: contract.con_id, exchange: contract.exchange)  :  contract
-				local_id = Connection.current.place_order order, order.contract
 			end 
 			local_id  # return_value
 
@@ -123,7 +125,6 @@ This has to be done manualy in the provided block
 			end  
 		end
 
-	end # class
 
 	#returns an hash where portfolio_positions are grouped into Watchlists.
 	#
@@ -143,9 +144,19 @@ This has to be done manualy in the provided block
 			# group_by+map --> removes "a" from the resulting array
 		end
 
+
+		def locate_contract con_id
+			contracts.detect{|x| x.con_id.to_i == con_id.to_i }
+		end
+
+		## returns the contract definition of an complex portfolio-position detected in the account
+		def complex_position con_id
+			focuses.map{|x,y| y.detect{|x,y| x.con_id.to_i==  con_id.to_i} }.compact.flatten.first
+		end
+	end # class
 		##
 		# in the console   (call gateway with watchlist: [:Spreads, :BuyAndHold])
-#head :001 > puts G.active_accounts.first.focuses.to_a.to_human
+#head :001 > .active_accounts.first.focuses.to_a.to_human
 #Unspecified
 #<Stock: BLUE EUR SBF>
 #<PortfolioValue: DU167348 Pos=720 @ 15.88;Value=11433.24;PNL=-4870.05 unrealized;<Stock: BLUE EUR SBF>

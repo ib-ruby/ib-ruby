@@ -155,6 +155,7 @@ The Advisor is always the first account
 													 s_o_m: subscribe_order_messages,
 													 g_a_d: get_account_data }
 
+		
 		Thread.report_on_exception = true
 		# https://blog.bigbinary.com/2018/04/18/ruby-2-5-enables-thread-report_on_exception-by-default.html
     Gateway.current = self
@@ -165,8 +166,7 @@ The Advisor is always the first account
     # finally connect to the tws
     if connect || get_account_data
       if connect(100)  # tries to connect for about 2h
-				
-				get_account_data(watchlists.map{|b| IB::Symbols.allocate_collection b})  if get_account_data
+				get_account_data(watchlists: watchlists.map{|b| IB::Symbols.allocate_collection b})  if get_account_data
 				#    request_open_orders() if request_open_orders || get_account_data 
       else
 				@accounts = []   # definitivley reset @accounts
@@ -417,30 +417,6 @@ Its always active.
 
 
 private
-=begin
-ModifyOrder, PlaceOrder
-hold an exact copy of the code of connection
-instead of a connection object a gateway-instance is used to connect, which provides Gateway#SendMessage
-and the hole operation is protected via mutex
-
-
-for interal use. To place an Order properly, use Account#ModifyOrder
-=end
-    def modify_order order, contract
-			@account_lock.synchronize do
-				order.modify contract, self  if contract.is_a?( IB::Contract )
-			end
-    end
-=begin
-Gateway#PlaceOrder
-
-for interal use. To place an Order properly, use Account#PlaceOrder
-=end
-    def place_order order, contract
-    @account_lock.synchronize do
-       order.place contract, self  if order.is_a? IB::Order
-    end
-    end
 
   def random_id
     rand 99999

@@ -57,14 +57,15 @@ end # Array
   logger.formatter = proc do |level, time, prog, msg|
       "#{time.strftime('%H:%M:%S')} #{msg}\n"
 	end
-			logger.level = Logger::DEBUG 
+			logger.level = Logger::INFO 
 	
   ## The Block takes instructions which are executed  after initializing all instance-variables
   ## and prior to the connection-process
   ## Here we just subscribe to some events  
 	begin
 		G =  Gateway.new  get_account_data: true, serial_array: true,
-			client_id: client_id, port: port, logger: logger
+			client_id: client_id, port: port, logger: logger,
+			watchlists: [:Spreads, :BuyAndHold]
 	rescue IB::TransmissionError => e
 		puts "E: #{e.inspect}"
 	end

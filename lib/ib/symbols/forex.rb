@@ -29,6 +29,7 @@ module IB
             :symbol => pair[0..2],
             :exchange => "IDEALPRO",
             :currency => pair[3..5],
+						:local_symbol => pair[0..2]+'.'+pair[3..5],
             :description => pair
           )
         end

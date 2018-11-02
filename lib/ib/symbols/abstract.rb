@@ -29,7 +29,6 @@ raises an IB::Error in case of a conflict with existing class-names
 					contracts.values.each &b
 				end
 			end   # module new
-
 			name =  name.to_s.camelize.to_sym
 			the_collection = if	IB::Symbols.send  :const_defined?, name  
 												 IB::Symbols.send :const_get, name
@@ -37,7 +36,7 @@ raises an IB::Error in case of a conflict with existing class-names
 												 IB::Symbols.const_set  name, symbol_table   	
 											 end
 			if the_collection.is_a? IB::Symbols
-				the_collection.send :read_collection
+				the_collection.send :read_collection if the_collection.all.empty?
 				the_collection # return_value
 			else
 				error "#{the_collection} is already a Class" 
