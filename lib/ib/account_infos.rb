@@ -78,7 +78,7 @@ raises an IB::Error if less then 100 items are recieved-
 					account.update_attribute :last_updated, Time.now
 					logger.debug { "#{account.account} :: #{msg.account_value.to_human }"}
 				when IB::Messages::Incoming::AccountDownloadEnd 
-					if account.account_values.size > 100
+					if account.account_values.size > 10
 							# simply don't cancel the subscripton if continously is specified
 							# the connected flag is set in any case, indicating that valid data are present
 						send_message :RequestAccountData, subscribe: false, account_code: account.account unless continously
