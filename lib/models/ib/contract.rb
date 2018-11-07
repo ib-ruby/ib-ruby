@@ -203,6 +203,7 @@ module IB
 									  :currency, :expiry,  :strike,   :local_symbol,
 								:multiplier,  :primary_exchange, :trading_class ]
 			the_hash= the_attributes.map{|x| y= attributes[x];  [x,y] if y.present?  }.compact.to_h
+			the_hash[:description] = @description if @description.present?
 			self.class.new   the_hash.merge( self_attributes.map{|x| y = self.send(x);  [x,y] unless y == :none}.compact.to_h )
 
 		end
