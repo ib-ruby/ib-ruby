@@ -114,12 +114,13 @@ s --> <IB::Stock:0x007f3de81a4398
 
 =begin
 Verify that the contract is a valid IB::Contract, update the Contract-Object and return it
+
 =end
 			def verify!
 				c =  0
 				_verify( update: true){| response | c+=1 } # wait for the returned thread to finish
 				IB::Connection.logger.error { "Multible Contracts detected during verify!."  } if c > 1
-				con_id.to_i > 0  && contract_detail.is_a?(ContractDetail) ? self :  nil
+				con_id.to_i < 0 || (con_id >0 && contract_detail.is_a?(ContractDetail)) ? self :  nil
 			end
 =begin
 Base method to verify a contract
@@ -142,8 +143,8 @@ otherwise the Contract is untouched
 			# define local vars which are updated within the query-block
 			exitcondition, count , queried_contract = false, 0, nil
 
-			# currently the tws-request is suppressed if the contract_detail-record is present
-			tws_request_not_nessesary = contract_detail.present? && contract_detail.is_a?( ContractDetail )
+			# currently the tws-request is suppressed for bags and if the contract_detail-record is present
+			tws_request_not_nessesary = bag? || contract_detail.is_a?( ContractDetail )
 
 			# we cannot rely on Connection.current.recieve, must therefor define our own thread serializer
 			wait_until_exitcondition = -> do 

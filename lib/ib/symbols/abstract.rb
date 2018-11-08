@@ -93,6 +93,8 @@ Returns count of created bunches
 			else
 				symbol.to_i
 			end
+			# ensure that evey Sybmol::xxx.yyy entry has a description
+			contract.description =  contract.to_human[1..-2] if contract.description.nil?
 			# overwrite contract if existing
 			contracts[ symbol ] = contract.essential
 			store_collection
