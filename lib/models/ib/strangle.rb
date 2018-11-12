@@ -24,6 +24,7 @@ Initialize with
 			error "Underlying has to be an IB::Contract" unless underlying.is_a? IB::Contract
 			master_option = IB::Option.new underlying.attributes.slice( :currency, :symbol, :exchange ).merge(args)
 			master_option.expiry = expiry
+			master_option.sec_type = 'FOP' if underlying.is_a?(IB::Future)
 
 		  leg_option = ->(strike, kind) do
 				l=[];  master_option.strike =  strike; master_option.verify{|c|  c.contract_detail =  nil; l <<c if c.right== kind }

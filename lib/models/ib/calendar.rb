@@ -41,6 +41,7 @@ Initialize with
 														elsif underlying.present?
 															if underlying.is_a?(IB::Contract)
 																master = IB::Option.new underlying.attributes.slice( :currency, :symbol, :exchange ).merge(args)
+																master.sec_type = 'FOP' if underlying.is_a?(IB::Future)
 																master.strike, master.right, master.expiry = strike, right, front
 																[master, strike.zero? ? "strike has to be specified" : nil]
 															else

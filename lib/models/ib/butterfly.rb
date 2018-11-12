@@ -40,6 +40,7 @@ or
 																master = IB::Option.new underlying.attributes
 																	.slice( :currency, :symbol, :exchange, :strike, :right, :expiry )
 																	.merge(args)
+																master.sec_type = 'FOP' if underlying.is_a?(IB::Future)
 																master.strike, master.expiry, master.right = strike , expiry, right  unless underlying.is_a? IB::Option
 																[master, master.strike.zero? ? "strike has to be specified" : nil]
 															else
