@@ -15,6 +15,7 @@ or
 															 strike: 2000,
 															 expiry: '201901'
 
+	possible underlyings are IB::Stock, IB::Future  and IB::Index
 =end
 
 		
@@ -34,6 +35,7 @@ or
 														elsif underlying.present?
 															if underlying.is_a?(IB::Contract)
 																master = IB::Option.new underlying.attributes.slice( :currency, :symbol, :exchange ).merge(args)
+																master.sec_type = 'FOP' if underlying.is_a?(IB::Future)
 																master.strike, master.expiry = strike , expiry
 																[master, strike.zero? ? "strike has to be specified" : nil]
 															else
