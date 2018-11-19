@@ -287,10 +287,10 @@ module IB
 		# serialize is included for active_record compatibility
     serialize :leg_prices
     serialize :conditions
-    serialize :algo_params, HashWithIndifferentAccess
+    serialize :algo_params, Hash
    # serialize :combo_params
  #   serialize :soft_dollar_tier_params, HashWithIndifferentAccess
-    serialize :mics_options, HashWithIndifferentAccess
+    serialize :mics_options, Hash
 
     # Order is always placed for a contract. Here, we explicitly set this link.
     belongs_to :contract
@@ -390,7 +390,7 @@ module IB
 			:trigger_method => :default,
       :what_if => false,  # order.java # 493
       :leg_prices => [],
-      :algo_params => HashWithIndifferentAccess.new, #{},
+      :algo_params => Hash.new, #{},
       :combo_params =>[], #{},
   #      :soft_dollar_tier_params => HashWithIndifferentAccess.new( 
 	#				    :name => "",

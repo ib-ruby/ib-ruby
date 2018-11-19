@@ -160,7 +160,7 @@ module IB
     # other fields on demand
     # acutal used by place_order, request_marketdata, request_market_depth, exercise_options
     def serialize_short *fields
-      serialize :option, :trading_class, *fields
+      serialize :option, :trading_class, :primary_exchange, *fields
     end
 
     # Serialize under_comp parameters: EClientSocket.java, line 471
@@ -200,7 +200,7 @@ module IB
 
 			self_attributes = [ :right, :sec_type]
 			the_attributes = [ :symbol , :con_id,   :exchange, 
-									  :currency, :expiry,  :strike,   :local_symbol,
+									  :currency, :expiry,  :strike,   :local_symbol, :last_trading_day,
 								:multiplier,  :primary_exchange, :trading_class ]
 			the_hash= the_attributes.map{|x| y= attributes[x];  [x,y] if y.present?  }.compact.to_h
 			the_hash[:description] = @description if @description.present?
@@ -209,7 +209,7 @@ module IB
 		end
 	
 		alias essential  to_yaml
-
+	
     # Contract comparison
     def == other
 			return false if !other.is_a?(Contract)
@@ -328,6 +328,10 @@ is still available through 'attributes[:expiry]'
 				@attributes[:expiry]
 			end
 		end
+		# is read by Accout#PlaceOrder to set requirements for contract-types, as NonGuaranteed for stoc-spreads
+		def order_requirements
+			Hash.new
+		end
 
   end # class Contract
 
@@ -346,6 +350,7 @@ is still available through 'attributes[:expiry]'
   require 'models/ib/calendar'
   require 'models/ib/vertical'
   require 'models/ib/butterfly'
+  require 'models/ib/stock_spread'
   class Contract
     # Contract subclasses representing specialized security types.
     # Most security types do not have their own subclass, they use generic Contract class.

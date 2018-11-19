@@ -9,7 +9,7 @@ module IB
       def defaults
 	## todo implement serialisation of  key/tag Hash to camelCased-keyValue-List 
 #      super.merge order_type: :limit , combo_params: { non_guaranteed: true} 
-	#      for the time beeing, we use the array representation
+	#      for the time being, we use the array representation
       super.merge order_type: :limit , combo_params: [ ['NonGuaranteed', true] ]
       end
 

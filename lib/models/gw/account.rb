@@ -65,7 +65,7 @@ convert_size: The action-attribute (:buy  :sell) is associated according the con
 			# adjust the orderprice to  min-tick
 			logger.progname =  'Account#PlaceOrder' 
 			#·IB::Symbols are always qualified. They carry a description-field
-			qualified_contract = ->(c) { c.description.present? || c.con_id.present?  &&  !c.con_id.to_s.to_i.zero? }
+			qualified_contract = ->(c) { c.description.present? || (c.con_id.present?  &&  !c.con_id.to_s.to_i.zero?) }
 			order.contract = contract unless contract.nil?  # no verification at this piont
 			order.account =  account  # assign the account_id to the account-field of IB::Order
 			local_id =  nil
@@ -76,7 +76,8 @@ convert_size: The action-attribute (:buy  :sell) is associated according the con
 					order.action =  order.total_quantity.to_i > 0  ? 	:buy  : :sell 
 					order.total_quantity =  order.total_quantity.to_i.abs
 				end
-				the_contract =  if order.contract.description.nil? || order.contract.con_id.to_s.to_i > 0 
+				order.attributes.merge! order.contract.order_requirements unless order.contract.order_requirements.blank?
+				the_contract =  if order.contract.con_id.to_s.to_i > 0 
 													Contract.new( con_id: order.contract.con_id, exchange: order.contract.exchange)  
 												else
 													order.contract

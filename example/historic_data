@@ -11,7 +11,7 @@ require 'ib-ruby'
 # Predefined Symbol-definitions -->  lib/ib/symbols
 contracts = {123 => IB::Stock.new( symbol: 'T'),			# AT&T
               456 => IB::Stock.new( symbol: 'BAS',  currency: 'EUR') ,  # BASF
-              789 => IB::Symbols::Forex[:eurusd] 
+              789 => IB::Symbols::Forex.eurusd 
 }
 
 # Connect to IB TWS.

@@ -219,18 +219,23 @@ Standardattributes to reset: :con_id, :last_trading_day, :contract_detail
 Additional Attributes can be specified ie.
 
 	e =  IB::Symbols::Futures.es
-	e.verify  
-	--> 1
-	e.reset_attributes :expiry
-	e.verify
+	e.verify! 
+	e.reset_attributes! :expiry
+	e.verify!
 	--> IB::VerifyError (Currency, Exchange, Expiry, Symbol are needed to retrieve Contract,).
 =end
-			def reset_attributes *attributes
-				attributes = ( attributes +  [:con_id, :last_trading_day ]).uniq
-				attributes.each{|y| @attributes[y] = nil }
+			def reset_attributes! *attr
+				# modifies the contract
+				attr = ( attr +  [:con_id, :last_trading_day ]).uniq
+				attr.each{|y| @attributes[y] = nil }
 				self.contract_detail =  nil if contract_detail.present?
 			end
-			
+			# returns a copy of the contract with modifications
+			def reset_attributes *attr
+				e= essential	
+				e.reset_attributes! *attr 
+				e
+	end
 =begin
 Ask for the Market-Price and store item in IB::Contract.misc
 

@@ -1,6 +1,6 @@
 require 'integration_helper'
 # todo:  run with a real account with marketdata subsriptions
-describe 'Request Market Data for Options', :if => :us_trading_hours,
+RSpec.describe 'Request Market Data for Options', :if => :us_trading_hours,
          :connected => true, :integration => true  do
 
   before(:all) do

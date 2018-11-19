@@ -9,7 +9,7 @@ RSpec.describe IB::Limit , if: :us_trading_hours do
 		verify_account
 		ib = IB::Connection.new OPTS[:connection] do | gw| 
 			gw.logger = mock_logger
-			# put the most recent received OpenOrder-Message to an instance-variable
+			# assign the most recent received OpenOrder-Message to an instance-variable
 			gw.subscribe( :OpenOrder ){|msg| @the_open_order_message = msg}
 			gw.subscribe( :Alert ){ |msg| puts msg.to_human }
 		end

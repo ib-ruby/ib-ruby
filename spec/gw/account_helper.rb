@@ -2,6 +2,7 @@ require 'spec_helper'
 require 'thread'
 require 'stringio'
 require 'rspec/expectations'
+require 'gw_helper'
 
 # Make sure integration tests are only run against the pre-configured PAPER ACCOUNT
 def verify_account

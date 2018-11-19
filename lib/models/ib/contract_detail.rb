@@ -76,7 +76,7 @@ module IB
       # Extra validations
       validates_format_of :time_zone, :with => /\A\w{3}\z/, :message => 'should be XXX'
 
-    serialize :sec_id_list, HashWithIndifferentAccess
+    serialize :sec_id_list, Hash
 
     belongs_to :contract
     alias summary contract
@@ -87,7 +87,7 @@ module IB
         :under_con_id => 0,
         :min_tick => 0,
         :ev_multipler => 0,
-        :sec_id_list => HashWithIndifferentAccess.new,
+        :sec_id_list => Hash.new,
         :callable => false,
         :puttable => false,
         :convertible => false,
