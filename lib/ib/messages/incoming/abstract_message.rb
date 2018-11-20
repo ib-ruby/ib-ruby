@@ -72,6 +72,12 @@ module IBSupport
 			end
 		end
 
+
+		def read_datetime
+			the_string = read_string
+			the_string.blank? ? nil : DateTime.parse(the_string)
+		end
+
 		def read_date
 			the_string = read_string
 			the_string.blank? ? nil : Date.parse(the_string)
@@ -173,9 +179,9 @@ module IB
 					else
 						@buffer = source
 						#  if uncommented, the raw-input from the tws is displayed, logger does not work on this level
-						#		puts "BUFFER"
-						#		puts buffer.inspect #.join(" :\n ")
-						#		puts "BUFFER END"
+					#			puts "BUFFER"
+					#			puts buffer.inspect #.join(" :\n ")
+					#			puts "BUFFER END"
 						@data = Hash.new
 						self.load
 					end

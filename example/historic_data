@@ -9,13 +9,13 @@ require 'ib-ruby'
 # corresponds to what symbol ourselves, because the ticks don't include any other
 # identifying information. The choice of ticker ids is, as far as I can tell, arbitrary.
 # Predefined Symbol-definitions -->  lib/ib/symbols
-contracts = {123 => IB::Stock.new( symbol: 'T'),			# AT&T
+contracts = {123 => IB::Symbols::Index.stoxx,			# AT&T
               456 => IB::Stock.new( symbol: 'BAS',  currency: 'EUR') ,  # BASF
               789 => IB::Symbols::Forex.eurusd 
 }
 
 # Connect to IB TWS.
-ib = IB::Connection.new( :client_id => 1102, port: 4002  ) do  | gw | #, :port => 7497 # TWS 
+ib = IB::Connection.new( :client_id => 1102, port: 7496, host: '10.222.148.177'  ) do  | gw | #, :port => 7497 # TWS 
 
 	# Subscribe to TWS alerts/errors
 	gw.subscribe(:Alert) { |msg| puts msg.to_human }

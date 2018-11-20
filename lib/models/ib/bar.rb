@@ -14,7 +14,7 @@ module IB
       :wap, #    Weighted average price during the time covered by the bar.
       :trades, # int: When TRADES data history is returned, represents number
       #           of trades that occurred during the time period the bar covers
-      :time, # TODO: convert into Time object?
+      :time, #DateTime
       #        The date-time stamp of the start of the bar. The format is
       #        determined by the reqHistoricalData() formatDate parameter.
       :has_gaps => :bool # Whether or not there are gaps in the data.

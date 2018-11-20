@@ -25,10 +25,11 @@ module IB
       # - wap - The weighted average price during the time covered by the bar.
       # - has_gaps - Whether or not there are gaps in the data.
 
-      HistoricalData = def_message [17, 3],
+
+      HistoricalData = def_message [17,0],
                                    [:request_id, :int],
-                                   [:start_date, :string],
-                                   [:end_date, :string],
+                                   [:start_date, :datetime],
+                                   [:end_date, :datetime],
                                    [:count, :int]
       class HistoricalData
         attr_accessor :results
@@ -38,7 +39,7 @@ module IB
           super
 
           @results = Array.new(@data[:count]) do |_|
-            IB::Bar.new :time => buffer.read_string,
+            IB::Bar.new :time => buffer.read_datetime,
                         :open => buffer.read_decimal,
                         :high => buffer.read_decimal,
                         :low => buffer.read_decimal,

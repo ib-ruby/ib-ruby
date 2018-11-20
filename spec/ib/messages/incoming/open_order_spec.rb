@@ -183,7 +183,7 @@ describe IB::Messages::Incoming::OpenOrder do
       expect( c ).to be_a IB::Bag
       expect( c.symbol).to eq 'IECombo'
       expect( c.trading_class).to eq 'COMB'
-      expect( c.local_symbol).to eq  subject.contract.con_id.to_s
+#      expect( c.local_symbol).to eq  subject.contract.con_id.to_s
     end
     it "has essential fields"  do
       

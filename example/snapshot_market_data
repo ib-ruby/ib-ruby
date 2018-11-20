@@ -47,11 +47,7 @@ class Snapshot
 		#  we collect price-events in @prices-Hash
 		ib.subscribe( :TickPrice){ |msg| @prices[msg.ticker_id][msg.type]=msg.price }
 		# When finished, print the results
-		ib.subscribe( :TickSnapshotEnd) do |_|
-				count -=1   
-				print_results if count.zero?
-		end
-
+		ib.subscribe( :TickSnapshotEnd){ count -=1; print_results if count.zero? }
 		# fire the request
 		ib.send_message :RequestMarketDataType, :market_data_type => :delayed
 
