@@ -43,6 +43,9 @@ raises an IB::Error if less then 100 items are recieved-
 			# don't repeat the query until 170 sec. have passed since the previous update
 			if account.last_updated.nil?  || ( Time.now - account.last_updated ) > 170 # sec   
 				account.update_attribute :connected, false  # indicates: AccountUpdate in Progress
+				# reset account and portfolio-values
+				account.portfolio_values =  []
+				account.account_values =  []
 				send_message :RequestAccountData, subscribe: true, account_code: account.account
 				i=0; loop{ sleep 0.1; i+=1; break if i>600 || account.connected || IB::Alert.status_2101(account) } # initialize requests sequencially 
 				unless watchlists.empty?

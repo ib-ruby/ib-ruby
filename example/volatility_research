@@ -33,7 +33,8 @@ C.received[:TickOption].to_human
 # First, connect to IB TWS and subscribe for events. 
 # The output is produced »on the fly« if the tws-response is detected
 #
-ib = IB::Connection.new :client_id => 1112  do | gw | #, :port => 7497 # TWS
+ib = IB::Connection.new( :client_id => 1102, port: 7496, host: '10.222.148.177'  ) do  | gw | 
+#ib = IB::Connection.new :client_id => 1112  do | gw | #, :port => 7497 # TWS
 
 	# Subscribe to TWS alerts/errors
 	gw.subscribe(:Alert ) { |msg| puts msg.to_human }
@@ -49,7 +50,7 @@ end
 
 	# We use OptionPriceCalculations provided by IB
 	# specify the Option
-	the_option = IB::Symbols::Options.aapl200  
+IB::Symbols::Options.aapl200.verify do |the_option | 
 
 	# specify the desired Volatility-Range
 	vola_range = ( 2 .. 50 ) # in % p.a.
@@ -68,14 +69,14 @@ end
 	# get the prices and store in recieved-array
 	vola_range.each do | the_vola |
 		req_id = ib.send_message :RequestOptionPrice, 
-															id:  the_vola,
-															contract: the_option,
-															volatility: the_vola.to_f/100,
-															under_price: underlying_price
-		#sleep 0.2
-		ib.wait_for :TickOption
+		id:  the_vola,
+		contract: the_option,
+		volatility: the_vola.to_f/100,
+		under_price: underlying_price
+	sleep 0.2
+	ib.wait_for :TickOption
 
-		ib.send_message :CancelOptionPrice, id: req_id
+	ib.send_message :CancelOptionPrice, id: req_id
 	end
 	sleep 2
-
+end
