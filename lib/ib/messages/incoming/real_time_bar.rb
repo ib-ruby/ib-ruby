@@ -9,7 +9,7 @@ module IB
       #    :bar - received RT Bar
       RealTimeBar = def_message [50, 3],
                                 [:request_id, :int],
-                                [:bar, :time, :int],
+                                [:bar, :time, :int_date],
                                 [:bar, :open, :decimal],
                                 [:bar, :high, :decimal],
                                 [:bar, :low, :decimal],

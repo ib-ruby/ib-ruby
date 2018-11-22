@@ -43,8 +43,7 @@ contracts.each_pair do |request_id, contract|
                       :bar_size => :hour1, #  IB::BAR_SIZES.key(:hour)?
                       :what_to_show => :trades,
                       :use_rth => 0,
-		      :keep_up_todate => 0,
-                      :format_date => 1)
+		      :keep_up_todate => 0)
 end
 
 # IB does not send any indication when all historic data is done being delivered.

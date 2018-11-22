@@ -39,15 +39,17 @@ module IB
           super
 
           @results = Array.new(@data[:count]) do |_|
-            IB::Bar.new :time => buffer.read_datetime,
+            IB::Bar.new :time => buffer.read_int_date, # conversion of epoche-time-integer to Dateime
+																											 # requires format_date in request to be "2"
+																											 # (outgoing/bar_requests # RequestHistoricalData#Encoding)
                         :open => buffer.read_decimal,
                         :high => buffer.read_decimal,
                         :low => buffer.read_decimal,
                         :close => buffer.read_decimal,
                         :volume => buffer.read_int,
-                        :wap => buffer.read_decimal,   # python: average
-#                        :has_gaps => buffer.read_string,  # python only if serverVersion < MIN_SERVER_VER_SYNT_REALTIME_BARS
-                        :trades => buffer.read_int   # python:  BarCount
+                        :wap => buffer.read_decimal,   
+#                        :has_gaps => buffer.read_string,  # only in ServerVersion  < 124
+                        :trades => buffer.read_int  
           end
         end
 
