@@ -13,8 +13,8 @@ module IB
       # - end_date   - end of returned Historical data period
       # 
 			# Each returned Bar in @data[:results] Array contains this data:
-      # - date - The date-time stamp of the start of the bar. The format is
-      #   determined by the RequestHistoricalData formatDate parameter.
+      # - date - The date-time stamp of the start of the bar. The format is set to sec since EPOCHE
+      #                                                       in outgoing/bar_requests  ReqHistoricalData.
       # - open -  The bar opening price.
       # - high -  The high price during the time covered by the bar.
       # - low -   The low price during the time covered by the bar.
@@ -23,7 +23,6 @@ module IB
       # - trades - When TRADES historical data is returned, represents number of trades
       #   that occurred during the time period the bar covers
       # - wap - The weighted average price during the time covered by the bar.
-      # - has_gaps - Whether or not there are gaps in the data.
 
 
       HistoricalData = def_message [17,0],
@@ -57,20 +56,6 @@ module IB
           "<HistoricalData: #{request_id}, #{count} items, #{start_date} to #{end_date}>"
         end
       end # HistoricalData
-=begin
-				 ## python code
-			# def processHistogramData(self,fields):
-        sMsgId = next(fields)
-        reqId = decode(int, fields)
-        numPoints = decode(int, fields)
-
-        histogram = []
-        for idxBar in range(numPoints):
-            dataPoint = HistogramData()
-            dataPoint.price = decode(float,fields)
-            dataPoint.count = decode(int,fields)
-            histogram.append(dataPoint)
-=end
 
 
 				HistogramData  = def_message( [89,0], 
