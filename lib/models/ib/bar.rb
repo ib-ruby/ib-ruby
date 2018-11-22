@@ -21,21 +21,7 @@ module IB
 
       validates_numericality_of :open, :high, :low, :close, :volume
 
-    # Order comparison
-    def == other
-      super(other) ||
-        other.is_a?(self.class) &&
-        time == other.time &&
-        open == other.open &&
-        high == other.high &&
-        low == other.low &&
-        close == other.close &&
-        wap == other.wap &&
-        trades == other.trades &&
-        volume == other.volume
-    end
-
-    def to_human
+   def to_human
       "<Bar: #{time} wap #{wap} OHLC #{open} #{high} #{low} #{close} " +
         (trades ? "trades #{trades}" : "") + " vol #{volume}>"
     end
