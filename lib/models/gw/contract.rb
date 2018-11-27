@@ -247,10 +247,14 @@ If not, midpoint (bid+ask/2) is used. Else the closing price will be returned.
 Any  value (even 0.0) which is stored in IB::Contract.misc indicates that the contract is 
 accepted by `place_order`.
 
-A Block can be provided to extract TickTypes:
-	IB::Symbols::Stocks.sie.market_price{ |x| puts x.inspect }.to_f
+The result can be costomized by a provided block.
+
+	IB::Symbols::Stocks.sie.market_price{ |x| puts x.inspect; x.last }.to_f
 	-> {"bid"=>0.10142e3, "ask"=>0.10144e3, "last"=>0.10142e3, "close"=>0.10172e3}
 	-> 101.42 
+
+assigns IB::Symbols.sie.misc with the value of the :last (or delayed_last) TickPrice-Message
+and returns this value, too
 =end
 		def market_price delayed:  true, thread: false
 
@@ -287,17 +291,20 @@ A Block can be provided to extract TickTypes:
 				# reduce :close_price delayed_close  to close a.s.o 
 				tz = -> (z){ z.map{|y| y.to_s.split('_')}.flatten.count_duplicates.max_by{|k,v| v}.first.to_sym}
 				data =  tickdata.map{|x,y| [tz[x],y]}.to_h
-				yield data if block_given?
- # yields {"bid"=>0.10142e3, "ask"=>0.10144e3, "last"=>0.10142e3, "close"=>0.10172e3}
-				self.misc =  if data[:last].present? && !data[:last].zero? 
-											 data[:last] 
-										 elsif data[:bid].present? && data[:ask].present?
-											(data[:bid]+data[:ask])/2
-										 elsif data[:close].present? 
-										  data[:close]
-										 else
-											 nil
-										 end
+				self.misc = if block_given? 
+											yield data 
+											# yields {"bid"=>0.10142e3, "ask"=>0.10144e3, "last"=>0.10142e3, "close"=>0.10172e3}
+										else # behavior if no block is provided
+											if data[:last].present? && !data[:last].zero? 
+												data[:last] 
+											elsif data[:bid].present? && data[:ask].present?
+												(data[:bid]+data[:ask])/2
+											elsif data[:close].present? 
+												data[:close]
+											else
+												nil
+											end
+										end
 				tws.unsubscribe sub_id, s_id, e_id
 			end
 			if thread

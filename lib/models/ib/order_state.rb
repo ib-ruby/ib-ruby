@@ -92,13 +92,12 @@ module IB
     end
 
     # Order is in invalid state
-    def active?
-      new? || pending?
+    def inactive?
+      new? || pending? || status =~ /Cancel/
     end
 
-    # Order is in invalid state
-    def inactive?
-      !active? # status == 'Inactive'
+    def active?
+      !inactive? # status == 'Inactive'
     end
 
     def complete_fill?
@@ -137,5 +136,17 @@ module IB
     end
 
     alias to_s to_human
+=begin
+If an Order is submitted with the :what_if-Flag set, commission and margin are returned 
+via the order_state-Object.
+=end
+		def forcast
+			{ :init_margin => init_margin, 
+				:maint_margin => maint_margin,
+				:equity_with_loan => equity_with_loan ,
+			  :commission => commission, 
+				:commission_currency=> commission_currency,
+				:warning => warning_text }
+		end
   end # class Order
 end # module IB

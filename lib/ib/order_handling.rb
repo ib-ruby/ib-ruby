@@ -20,10 +20,10 @@ Everything is carried out in a mutex-synchonized environment
 		end 
 	end
   def initialize_order_handling
-		tws.subscribe( :CommissionReport, :ExecutionData, :OrderStatus, :OpenOrder, :OpenOrderEnd ) do |msg| 
+		tws.subscribe( :CommissionReport, :ExecutionData, :OrderStatus, :OpenOrder, :OpenOrderEnd, :NextValidId ) do |msg| 
 			logger.progname = 'Gateway#order_handling'
 			case msg
-
+	
 			when IB::Messages::Incoming::CommissionReport
 				# Commission-Reports are not assigned to a order -  
 				logger.info "CommissionReport -------#{msg.exec_id} :...:C: #{msg.commission} :...:P/L: #{msg.realized_pnl}-"
@@ -176,15 +176,16 @@ Otherwise only the last action is not applied and the order is unchanged.
 				o=a.divmod(b)
 				o.last.zero? ? a : a-o.last 
 			end
-
+			unless contract.is_a? IB::Bag
 			# ensure that contract_details are present
-			contract.verify! if  contract.contract_detail.blank?
-
-			# there are two attribute to consider: limit_price and aux_price
-			# limit_price +  aux_price may be nil or an empty string. Then ".to_f.zero?" becomes true 
-			self.limit_price= adjust_price.call(limit_price.to_f, contract.contract_detail.min_tick) unless limit_price.to_f.zero?
-			self.aux_price= adjust_price.call(aux_price.to_f, contract.contract_detail.min_tick) unless aux_price.to_f.zero?
-
+				contract.verify do |the_contract | 
+					the_details =  the_contract.contract_detail
+					# there are two attribute to consider: limit_price and aux_price
+					# limit_price +  aux_price may be nil or an empty string. Then ".to_f.zero?" becomes true 
+					self.limit_price= adjust_price.call(limit_price.to_f, the_details.min_tick) unless limit_price.to_f.zero?
+					self.aux_price= adjust_price.call(aux_price.to_f, the_details.min_tick) unless aux_price.to_f.zero?
+				end
+			end
 		end
 	end  # class Order
 end  # module

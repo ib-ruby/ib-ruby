@@ -4,12 +4,8 @@ module IB
   module Messages
   	# This gem supports incoming/outgoing IB messages compatible with the following
   	# IB client/server versions:
-    CLIENT_VERSION = 66 # 59? Maximal client version implemented
-		        # 66 => API V  9.71
-    # SERVER_VERSION = 76 # 38? 53? 62? Minimal server version required   
-    #  ##  EClient.java --> MIN_VERSION (line 280)
-    SERVER_VERSION =  "v"+ MIN_CLIENT_VER.to_s + ".." + MAX_CLIENT_VER.to_s  
-	    # extracted from the python-client			  
+    CLIENT_VERSION = 66 #  => API V  9.71
+    SERVER_VERSION =  "v"+ MIN_CLIENT_VER.to_s + ".." + MAX_CLIENT_VER.to_s  # extracted from the python-client			  
   end
 end
 

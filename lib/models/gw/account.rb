@@ -65,29 +65,29 @@ convert_size: The action-attribute (:buy  :sell) is associated according the con
 			# adjust the orderprice to  min-tick
 			logger.progname =  'Account#PlaceOrder' 
 			#·IB::Symbols are always qualified. They carry a description-field
-			qualified_contract = ->(c) { c.description.present? || (c.con_id.present?  &&  !c.con_id.to_s.to_i.zero?) }
+			qualified_contract = ->(c) { c.description.present? || (c.con_id.present?  &&  !c.con_id.to_i.zero?) }
 			order.contract = contract unless contract.nil?  # no verification at this piont
 			order.account =  account  # assign the account_id to the account-field of IB::Order
-			local_id =  nil
+			the_local_order_id =  nil
 			if qualified_contract[order.contract]
 				self.orders.update_or_create order, :order_ref
-				order.auto_adjust if auto_adjust &&  order.contract.con_id.to_s.to_i > 0 # not for Bag's
+				order.auto_adjust if auto_adjust 
 				if convert_size 
 					order.action =  order.total_quantity.to_i > 0  ? 	:buy  : :sell 
 					order.total_quantity =  order.total_quantity.to_i.abs
 				end
 				order.attributes.merge! order.contract.order_requirements unless order.contract.order_requirements.blank?
-				the_contract =  if order.contract.con_id.to_s.to_i > 0 
+				the_contract =  if order.contract.con_id.to_i > 0 
 													Contract.new( con_id: order.contract.con_id, exchange: order.contract.exchange)  
 												else
 													order.contract
 												end
-				local_id = Connection.current.place_order order, the_contract
+				the_local_order_id = Connection.current.place_order order, the_contract
 			else
 				error "No qualified Contract specified .::. #{order.to_human}"
 				#  con_id and exchange fully qualify a contract, no need to transmit other data
 			end 
-			local_id  # return_value
+			the_local_order_id  # return_value
 
 		end # place 
 
@@ -127,6 +127,17 @@ This has to be done manualy in the provided block
 		end
 
 
+	def preview order:, contract: nil, **args_which_are_ignored
+		result = ->(l){ orders.detect{|x| x.local_id == l  && x.submitted? } }
+		order.what_if =  true
+		the_local_id = place_order order: order, contract: contract
+		puts "local_id #{the_local_id}"
+		i=0; loop{ i=i+1; sleep 0.1;  break if i > 100 || result[the_local_id] }  
+		order.what_if =  false # reset what_if flag
+		result[the_local_id].present? ? result[the_local_id].order_state.forcast : nil
+	end 
+
+
 	#returns an hash where portfolio_positions are grouped into Watchlists.
 	#
 	# Watchlist => [  contract => [ portfoliopositon] , ... ] ]
@@ -135,11 +146,11 @@ This has to be done manualy in the provided block
 			self.focuses = portfolio_values.map do | pw |
 				z=	the_watchlists.map do | w |		
 				ref_con_id = pw.contract.con_id
-				watchlist_contract = w.find{ |c| c.is_a?(IB::Bag) ? c.combo_legs.map(&:con_id).include?(ref_con_id) : c.con_id == ref_con_id }rescue nil	
+				watchlist_contract = w.find { |c| c.is_a?(IB::Bag) ? c.combo_legs.map(&:con_id).include?(ref_con_id) : c.con_id == ref_con_id } rescue nil	
 				watchlist_contract.present? ? [w,watchlist_contract] : nil
 			end.compact
 
-			z.empty? ? [IB::Symbols::Unspecified, pw.contract, pw ] : z.first << pw
+			z.empty? ? [ IB::Symbols::Unspecified, pw.contract, pw ] : z.first << pw
 			end.group_by{|a,_,_| a }.map{|x,y|[x, y.map{|_,d,e|[d,e]}.group_by{|e,_| e}.map{|f,z| [f, z.map(&:last)]} ] }.to_h
 			# group:by --> [a,b,c] .group_by {|_g,_| g} --->{ a => [a,b,c] }
 			# group_by+map --> removes "a" from the resulting array

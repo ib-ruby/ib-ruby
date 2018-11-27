@@ -178,10 +178,8 @@ module IB
 						@buffer =[] # initialize empty buffer, indicates a successfull initializing
 					else
 						@buffer = source
-						#  if uncommented, the raw-input from the tws is displayed, logger does not work on this level
-					#			puts "BUFFER"
-					#			puts buffer.inspect #.join(" :\n ")
-					#			puts "BUFFER END"
+						#  if uncommented, the raw-input from the tws is included in the logging
+#					Connection.logger.debug { "BUFFER :> #{buffer.inspect} "}
 						@data = Hash.new
 						self.load
 					end

@@ -39,13 +39,16 @@ module IB
                        #:port => '7497', # TWS connection  --> demo				  7496:  production
                    connect: true, # Connect at initialization
                    received:  true, # Keep all received messages in a @received Hash
-																		# implies: start reader-thread
 #									 redis: false,    # future plans
                    logger: default_logger,
                    client_id: random_id, 
-                   client_version: IB::Messages::CLIENT_VERSION,
-                   #server_version: IB::Messages::SERVER_VERSION,
+                   client_version: IB::Messages::CLIENT_VERSION,	# lib/ib/server_versions.rb
+									 optional_capacities: "", # TWS-Version 974: "+PACEAPI" 
+                   #server_version: IB::Messages::SERVER_VERSION, # lib/messages.rb
 		   **any_other_parameters_which_are_ignored
+			 # V 974 release motes
+# API messages sent at a higher rate than 50/second can now be paced by TWS at the 50/second rate instead of potentially causing a disconnection. This is now done automatically by the RTD Server API and can be done with other API technologies by invoking SetConnectOptions("+PACEAPI") prior to eConnect.
+
 
     # convert parameters into instance-variables and assign them
 		method(__method__).parameters.each do |type, k|
@@ -71,33 +74,36 @@ module IB
 		#       puts msg.to_human
 		#     end
 
-		# TWS always sends NextValidId message at connect -subscribe once and  save this id
+		# TWS always sends NextValidId message at connect -subscribe save this id
+		## this block is executed before tws-communication is established
+		yield self if block_given?
+
 		self.subscribe(:NextValidId) do |msg|
 			logger.progname = "Connection#connect"
 			self.next_local_id = msg.local_id
 			logger.info { "Got next valid order id: #{next_local_id}." }
 		end
 
-		## this block is executed before tws-communication is established
-		yield self if block_given?
 		# Ensure the transmission of NextValidId.
-		# Try 5 reconnection-attemps. 
-		# Then the TWS has to be restarted
+		# works even if no reader_thread is established
 		if connect
-			a = 0
-			begin
-				disconnect if connected?
-				open() 
-				wait_for  :NextValidId, 1
-				a += 1
-				if a == 5
-					error 'Next Order ID not transmitted,  restart TWS/Gateway'
-					Kernel.exit
-				end
-			end while self.next_local_id.nil?
+			disconnect if connected?
+			 update_next_order_id
+			Kernel.exit if self.next_local_id.nil?
 		end
-		start_reader if @received
+		#start_reader if @received && connected?
 		Connection.current = self
+		end
+
+		# read actual order_id and
+		# connect if not connected
+		def update_next_order_id
+			i,finish = 0, false
+			sub = self.subscribe(:NextValidID) { finish =  true }
+			connected? ?  self.send_message( :RequestIds )  : open()
+			loop { sleep 0.1; break if finish || i >100; i=i+1 }
+			error "Could not get NextValidId" , :reader if i > 100
+			self.unsubscribe sub
 		end
 
 		### Working with connection
@@ -114,13 +120,10 @@ module IB
 
 			socket.initialising_handshake
 			socket.decode_message( socket.recieve_messages ) do  | the_message |
-				#      ib_server_version = socket.read_int
-				#     todo:  hier so etwas wie: Server-Version wird nicht unterstützt einfügen,
-				#		   falls eine ServerVersion <> 136 zurück gegeben wird.
-				#      if @server_version > ib_server_version
-				#        logger.error { "Server version #{ib_server_version}, #{@server_version} required." }
-				#      end
+#				logger.info{ "TheMessage :: #{the_message.inspect}" }
 				@server_version =  the_message.shift.to_i
+				error "ServerVersion does not match  #{@server_version} <--> #{MAX_CLIENT_VER}" if @server_version != MAX_CLIENT_VER
+
 				@remote_connect_time = DateTime.parse the_message.shift
 				@local_connect_time = Time.now
 			end
@@ -133,9 +136,8 @@ module IB
 			# Parameters borrowed from the python client
 			start_api = 71
 			version = 2
-			optcapab =  ""
-
-			socket.send_messages start_api, version, @client_id  , optcapab 
+#			optcap = @optional_capacities.empty? ? "" : " "+ @optional_capacities 
+			socket.send_messages start_api, version, @client_id  , @optional_capacities 
 			@connected = true
 			logger.info { "Connected to server, version: #{@server_version},\n connection time: " +
 								 "#{@local_connect_time} local, " +
@@ -145,7 +147,7 @@ module IB
 			# get the first message and proceed if something reasonable is recieved
 			the_message = process_message   # recieve next_order_id
 			error "Check Port/Client_id ", :reader if the_message == " "
-			#      start_reader  
+			start_reader  
 		end
 
     alias open connect # Legacy alias
@@ -350,12 +352,11 @@ module IB
     # If you don't start reader, you should manually poll @socket for messages
     # or use #process_messages(msec) API.
     def start_reader
+			return(@reader_thread) if @reader_running
 			if connected?
 				Thread.abort_on_exception = true
 				@reader_running = true
-				@reader_thread = Thread.new do
-					process_messages while @reader_running
-				end
+				@reader_thread = Thread.new { process_messages while @reader_running }
 			else
 				logger.fatal {"Could not start reader, not connected!"}
 				nil  # return_value

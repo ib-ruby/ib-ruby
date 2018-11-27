@@ -88,9 +88,25 @@ known_servers = {
 :min_server_ver_real_expiration_date   => 134,
 :min_server_ver_realized_pnl           => 135,
 :min_server_ver_last_liquidity         => 136,
-:min_server_ver_tick_by_tick           => 137 }
+:min_server_ver_tick_by_tick           => 137,
+:min_server_ver_decision_maker         => 138,
+:min_server_ver_mifid_execution        => 139,
+:min_server_ver_tick_by_tick_ignore_size => 140,
+:min_server_ver_auto_price_for_hedge     => 141,
+:min_server_ver_what_if_ext_fields       => 142,
+:min_server_ver_scanner_generic_opts     => 143,
+:min_server_ver_api_bind_order           => 144,
+:min_server_ver_order_container          => 145,
+:min_server_ver_smart_depth              => 146,
+:min_server_ver_remove_null_all_casting  => 147,
+:min_server_ver_d_peg_orders             => 148
+
+
+
+
+}
 # 100+ messaging */
 # 100 = enhanced handshake, msg length prefixes
 
 MIN_CLIENT_VER = 100
-MAX_CLIENT_VER = known_servers[:min_server_ver_tick_by_tick]
+MAX_CLIENT_VER = 137 #known_servers[:min_server_ver_d_peg_orders]

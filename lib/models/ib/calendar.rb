@@ -18,6 +18,21 @@ Initialize with
 													strike: 3000, expiry: 201812
 	calendar =  IB::Calendar.new master, back: 201903
 
+
+	In »master-mode« futures may be underlyings, too, ie
+  
+	calendar =  IB::Calendar.new IB::Symbols::Futures.zn, back: '3m'
+
+		calendar.to_human 
+
+		"<Calendar ZN none(0.0)[-1 :Dec 2018 |+|1 :Mar 2019  >" 
+	
+	or
+		calendar =  IB::Calendar.new IB::Symbols::Futures.zn, front: 201903, back: '3m'
+		
+
+
+
 =end
 
 		
@@ -26,14 +41,18 @@ Initialize with
 										underlying: nil, 
 										strike: 0, 
 										right: :put,
-										front: IB::Symbols::Futures.next_expiry,   # has to be specified as "YYYMM(DD)" String or Numeric
+										front: nil,   # has to be specified as "YYYMM(DD)" String or Numeric
 										back: ,   # has to be specified either as "YYYYMM(DD)" String or Numeric
 															# or relative "1m" "3m" "2w" "-1w" 
-										**args # trading_class and otthers
+										**args # trading_class and others
+
 	
 			master_option, msg = if master.present? 
 															if master.is_a?(IB::Option)
 																front =  master.expiry unless master.expiry.nil?
+																[ master.essential, nil ]
+															elsif master.is_a? IB::Future
+																front ||=  master.expiry
 																[ master.essential, nil ]
 															else
 																[ nil, "First Argument is no IB::Option" ]
@@ -53,7 +72,10 @@ Initialize with
 
 			error msg, :args, nil  if msg.present?
 			master_option.trading_class = args[:trading_class] if args[:trading_class].present?
-			master_option.expiry = front if master_option.expiry.nil? || master_option.expiry == ''
+			master_option.expiry =  front if front.present?
+			master_option.expiry =  IB::Symbols::Futures.next_expiry if master_option.expiry.blank? 
+
+			#if master_option.is_a?(IB::Option) && ( master_option.expiry.nil? || master_option.expiry == '')
 			l=[] ; master_option.verify{|x| x.contract_detail = nil; l << x }
 			if l.empty?
 				error "Invalid Parameters. No Contract found #{master_option.to_human}"
