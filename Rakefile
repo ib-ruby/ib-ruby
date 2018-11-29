@@ -33,16 +33,16 @@ Dir['tasks/*.rake'].sort.each { |file| load file }
 # rake db:migrate DB=osx-test
 # rake db:rollback
 # rake db:rollback STEP=3
-begin
-  require 'tasks/standalone_migrations'
-rescue LoadError => e
-  puts "gem install standalone_migrations to get db:migrate:* tasks! (Error: #{e})"
-end
+#begin
+#  require 'tasks/standalone_migrations'
+#rescue LoadError => e
+#  puts "gem install standalone_migrations to get db:migrate:* tasks! (Error: #{e})"
+#end
 
 # rake db:redo DB=test"
-namespace :db do
-  desc "Remake db from scratch: $ rake db:redo DB=test"
-  task :redo => [:drop, :create, :migrate] do
-    puts "Redo Finished!"
-  end
-end
+#namespace :db do
+#  desc "Remake db from scratch: $ rake db:redo DB=test"
+#  task :redo => [:drop, :create, :migrate] do
+#    puts "Redo Finished!"
+#  end
+#end

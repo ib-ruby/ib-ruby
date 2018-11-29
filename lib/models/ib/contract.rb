@@ -109,25 +109,24 @@ module IB
 
     validates_numericality_of :multiplier, :strike, :allow_nil => true
 
-    def default_attributes
+    def default_attributes  # :nodoc:
       super.merge :con_id => 0,
         :strike => 0.0,
         :right => :none, # Not an option
        # :exchange => 'SMART',
         :include_expired => false
     end
-=begin
-    This returns an Array of data from the given contract and is used to represent
-    contracts in outgoing messages.
-    
-    Different messages serialize contracts differently. Go figure.
-    
-    Note that it does NOT include the combo legs.
-    serialize :option, :con_id, :include_expired, :sec_id
-    
-    18/1/18: serialise always includes conid
-=end
-    def serialize *fields
+#    This returns an Array of data from the given contract and is used to represent
+#    contracts in outgoing messages.
+#    
+#    Different messages serialize contracts differently. Go figure.
+#    
+#    Note that it does NOT include the combo legs.
+#    serialize :option, :con_id, :include_expired, :sec_id
+#    
+#    18/1/18: serialise always includes conid
+
+    def serialize *fields  # :nodoc:
       print_default = ->(field, default="") { field.blank? ? default : field }
       print_not_zero = ->(field, default="") { field.to_i.zero? ? default : field }
       [(con_id.present? && !con_id.is_a?(Symbol) && con_id.to_i > 0 ? con_id : ""),
@@ -151,7 +150,7 @@ module IB
     # serialize contract 
     # con_id. sec_type, expiry, strike, right, multiplier exchange, primary_exchange, currency, local_symbol, include_expired 
     # other fields on demand
-    def serialize_long *fields
+    def serialize_long *fields # :nodoc:
       serialize :option, :include_expired, :primary_exchange, :trading_class, *fields
     end
 
@@ -159,17 +158,17 @@ module IB
     # con_id. sec_type, expiry, strike, right, multiplier exchange, currency, local_symbol
     # other fields on demand
     # acutal used by place_order, request_marketdata, request_market_depth, exercise_options
-    def serialize_short *fields
+    def serialize_short *fields  # :nodoc:
       serialize :option, :trading_class, :primary_exchange, *fields
     end
 
     # Serialize under_comp parameters: EClientSocket.java, line 471
-    def serialize_under_comp *args
+    def serialize_under_comp *args   # :nodoc: 
       under_comp ? under_comp.serialize : [false]
     end
 
     # Defined in Contract, not BAG subclass to keep code DRY
-    def serialize_legs *fields
+    def serialize_legs *fields     # :nodoc:
       case
       when !bag?
        [] 
@@ -211,7 +210,8 @@ module IB
 		alias essential  to_yaml
 	
     # Contract comparison
-    def == other
+
+    def == other  # :nodoc: 
 			return false if !other.is_a?(Contract)
       return true if super(other)
 			return true if con_id.to_s.to_i != 0 && con_id == other.con_id
@@ -282,24 +282,28 @@ module IB
       end
     end
     # Testing for type of contract:
-
-    def bag?
+		# depreciated :  use is_a?(IB::Stock, IB::Bond, IB::Bag etc) instead
+		# def bag?  #  :nodoc:
       self[:sec_type] == 'BAG'
     end
 
-    def bond?
+    def bond?  #  :nodoc:
+
       self[:sec_type] == 'BOND'
     end
 
-    def stock?
+    def stock? #  :nodoc:
+
       self[:sec_type] == 'STK'
     end
 
-    def option?
+    def option?  #  :nodoc:
+
       self[:sec_type] == 'OPT'
     end
 
-    def index?
+    def index?  #  :nodoc:
+
       self[:sec_type] == 'IND'
     end
 
@@ -312,15 +316,16 @@ In many places, such as the OptionTrader, Probability Lab and other options/futu
 
 In places where these terms are used to indicate a concept, we have left them as Expiry or Expiration. For example in the Option Chain settings where we allow you to "Load the nearest N expiries" we have left the word expiries. Additionally, the Contract Description window will show both the Last Trading Date and the Expiration Date. Also in cases where it's appropriate, we have replaced Expiry or Expiration with Contract Month.
 
-
-IB-ruby uses expiry to query Contracts.
-
-The response from the TWS is stored in 'last_trading_day' (Contract) and 'real_expiration_data' (ContractDetails)
-
-However, after querying a contract, 'expiry' ist overwritten by 'last_trading_day'. The original 'expiry'
-is still available through 'attributes[:expiry]'
-
 =end
+
+
+# IB-ruby uses expiry to query Contracts.
+# 
+# The response from the TWS is stored in 'last_trading_day' (Contract) and 'real_expiration_data' (ContractDetails)
+# 
+# However, after querying a contract, 'expiry' ist overwritten by 'last_trading_day'. The original 'expiry'
+# is still available through 'attributes[:expiry]'
+
 		def expiry
 			if self.last_trading_day.present?
 				last_trading_day.gsub(/-/,'')
@@ -328,7 +333,9 @@ is still available through 'attributes[:expiry]'
 				@attributes[:expiry]
 			end
 		end
-		# is read by Accout#PlaceOrder to set requirements for contract-types, as NonGuaranteed for stoc-spreads
+
+		
+# is read by Account#PlaceOrder to set requirements for contract-types, as NonGuaranteed for stock-spreads
 		def order_requirements
 			Hash.new
 		end
@@ -351,9 +358,10 @@ is still available through 'attributes[:expiry]'
   require 'models/ib/vertical'
   require 'models/ib/butterfly'
   require 'models/ib/stock_spread'
+
   class Contract
     # Contract subclasses representing specialized security types.
-    # Most security types do not have their own subclass, they use generic Contract class.
+
     Subclasses = Hash.new(Contract)
     Subclasses[:bag] = IB::Bag
     Subclasses[:option] = IB::Option
@@ -368,6 +376,10 @@ is still available through 'attributes[:expiry]'
 
 
     # This builds an appropriate Contract subclass based on its type
+		#
+		# does NOT work with Straddle,Strangle,Calendar,Vertical and other spread-types
+		# 
+		# is used to copy Contracts by value
     def self.build opts = {}
       subclass =( VALUES[:sec_type][opts[:sec_type]] || opts['sec_type'] || opts[:sec_type]).to_sym
       Contract::Subclasses[subclass].new opts
