@@ -108,7 +108,6 @@ s --> <IB::Stock:0x007f3de81a4398
 =end
 
 		def  verify update: false, thread: nil,  &b 
-				
 				_verify update: update, thread: thread,  &b  # returns the allocated threads
 			end # def
 
@@ -353,13 +352,13 @@ sort = :strike, :expiry
 							end
 						end
 					end
-
-					verify! if con_id.to_i.zero?
-					my_req = ib.send_message :RequestOptionChainDefinition, con_id: con_id,
-						symbol: symbol,
-							 exchange: exchange, # BOX,CBOE',
-						sec_type: self[:sec_type]
-
+					
+					verify do | c |
+						my_req = ib.send_message :RequestOptionChainDefinition, con_id: c.con_id,
+																			symbol: c.symbol,
+																#			exchange: c.exchange, # BOX,CBOE',
+																			sec_type: c[:sec_type]
+					end
 
 					Thread.new do  
 						loop{ sleep 0.1; break if finalize } 
@@ -440,7 +439,7 @@ sort = :strike, :expiry
 				
 			end
 		def itm_options count:  5, right: :put, ref_price: :request, sort: :strike
-			option_chain(  right: :put, ref_price: ref_price, sort: sort ) do | chain |
+			option_chain(  right: right,  ref_price: ref_price, sort: sort ) do | chain |
 					if right == :put
 						above_market_price_strikes = chain[1][0..count-1]
 					else
@@ -450,7 +449,7 @@ sort = :strike, :expiry
 		end		# def
 
 		def otm_options count:  5,  right: :put, ref_price: :request, sort: :strike
-			option_chain( right: :put, ref_price: ref_price, sort: sort ) do | chain |
+			option_chain( right: right, ref_price: ref_price, sort: sort ) do | chain |
 					if right == :put
 						#			puts "Chain: #{chain}"
 						below_market_price_strikes = chain[-1][-count..-1].reverse

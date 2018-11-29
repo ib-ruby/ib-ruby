@@ -29,14 +29,7 @@ Initialize with
 	
 	or
 		calendar =  IB::Calendar.new IB::Symbols::Futures.zn, front: 201903, back: '3m'
-		
-
-
-
 =end
-
-		
-
 		def initialize  master=nil,   # provides strike, front-month, right, trading-class
 										underlying: nil, 
 										strike: 0, 
@@ -47,7 +40,7 @@ Initialize with
 										**args # trading_class and others
 
 	
-			master_option, msg = if master.present? 
+			the_master, msg = if master.present? 
 															if master.is_a?(IB::Option)
 																front =  master.expiry unless master.expiry.nil?
 																[ master.essential, nil ]
@@ -71,38 +64,37 @@ Initialize with
 														end
 
 			error msg, :args, nil  if msg.present?
-			master_option.trading_class = args[:trading_class] if args[:trading_class].present?
-			master_option.expiry =  front if front.present?
-			master_option.expiry =  IB::Symbols::Futures.next_expiry if master_option.expiry.blank? 
+			the_master.trading_class = args[:trading_class] if args[:trading_class].present?
+			the_master.expiry =  front if front.present?
+			the_master.expiry =  IB::Symbols::Futures.next_expiry if master_option.expiry.blank? 
 
-			#if master_option.is_a?(IB::Option) && ( master_option.expiry.nil? || master_option.expiry == '')
-			l=[] ; master_option.verify{|x| x.contract_detail = nil; l << x }
+			#if the_master.is_a?(IB::Option) && ( master_option.expiry.nil? || master_option.expiry == '')
+			l=[] ; the_master.verify{|x| x.contract_detail = nil; l << x }
 			if l.empty?
-				error "Invalid Parameters. No Contract found #{master_option.to_human}"
+				error "Invalid Parameters. No Contract found #{the_master.to_human}"
 			elsif l.size > 2
 				available_trading_classes = l.map( &:trading_class ).uniq
 				Connection.logger.error "ambigous contract-specification: #{l.map(&:to_human).join(';')}"
 				if available_trading_classes.size >1
 					error "Refine Specification with trading_class: #{available_trading_classes.join('; ')} (details in log)"
 				else
-					error "Respecify expiry, verification reveals #{l.size} contracts  (only 2 are allowed) #{master_option.to_human}"
+					error "Respecify expiry, verification reveals #{l.size} contracts  (only 2 are allowed) #{the_master.to_human}"
 				end
 			end
 
-#			masster_option.reset_attributes
-			master_option.expiry =  transform_distance(front, back)
-			master_option.verify{|x| x.contract_detail =  nil; l << x }
+			the_master.expiry =  transform_distance(front, back)
+			the_master.verify{|x| x.contract_detail =  nil; l << x }
 			error "Two legs are required, \n Verifiying the master-option exposed #{l.size} legs" unless l.size ==2
 
-			master_option.exchange ||= l.first.exchange
-			master_option.currency ||= l.first.currency
+			the_master.exchange ||= l.first.exchange
+			the_master.currency ||= l.first.currency
 
 			# default is to sell the front month
 			c_l = l.map.with_index{ |l,i| ComboLeg.new con_id: l.con_id, action: i.zero? ? :sell : :buy, exchange: l.exchange, ratio:  1 }
 
-			super  exchange: master_option.exchange, 
-							 symbol: master_option.symbol.to_s,
-						 currency: master_option.currency,
+			super  exchange: the_master.exchange, 
+							 symbol: the_master.symbol.to_s,
+						 currency: the_master.currency,
 						 legs: l,
 						 combo_legs: c_l
 		end

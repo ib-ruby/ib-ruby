@@ -82,7 +82,7 @@ convert_size: The action-attribute (:buy  :sell) is associated according the con
 												else
 													order.contract
 												end
-				the_local_order_id = Connection.current.place_order order, the_contract
+				the_local_order_id = order.place the_contract, Connection.current
 			else
 				error "No qualified Contract specified .::. #{order.to_human}"
 				#  con_id and exchange fully qualify a contract, no need to transmit other data
@@ -91,6 +91,11 @@ convert_size: The action-attribute (:buy  :sell) is associated according the con
 
 		end # place 
 
+		# shortcut to enable
+		#  account.place order: {} , contract: {} 
+		#  account.preview order: {} , contract: {}
+		#  account.modify order: {}
+		alias place place_order
 
 =begin
 Account#ModifyOrder
