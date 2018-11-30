@@ -283,7 +283,7 @@ module IB
     end
     # Testing for type of contract:
 		# depreciated :  use is_a?(IB::Stock, IB::Bond, IB::Bag etc) instead
-		# def bag?  #  :nodoc:
+		def bag?  #  :nodoc:
       self[:sec_type] == 'BAG'
     end
 
