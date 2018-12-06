@@ -19,9 +19,9 @@ module IB
       super.merge :sec_type => :bag #,:legs => Array.new,
     end
 
-    def description
-      self[:description] || to_human
-    end
+#    def description
+#      self[:description] || to_human
+#    end
 
     def to_human
       "<Bag: #{[symbol, exchange, currency].join(' ')} legs: #{legs_description} >"

@@ -15,18 +15,24 @@ RSpec.describe "IB::Straddle" do
   end
 
 
-	context "initialize with master-option" do
-		subject { IB::Straddle.new the_option }
-		it{ is_expected.to be_a IB::Straddle }
+	context "fabricate with master-option" do
+		subject { IB::Straddle.fabricate the_option }
+		it{ is_expected.to be_a IB::Bag }
 		it_behaves_like 'a valid Estx Combo'
 		
 			
 	end
 
-	context "initialize with underlying" do
-		subject{ IB::Straddle.new( underlying: IB::Symbols::Index.stoxx, strike: 3000) }
+	context "build with underlying" do
+		subject{ IB::Straddle.build from: IB::Symbols::Index.stoxx, strike: 3000 }
 
-		it{ is_expected.to be_a IB::Straddle }
+		it{ is_expected.to be_a IB::Spread }
+		it_behaves_like 'a valid Estx Combo'
+	end
+	context "build with option", focus: true do
+		subject{ IB::Straddle.build from: the_option, strike: 3200 }
+
+		it{ is_expected.to be_a IB::Spread }
 		it_behaves_like 'a valid Estx Combo'
 	end
 end

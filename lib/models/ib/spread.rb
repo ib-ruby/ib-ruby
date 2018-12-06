@@ -1,5 +1,5 @@
 module IB
-	class Spread   < Bag
+	class Spread  < Bag
 		has_many :legs
 
 =begin
@@ -36,14 +36,17 @@ Adds (or substracts) relative (back) measures to the front month, just passes ab
 			end 
 		end # def 
 	
+		def to_human
+			self.description
+		end
 
 		def calculate_spread_value( array_of_portfolio_values )
 			array_of_portfolio_values.map{|x| x.send yield }.sum if block_given?
 		end
 	
 		def fake_portfolio_position(  array_of_portfolio_values )
-				calculate_spread_value= ->( array_of_portfolio_values, attribute ) do
-							array_of_portfolio_values.map{|x| x.send attribute }.sum 
+				calculate_spread_value= ->( a_o_p_v, attribute ) do
+							a_o_p_v.map{|x| x.send attribute }.sum 
 				end
 				ar=array_of_portfolio_values
 				IB::PortfolioValue.new  contract: self, 
@@ -55,6 +58,21 @@ Adds (or substracts) relative (back) measures to the front month, just passes ab
 					position: 0
 
 		end
+
+
+		def add_leg contract, **leg_params
+				contract.verify do |c|
+					self.combo_legs << ComboLeg.new( c.attributes.slice( :con_id, :exchange ).merge(leg_params).merge( action: :buy ))
+					self.legs << c.essential
+			end
+			self  # return value to enable chaining
+
+
+		end
+
+
+
+
 		def essential
 				legs.each{ |x| x.contract_detail =  nil }
 				self

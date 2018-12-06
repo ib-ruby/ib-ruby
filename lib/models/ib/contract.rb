@@ -214,7 +214,7 @@ module IB
     def == other  # :nodoc: 
 			return false if !other.is_a?(Contract)
       return true if super(other)
-			return true if con_id.to_s.to_i != 0 && con_id == other.con_id
+			return true if !con_id.to_i.zero?  && con_id == other.con_id
 
       return false unless other.is_a?(self.class)
 
@@ -352,12 +352,12 @@ In places where these terms are used to indicate a concept, we have left them as
   require 'models/ib/stock'
   require 'models/ib/index'
 	require 'models/ib/spread'
-	require 'models/ib/straddle'
-  require 'models/ib/strangle'
-  require 'models/ib/calendar'
-  require 'models/ib/vertical'
-  require 'models/ib/butterfly'
-  require 'models/ib/stock_spread'
+#	require 'models/ib/straddle'
+#  require 'models/ib/strangle'
+#  require 'models/ib/calendar'
+#  require 'models/ib/vertical'
+#  require 'models/ib/butterfly'
+#  require 'models/ib/stock_spread'
 
   class Contract
     # Contract subclasses representing specialized security types.
@@ -367,12 +367,12 @@ In places where these terms are used to indicate a concept, we have left them as
     Subclasses[:option] = IB::Option
     Subclasses[:future] = IB::Future
     Subclasses[:stock] = IB::Stock
-    Subclasses[:forex] = IB::Forex
+    Subclasses[:forex] =  IB::Forex
     Subclasses[:index] = IB::Index
-    Subclasses[:straddle] = IB::Straddle
-    Subclasses[:strangle] = IB::Strangle
-    Subclasses[:calendar] = IB::Calendar
-    Subclasses[:vertical] = IB::Vertical
+    Subclasses[:Spread] = IB::Spread
+#    Subclasses[:strangle] = IB::Strangle
+#    Subclasses[:calendar] = IB::Calendar
+#    Subclasses[:vertical] = IB::Vertical
 
 
     # This builds an appropriate Contract subclass based on its type
