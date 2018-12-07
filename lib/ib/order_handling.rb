@@ -9,7 +9,7 @@ They identify the order by local_id and perm_id
 
 Everything is carried out in a mutex-synchonized environment
 =end
-	def update_order_dependent_object order_dependent_object
+	def update_order_dependent_object order_dependent_object  # :nodoc:
 		for_active_accounts do  | a | 
 			order = if order_dependent_object.local_id.present?
 								a.locate_order( :local_id => order_dependent_object.local_id)
@@ -74,15 +74,12 @@ Everything is carried out in a mutex-synchonized environment
 			end  # case msg.code
 		end # do
 	end # def subscribe
-=begin
-Gateway#RequestOpenOrders  aliased as UpdateOrders
 
-Resets the order-array for each account first.
-Requests all open (eg. pending)  orders from the tws 
+# Resets the order-array for each account first.
+# Requests all open (eg. pending)  orders from the tws 
+#
+# Waits until the OpenOrderEnd-Message is recieved
 
-Waits until the OpenOrder-Request is registered, ie. after the call, accounts.orders is updated
-
-=end
 
 	def request_open_orders
 
@@ -94,6 +91,10 @@ Waits until the OpenOrder-Request is registered, ie. after the call, accounts.or
 	end
 
 	alias update_orders request_open_orders 
+
+
+
+
 end # module
 
 
@@ -173,8 +174,8 @@ Otherwise only the last action is not applied and the order is unchanged.
 			adjust_price = ->(a,b) do
 				a=BigDecimal.new(a,5) 
 				b=BigDecimal.new(b,5) 
-				o=a.divmod(b)
-				o.last.zero? ? a : a-o.last 
+				_,o =a.divmod(b)
+			  a-o 
 			end
 			unless contract.is_a? IB::Bag
 			# ensure that contract_details are present

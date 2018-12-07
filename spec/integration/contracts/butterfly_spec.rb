@@ -16,7 +16,7 @@ RSpec.describe "IB::Butterfly" do
 
 
 	context "initialize with master-option" do
-		subject { IB::Butterfly.new the_option, back: 3050, front: 2950 }
+		subject { IB::Butterfly.make the_option, back: 3050, front: 2950 }
 		it{ is_expected.to be_a IB::Butterfly }
 		it_behaves_like 'a valid Estx Combo'
 		
@@ -24,7 +24,7 @@ RSpec.describe "IB::Butterfly" do
 	end
 
 	context "initialize with underlying" do
-		subject{ IB::Butterfly.new( underlying: IB::Symbols::Index.stoxx, strike: 3000, front: 2950 , back: 3050 ) }
+		subject{ IB::Butterfly.make( underlying: IB::Symbols::Index.stoxx, strike: 3000, front: 2950 , back: 3050 ) }
 
 		it{ is_expected.to be_a IB::Butterfly }
 		it_behaves_like 'a valid Estx Combo'

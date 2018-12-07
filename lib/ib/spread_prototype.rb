@@ -25,10 +25,9 @@ module IB
 			attributes =  ref_contract.attributes.merge attributes if ref_contract.is_a?(IB::Contract)
 			the_spread = nil
 			IB::Contract.new(attributes).verify do| c|	
-				puts "successufll"
-
 				the_spread= IB::Spread.new  c.attributes.slice( :exchange, :symbol, :currency )
 			end
+			error "Initializing of Spread failed – Underling is no Contract" if the_spread.nil?
 			yield the_spread if block_given?  # yield outside mutex controlled verify-environment
 			the_spread  # return_value
 		end
@@ -57,3 +56,5 @@ module IB
 end
 require 'ib/spread_prototypes/straddle'
 require 'ib/spread_prototypes/strangle'
+require 'ib/spread_prototypes/vertical'
+require 'ib/spread_prototypes/calendar'

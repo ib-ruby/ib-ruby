@@ -59,6 +59,7 @@ auto_adjust: Limit- and Aux-Prices are adjusted to Min-Tick
 convert_size: The action-attribute (:buy  :sell) is associated according the content of :total_quantity.
 
 
+The parameter «order» is modified!
 =end
 
 		def place_order  order:, contract: nil, auto_adjust: true, convert_size:  false
@@ -66,7 +67,7 @@ convert_size: The action-attribute (:buy  :sell) is associated according the con
 			logger.progname =  'Account#PlaceOrder' 
 			#·IB::Symbols are always qualified. They carry a description-field
 			qualified_contract = ->(c) { c.description.present? || (c.con_id.present?  &&  !c.con_id.to_i.zero?) }
-			order.contract = contract unless contract.nil?  # no verification at this piont
+			contract.verify{|c| order.contract = c}  if contract.present?  # don't touch the parameter, get a new object
 			order.account =  account  # assign the account_id to the account-field of IB::Order
 			the_local_order_id =  nil
 			if qualified_contract[order.contract]
@@ -76,13 +77,12 @@ convert_size: The action-attribute (:buy  :sell) is associated according the con
 					order.action =  order.total_quantity.to_i > 0  ? 	:buy  : :sell 
 					order.total_quantity =  order.total_quantity.to_i.abs
 				end
+				# apply non_guarenteed and other stuff bound to the contract to order.
 				order.attributes.merge! order.contract.order_requirements unless order.contract.order_requirements.blank?
-				the_contract =  if order.contract.con_id.to_i > 0 
-													Contract.new( con_id: order.contract.con_id, exchange: order.contract.exchange)  
-												else
-													order.contract
-												end
-				the_local_order_id = order.place the_contract, Connection.current
+				order.contract.verify do |the_contract|
+					  the_contract = Contract.new( con_id: order.contract.con_id, exchange: order.contract.exchange) if the_contract.con_id > 0 
+						the_local_order_id = order.place the_contract, Connection.current
+				end
 			else
 				error "No qualified Contract specified .::. #{order.to_human}"
 				#  con_id and exchange fully qualify a contract, no need to transmit other data
@@ -136,12 +136,34 @@ This has to be done manualy in the provided block
 		result = ->(l){ orders.detect{|x| x.local_id == l  && x.submitted? } }
 		order.what_if =  true
 		the_local_id = place_order order: order, contract: contract
-		puts "local_id #{the_local_id}"
 		i=0; loop{ i=i+1; sleep 0.1;  break if i > 100 || result[the_local_id] }  
 		order.what_if =  false # reset what_if flag
 		result[the_local_id].present? ? result[the_local_id].order_state.forcast : nil
 	end 
 
+# closes the contract by submitting an appropiate order
+	# the action- and total_amount attributes of the assigned order are overwritten.
+	# returns the order transmitted
+
+	def close order:, contract: nil, **args_which_are_ignoreda
+
+		contract_size = ->(c) {v= portfolio_values.detect{|x| x.contract == c};  v.present? ? v.position.to_i : 0} 
+
+		contract.verify{|c| order.contract = c}  if contract.present?  # don't touch the parameter, get a new object
+		error "Cannot transmit the order – No Contract given " unless order.contract.is_a?(IB::Contract)
+		error "Cannot close the position – not found " unless contracts.detect{|c| c == order.contract}
+		error "Something strange happend: Contract not listed in PortfolioPositions " if contract_size[order.contract].zero?  
+
+		order.total_quantity = -contract_size[order.contract]
+		order.action = nil
+		logger.info { "Order modified to close position: #{order.to_human}" }
+		place order: order, convert_size: true
+	end
+
+# just a wrapper to the Gateway-cancel-order method
+	def cancel order: 
+		Gateway.current.cancel_order order 
+	end
 
 	#returns an hash where portfolio_positions are grouped into Watchlists.
 	#
