@@ -229,7 +229,7 @@ class Contract
 					verify do | c |
 						my_req = ib.send_message :RequestOptionChainDefinition, con_id: c.con_id,
 																			symbol: c.symbol,
-																#			exchange: c.exchange, # BOX,CBOE',
+																			exchange: sec_type == :future ? c.exchange : "", # BOX,CBOE',
 																			sec_type: c[:sec_type]
 					end
 

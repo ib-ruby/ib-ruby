@@ -2,6 +2,8 @@ module IB
 	class Spread  < Bag
 		has_many :legs
 
+		using IBSupport
+
 =begin
 Parameters:   front: YYYMM(DD)
 							back: {n}w, {n}d or YYYYMM(DD)
@@ -60,11 +62,25 @@ Adds (or substracts) relative (back) measures to the front month, just passes ab
 		end
 
 
+
+		def serialize_rabbit
+			{ "Spread" => serialize( :option, :trading_class ),
+				'legs' => legs.map{ |y| y.serialize :option, :trading_class }, 'combo_legs' => combo_legs.map(&:serialize),
+				'misc' => [description]
+			}	
+		end
 		def add_leg contract, **leg_params
-				contract.verify do |c|
-					self.combo_legs << ComboLeg.new( c.attributes.slice( :con_id, :exchange ).merge(leg_params).merge( action: :buy ))
+			evaluated_contracts =  []
+			nr =	contract.verify do |c|
+					self.combo_legs << ComboLeg.new( c.attributes
+																					.slice( :con_id, :exchange )
+																					.merge( action: :buy )
+																					.merge(leg_params)
+																				 )
 					self.legs << c.essential
+					evaluated_contracts << c.essential
 			end
+			error "ambiguous contract-specification\n #{evaluated_contracts.map{|c| [c.to_human, c.trading_class].join(" / ")}.join("\n ")}" if nr > 1 
 			self  # return value to enable chaining
 
 
@@ -84,6 +100,23 @@ Adds (or substracts) relative (back) measures to the front month, just passes ab
 		# provide a negative con_id 
 		def con_id
 			-legs.map(&:con_id).sum
+		end
+
+
+		def self.build_from_json container
+			read_leg = ->(a) do 
+				  IB::ComboLeg.new :con_id => a.read_int,
+                           :ratio => a.read_int,
+                           :action => a.read_string,
+                           :exchange => a.read_string
+
+			end
+			object= self.new  container['Spread'].read_contract
+			object.legs = container['legs'].map{|x| IB::Contract.build x.read_contract}
+			object.combo_legs = container['combo_legs'].map{ |x| read_leg[ x ] } 
+			object.description = container['misc'].read_string
+			object
+
 		end
 	end
 

@@ -6,13 +6,16 @@ module IB
       extend Symbols
 
 			def self.contracts
-				@contracts.presence || super.merge(
-					stoxx_straddle: Straddle.new( IB::Option.new  symbol: :Estx50, 
-																			 strike: 3000, 
-																			 expiry: IB::Symbols::Futures.next_expiry ),
-				 stoxx_calendar: IB::Calendar.new( underlying: IB::Symbols::Index.stoxx, strike: 3000, back: '2m' ),															 
-				 stoxx_butterfly: IB::Butterfly.new( underlying: Symbols::Index.stoxx, strike: 3000, front: 2950, back: 3050 ),
-				 stoxx_vertical: IB::Vertical.new( underlying: IB::Symbols::Index.stoxx, sell: 2500, buy: 3000, right: :put ),
+
+				@contracts ||= { #super.merge(
+					stoxx_straddle: IB::Straddle.build( from: IB::Symbols::Index.stoxx, strike: 3000, 
+																					expiry: IB::Symbols::Futures.next_expiry, trading_class: 'OESX') ,
+				 stoxx_calendar: IB::Calendar.build( from: IB::Symbols::Index.stoxx, strike: 3000, back: '2m' ,
+																					 	expiry: IB::Symbols::Futures.next_expiry, trading_class: 'OESX'),															 
+#				 stoxx_butterfly: IB::Butterfly.make( underlying: Symbols::Index.stoxx, strike: 3000, front: 2950, back: 3050 ),
+				 stoxx_vertical: IB::Vertical.build( from: IB::Symbols::Index.stoxx, sell: 2500, buy: 3000, right: :put, 
+																							expiry: IB::Symbols::Futures.next_expiry, trading_class: 'OESX'),
+					zn_calendar: IB::Calendar.fabricate( IB::Symbols::Futures.zn, '3m' ),
 
 				 dbk_straddle: Bag.new( symbol: 'DBK', currency: 'EUR', exchange: 'DTB', combo_legs:
 												 [  ComboLeg.new( con_id: 270581032 , action: :buy, exchange: 'DTB', ratio: 1),   #DBK Dez20 2018 C 
@@ -40,7 +43,8 @@ module IB
 											ComboLeg.new( con_id: 47195961,  action: :sell, exchange: 'NYMEX', ratio: 1 ) ],  #BZ Dec'16 @NYMEX
 											description: ' WTI - Brent Spread (Dez. 2016)'
 																												 )
-				)
+				}
+			#	)
 			end
 
 		end

@@ -15,11 +15,13 @@ module IB
 #   IB::Calendar.fabricate  an_option, the_other_expiry
 			def fabricate master, the_other_expiry
 
-				error "Argument must be a IB::Option" unless master.is_a? IB::Option
+				error "Argument must be a IB::Future or IB::Option" unless master.is_a? IB::Future || master.is_a?( IB::Future )
 
 				initialize_spread( master ) do | the_spread |
 					the_spread.add_leg master, action: :buy
-					the_spread.add_leg IB::Contract.build( master.attributes.merge(expiry: the_other_expiry )), action: :sell
+
+					back = the_spread.transform_distance master.expiry, the_other_expiry
+					the_spread.add_leg IB::Contract.build( master.attributes.merge(expiry: back )), action: :sell
 					error "Initialisation of Legs failed" if the_spread.legs.size != 2
 					the_spread.description =  the_description( the_spread )
 				end
@@ -58,6 +60,8 @@ module IB
 															.slice( :currency, :symbol, :exchange)
 															.merge(defaults)
 															.merge( fields )
+					kind[:back] = the_spread.transform_distance kind[:front], kind[:back]
+					leg_prototype.sec_type = 'FOP' if underlying.is_a?(IB::Future)
 					the_spread.add_leg IB::Contract.build( leg_prototype.attributes.merge(expiry: kind[:front] )), action: :buy
 					the_spread.add_leg IB::Contract.build( leg_prototype.attributes.merge(expiry: kind[:back])), action: :sell
 					error "Initialisation of Legs failed" if the_spread.legs.size != 2

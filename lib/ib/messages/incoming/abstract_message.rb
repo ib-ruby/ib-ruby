@@ -135,8 +135,8 @@ module IBSupport
 				 expiry: read_string,
 				 strike: read_decimal,
 				 right: read_string,
-				 multiplier: read_int,
-				 primary_exchange: read_string,
+				 multiplier: read_int,		
+				 exchange: read_string,
 				 currency: read_string,
 				 local_symbol: read_string,
 				 trading_class: read_string }  # new Version 8

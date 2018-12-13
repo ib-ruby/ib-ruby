@@ -59,6 +59,7 @@ module IB
 															.slice( :currency, :symbol, :exchange)
 															.merge(defaults)
 															.merge( fields )
+					leg_prototype.sec_type = 'FOP' if underlying.is_a?(IB::Future)
 					the_spread.add_leg IB::Contract.build( leg_prototype.attributes.merge(strike: kind[:sell])), action: :sell
 					the_spread.add_leg IB::Contract.build( leg_prototype.attributes.merge(strike: kind[:buy] )), action: :buy
 					error "Initialisation of Legs failed" if the_spread.legs.size != 2

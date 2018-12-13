@@ -29,8 +29,14 @@ module IB
                                     :description => "German VDAX Volatility Index"),
 		     :vix => IB::Index.new(:symbol => "VIX",
                                     :description => "CBOE Volatility Index"),
-																		
-					      )
+				:volume => IB::Index.new( symbol: 'VOL-NYSE', exchange: 'NYSE',
+																	 description: "NYSE Volume Index" ),
+				:trin => IB::Index.new( symbol: 'TRIN-NYSE', exchange: 'NYSE',
+																   description: "NYSE TRIN (or arms) Index"),
+				:tick => IB::Index.new( symbol: 'TICK-NYSE', exchange: 'NYSE',
+																   description: "NYSE TICK Index"),
+				:a_d => IB::Index.new( symbol: 'AD-NYSE', exchange: 'NYSE',
+																	 description: "NYSE Advance Decline Index")	      )
       end
 
     end

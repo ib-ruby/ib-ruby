@@ -29,11 +29,44 @@ def butterfly symbol, expiry, right, *strikes
               :combo_legs => legs
 end
 
+def atm_option stock
+  # returns the ATM-Put-Option of the given stock
+  atm =  stock.atm_options
+	atm[atm.keys.at(1)].first
+
+end
+
 RSpec.shared_examples 'a valid Estx Combo' do
 
-		its( :sec_type ) { should eq :bag }
 		its( :exchange ) { should eq 'DTB' }
-		its( :symbol )   { should eq "Estx50" }
+		its( :symbol )   { should eq "ESTX50" }
 		its( :market_price )   { should be_a Numeric }
+end
+
+RSpec.shared_examples 'a valid ES-FUT Combo' do
+
+		its( :exchange ) { should eq 'GLOBEX' }
+		its( :symbol )   { should eq "ES" }
+		its( :market_price )   { should be_a Numeric }
+end
+RSpec.shared_examples 'a valid ZN-FUT Combo' do
+
+		its( :exchange ) { should eq 'ECBOT' }
+		its( :symbol )   { should eq "ZN" }
+		its( :market_price )   { should be_a Numeric }
+end
+
+RSpec.shared_examples 'a valid wfc-stock Combo' do
+
+		its( :exchange ) { should eq 'EDGX' }
+		its( :symbol )   { should eq "WFC" }
+		its( :market_price )   { should be_a Numeric }
+end
+
+RSpec.shared_examples 'a valid Spread' do
+		its( :sec_type ) { should eq :bag }
+		its( :legs ){ should be_a Array }
+
+	 
 end
 

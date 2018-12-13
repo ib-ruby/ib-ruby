@@ -61,6 +61,7 @@ module IB
 															.merge(defaults)
 															.merge( fields )
 															
+					leg_prototype.sec_type = 'FOP' if underlying.is_a?(IB::Future)
 					the_spread.add_leg IB::Contract.build leg_prototype.attributes.merge( right: :put, strike: kind[:p] )
 					the_spread.add_leg IB::Contract.build leg_prototype.attributes.merge( right: :call, strike: kind[:c] )
 					error "Initialisation of Legs failed" if the_spread.legs.size != 2

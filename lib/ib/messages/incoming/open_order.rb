@@ -9,7 +9,7 @@ module IB
 
                       [:contract, :contract], # read standard-contract 
 											# [ con_id, symbol,. sec_type, expiry, strike, right, multiplier,
-											# 	primary_exchange, currency, local_symbol, trading_class ] 
+											# 	exchange, currency, local_symbol, trading_class ] 
 
                       [:order, :action, :string],
                       [:order, :total_quantity, :decimal],
