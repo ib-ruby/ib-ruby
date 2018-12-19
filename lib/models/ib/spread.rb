@@ -69,14 +69,26 @@ Adds (or substracts) relative (back) measures to the front month, just passes ab
 				'misc' => [description]
 			}	
 		end
+
+		# adds a leg to any spread
+		#
+		# Parameter: 
+		#		contract:  Will be verified. Contract.essential is added to legs-array
+		#		action: :buy or :sell
+		#		weight:
+		#		ratio:
+		#		
+		#	Default:  action: :buy, 	weight: 1
+
 		def add_leg contract, **leg_params
 			evaluated_contracts =  []
 			nr =	contract.verify do |c|
 					self.combo_legs << ComboLeg.new( c.attributes
 																					.slice( :con_id, :exchange )
 																					.merge( action: :buy )
-																					.merge(leg_params)
+																					.merge( leg_params )
 																				 )
+					self.description = description + " added #{c.to_human}" rescue "Spread: #{c.to_human}"
 					self.legs << c.essential
 					evaluated_contracts << c.essential
 			end
@@ -86,7 +98,16 @@ Adds (or substracts) relative (back) measures to the front month, just passes ab
 
 		end
 
-
+		# removes the contract from the spread definition
+		#
+		def remove_leg contract
+			contract.verify do |c|
+				legs.delete_if { |x| x.con_id == c.con_id }
+				combo_legs.delete_if { |x| x.con_id == c.con_id }
+				self.description = description + " removed #{c.to_human}"
+			end
+			self
+		end
 
 
 		def essential

@@ -155,7 +155,7 @@ module IB
     end
 
     # serialize contract 
-    # con_id. sec_type, expiry, strike, right, multiplier exchange, currency, local_symbol
+    # con_id. sec_type, expiry, strike, right, multiplier, exchange, primary_exchange, currency, local_symbol
     # other fields on demand
     # acutal used by place_order, request_marketdata, request_market_depth, exercise_options
     def serialize_short *fields  # :nodoc:
@@ -179,6 +179,8 @@ module IB
       end
     end
 
+
+
     # This produces a string uniquely identifying this contract, in the format used
     # for command line arguments in the IB-Ruby examples. The format is:
     #
@@ -195,7 +197,7 @@ module IB
       serialize_long.join(":")
     end
 
-		def to_yaml
+		def  essential
 
 			self_attributes = [ :right, :sec_type]
 			the_attributes = [ :symbol , :con_id,   :exchange, 
@@ -204,11 +206,16 @@ module IB
 			the_hash= the_attributes.map{|x| y= attributes[x];  [x,y] if y.present?  }.compact.to_h
 			the_hash[:description] = @description if @description.present?
 			self.class.new   the_hash.merge( self_attributes.map{|x| y = self.send(x);  [x,y] unless y == :none}.compact.to_h )
+		end
+
+
+		def serialize_rabbit
+			{ self.class.to_s.split(":").last => serialize( :option, :trading_class ) }
+		end
+
+		def self.build_from_json container
 
 		end
-	
-		alias essential  to_yaml
-	
     # Contract comparison
 
     def == other  # :nodoc: 
