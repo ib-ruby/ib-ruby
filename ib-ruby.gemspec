@@ -19,7 +19,7 @@ Gem::Specification.new do |gem|
   gem.require_paths = ['lib']
 
   # Dependencies
-	gem.add_dependency 'activesupport'
+	gem.add_dependency 'activesupport', '>= 5.2'
 	gem.add_dependency 'activemodel'
   gem.add_dependency 'ox'
   gem.add_dependency 'bundler', '>= 1.1.16'

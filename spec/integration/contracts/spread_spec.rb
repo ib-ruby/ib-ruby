@@ -15,7 +15,7 @@ RSpec.describe "IB::Spread" do
   end
 
 
-	context "initialize by fabrication", focus: true do
+	context "initialize by fabrication" do
 	
 		subject{ the_spread }
 		it{ is_expected.to be_a IB::Bag }
@@ -23,7 +23,7 @@ RSpec.describe "IB::Spread" do
 			
 	end
 
-	context "serialize the spread", focus: true do 
+	context "serialize the spread" do 
 				subject { the_spread.serialize_rabbit }
 
 				its(:keys){ should eq ["Spread", "legs", "combo_legs", 'misc'] }
@@ -38,6 +38,24 @@ RSpec.describe "IB::Spread" do
 					expect( IB::Spread.build_from_json( JSON.parse( json_medium ))).to eq the_spread 
 				end
 
+	end
+
+	context "leg management"  do
+		subject { the_spread }
+
+		its( :legs ){ should have(2).elements }
+
+		it "add a leg" do
+		expect{ subject.add_leg( the_option  )  }.to  change{ subject.legs.size }.by(1)
+		end
+
+		it "remove a leg" do
+		# non existing leg
+		expect{ subject.remove_leg( the_option  )  }.not_to  change{ subject.legs.size }
+
+		subject.add_leg( the_option  ) 
+		expect{ subject.remove_leg( the_option  )  }.to  change{ subject.legs.size }.by(-1)
+		end
 	end
 
 end

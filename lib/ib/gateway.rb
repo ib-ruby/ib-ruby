@@ -251,13 +251,15 @@ Argument is either an order-object or a local_id
 
     # prepare Advisor-User hierachie
     initialize_managed_accounts if @gateway_parameter[:s_m_a]
-    initialize_alerts  if  @gateway_parameter[:s_a]
-    initialize_order_handling if@gateway_parameter[:s_o_m] || @gateway_parameter[:g_a_d] 
+    initialize_alerts if @gateway_parameter[:s_a]
+    initialize_order_handling if @gateway_parameter[:s_o_m] || @gateway_parameter[:g_a_d] 
     ## apply other initialisations which should apper before the connection as block
     ## i.e. after connection order-state events are fired if an open-order is pending
     ## a possible response is best defined before the connect-attempt is done
+		# ##  Attention
+		# ##  @accounts are not initialized yet
     if block_given? 
-      yield tws
+      yield self 
     
     end
   end

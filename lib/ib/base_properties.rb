@@ -1,6 +1,6 @@
 require 'active_model'
 require 'active_support/concern'
-require 'active_support/hash_with_indifferent_access'
+#require 'active_support/hash_with_indifferent_access'
 
 module IB
 

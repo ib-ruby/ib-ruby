@@ -82,8 +82,12 @@ module IB
            order.stock_range_lower || "",
            order.stock_range_upper || "",
            order.override_percentage_constraints || false,
-           order.volatility || "", #              Volatility orders
-           order[:volatility_type] || "", #       Volatility orders
+					 if order.volatility.present?
+           [ order.volatility , #              Volatility orders
+           order[:volatility_type] || 2 ] #     default: annual volatility
+						else
+						["",""]
+					 end,
            # Support for delta neutral orders with parameters
            if order.delta_neutral_order_type && order.delta_neutral_order_type != :none
              [order[:delta_neutral_order_type],
