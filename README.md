@@ -2,7 +2,6 @@
 
 Ruby Implementation of the Interactive Brokers Trader Workstation (TWS) API.
 
-![Screenshot](ib-ruby.png)
 ## SUMMARY:
 
 This is a pure Ruby implementation of Interactive Brokers API. It uses socket API directly. 
