@@ -135,7 +135,119 @@ module IB
           end
 
       TickSnapshotEnd = def_message 57, [:ticker_id, :int]
+=begin
+    def processTickByTickMsg(self, fields):
+        next(fields)
+        reqId = decode(int, fields)
+        tickType = decode(int, fields)
+        time = decode(int, fields)
 
+        if tickType == 0:
+            # None
+            pass
+        elif tickType == 1 or tickType == 2:
+            # Last or AllLast
+            price = decode(float, fields)
+            size = decode(int, fields)
+            mask = decode(int, fields)
+class TickAttribLast(Object):
+    def __init__(self):
+        self.pastLimit = False
+        self.unreported = False
+
+    def __str__(self):
+        return "PastLimit: %d, Unreported: %d" % (self.pastLimit, self.unreported)
+
+            tickAttribLast = TickAttribLast()
+            tickAttribLast.pastLimit = mask & 1 != 0
+            tickAttribLast.unreported = mask & 2 != 0
+            exchange = decode(str, fields)
+            specialConditions = decode(str, fields)
+
+            self.wrapper.tickByTickAllLast(reqId, tickType, time, price, size, tickAttribLast,
+                                           exchange, specialConditions)
+        elif tickType == 3:
+            # BidAsk
+            bidPrice = decode(float, fields)
+            askPrice = decode(float, fields)
+            bidSize = decode(int, fields)
+            askSize = decode(int, fields)
+            mask = decode(int, fields)
+	class TickAttribBidAsk(Object):
+    def __init__(self):
+        self.bidPastLow = False
+        self.askPastHigh = False
+
+    def __str__(self):
+        return "BidPastLow: %d, AskPastHigh: %d" % (self.bidPastLow, self.askPastHigh)
+
+
+            tickAttribBidAsk = TickAttribBidAsk()
+            tickAttribBidAsk.bidPastLow = mask & 1 != 0
+            tickAttribBidAsk.askPastHigh = mask & 2 != 0
+
+            self.wrapper.tickByTickBidAsk(reqId, time, bidPrice, askPrice, bidSize,
+                                          askSize, tickAttribBidAsk)
+        elif tickType == 4:
+            # MidPoint
+            midPoint = decode(float, fields)
+
+            self.wrapper.tickByTickMidPoint(reqId, time, midPoint)
+=end
+			TickByTick =  def_message 99, [:ticker_id, :int ],
+			[ :tick_type, :int],
+			[ :time, :int_date ]
+
+			class TickByTick
+				using IBSupport  # extended Array-Class  from abstract_message
+				
+				def resolve_mask
+					@data[:mask].present? ? [ @data[:mask] & 1 , @data[:mask] & 2  ] : [] 
+				end
+
+				def load
+					super
+					case @data[:tick_type ] 
+											when 0
+												# do nothing
+											when 1, 2 # Last, AllLast
+							load_map	[ :price, :decimal ]	,
+												[ :size, :int ] ,
+												[ :mask, :int ]	,  		
+												[ :exchange, :string ], 
+												[ :special_conditions, :string ]
+											when 3  # bid/ask
+							load_map  [ :bid_price, :decimal ],
+												[ :ask_spice, :decimal],
+												[ :bid_size, :int ],
+												[ :ask_size, :int] ,
+												[ :mask, :int  ]	
+											when 4
+							load_map	[ :mid_point, :decimal ]
+											end
+
+					@out_labels = case @data[ :tick_tpye ]
+											when 1, 2
+												[ "PastLimit", "Unreported" ]
+												when 3 
+												[ "BitPastLow", "BidPastHigh" ]
+												else
+													[]
+												end	
+				end 
+				def to_human
+					"< TickByTick:" + 	case @data[ :tick_type ]
+					when 1,2
+						"(Last) #{size} @ #{price} [#{exchange}] "
+					when 3
+						"(Bid/Ask) #{bid_size} @ #{bid_price} / #{ask_size } @ #{ask_price} "
+					when 4
+						"(Midpoint)  #{mid_point } "
+					else
+						""
+					end +  @out_labels.zip(resolv_mask).join( "/" )
+				end
+			end
     end # module Incoming
   end # module Messages
 end # module IB

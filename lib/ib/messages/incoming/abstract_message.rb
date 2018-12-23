@@ -179,7 +179,7 @@ module IB
 					else
 						@buffer = source
 						#  if uncommented, the raw-input from the tws is included in the logging
-#					Connection.logger.debug { "BUFFER :> #{buffer.inspect} "}
+					Connection.logger.debug { "BUFFER :> #{buffer.inspect} "}
 						@data = Hash.new
 						self.load
 					end
