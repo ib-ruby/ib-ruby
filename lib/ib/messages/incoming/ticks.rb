@@ -194,7 +194,7 @@ class TickAttribLast(Object):
 
             self.wrapper.tickByTickMidPoint(reqId, time, midPoint)
 =end
-			TickByTick =  def_message 99, [:ticker_id, :int ],
+			TickByTick =  def_message [99, 0], [:ticker_id, :int ],
 			[ :tick_type, :int],
 			[ :time, :int_date ]
 
@@ -245,7 +245,7 @@ class TickAttribLast(Object):
 						"(Midpoint)  #{mid_point } "
 					else
 						""
-					end +  @out_labels.zip(resolv_mask).join( "/" )
+					end +  @out_labels.zip(resolve_mask).join( "/" )
 				end
 			end
     end # module Incoming

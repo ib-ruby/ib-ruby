@@ -109,4 +109,4 @@ known_servers = {
 # 100 = enhanced handshake, msg length prefixes
 
 MIN_CLIENT_VER = 100
-MAX_CLIENT_VER = 137 #known_servers[:min_server_ver_d_peg_orders]
+MAX_CLIENT_VER = 140 #known_servers[:min_server_ver_d_peg_orders]

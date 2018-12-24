@@ -9,11 +9,11 @@ module IB
       RequestTickByTickData =
           def_message [0, 97], :request_id,
                       [:contract, :serialize_short, :primary_exchange],  # include primary exchange in request
-											:tick_type  # a string  supported: "Last", "AllLast", "BidAsk" or "MidPoint".
+											:tick_type,  # a string  supported: "Last", "AllLast", "BidAsk" or "MidPoint".
 
 									# ServerVersion  Version > 140  (actual supporting Version 137)
-										#	 :number_of_ticks,  # int
-										#	 :ignore_size      # bool
+											 :number_of_ticks,  # int
+											 :ignore_size      # bool
 											#
       CancelTickByTickData =
           def_message [0, 98], :request_id
