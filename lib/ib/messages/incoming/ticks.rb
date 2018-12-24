@@ -218,7 +218,7 @@ class TickAttribLast(Object):
 												[ :special_conditions, :string ]
 											when 3  # bid/ask
 							load_map  [ :bid_price, :decimal ],
-												[ :ask_spice, :decimal],
+												[ :ask_price, :decimal],
 												[ :bid_size, :int ],
 												[ :ask_size, :int] ,
 												[ :mask, :int  ]	
@@ -247,6 +247,19 @@ class TickAttribLast(Object):
 						""
 					end +  @out_labels.zip(resolve_mask).join( "/" )
 				end
+
+				[:price, :size, :mask, :exchange, :specialConditions, :bid_price, :ask_price, :bid_size, :ask_size, :mid_point].each do |name|
+					define_method name do
+						@data[name]
+					end
+				end
+			#	def method_missing method, *args
+			#		if @data.keys.include? method
+			#			@data[method]
+			#		else
+			#			error "method #{method} not known"
+			#		end
+			#	end
 			end
     end # module Incoming
   end # module Messages
