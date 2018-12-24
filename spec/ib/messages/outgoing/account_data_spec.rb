@@ -1,6 +1,6 @@
 require 'message_helper'
 
-describe IB::Messages::Outgoing , focus: true do
+describe IB::Messages::Outgoing  do
 
   context 'Newly instantiated Message' do
 
