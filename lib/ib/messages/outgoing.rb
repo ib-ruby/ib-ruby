@@ -335,6 +335,7 @@ module IB
       require 'ib/messages/outgoing/bar_requests'
       require 'ib/messages/outgoing/account_requests'
       require 'ib/messages/outgoing/request_marketdata'
+      require 'ib/messages/outgoing/request_tick_data'
 
     end # module Outgoing
   end # module Messages
@@ -427,4 +428,4 @@ __END__
      REQ_HISTORICAL_TICKS          = 96
      REQ_TICK_BY_TICK_DATA         = 97
      CANCEL_TICK_BY_TICK_DATA      = 98
-
+		 

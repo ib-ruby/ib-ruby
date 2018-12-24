@@ -110,3 +110,5 @@ known_servers = {
 
 MIN_CLIENT_VER = 100
 MAX_CLIENT_VER = 137 #known_servers[:min_server_ver_d_peg_orders]
+
+# imessages/outgoing/request_tick_Data is prepared for change to ver. 140 , its commented for now

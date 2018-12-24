@@ -8,7 +8,6 @@ require 'bundler/setup'
 require 'yaml'
 
 require 'logger'
-LogLevel = Logger::ERROR  # INFO
 #require File.expand_path(File.dirname(__FILE__) + "/../config/boot")
 
 require 'ib-ruby'
@@ -39,7 +38,7 @@ end # Array
   puts "Namespace is IB ! "
   puts
   puts '-'* 45
- 
+	include LogDev
   include IB
   require 'irb'
   client_id = ARGV[1] || 2000
@@ -53,21 +52,20 @@ end # Array
 						7497
 					end
   ARGV.clear
-  logger = Logger.new  STDOUT
-		logger.level = Logger::FATAL 
+  logger = default_logger #  Logger.new  STDOUT
 	
   ## The Block takes instructions which are executed  after initializing all instance-variables
   ## and prior to the connection-process
   ## Here we just subscribe to some events  
-  C =  Connection.new  client_id: client_id, port: port do |c|
+  C =  Connection.new  client_id: client_id, port: port  do |c|  # future use__ , optional_capacities: "+PACEAPI"  do |c|
 
     c.subscribe( :ContractData, :BondContractData) { |msg| logger.info { msg.contract.to_human } }
     c.subscribe( :Alert, :ContractDataEnd, :ManagedAccounts, :OrderStatus ) {| m| logger.info { m.to_human } }
     c.subscribe( :PortfolioValue, :AccountValue, :OrderStatus, :OpenOrderEnd, :ExecutionData ) {| m| logger.info { m.to_human }}
     c.subscribe :ManagedAccounts do  |msg|
         puts "------------------------------- Managed Accounts ----------------------------------"
-	puts "Detected Accounts: #{msg.accounts.account.join(' -- ')} " 
-	puts
+				puts "Detected Accounts: #{msg.accounts.account.join(' -- ')} " 
+				puts
     end
 
     c.subscribe( :OpenOrder){ |msg|  "Open Order detected and stored: C.received[:OpenOrders] " }

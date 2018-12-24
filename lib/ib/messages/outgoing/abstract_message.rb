@@ -25,9 +25,9 @@ module IB
         #
         def send_to socket
 	  ### debugging of Messages
-#	  puts "------sendto ---------(debugging output in outgoing/abstract_message)" 
-#	  puts socket.prepare_message( self.preprocess).inspect.split('\x00')[3..-1].inspect
-#	  puts "------sendto ---------"
+	 # puts "------sendto ---------(debugging output in outgoing/abstract_message)" 
+	 # puts socket.prepare_message( self.preprocess).inspect.split('\x00')[3..-1].inspect
+	 # puts "------sendto ---------"
           socket.send_messages self.preprocess #.each {|data| socket.write_data data}
         end
 
