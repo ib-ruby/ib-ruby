@@ -95,7 +95,7 @@ If only one Account is transmitted,  User and Advisor are identical.
 (returns an empty array if the array is not initialized, eg not connected)
 =end
   def active_accounts
-      @accounts.size > 1 ? @accounts[1..-1] : @accounts[0..0] 
+     @accounts.find_all{|x| x.user? && x.connected }
   end
 	
 =begin
@@ -124,7 +124,7 @@ The Advisor is always the first account
 (returns nil if the array is not initialized, eg not connected)
 =end
   def advisor
-    @accounts.first 
+    @accounts.first
   end
 
   def initialize  port: 4002, # 7497, 

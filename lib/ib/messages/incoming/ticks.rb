@@ -198,6 +198,8 @@ class TickAttribLast(Object):
 			[ :tick_type, :int],
 			[ :time, :int_date ]
 
+			## error messages: (10189) "Failed to request tick-by-tick data:Historical data request pacing violation"
+			#  
 			class TickByTick
 				using IBSupport  # extended Array-Class  from abstract_message
 				

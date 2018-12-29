@@ -115,8 +115,15 @@ module IB
 				return
 			end
 
-
+			begin
 			self.socket = IBSocket.open(@host, @port)
+			rescue Errno::ECONNREFUSED => e
+				logger.error "No TWS present anymore"
+				logger.error  e.message
+				logger error "trying to reconnect in 10 seconds"
+				sleep 10
+				retry
+			end
 
 			socket.initialising_handshake
 			socket.decode_message( socket.recieve_messages ) do  | the_message |
@@ -321,9 +328,16 @@ module IB
         error "Only able to send outgoing IB messages", :args
       end
       error   "Not able to send messages, IB not connected!"  unless connected?
+			begin
       @message_lock.synchronize do
       message.send_to socket
       end
+			rescue Errno::EPIPE
+				logger.error{ "Broken Pipe, trying to reconnect"  }
+				disconnect
+				connect
+				retry
+			end 
 			## return the transmitted message
 		  message.data[:request_id].presence || true
     end

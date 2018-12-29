@@ -471,7 +471,7 @@ Include conditions here
          tif == other.tif &&
          action == other.action &&
          order_type == other.order_type &&
-         quantity == other.quantity &&
+         total_quantity == other.total_quantity &&
          limit_price == other.limit_price  &&
          aux_price == other.aux_price &&
          origin == other.origin &&
@@ -492,8 +492,8 @@ Include conditions here
     end
 
     def to_human
-      "<Order: " + ((order_ref && order_ref != '') ? "#{order_ref} " : '') +
-        "#{self[:order_type]} #{self[:tif]} #{side} #{total_quantity} " + " @ "
+      "<Order: " + (order_ref.present? ? order_ref.to_s : '') +
+        "#{self[:order_type]} #{self[:tif]} #{action} #{total_quantity} " + " @ "
         (limit_price ? "#{limit_price} " : '') + "#{status} " +
         ((aux_price && aux_price != 0) ? "/#{aux_price}" : '') +
         "##{local_id}/#{perm_id} from #{client_id}" +

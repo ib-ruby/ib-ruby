@@ -209,13 +209,6 @@ module IB
 		end
 
 
-		def serialize_rabbit
-			{ self.class.to_s.split(":").last => serialize( :option, :trading_class ) }
-		end
-
-		def self.build_from_json container
-
-		end
     # Contract comparison
 
     def == other  # :nodoc: 
