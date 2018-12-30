@@ -12,3 +12,4 @@
   require 'models/ib/execution'
   require 'models/ib/bar'
 	require 'models/gw/contract' # provides Contract#Verify
+	require 'models/ib/condition'

@@ -334,7 +334,10 @@ module IB
            'm' => :isemm,
            'n' => :farmm,
            'y' => :specialist},
-
+# conditions
+		   :conjunction_connection => { 'o' =>  :or, 'a' => :and },
+			 :operator => { 1 => '>=' , 0 => '<=' }
+ 
   }.freeze
 
   # Obtain property code from given symbolic value:

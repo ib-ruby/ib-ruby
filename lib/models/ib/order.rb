@@ -285,9 +285,9 @@ module IB
     alias smart_combo_routing_params combo_params
 
 		# serialize is included for active_record compatibility
-    serialize :leg_prices
-    serialize :conditions
-    serialize :algo_params, Hash
+  #  serialize :leg_prices
+  #  serialize :conditions
+  #  serialize :algo_params, Hash
    # serialize :combo_params
  #   serialize :soft_dollar_tier_params, HashWithIndifferentAccess
     serialize :mics_options, Hash
@@ -404,15 +404,22 @@ module IB
       )  # closing of merge
         end
 
-def add_condition 
-end
 
-=begin
-todo
-Include conditions here
+=begin rdoc
+Format of serialisation
+
+	count of records
+	for each condition: conditiontype, condition-fields
 =end
 		def serialize_conditions
+			if conditions.empty?
 			0
+			else
+#  future plans
+#				conditions.each{|x| x.is_more = true}
+#				conditions.last.is_more = false
+			[ conditions.count ]	+ conditions.map( &:serialize )+  [ conditions_ignore_rth, conditions_cancel_order]
+			end
 		end
 
     def serialize_algo
@@ -441,7 +448,7 @@ Include conditions here
     # Placement
     def place contract, connection
       error "Unable to place order, next_local_id not known" unless connection.next_local_id
-			error "local_id present. Order is already placed" unless  local_id.nil?
+	#		error "local_id present. Order is already placed" unless  local_id.nil?
       self.client_id = connection.client_id
       self.local_id = connection.next_local_id
       connection.next_local_id += 1

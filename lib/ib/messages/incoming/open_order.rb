@@ -91,6 +91,10 @@ module IB
           order.status
         end
 
+				def conditions
+					order.conditions
+				end
+
         # Object accessors
 
         def order
@@ -223,21 +227,11 @@ module IB
 		      [:order, :reference_change_amount, :decimal ],
 		      [:order, :reference_exchange_id, :string ]
 		   ],
-                   [:order, :conditions, :hash],   # needs modification 
-		   
-		    ## todo : process conditions
-		    #394             if order.conditionsSize > 0:
-		    # 395                 order.conditions = []
-		    #  396                 for idxCond in range(order.conditionsSize):
-		    #   397                     order.conditionType = decode(int, fields)
-		    #    398                     condition = order_condition.Create(order.conditionType)
-		    #     399                     condition.decode(fields)
-		    #      400                     order.conditions.append(condition)
-		    #       401 
-		    #        402                 order.conditionsIgnoreRth = decode(bool, fields)
-		    #         403                 order.conditionsCancelOrder = decode(bool, fields)
-		    #          404 
-		    #          
+		    [:order , :conditions, :array, proc {  IB::OrderCondition.make_from( @buffer ) } ],
+				[proc { !@data[:order][:conditions].blank?  },
+						[:order, :conditions_ignore_rth, :bool],
+						[:order, :conditions_cancel_order,:bool]
+					], 
 		    [:order, :adjusted_order_type, :string],
 		    [:order, :trigger_price,  :decimal],
 		    [:order, :trail_stop_price,  :decimal],	    # cpp -source: Traillimit orders 

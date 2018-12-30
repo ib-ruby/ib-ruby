@@ -68,26 +68,22 @@ The parameter «order» is modified!
 			#·IB::Symbols are always qualified. They carry a description-field
 			qualified_contract = ->(c) { c.description.present? || (c.con_id.present?  &&  !c.con_id.to_i.zero?) }
 			contract.verify{|c| order.contract = c}  if contract.present?  # don't touch the parameter, get a new object
+			error "place order: ContractVerification failed. No con_id assigned" if order.contract.con_id.to_i.zero?
 			order.account =  account  # assign the account_id to the account-field of IB::Order
 			the_local_order_id =  nil
 			if qualified_contract[order.contract]
 				self.orders.update_or_create order, :order_ref
-				order.auto_adjust if auto_adjust 
-				if convert_size 
-					order.action =  order.total_quantity.to_i > 0  ? 	:buy  : :sell 
-					order.total_quantity =  order.total_quantity.to_i.abs
-				end
+				order.auto_adjust # if auto_adjust a
+			end
+			if convert_size 
+			 	order.action =  order.total_quantity.to_i > 0  ? 	:buy  : :sell 
+				order.total_quantity =  order.total_quantity.to_i.abs
+			end
 				# apply non_guarenteed and other stuff bound to the contract to order.
-				order.attributes.merge! order.contract.order_requirements unless order.contract.order_requirements.blank?
-				order.contract.verify do |the_contract|
-					  the_contract = Contract.new( con_id: order.contract.con_id, exchange: order.contract.exchange) if the_contract.con_id > 0 
-						the_local_order_id = order.place the_contract, Connection.current
-				end
-			else
-				error "No qualified Contract specified .::. #{order.to_human}"
+			order.attributes.merge! order.contract.order_requirements unless order.contract.order_requirements.blank?
 				#  con_id and exchange fully qualify a contract, no need to transmit other data
-			end 
-			the_local_order_id  # return_value
+			the_contract = Contract.new( con_id: order.contract.con_id, exchange: order.contract.exchange) 
+			the_local_order_id = order.place the_contract, Connection.current
 
 		end # place 
 

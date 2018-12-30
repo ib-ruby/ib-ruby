@@ -154,7 +154,7 @@ module IB
 	    order.pegged_change_amount,
 	    order.reference_change_amount,
 	    order.reference_exchange_id ] : [] ),
-		 order.serialize_conditions ,   # this is  actual a dummy method
+		 order.serialize_conditions ,   
 	   order.adjusted_order_type ,
 	   order.trigger_price ,
 	   order.limit_price_offset ,
