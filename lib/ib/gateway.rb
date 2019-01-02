@@ -219,11 +219,11 @@ Cancels one or multible orders
 Argument is either an order-object or a local_id
 =end
 
-  def cancel_order *order 
+  def cancel_order *orders 
 
     logger.tap{|l| l.progname =  'Gateway#CancelOrder' }
 	
-     order.each do |o|
+     orders.compact.each do |o|
 			 local_id = if o.is_a? (IB::Order)
 										logger.info{ "Cancelling #{o.to_human}" }
 										o.local_id
