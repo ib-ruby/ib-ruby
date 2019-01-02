@@ -5,12 +5,16 @@ module IB
       # Data format is { :id => int: local_id,
       #                  :contract => Contract,
       #                  :order => Order }
-      PlaceOrder = def_message [3, 45]
+      PlaceOrder = def_message [3, 45]				## ServerVersion > 145:  def_message[ 0,45 ]
+																							## server-version is not known at compilation time
+																							## Method call has to be replaced then
+																							## Max-Client_ver --> 144!!
 
       class PlaceOrder
-
+				
         def encode
-
+#					server_version = Connection.current.server_version
+					puts "Got "
           order = @data[:order]
           contract = @data[:contract]
 
@@ -154,7 +158,7 @@ module IB
 	    order.pegged_change_amount,
 	    order.reference_change_amount,
 	    order.reference_exchange_id ] : [] ),
-		 order.serialize_conditions ,   
+		 order.serialize_conditions ,   # serialisation of conditions outsourced to model file
 	   order.adjusted_order_type ,
 	   order.trigger_price ,
 	   order.limit_price_offset ,
@@ -162,15 +166,41 @@ module IB
 	   order.adjusted_stop_limit_price ,
 	   order.adjusted_trailing_amount ,
 	   order.adjustable_trailing_unit ,
-
-
 	   order.ext_operator ,		      # MIN_SERVER_VER_EXT_OPERATOR:
 		 order.soft_dollar_tier_name,
 		 order.soft_dollar_tier_value,
 		 order.soft_dollar_tier_display_name,
 #	   order.serialize_soft_dollar_tier() ,	      # MIN_SERVER_VER_SOFT_DOLLAR_TIER
-	   order.cash_qty ]		      # MIN_SERVER_VER_CASH_QTY
-	  
+	   order.cash_qty , 		      # MIN_SERVER_VER_CASH_QTY  /111)
+#			 if server_version >= 138   # :min_server_ver_decision_maker 
+				 [ order.mifid_2_decision_maker, order.mifid_2_decision_algo],
+#				end ,
+#				if server_version >= 139 # min_server_ver_mifid_execution  
+				[ order.mifid_2_execution_maker, order.mifid_2_execution_algo ],
+#				end,
+#				if server_version >= 141 # min_server_ver_auto_price_for_hedge 
+				order.dont_use_auto_price_for_hedge,
+#				end,
+#				if server_version >= 145 #	min_server_ver_order_container
+					order.is_O_ms_container,
+#				end,
+#				if server_version >= 148 # 	min_server_ver_d_peg_orders
+					order.discretionary_up_to_limit_price
+#				end ]
+				]
+#
+#
+#
+#	   if self.serverVersion() >= MIN_SERVER_VER_AUTO_PRICE_FOR_HEDGE:141
+#            flds.append(make_field(order.dontUseAutoPriceForHedge))
+#
+#        if self.serverVersion() >= MIN_SERVER_VER_ORDER_CONTAINER:145
+#            flds.append(make_field(order.isOmsContainer))
+#
+#        if self.serverVersion() >= MIN_SERVER_VER_D_PEG_ORDERS: 148
+#            flds.append(make_field(order.discretionaryUpToLimitPrice))
+#
+#  
 
         end
       end # PlaceOrder

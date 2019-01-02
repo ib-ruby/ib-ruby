@@ -73,8 +73,8 @@ describe IB::Messages::Incoming::OpenOrder do
 	    #instead of using a synthetic order, we build one from the response
 	    #of a previously placed Limit.order
    IB::Messages::Incoming::OpenOrder.new ["34",
-      "1313", "7516", "WFC", "STK", "", "0", "?", "", "NYSE", "USD", "WFC",
-     "WFC", "BUY", "100", "LMT", "49.13", "0.0", "GTC", "", "DU167349", "C", "0",
+      "1313", "7516", "WFC", "STK", "", "0", "?", "", "NYSE", "USD", "WFC", "WFC", "BUY", 
+			"100", "LMT", "49.13", "0.0", "GTC", "", "DU167349", "C", "0",
      "", "1111", "172323828", "0", "0", "0", "", "", "", "", "", "", "", "",
      "0", "", "", "0", "", "-1", "0", "", "", "", "", "", "", "0", "0", "0",
      "", "3", "0", "0", "", "0", "0", "", "0", "None", "", "0", "", "", "",
@@ -96,8 +96,8 @@ describe IB::Messages::Incoming::OpenOrder do
 	context 'degraded Message' do
 		subject do
 			IB::Messages::Incoming::OpenOrder.new ["34",
-					"1313", "7516", "WFC", "STK", "", "0", "?", "", "NYSE", "USD", "WFC",
-					"WFC", "BUY", "100", "LMT", "49.13", "0.0", "GTC", "", "DU167349", "C", "0",
+					"1313", "7516", "WFC", "STK", "", "0", "?", "", "NYSE", "USD", "WFC", "WFC",
+					"BUY", "100", "LMT", "49.13", "0.0", "GTC", "", "DU167349", "C", "0",
 					"", "1111", "172323828", "0", "0", "0", "", "", "", "", "", "", "", "",
 					"0", "", "", "0", "", "-1", "0", "", "", "", "", "", "", "0", "0", "0",
 					"", "3", "0", "0", "", "0", "0", "", "0", "None", "", "0", "", "", "",
@@ -108,6 +108,47 @@ describe IB::Messages::Incoming::OpenOrder do
 			expect { subject}.
 				to raise_error(IB::TransmissionError)
 		end
+	end
+
+	context 'stock order with conditions' do
+		subject do
+			IB::Messages::Incoming::OpenOrder.new ["34",
+				 "0", "37018770", "T", "STK", "", "0", "?", "", "SMART", "USD", "T", "T",
+				 "BUY", "100", "LMT", "24.0", "0.0", "GTC", "", "DU167348", "?", "0",
+				 "", "1111","1916223656", "0", "0", "0", "", "", "", "", "", "", "", "", "", "", "", "0",
+				 "", "-1", "0", "", "", "", "", "", "", "0", "0", "0", "", "3", "0", "0", "",
+				 "0", "0", "", "0", "None", "", "0", "", "", "", "?", "0", "0", "", "0", "0",
+				 "", "", "", "", "", "0", "0", "0", "", "", "", "", "0", "", "IB", "0", "0",
+				 "", "0", "0", "PreSubmitted", "1.7976931348623157E308",
+				 "1.7976931348623157E308", "1.7976931348623157E308", "", "", "", "", "", "0","0",
+				 "3",																									# count of conditions
+				 "1", "a", "1", "2456.0", "299552802", "GLOBEX", "4", # PriceCondition
+				 "4", "a", "1", "56",																	# MarginCondition
+				 "3", "a", "0", "20191218 10:41:39 GMT+01:00",				# TimeCondition
+				 "1", "0",																						# oth + cancel-order-flags
+				 "Default",			# adjusted_order_type
+				 "1.7976931348623157E308", "1.7976931348623157E308", "1.7976931348623157E308",	
+				 # trigger_price. trail_stop_price,  adjusted_stop_limit_price
+				 "1.7976931348623157E308", "1.7976931348623157E308", "1.7976931348623157E308", 
+				 # adjusted_trailing_amount, adjustrable_traling_unit, soft_dollar_tier_name, 
+				 "0", "", "", #  --value , --display_name, cash_quantity
+				 "", "1.7976931348623157E308"] # mifit2 dicisionmaker, -- decision_algo
+																			 # mifit2_executionmaker, --execution_algo  ### missing??
+		end
+
+
+		it 'contains conditions' do
+			expect( subject.conditions.size ).to eq 3
+			expect( subject.conditions.at(0)).to be_an  IB::PriceCondition 
+			expect( subject.conditions.at(1)).to be_an  IB::MarginCondition 
+			expect( subject.conditions.at(2)).to be_an  IB::TimeCondition 
+			expect( subject.order.conditions_ignore_rth ).to be_truthy 
+			expect( subject.order.adjusted_order_type ).to eq "Default" 
+		end
+
+
+    it_behaves_like 'OpenOrder message'
+		
 	end
   context 'received from IB' do
     before(:all) do
@@ -129,7 +170,7 @@ describe IB::Messages::Incoming::OpenOrder do
       c = subject.contract
       expect(c).to be_an IB::Contract
       expect(c.symbol).to eq  'WFC'
-      expect(c.exchange).to eq 'SMART'
+      expect(c.exchange).to eq 'NYSE'
     end
      
 
@@ -137,6 +178,7 @@ describe IB::Messages::Incoming::OpenOrder do
 		end
     #it 'has extended order_state attributes' do
   end
+
 
 
   context 'Combo recieved from IB' do

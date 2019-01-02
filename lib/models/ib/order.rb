@@ -237,8 +237,10 @@ module IB
 			# decimal : The native cash quantity
 			:mifid_2_decision_maker,
 		  :mifid_2_decision_algo,
-		  :mifid_2_execution_trader,
-			:mifid_2_execution_algo
+		  :mifid_2_execution_maker,
+			:mifid_2_execution_algo,
+			:dont_use_auto_price_for_hedge,
+			:discretionary_up_to_limit_price
 
     # Properties with complex processing logics
     prop :tif, #  String: Time in Force (time to market): DAY/GAT/GTD/GTC/IOC
@@ -264,7 +266,8 @@ module IB
       :opt_out_smart_routing => :bool, # Australian exchange only, default false
       :open_close => PROPS[:open_close], # Originally String: O=Open, C=Close ()
       # for ComboLeg compatibility: SAME = 0; OPEN = 1; CLOSE = 2; UNKNOWN = 3;
-      [:side, :action] => PROPS[:side] # String: Action/side: BUY/SELL/SSHORT/SSHORTX
+      [:side, :action] => PROPS[:side], # String: Action/side: BUY/SELL/SSHORT/SSHORTX
+			:is_O_ms_container => :bool
 
     prop :placed_at,
       :modified_at,
@@ -415,9 +418,6 @@ Format of serialisation
 			if conditions.empty?
 			0
 			else
-#  future plans
-#				conditions.each{|x| x.is_more = true}
-#				conditions.last.is_more = false
 			[ conditions.count ]	+ conditions.map( &:serialize )+  [ conditions_ignore_rth, conditions_cancel_order]
 			end
 		end

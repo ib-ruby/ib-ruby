@@ -121,4 +121,49 @@ describe 'Order placement'  do # :connected => true, :integration => true do
 
 		end
 	end # Off-market limit
+
+	context 'order with conditions', focus: true  do
+		before(:all) do
+			ib = IB::Connection.current
+
+			@initial_local_id = ib.next_local_id
+			@local_id = place_the_order  do  | market_price |
+				
+				condition1 =  IB::MarginCondition.new percent: 45, operator: '<='
+				condition2 =  IB::PriceCondition.fabricate IB::Symbols::Futures.es, "<=", 2600 
+
+				IB::Limit.order action: :buy, size: 100,  
+					conditions: [condition1, condition2],
+					conditions_cancel_order: true ,
+				:limit_price => market_price - 1, # Set acceptable price
+				account: ACCOUNT
+			end
+		end
+
+		it 'changes client`s next_local_id' do
+			expect( IB::Connection.current.next_local_id ).to eq @initial_local_id +1
+		end
+
+		it { expect( IB::Connection.current.received[:OpenOrder]).to  have_at_least(1).open_order_message }
+#		it "display order_stauts" do
+#			puts  IB::Connection.current.received[:OrderStatus].inspect
+#		end
+		it { expect( IB::Connection.current.received[:OrderStatus]).to have_exactly(1).status_messages }
+		context IB::Order do
+			subject { IB::Connection.current.received[:OpenOrder].last.order }
+			it_behaves_like 'Placed Order'
+
+			it "contains proper conditions" do
+				expect( subject.conditions ).to be_an Array
+				expect( subject.conditions ).to have(2).conditions
+				expect( subject.conditions.first ).to be_an IB::MarginCondition
+				expect( subject.conditions.last ).to be_an IB::PriceCondition
+				expect( subject.conditions_cancel_order ).to be_truthy
+			end
+		end
+
+	end
+
+
+	context ''
 end # Orders

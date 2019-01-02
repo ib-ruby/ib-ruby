@@ -7,7 +7,9 @@ module IB
 		prop :operator,									# 1 ->  " >= " , 0 -> " <= "   see /lib/ib/constants # 338f
 				:conjunction_connection,		# "o" -> or  "a"
 				:contract
-
+		def self.verify_contract_if_necessary c
+  	 c.con_id.to_i.zero? ||( c.primary_exchange.blank? && c.exchange.blank?) ? c.verify! : c 
+		end
 		def condition_type
 			error "condition_type method is abstract"
 		end
@@ -15,7 +17,9 @@ module IB
 			 super.merge(  operator: ">=" , conjunction_connection: :and )
 		end
 
-			
+		def serialize_contract_by_con_id
+			[ contract.con_id , contract.primary_exchange.presence || contract.exchange ]
+		end
 		
 		def serialize
 			[ condition_type,  self[:conjunction_connection] ]
@@ -50,16 +54,15 @@ module IB
 			end
 
 		def serialize
-		super << self[:operator] << price << contract.con_id << contract.primary_exchange  <<  self[:trigger_method] 
+		super << self[:operator] << price << serialize_contract_by_con_id <<  self[:trigger_method] 
 		end
 
 		# dsl:   PriceCondition.fabricate some_contract, ">=", 500
 		def self.fabricate contract, operator, price
-
-			contract.verify! if contract.con_id.to_i.zero? || contract.primary_exchange.empty?
+			error "Condition Operator has to be \">=\" or \"<=\" " unless ["<=", ">="].include? operator 
 			self.new	operator: operator,
 								price: price.to_i,
-								contract: contract
+								contract: verify_contract_if_necessary( contract )
 		end
 
 	end
@@ -120,12 +123,11 @@ module IB
 		end
 
 		def serialize
-			super << contract[:sec_type] << contract.primary_exchange << contract.symbol
+			super << contract[:sec_type] <<(contract.primary_exchange.presence || contract.exchange) << contract.symbol
 		end
 	
-		def self.fabricate c
-			c.verify! if c.con_id.to_i.zero?|| contract.primary_exchange.empty?
-			self.new contract: c
+		def self.fabricate contract
+			self.new contract: verify_contract_if_necessary( contract )
 		end
 
 	end
@@ -150,11 +152,12 @@ module IB
 		super << self[:operator] << percent 
 		end
 		def self.fabricate operator,  percent
+			error "Condition Operator has to be \">=\" or \"<=\" " unless ["<=", ">="].include? operator 
 			self.new operator: operator, 
 							percent: percent
 		end
 	end
-
+	
 
 	class VolumeCondition < OrderCondition
 		using IBSupport   # refine Array-method for decoding of IB-Messages
@@ -176,15 +179,16 @@ module IB
 		end
 
 		def serialize
-			super << self[:operator] << volume << contract.con_id << contract.primary_exchange 
+
+			super << self[:operator] << volume <<  serialize_contract_by.con_id 
 		end
 
 		# dsl:   VolumeCondition.fabricate some_contract, ">=", 50000
 		def self.fabricate contract, operator, volume
-			contract.verify! if contract.con_id.to_i.zero? || contract.primary_exchange.empty?
+			error "Condition Operator has to be \">=\" or \"<=\" " unless ["<=", ">="].include? operator 
 			self.new	operator: operator,
 								volume: volume,
-								contract: contract
+								contract: verify_contract_if_necessary( contract )
 		end
 	end
 
@@ -207,14 +211,15 @@ module IB
 		end
 
 		def serialize
-			super << self[:operator] << percent_change  << contract.con_id << contract.primary_exchange
+			super << self[:operator] << percent_change  << serialize_contract_by_con_id 
+
 		end
 		# dsl:   PercentChangeCondition.fabricate some_contract, ">=", "5%"
 		def self.fabricate contract, operator, change
-				contract.verify! if contract.con_id.to_i.zero? || contract.primary_exchange.empty?
+			error "Condition Operator has to be \">=\" or \"<=\" " unless ["<=", ">="].include? operator 
 				self.new	operator: operator,
 									percent_change: change.to_i,
-									contract: contract
+									contract: verify_contract_if_necessary( contract )
 		end
 	end
 	class OrderCondition

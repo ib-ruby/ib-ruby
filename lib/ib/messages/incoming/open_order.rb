@@ -243,19 +243,14 @@ module IB
 		    [:order, :soft_dollar_tier_value, :string_not_null],
 		    [:order, :soft_dollar_tier_display_name,  :string_not_null],
 		    [:order, :cash_qty,  :decimal],
-				[:order, :mifid_2_decision_maker, :string_not_null ],
-				[:order, :mifid_2_decision_algo, :string_not_null ],
-				[:order, :mifid_2_execution_trader, :string ],
-				[:order, :mifid_2_execution_algo, :string_not_null ]
+				[:order, :mifid_2_decision_maker, :string_not_null ],   ## correct appearance of fields below
+				[:order, :mifid_2_decision_algo, :string_not_null ],		##  is not tested yet
+				[:order, :mifid_2_execution_maker, :string ],
+				[:order, :mifid_2_execution_algo, :string_not_null ],
+				[:order, :dont_use_auto_price_for_hedge, :string ],
+				[:order, :is_O_ms_container, :bool ],
+				[ :order, :discretionary_up_to_limit_price, :decimal ]
 
-#		     if self.serverVersion() >= MIN_SERVER_VER_DECISION_MAKER:
-#            flds.append(make_field( order.mifid2DecisionMaker))
-#            flds.append(make_field( order.mifid2DecisionAlgo))
-#
-#        if self.serverVersion() >= MIN_SERVER_VER_MIFID_EXECUTION:
-#            flds.append(make_field( order.mifid2ExecutionTrader))
-#            flds.append(make_field( order.mifid2ExecutionAlgo))
-#
     
         end
 
