@@ -42,6 +42,12 @@ module IB
 
 		def order **fields
 
+			# special treatment of size:  positive numbers --> buy order, negative: sell 
+			if fields[:size].present? && fields[:action].blank?
+				error "Size = 0 is not possible" if fields[:size].zero?
+				fields[:action] = fields[:size] >0 ? :buy  : :sell
+				fields[:size] = fields[:size].abs
+			end
 			# change aliases  to the original. We are modifying the fields-hash.
 			fields.keys.each{|x| fields[aliases.key(x)] = fields.delete(x) if aliases.has_value?(x)}
 			# inlcude defaults (arguments override defaults)

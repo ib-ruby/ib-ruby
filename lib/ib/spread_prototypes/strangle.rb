@@ -6,7 +6,7 @@ module IB
       class << self
 
 
-#  Fabricate a Straddle from a Master-Option
+#  Fabricate a Strangle from a Master-Option
 #  -----------------------------------------
 #  If one Leg is known, the other is build by flipping the right and adjusting the strike by distance
 #

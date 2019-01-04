@@ -68,6 +68,7 @@ The parameter «order» is modified!
 			#·IB::Symbols are always qualified. They carry a description-field
 			qualified_contract = ->(c) { c.description.present? || (c.con_id.present?  &&  !c.con_id.to_i.zero?) }
 			contract.verify{|c| order.contract = c}  if contract.present?  # don't touch the parameter, get a new object
+			## sending of plain vanilla IB::Bags will fail using account.place, unless a (negative) con-id is provided!
 			error "place order: ContractVerification failed. No con_id assigned" if order.contract.con_id.to_i.zero?
 			order.account =  account  # assign the account_id to the account-field of IB::Order
 			the_local_order_id =  nil
@@ -82,7 +83,7 @@ The parameter «order» is modified!
 				# apply non_guarenteed and other stuff bound to the contract to order.
 			order.attributes.merge! order.contract.order_requirements unless order.contract.order_requirements.blank?
 				#  con_id and exchange fully qualify a contract, no need to transmit other data
-			the_contract = Contract.new( con_id: order.contract.con_id, exchange: order.contract.exchange) 
+			the_contract = order.contract.con_id >0 ? Contract.new( con_id: order.contract.con_id, exchange: order.contract.exchange) : nil 
 			the_local_order_id = order.place the_contract, Connection.current
 
 		end # place 
@@ -121,7 +122,7 @@ This has to be done manualy in the provided block
 				order = yield order if block_given?  # specify modifications in the block
 			end
 			if order.is_a? IB::Order
-				Connection.current.modify_order order, order.contract 
+				order.modify
 			else
 				error "No suitable IB::Order provided/detected. Instead: #{order.inspect}" 
 			end  
@@ -140,17 +141,22 @@ This has to be done manualy in the provided block
 # closes the contract by submitting an appropiate order
 	# the action- and total_amount attributes of the assigned order are overwritten.
 	# returns the order transmitted
+	def close order:, contract: nil, reverse: false,  **args_which_are_ignored
 
-	def close order:, contract: nil, **args_which_are_ignoreda
-
-		contract_size = ->(c) {v= portfolio_values.detect{|x| x.contract == c};  v.present? ? v.position.to_i : 0} 
+		contract_size = ->(c) do			# note: portfolio_value.position is either positiv or negativ
+			if c.con_id <0 # Spread
+				p = portfolio_values.detect{|p| p.contract.con_id ==c.legs.first.con_id}.position.to_i
+				p / c.combo_legs.first.weight  rescue 0  # rescue: if p.zero?
+			else
+				portfolio_values.detect{|x| x.contract.con_id == c.con_id} || 0
+			end
+		end
 
 		contract.verify{|c| order.contract = c}  if contract.present?  # don't touch the parameter, get a new object
 		error "Cannot transmit the order – No Contract given " unless order.contract.is_a?(IB::Contract)
-		error "Cannot close the position – not found " unless contracts.detect{|c| c == order.contract}
-		error "Something strange happend: Contract not listed in PortfolioPositions " if contract_size[order.contract].zero?  
-
 		order.total_quantity = -contract_size[order.contract]
+		error "total_quantity is zero" if order.total_quantity.zero?
+		order.total_quantity = order.total_quantity * 2 if reverse
 		order.action = nil
 		logger.info { "Order modified to close position: #{order.to_human}" }
 		place order: order, convert_size: true
@@ -166,6 +172,7 @@ This has to be done manualy in the provided block
 	# Watchlist => [  contract => [ portfoliopositon] , ... ] ]
 	#
 		def organize_portfolio_positions   the_watchlists
+		  the_watchlists = [ the_watchlists ] unless the_watchlists.is_a?(Array)
 			self.focuses = portfolio_values.map do | pw |
 				z=	the_watchlists.map do | w |		
 				ref_con_id = pw.contract.con_id
@@ -186,6 +193,7 @@ This has to be done manualy in the provided block
 
 		## returns the contract definition of an complex portfolio-position detected in the account
 		def complex_position con_id
+		con_id = con_id.con_id	if con_id.is_a?(IB::Contract)
 			focuses.map{|x,y| y.detect{|x,y| x.con_id.to_i==  con_id.to_i} }.compact.flatten.first
 		end
 	end # class

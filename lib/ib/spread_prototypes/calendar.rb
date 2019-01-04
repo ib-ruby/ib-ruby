@@ -19,7 +19,8 @@ module IB
 
 				initialize_spread( master ) do | the_spread |
 					the_spread.add_leg master, action: :buy
-
+					
+					the_other_expiry =  the_other_expiry.values.first if the_other_expiry.is_a?(Hash)
 					back = the_spread.transform_distance master.expiry, the_other_expiry
 					the_spread.add_leg IB::Contract.build( master.attributes.merge(expiry: back )), action: :sell
 					error "Initialisation of Legs failed" if the_spread.legs.size != 2

@@ -14,7 +14,6 @@ module IB
 				
         def encode
 #					server_version = Connection.current.server_version
-					puts "Got "
           order = @data[:order]
           contract = @data[:contract]
 
@@ -24,8 +23,7 @@ module IB
 
            # main order fields
            (order.side == :short ? 'SSHORT' : order.side == :short_exempt ? 'SSHORTX' : order.side.to_sup),
-#           order.quantity,
-	   order.total_quantity,
+					 order.total_quantity,
            order[:order_type], # Internal code, 'LMT' instead of :limit
            order.limit_price,		
            order.aux_price,

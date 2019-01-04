@@ -123,6 +123,11 @@ Adds (or substracts) relative (back) measures to the front month, just passes ab
 			-legs.map(&:con_id).sum
 		end
 
+#  optional: specify default order prarmeters for all spreads
+#		def order_requirements
+#		 super.merge		symbol: symbol
+#		end
+
 
 		def self.build_from_json container
 			read_leg = ->(a) do 

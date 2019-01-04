@@ -446,19 +446,22 @@ Format of serialisation
       ""		  # Vers. 70  
     end
     # Placement
-    def place contract, connection
+    def place the_contract=nil, connection=nil
       error "Unable to place order, next_local_id not known" unless connection.next_local_id
 	#		error "local_id present. Order is already placed" unless  local_id.nil?
+			connection ||= IB::Connection.current
       self.client_id = connection.client_id
       self.local_id = connection.next_local_id
       connection.next_local_id += 1
       self.placed_at = Time.now
-      modify contract, connection, self.placed_at
+      modify the_contract, connection, self.placed_at
     end
 
     # Modify Order (convenience wrapper for send_message :PlaceOrder). Returns local_id.
-    def modify contract, connection, time=Time.now
+    def modify the_contract=nil, connection=nil, time=Time.now
 			error "Unable to modify order; local_id not specified" if local_id.nil?
+			self.contract =  the_contract unless the_contract.nil?
+			connection ||= IB::Connection.current
       self.modified_at = time
       connection.send_message :PlaceOrder,
         :order => self,

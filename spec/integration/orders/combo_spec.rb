@@ -16,7 +16,7 @@ RSpec.describe "What IF  Order"   do
 
 				ib.clear_received   # just in case ...
 
-				the_contract = butterfly 'GOOG', '201901', 'CALL', 1130, 1150, 1170 
+				the_contract = butterfly 'GOOG', '202001', 'CALL', 1130, 1150, 1170 
 				@local_id_placed = place_the_order( contract: the_contract ) do | last_price |
 					  IB::Limit.order( action: :buy,
 					                  order_ref:  'What_if',
