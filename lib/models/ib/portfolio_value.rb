@@ -39,10 +39,10 @@ class PortfolioValue < IB::Model
 
 			"<PortfolioValue: "+
 		  the_account  +
-      "Pos=#{ position.to_i } @ #{market_price.round(3)};" +
-      "Value=#{market_value.round(2)};PNL=" + 
-			( unrealized_pnl.zero? ? "": "#{unrealized_pnl} unrealized;") +
-      ( realized_pnl.zero? ? "" : "#{realized_pnl} realized;>" ) + 
+      "Pos=#{ position.to_i } @ #{market_price.to_f.round(3)};" +
+      "Value=#{market_value.to_f.round(2)};PNL=" + 
+			( unrealized_pnl.to_i.zero? ? "": "#{unrealized_pnl} unrealized;") +
+      ( realized_pnl.to_i.zero? ? "" : "#{realized_pnl} realized;>" ) + 
 			contract.to_human
     end
     alias to_s to_human

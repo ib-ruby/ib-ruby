@@ -32,6 +32,7 @@ raises an IB::Error if less then 100 items are recieved-
 		@account_data_subscription ||=   subscribe_account_updates
 
 		accounts =  active_accounts if accounts.empty?
+		logger.warn{ "No active account present. AccountData are NOT requested" }
 		# Account-infos have to be requested sequencially. 
 		# subsequent (parallel) calls kill the former once on the tws-server-side
 		# In addition, there is no need to cancel the subscription of an request, as a new
