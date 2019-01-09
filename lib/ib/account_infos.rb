@@ -56,8 +56,6 @@ raises an IB::Error if less then 100 items are recieved-
 			end
 			send_message :RequestAccountData, subscribe: false  ## do this only once
 		end
-
-		logger.debug { "Accountdata successfully read" }
 	end
 
 

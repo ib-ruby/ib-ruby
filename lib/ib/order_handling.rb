@@ -44,8 +44,7 @@ Everything is carried out in a mutex-synchonized environment
 					# first update the contracts
 					# make open order equal to IB::Spreads (include negativ con_id)
 					msg.contract[:con_id] = -msg.contract.combo_legs.map{|y| y.con_id}.sum  if msg.contract.is_a? IB::Bag
-#						msg.contract.orders.update_or_create msg.order, :perm_id
-					puts "con_id  #{msg.contract.con_id}"
+					msg.contract.orders.update_or_create msg.order, :perm_id
 						this_account.contracts.first_or_create msg.contract, :con_id
 					# now save the order-record
 						msg.order.contract = msg.contract

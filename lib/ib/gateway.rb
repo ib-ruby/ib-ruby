@@ -149,7 +149,7 @@ The Advisor is always the first account
 		@connection_parameter = { received: serial_array, port: port, host: host, connect: false, logger: logger, client_id: client_id }
     
 		@account_lock = Mutex.new
-    
+		@watchlists = watchlists
 		@gateway_parameter = { s_m_a: subscribe_managed_accounts, 
 													 s_a: subscribe_alerts,
 													 s_o_m: subscribe_order_messages,
@@ -175,6 +175,10 @@ The Advisor is always the first account
 
   end
 
+	def active_watchlists
+		@watchlists
+	end
+	
   def get_host
     "#{@connection_parameter[:host]}: #{@connection_parameter[:port] }"
   end
