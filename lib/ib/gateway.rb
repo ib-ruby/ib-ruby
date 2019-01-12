@@ -383,7 +383,7 @@ Its always active.
 				end
 
       else
-				logger.info {"already #{@accounts.size} initialized "}
+				logger.info {"already #{@accounts.size} accounts initialized "}
 				@accounts.each{|x| x.update_attribute :connected ,  true }
 			end # if
 		end # subscribe do
@@ -420,7 +420,39 @@ Its always active.
 		logger.info "Connection closed" 
 	end
 
-
+# Handy method to ensure that a connection is established and active.
+#
+# The connection is resetted on the IB-side at least once a day. Then the 
+# IB-Ruby-Connection has to be reestablished, too. 
+# 
+# check_connection reconnects if nesessary and returns false if the connection is lost. 
+# 
+# It delays the process by 6 ms (150 MBit Cable connection)
+#
+#  a =  Time.now; G.check_connection; b= Time.now ;b-a
+#   => 0.00066005
+# 
+	def check_connection
+				answer = nil; count=0
+				z= tws.subscribe( :CurrentTime ) { answer = true }
+				while (answer.nil?)
+					begin
+						tws.send_message(:RequestCurrentTime)												# 10 ms  ##
+						i=0; loop{ break if answer || i > 40; i+=1; sleep 0.0001}
+					rescue IOError  # connection lost
+						count = 6
+					rescue IB::Error # not connected
+						reconnect 
+						count +=1
+						sleep 1
+						retry if count <= 5
+					end
+					count +=1
+					break if count > 5
+				end
+				tws.unsubscribe z
+			count < 5  && answer #  return value
+	end
 
 private
 

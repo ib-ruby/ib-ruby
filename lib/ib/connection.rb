@@ -120,9 +120,10 @@ module IB
 			rescue Errno::ECONNREFUSED => e
 				logger.error "No TWS present anymore"
 				logger.error  e.message
-				logger error "trying to reconnect in 10 seconds"
-				sleep 10
-				retry
+				@connected = false
+		#		logger error "trying to reconnect in 10 seconds"
+		#		sleep 10
+		#		retry
 			end
 
 			socket.initialising_handshake

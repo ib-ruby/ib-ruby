@@ -142,7 +142,7 @@ This has to be done manualy in the provided block
 	# the action- and total_amount attributes of the assigned order are overwritten.
 	# returns the order transmitted
 	def close order:, contract: nil, reverse: false,  **args_which_are_ignored
-
+		error "must only be called after initializing portfolio_values "  if porfolio_values.blank?
 		contract_size = ->(c) do			# note: portfolio_value.position is either positiv or negativ
 			if c.con_id <0 # Spread
 				p = portfolio_values.detect{|p| p.contract.con_id ==c.legs.first.con_id}.position.to_i
