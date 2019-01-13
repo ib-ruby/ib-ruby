@@ -115,20 +115,10 @@ module IB
 				return
 			end
 
-			begin
-			self.socket = IBSocket.open(@host, @port)
-			rescue Errno::ECONNREFUSED => e
-				logger.error "No TWS present anymore"
-				logger.error  e.message
-				@connected = false
-		#		logger error "trying to reconnect in 10 seconds"
-		#		sleep 10
-		#		retry
-			end
-
+			self.socket = IBSocket.open(@host, @port)  # raises  Errno::ECONNREFUSED  if no connection is possible
 			socket.initialising_handshake
 			socket.decode_message( socket.recieve_messages ) do  | the_message |
-#				logger.info{ "TheMessage :: #{the_message.inspect}" }
+				#				logger.info{ "TheMessage :: #{the_message.inspect}" }
 				@server_version =  the_message.shift.to_i
 				error "ServerVersion does not match  #{@server_version} <--> #{MAX_CLIENT_VER}" if @server_version != MAX_CLIENT_VER
 
@@ -144,7 +134,7 @@ module IB
 			# Parameters borrowed from the python client
 			start_api = 71
 			version = 2
-#			optcap = @optional_capacities.empty? ? "" : " "+ @optional_capacities 
+			#			optcap = @optional_capacities.empty? ? "" : " "+ @optional_capacities 
 			socket.send_messages start_api, version, @client_id  , @optional_capacities 
 			@connected = true
 			logger.info { "Connected to server, version: #{@server_version},\n connection time: " +
