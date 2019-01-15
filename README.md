@@ -92,7 +92,7 @@ To play around, a [Console-App]( https://github.com/ib-ruby/ib-ruby/wiki/Console
 ```
 
 After startup, `IB-Ruby` is running, the Connection ist active and accessible via the global Constant »`C`».
-Any outgoing message to send, any subscription to incomming messages can be initialized. (Details in [Wiki(Console)](https://github.com/ib-ruby/ib-ruby/wiki/Console))
+Any outgoing message to send, any subscription to incoming messages can be initialized. (Details in [Wiki(Console)](https://github.com/ib-ruby/ib-ruby/wiki/Console))
 
 By default, any response from TWS is stored in the `Connection.received`-Hash.
 It is easily inspected in the [Console](https://github.com/ib-ruby/ib-ruby/wiki/Console)
