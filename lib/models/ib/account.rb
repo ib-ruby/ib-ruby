@@ -38,10 +38,10 @@ module IB
 		end
 
 		# Setze Account connected/disconnected und undate!
-		def connected!
+		def connect!
 			update_attribute :connected , true
 		end # connected!
-		def disconnected!
+		def disconnect!
 			update_attribute :connected , false
 		end # disconnected!
 

@@ -71,7 +71,7 @@ Everything is carried out in a mutex-synchonized environment
 					end  # branch
 				end # block
 
-				logger.info {  "Execution-Record not assigned-- #{msg.execution.to_human} ----------" } if success.nil?
+				logger.error {  "Execution-Record not assigned-- #{msg.execution.to_human} ----------" } if success.nil?
 
 			end  # case msg.code
 		end # do
@@ -123,6 +123,17 @@ module IB
 				IB::Gateway.logger.error{"Alert 202: The deleted order was not registered: local_id #{msg.error_id}"}
 			end
 
+		end
+
+
+		def self.alert_2102
+			# Connectivity between IB and Trader Workstation has been restored - data maintained.
+			sleep 0.1  #  no need to wait too long.
+			if IB::Gateway.current.check_connection
+				IB::Gateway.logger.debug { "Alert 2102: Connection stable" }
+			else
+				IB::Gateway.current.reconnect
+			end
 		end
 		class << self
 =begin

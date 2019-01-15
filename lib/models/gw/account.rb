@@ -74,7 +74,7 @@ The parameter «order» is modified!
 			the_local_order_id =  nil
 			if qualified_contract[order.contract]
 				self.orders.update_or_create order, :order_ref
-				order.auto_adjust # if auto_adjust a
+				order.auto_adjust # if auto_adjust  /defined in lib/order_handling
 			end
 			if convert_size 
 			 	order.action =  order.total_quantity.to_i > 0  ? 	:buy  : :sell 
@@ -84,7 +84,7 @@ The parameter «order» is modified!
 			order.attributes.merge! order.contract.order_requirements unless order.contract.order_requirements.blank?
 				#  con_id and exchange fully qualify a contract, no need to transmit other data
 			the_contract = order.contract.con_id >0 ? Contract.new( con_id: order.contract.con_id, exchange: order.contract.exchange) : nil 
-			the_local_order_id = order.place the_contract, Connection.current
+			the_local_order_id = order.place the_contract
 
 		end # place 
 

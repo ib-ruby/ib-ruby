@@ -439,7 +439,7 @@ Its always active.
 					begin
 						tws.send_message(:RequestCurrentTime)												# 10 ms  ##
 						i=0; loop{ break if answer || i > 40; i+=1; sleep 0.0001}
-					rescue IOError  # connection lost
+					rescue IOError, Errno::ECONNREFUSED   # connection lost
 						count = 6
 					rescue IB::Error # not connected
 						reconnect 

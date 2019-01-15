@@ -4,11 +4,13 @@ require 'combo_helper'
 def define_contracts
   @contracts = {
     :stock => IB::Symbols::Stocks.wfc,
-    :butterfly => butterfly('GOOG', '201901', 'CALL', 1000, 1020, 1040) # defined in Combo_helper
+    :butterfly => butterfly('GOOG', '201903', 'CALL', 1000, 1020, 1040) # defined in Combo_helper
   }
 end
+## in premarket condition GTC BUY (butterfly) limit order with attached LMT SELL  fails!
 
-describe 'Attached Orders', :connected => true, :integration => true  do
+describe 'Attached Orders', :connected => true, :integration => true , :us_trading_hours => true
+ do
 
   before(:all) do
     verify_account

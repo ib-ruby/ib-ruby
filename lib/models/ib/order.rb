@@ -350,7 +350,7 @@ module IB
 
     # Order is not valid without correct :local_id
     validates_numericality_of :local_id, :perm_id, :client_id, :parent_id,
-      :quantity, :min_quantity, :display_size,
+      :total_quantity, :min_quantity, :display_size,
       :only_integer => true, :allow_nil => true
 
     validates_numericality_of :limit_price, :aux_price, :allow_nil => true
@@ -446,10 +446,14 @@ Format of serialisation
       ""		  # Vers. 70  
     end
     # Placement
+		#
+		# The Order is only placed, if local_id is not set
+		#
+		# Modifies the Order-Object and returns the assigned local_id
     def place the_contract=nil, connection=nil
-      error "Unable to place order, next_local_id not known" unless connection.next_local_id
-	#		error "local_id present. Order is already placed" unless  local_id.nil?
 			connection ||= IB::Connection.current
+      error "Unable to place order, next_local_id not known" unless connection.next_local_id
+			error "local_id present. Order is already placed.  Do you  want to modify?"  unless  local_id.nil?
       self.client_id = connection.client_id
       self.local_id = connection.next_local_id
       connection.next_local_id += 1

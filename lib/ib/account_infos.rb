@@ -32,7 +32,7 @@ raises an IB::Error if less then 100 items are recieved-
 		@account_data_subscription ||=   subscribe_account_updates
 
 		accounts =  active_accounts if accounts.empty?
-		logger.warn{ "No active account present. AccountData are NOT requested" }
+		logger.warn{ "No active account present. AccountData are NOT requested" } if accounts.empty?
 		# Account-infos have to be requested sequencially. 
 		# subsequent (parallel) calls kill the former once on the tws-server-side
 		# In addition, there is no need to cancel the subscription of an request, as a new
@@ -40,21 +40,23 @@ raises an IB::Error if less then 100 items are recieved-
 		accounts.each do | ac |
 			account =  ac.is_a?( IB::Account ) ?  ac  : active_accounts.find{|x| x.account == ac } 
 			error( "No Account detected " )  unless account.is_a? IB::Account
-			logger.debug{ "#{account.account} :: Requesting AccountData " }
 			# don't repeat the query until 170 sec. have passed since the previous update
 			if account.last_updated.nil?  || ( Time.now - account.last_updated ) > 170 # sec   
+				logger.debug{ "#{account.account} :: Requesting AccountData " }
 				account.update_attribute :connected, false  # indicates: AccountUpdate in Progress
 				# reset account and portfolio-values
 				account.portfolio_values =  []
 				account.account_values =  []
 				send_message :RequestAccountData, subscribe: true, account_code: account.account
 				i=0; loop{ sleep 0.1; i+=1; break if i>600 || account.connected || IB::Alert.status_2101(account) } # initialize requests sequencially 
-				unless watchlists.empty?
+				if watchlists.present?
 					watchlists.each{|w| error "Watchlists must be IB::Symbols--Classes :.#{w.inspect}" unless w.is_a? IB::Symbols }
 					account.organize_portfolio_positions watchlists  
 				end
+				send_message :RequestAccountData, subscribe: false  ## do this only once
+			else
+				logger.info{ "#{account.account} :: Using stored AccountData " }
 			end
-			send_message :RequestAccountData, subscribe: false  ## do this only once
 		end
 	end
 
