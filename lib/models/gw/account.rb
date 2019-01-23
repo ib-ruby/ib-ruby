@@ -145,8 +145,12 @@ This has to be done manualy in the provided block
 		error "must only be called after initializing portfolio_values "  if portfolio_values.blank?
 		contract_size = ->(c) do			# note: portfolio_value.position is either positiv or negativ
 			if c.con_id <0 # Spread
-				p = portfolio_values.detect{|p| p.contract.con_id ==c.legs.first.con_id}.position.to_i
-				p / c.combo_legs.first.weight  rescue 0  # rescue: if p.zero?
+				p = portfolio_values.detect{|p| p.contract.con_id ==c.legs.first.con_id}
+				if p.nil?
+					0
+				else 
+					p.position.to_i / c.combo_legs.first.weight  rescue 0  # rescue: if p.zero?
+				end
 			else
 				portfolio_values.detect{|x| x.contract.con_id == c.con_id} || 0
 			end
