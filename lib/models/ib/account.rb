@@ -37,13 +37,13 @@ module IB
 			Connection.logger
 		end
 
-		# Setze Account connected/disconnected und undate!
+		# Setze Account connect/disconnect und undate!
 		def connect!
 			update_attribute :connected , true
-		end # connected!
+		end 
 		def disconnect!
 			update_attribute :connected , false
-		end # disconnected!
+		end 
 
 		def print_type
 			(test_environment? ? "demo_"  : "") + ( user? ? "user" : "advisor" )
