@@ -155,11 +155,14 @@ This has to be done manualy in the provided block
 		contract.verify{|c| order.contract = c}  if contract.present?  # don't touch the parameter, get a new object
 		error "Cannot transmit the order – No Contract given " unless order.contract.is_a?(IB::Contract)
 		order.total_quantity = -contract_size[order.contract]
-		error "total_quantity is zero" if order.total_quantity.zero?
-		order.total_quantity = order.total_quantity * 2 if reverse
-		order.action = nil
-		logger.info { "Order modified to close position: #{order.to_human}" }
-		place order: order, convert_size: true
+		if order.total_quantity.zero?
+			logger.info{ "Cannot close #{order.contract.to_human} - no position detected"}
+		else
+			order.total_quantity = order.total_quantity * 2 if reverse
+			order.action = nil
+			logger.info { "Order modified to close position: #{order.to_human}" }
+			place order: order, convert_size: true
+		end
 	end
 
 # just a wrapper to the Gateway-cancel-order method
