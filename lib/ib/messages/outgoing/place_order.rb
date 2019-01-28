@@ -16,7 +16,7 @@ module IB
 #					server_version = Connection.current.server_version
           order = @data[:order]
           contract = @data[:contract]
-
+					error "contract has to be specified" unless contract.is_a? IB::Contract
          [super[0..-1],
 #	  [ [3,45, @data[:local_id] ],
            contract.serialize_short(:primary_exchange, :sec_id_type),

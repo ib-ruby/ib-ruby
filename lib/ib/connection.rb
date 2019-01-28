@@ -101,8 +101,9 @@ module IB
 			i,finish = 0, false
 			sub = self.subscribe(:NextValidID) { finish =  true }
 			connected? ?  self.send_message( :RequestIds )  : open()
-			loop { sleep 0.1; break if finish || i >100; i=i+1 }
-			error "Could not get NextValidId" , :reader if i > 100
+			Timeout::timeout(1, IB::TransmissionError,"Could not get NextValidId" ) do
+				loop { sleep 0.1; break if finish  }
+			end
 			self.unsubscribe sub
 		end
 

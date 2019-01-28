@@ -122,70 +122,78 @@ class Contract
 # 
 # The result can be costomized by a provided block.
 # 
-# 	IB::Symbols::Stocks.sie.market_price{ |x| puts x.inspect; x.last }.to_f
+# 	IB::Symbols::Stocks.sie.market_price{ |x| puts x.inspect; x[:last] }.to_f
 # 	-> {"bid"=>0.10142e3, "ask"=>0.10144e3, "last"=>0.10142e3, "close"=>0.10172e3}
 # 	-> 101.42 
 # 
 # assigns IB::Symbols.sie.misc with the value of the :last (or delayed_last) TickPrice-Message
 # and returns this value, too
-		def market_price delayed:  true, thread: false
+			def market_price delayed:  true, thread: false
 
-			tws=  Connection.current 		 # get the initialized ib-ruby instance
-			the_id =  nil
-			finalize= false
-			tickdata =  Hash.new
-			# define requested tick-attributes
-			last, close, bid, ask	 = 	[ [ :delayed_last , :last_price ] , [:delayed_close , :close_price ],
-												[  :delayed_bid , :bid ], [  :delayed_ask , :ask ]] 
-			request_data_type =  delayed ? :frozen_delayed :  :frozen
+				tws=  Connection.current 		 # get the initialized ib-ruby instance
+				the_id =  nil
+				tickdata =  Hash.new
+				# define requested tick-attributes
+				last, close, bid, ask	 = 	[ [ :delayed_last , :last_price ] , [:delayed_close , :close_price ],
+																[  :delayed_bid , :bid_price ], [  :delayed_ask , :ask_price ]] 
+				request_data_type =  delayed ? :frozen_delayed :  :frozen
 
-			tws.send_message :RequestMarketDataType, :market_data_type =>  IB::MARKET_DATA_TYPES.rassoc( request_data_type).first
+				tws.send_message :RequestMarketDataType, :market_data_type =>  IB::MARKET_DATA_TYPES.rassoc( request_data_type).first
 
-			# subscribe to TickPrices
-			s_id = tws.subscribe(:TickSnapshotEnd) { |msg|	finalize = true	if msg.ticker_id == the_id }
-			e_id =  tws.subscribe(:Alert){|x|  finalize = true if x.code == 354  }  
-			# TWS Error 354: Requested market data is not subscribed.
-			sub_id = tws.subscribe(:TickPrice ) do |msg| #, :TickSize,  :TickGeneric, :TickOption) do |msg|
-				[last,close,bid,ask].each do |x| 
-					tickdata[x] = msg.the_data[:price] if x.include?( IB::TICK_TYPES[ msg.the_data[:tick_type]]) 
-				end if  msg.ticker_id == the_id 
-			end
-			# initialize »the_id« that is used to identify the received tick messages
-			# by firing the market data request
-			the_id = tws.send_message :RequestMarketData,  contract: self , snapshot: true 
+				#keep the method-call running until the request finished
+				#and cancel subscriptions to the message handler
+				# method returns the (running) thread
+				th = Thread.new do
+					finalize= false
+					# subscribe to TickPrices
+					s_id = tws.subscribe(:TickSnapshotEnd) { |msg|	finalize = true	if msg.ticker_id == the_id }
+					e_id = tws.subscribe(:Alert){|x|  finalize = true if x.code == 354 && x.error_id == the_id } 
+					# TWS Error 354: Requested market data is not subscribed.
+					sub_id = tws.subscribe(:TickPrice ) do |msg| #, :TickSize,  :TickGeneric, :TickOption) do |msg|
+						[last,close,bid,ask].each do |x| 
+							tickdata[x] = msg.the_data[:price] if x.include?( IB::TICK_TYPES[ msg.the_data[:tick_type]]) 
+							finalize = true if tickdata.size ==4  || ( tickdata[bid].present? && tickdata[ask].present? )  
+						end if  msg.ticker_id == the_id 
+					end
+					# initialize »the_id« that is used to identify the received tick messages
+					# by fireing the market data request
+					the_id = tws.send_message :RequestMarketData,  contract: self , snapshot: true 
 
-			#keep the method-call running until the request finished
-			#and cancel subscriptions to the message handler
-			# method returns the (running) thread
-			th = Thread.new do
-				i = 0
-				loop{ i+=1; sleep 0.1; break if finalize || i > 100  } 
-				# reduce :close_price delayed_close  to close a.s.o 
-				tz = -> (z){ z.map{|y| y.to_s.split('_')}.flatten.count_duplicates.max_by{|k,v| v}.first.to_sym}
-				data =  tickdata.map{|x,y| [tz[x],y]}.to_h
-				self.misc = if block_given? 
-											yield data 
-											# yields {"bid"=>0.10142e3, "ask"=>0.10144e3, "last"=>0.10142e3, "close"=>0.10172e3}
-										else # behavior if no block is provided
-											if data[:last].present? && !data[:last].zero? 
-												data[:last] 
-											elsif data[:bid].present? && data[:ask].present?
-												(data[:bid]+data[:ask])/2
-											elsif data[:close].present? 
-												data[:close]
-											else
-												nil
-											end
-										end
-				tws.unsubscribe sub_id, s_id, e_id
-			end
-			if thread
-				th		# return thread
-			else
-				th.join
-				misc	# return 
-			end
-		end #
+					begin
+						# todo implement config-feature to set timeout in configuration   (DRY-Feature)
+						Timeout::timeout(5) do   # max 5 sec.
+							loop{ break if finalize ; sleep 0.1 } 
+							# reduce :close_price delayed_close  to close a.s.o 
+							tz = -> (z){ z.map{|y| y.to_s.split('_')}.flatten.count_duplicates.max_by{|k,v| v}.first.to_sym}
+							data =  tickdata.map{|x,y| [tz[x],y]}.to_h
+							valid_data = ->(d){ !(d.to_i.zero? || d.to_i == -1) }
+							self.misc = if block_given? 
+														yield data 
+														# yields {:bid=>0.10142e3, :ask=>0.10144e3, :last=>0.10142e3, :close=>0.10172e3}
+													else # behavior if no block is provided
+														if valid_data[data[:last]]
+															data[:last] 
+														elsif valid_data[data[:bid]]
+															(data[:bid]+data[:ask])/2
+														elsif data[:close].present? 
+															data[:close]
+														else
+															nil
+														end
+													end
+						end
+					rescue Timeout::Error
+						Connection.logger.info{ "#{to_human} --> No Marketdata recieved " }
+					end
+					tws.unsubscribe sub_id, s_id, e_id
+				end
+				if thread
+					th		# return thread
+				else
+					th.join
+					misc	# return 
+				end
+			end #
 
 # returns the Option Chain of the contract (if available)
 #
@@ -234,7 +242,10 @@ class Contract
 					end
 
 					Thread.new do  
+
+			Timeout::timeout(1, IB::TransmissionError,"OptionChainDefinition not recieved" ) do
 						loop{ sleep 0.1; break if finalize } 
+			end
 						ib.unsubscribe sub_sdop , sub_ocd
 					end.join
 				else
@@ -362,14 +373,6 @@ private
 			# currently the tws-request is suppressed for bags and if the contract_detail-record is present
 			tws_request_not_nessesary = bag? || contract_detail.is_a?( ContractDetail )
 
-			# we cannot rely on Connection.current.recieve, must therefor define our own thread serializer
-			wait_until_exitcondition = -> do 
-																			u=0; while u<1000  do   # wait max 5 sec
-																				break if exitcondition 
-																				u+=1; sleep 0.05 
-																			end
-																		end
-
 			if tws_request_not_nessesary
 				yield self if block_given?
 				count = 1
@@ -407,14 +410,17 @@ private
 				contract_to_be_queried =  con_id.present? ? self : query_contract  
 				# if no con_id is present,  the given attributes are checked by query_contract
 				if contract_to_be_queried.present?   # is nil if query_contract fails
-					message_id = ib.send_message :RequestContractData, 
-						:contract => contract_to_be_queried 
+					message_id = ib.send_message :RequestContractData, :contract => contract_to_be_queried 
 					
 					th =  Thread.new do
-						wait_until_exitcondition[]
+						begin
+							Timeout::timeout(1) do
+								loop{ break if exitcondition ; sleep 0.005 } 
+							end
+						rescue Timeout::Error
+							Connection.logger.error{ "#{to_human} --> No ContractData recieved " }
+						end
 						ib.unsubscribe a
-						ib.logger.error { "NO Contract returned by TWS -->#{self.to_human} "} unless exitcondition
-						ib.logger.error { "Multible Contracts are detected, only the last is returned -->#{queried_contract.to_human} "} if count>1 && queried_contract.present?
 					end
 					if thread.nil?
 						th.join    # wait for the thread to finish
@@ -455,15 +461,14 @@ private
       ## and finally we create a attribute-hash to instantiate a new Contract
       ## to_h is present only after ruby 2.1.0
       item_attributehash = ->(i){ i.keys.zip(item_values[i]).to_h }
+			nessesary_items = YAML.load_file(yml_file)[sec_type]
       ## now lets proceed, but only if no con_id is present
-      nessesary_items = YAML.load_file(yml_file)[sec_type]
-      
 			if con_id.blank?
-				 if item_values[nessesary_items].any?( &:nil? ) 
+				if item_values[nessesary_items].any?( &:nil? ) 
 					 raise VerifyError, "#{items_as_string[nessesary_items]} are needed to retrieve Contract,
 																	got: #{item_values[nessesary_items].join(',')}"
-				 end
-				 Contract.build  item_attributehash[nessesary_items].merge(:sec_type=> sec_type)  # return this
+				end
+				Contract.build  item_attributehash[nessesary_items].merge(:sec_type=> sec_type)  # return this
 			else   # its always possible, to retrieve a Contract if con_id and exchange are present 
 				 Contract.new  con_id: con_id , :exchange => exchange.presence || item_attributehash[nessesary_items][:exchange].presence || 'SMART'				# return this
 			end  # if 

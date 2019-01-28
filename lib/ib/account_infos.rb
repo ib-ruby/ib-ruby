@@ -21,7 +21,7 @@ Queries the tws for Account- and PortfolioValues
 The parameter can either be the account_id, the IB::Account-Object or 
 an Array of account_id and IB::Account-Objects.
 
-raises an IB::TransmissionError if the account-data are not transmitted in time 
+raises an IB::TransmissionError if the account-data are not transmitted in time (1 sec)
 
 raises an IB::Error if less then 100 items are recieved-
 =end
@@ -48,7 +48,10 @@ raises an IB::Error if less then 100 items are recieved-
 				account.portfolio_values =  []
 				account.account_values =  []
 				send_message :RequestAccountData, subscribe: true, account_code: account.account
-				i=0; loop{ sleep 0.1; i+=1; break if i>600 || account.connected || IB::Alert.status_2101(account) } # initialize requests sequencially 
+				Timeout::timeout(1, IB::TransmissionError, "RequestAccountData failed (#{account.account})") do
+#					 initialize requests sequencially					
+					loop{ sleep 0.1; break if account.connected || IB::Alert.status_2101(account) }
+				end
 				if watchlists.present?
 					watchlists.each{|w| error "Watchlists must be IB::Symbols--Classes :.#{w.inspect}" unless w.is_a? IB::Symbols }
 					account.organize_portfolio_positions watchlists  

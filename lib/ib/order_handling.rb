@@ -44,11 +44,11 @@ Everything is carried out in a mutex-synchonized environment
 					# first update the contracts
 					# make open order equal to IB::Spreads (include negativ con_id)
 					msg.contract[:con_id] = -msg.contract.combo_legs.map{|y| y.con_id}.sum  if msg.contract.is_a? IB::Bag
-					msg.contract.orders.update_or_create msg.order, :perm_id
+					msg.contract.orders.update_or_create msg.order, :local_id
 						this_account.contracts.first_or_create msg.contract, :con_id
 					# now save the order-record
 						msg.order.contract = msg.contract
-						this_account.orders.update_or_create msg.order, :perm_id
+						this_account.orders.update_or_create msg.order, :local_id
 				end
 
 				#     update_ib_order msg  ## aus support 
@@ -86,10 +86,13 @@ Everything is carried out in a mutex-synchonized environment
 	def request_open_orders
 
 		exit_condition = false
-		tws.subscribe(  :OpenOrderEnd ){ exit_condition = true }
+		subscription = tws.subscribe(  :OpenOrderEnd ){ exit_condition = true }
 		for_active_accounts{| account | account.orders=[] }
 		send_message :RequestAllOpenOrders
-		i=0; loop{ i=i+1; sleep 0.1; break if exit_condition || i>100 }
+		Timeout::timeout(1, IB::TransmissionError,"OpenOrders not received" ) do
+			loop{  sleep 0.1; break if exit_condition  }
+		end
+		tws.unsubscribe subscription
 	end
 
 	alias update_orders request_open_orders 
