@@ -54,7 +54,7 @@ Thus if several Orders are placed with the same order_ref, the active one is ret
 		end
 
 
-=begin  
+=begin rdoc 
 Account#PlaceOrder
 requires an IB::Order as parameter. 
 If attached, the associated IB::Contract is used to specify the tws-command
@@ -68,6 +68,9 @@ convert_size: The action-attribute (:buy  :sell) is associated according the con
 The parameter «order» is modified! 
 
 It can be used to modify and eventually cancel 
+
+The method raises an  IB::TransmissionError if the transmitted order ist not acknowledged by the tws after
+one second.
 
 Example
 
@@ -127,6 +130,13 @@ Example
 				#  con_id and exchange fully qualify a contract, no need to transmit other data
 			the_contract = order.contract.con_id >0 ? Contract.new( con_id: order.contract.con_id, exchange: order.contract.exchange) : nil 
 			the_local_id = order.place the_contract # return the local_id
+			Timeout::timeout(1, IB::TransmissionError,"TimeOut ::Transmitted Order was not acknowledged") do 
+				loop{ sleep(0.001); break if locate_order( local_id: the_local_id, status: nil ).present? }
+			end
+
+			the_local_id  # return_value
+
+
 		end # place 
 
 		# shortcut to enable
@@ -208,6 +218,7 @@ This has to be done manualy in the provided block
 		end
 
 		contract &.verify{|c| order.contract = c}   # don't touch the parameter, get a new object 
+		puts order.contract.inspect
 		error "Cannot transmit the order – No Contract given " unless order.contract.is_a?(IB::Contract)
 		order.total_quantity = -contract_size[order.contract]
 		if order.total_quantity.zero?

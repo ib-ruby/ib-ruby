@@ -111,6 +111,7 @@ be closed manually with
 
       ignore_alert 200 , # is handled by IB::Contract.update_contract
 		    2100, # API client has been unsubscribed from account data
+				2105, 
 		    399 # your order will not be placed at the exchange until
 
       log_alert_in_info    1102 #Connectivity between IB and Trader Workstation has been restored
