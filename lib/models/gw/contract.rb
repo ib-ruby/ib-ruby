@@ -77,13 +77,30 @@ class Contract
 				_verify update: false, thread: thread,  &b  # returns the allocated threads
 			end # def
 
-# Verify that the contract is a valid IB::Contract, update the Contract-Object and return it
+# Verify that the contract is a valid IB::Contract, update the Contract-Object and return it.
+#
+# Returns nil if the contract could not be verified. 
+# 
+#	 > s =  Stock.new symbol: 'AA'
+#     => #<IB::Stock:0x0000000002626cc0 
+#        @attributes={:symbol=>"AA", :con_id=>0, :right=>"", :include_expired=>false, 
+#                     :sec_type=>"STK", :currency=>"USD", :exchange=>"SMART"}
+#  > sp  = s.verify! &.essential
+#     => #<IB::Stock:0x00000000025a3cf8 
+#        @attributes={:symbol=>"AA", :con_id=>251962528, :exchange=>"SMART", :currency=>"USD",
+#                     :strike=>0.0, :local_symbol=>"AA", :multiplier=>0, :primary_exchange=>"NYSE", 
+#                     :trading_class=>"AA", :sec_type=>"STK", :right=>"", :include_expired=>false}
+#                   
+#  > s =  Stock.new symbol: 'invalid'
+#     =>  @attributes={:symbol=>"invalid", :sec_type=>"STK", :currency=>"USD", :exchange=>"SMART"}
+#  >  sp  = s.verify! &.essential
+#     => nil
 
 			def verify!
 				c =  0
 				_verify( update: true){| response | c+=1 } # wait for the returned thread to finish
 				IB::Connection.logger.error { "Multible Contracts detected during verify!."  } if c > 1
-				con_id.to_i < 0 || (con_id >0 && contract_detail.is_a?(ContractDetail)) ? self :  nil
+				con_id.to_i < 0 || contract_detail.is_a?(ContractDetail) ? self :  nil
 			end
 
 # Resets a Contract to enable a renewed ContractData-Request via Contract#verify

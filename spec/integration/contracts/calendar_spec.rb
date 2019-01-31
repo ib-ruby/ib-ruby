@@ -1,7 +1,7 @@
 require 'combo_helper'
 
 RSpec.describe "IB::Calendar" do
-	let ( :the_option ){ IB::Option.new  symbol: :Estx50, strike: 3000, right: :call,  expiry: IB::Symbols::Futures.next_expiry }
+	let ( :the_option ){ IB::Option.new  symbol: :Estx50, strike: 3000, right: :call,  expiry: IB::Symbols::Futures.next_expiry, trading_class: 'OESX' }
   before(:all) do
     verify_account
     IB::Connection.new OPTS[:connection].merge(:logger => mock_logger) do |gw|
@@ -26,6 +26,7 @@ RSpec.describe "IB::Calendar" do
 		subject{ IB::Calendar.build( from: IB::Symbols::Index.stoxx, 
 																 strike: 3000, 
 																 right: :put,
+																 trading_class: 'OESX',
 																 front:  IB::Symbols::Futures.next_expiry , 
 																 back:  '-1m'
 															 ) }
