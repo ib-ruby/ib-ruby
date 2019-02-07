@@ -198,16 +198,17 @@ Otherwise only the last action is not applied and the order is unchanged.
 		def auto_adjust
 			# lambda to perform the calculation	
 			adjust_price = ->(a,b) do
-				a=BigDecimal.new(a,5) 
-				b=BigDecimal.new(b,5) 
+				a=BigDecimal(a,5) 
+				b=BigDecimal(b,5) 
 				_,o =a.divmod(b)
 			  a-o 
 			end
+			error "No Contract provided to Auto adjust " unless contract.is_a? IB::Contract
 			unless contract.is_a? IB::Bag
 			# ensure that contract_details are present
 				contract.verify do |the_contract | 
 					the_details =  the_contract.contract_detail
-					# there are two attribute to consider: limit_price and aux_price
+					# there are two attributes to consider: limit_price and aux_price
 					# limit_price +  aux_price may be nil or an empty string. Then ".to_f.zero?" becomes true 
 					self.limit_price= adjust_price.call(limit_price.to_f, the_details.min_tick) unless limit_price.to_f.zero?
 					self.aux_price= adjust_price.call(aux_price.to_f, the_details.min_tick) unless aux_price.to_f.zero?

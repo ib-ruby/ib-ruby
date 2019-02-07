@@ -2,7 +2,7 @@ module IB
 class Alert
 	class << self
 		def alert_2101 msg
-			#logger.error {msg.message}
+			logger.error {msg.message}
 			@status_2101 = msg.dup	
 		end
 
@@ -48,9 +48,9 @@ raises an IB::Error if less then 100 items are recieved-
 				account.portfolio_values =  []
 				account.account_values =  []
 				send_message :RequestAccountData, subscribe: true, account_code: account.account
-				Timeout::timeout(1, IB::TransmissionError, "RequestAccountData failed (#{account.account})") do
+				Timeout::timeout(3, IB::TransmissionError, "RequestAccountData failed (#{account.account})") do
 #					 initialize requests sequencially					
-					loop{ sleep 0.1; break if account.connected || IB::Alert.status_2101(account) }
+					loop{ sleep 0.1; break if account.connected  }
 				end
 				if watchlists.present?
 					watchlists.each{|w| error "Watchlists must be IB::Symbols--Classes :.#{w.inspect}" unless w.is_a? IB::Symbols }
@@ -81,7 +81,7 @@ raises an IB::Error if less then 100 items are recieved-
 			for_selected_account( msg.account_name ) do | account |   # enter mutex controlled zone
 				case msg
 				when IB::Messages::Incoming::AccountValue
-					account.account_values.update_or_create msg.account_value, :currency, :key
+					account.account_values << msg.account_value
 					account.update_attribute :last_updated, Time.now
 					logger.debug { "#{account.account} :: #{msg.account_value.to_human }"}
 				when IB::Messages::Incoming::AccountDownloadEnd 
@@ -96,7 +96,7 @@ raises an IB::Error if less then 100 items are recieved-
 					end
 				when IB::Messages::Incoming::PortfolioValue
 						account.contracts.update_or_create  msg.contract
-						account.portfolio_values.update_or_create( msg.portfolio_value ){ :contract }
+						account.portfolio_values << msg.portfolio_value 
 #						msg.portfolio_value.account = account
 						# link contract -> portfolio value
 #						account.contracts.find{ |x| x.con_id == msg.contract.con_id }
