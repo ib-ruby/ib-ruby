@@ -203,6 +203,13 @@ This has to be done manualy in the provided block
 
 # closes the contract by submitting an appropiate order
 	# the action- and total_amount attributes of the assigned order are overwritten.
+	#
+	# if a ratio-value (0 ..1) is specified in _order.total_quantity_ only a fraction of the position is closed. 
+	# Other values are silently ignored
+	#
+	# if _reverse_ is specified, the opposide position is established. 
+	# Any value in total_quantity is overwritten 
+	#
 	# returns the order transmitted
 	#
 	# raises an IB::Error if no PortfolioValues have been loaded to the IB::Acoount
@@ -217,17 +224,22 @@ This has to be done manualy in the provided block
 			end
 		end
 
-		contract &.verify{|c| order.contract = c}   # don't touch the parameter, get a new object 
-		puts order.contract.inspect
+		contract &.verify{|c| order.contract = c}   # if contract is specified: don't touch the parameter, get a new object . 
 		error "Cannot transmit the order – No Contract given " unless order.contract.is_a?(IB::Contract)
-		order.total_quantity = -contract_size[order.contract]
+	
+		order.total_quantity = if reverse
+														 -contract_size[order.contract] * 2 
+													 elsif order.total_quantity.abs < 1 && !order.total_quantity.zero? 
+														-contract_size[order.contract] *  order.total_quantity.abs 
+													 else
+														 -contract_size[order.contract] 
+													 end
 		if order.total_quantity.zero?
 			logger.info{ "Cannot close #{order.contract.to_human} - no position detected"}
 		else
-			order.total_quantity = order.total_quantity * 2 if reverse
 			order.action = nil
 			order.local_id = nil  # in any case, close is a new order
-			logger.info { "Order modified to close position: #{order.to_human}" }
+			logger.info { "Order modified to close, reduce or revese position: #{order.to_human}" }
 			place order: order, convert_size: true
 		end
 	end

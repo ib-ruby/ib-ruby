@@ -507,7 +507,7 @@ Format of serialisation
 
     def to_human
       "<Order: " + (order_ref.present? ? order_ref.to_s : '') +
-        "#{self[:order_type]} #{self[:tif]} #{action} #{total_quantity} " + " @ "
+        "#{self[:order_type]} #{self[:tif]} #{action} #{total_quantity} " + " @ " +
         (limit_price ? "#{limit_price} " : '') + "#{status} " +
         ((aux_price && aux_price != 0) ? "/#{aux_price}" : '') +
         "##{local_id}/#{perm_id} from #{client_id}" +

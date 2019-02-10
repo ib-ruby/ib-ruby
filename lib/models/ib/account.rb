@@ -33,7 +33,7 @@ module IB
 			super.merge connected: false
 		end
 
-		def logger
+		def logger  #nodoc#
 			Connection.logger
 		end
 
@@ -45,7 +45,7 @@ module IB
 			update_attribute :connected , false
 		end 
 
-		def print_type
+		def print_type #nodoc#
 			(test_environment? ? "demo_"  : "") + ( user? ? "user" : "advisor" )
 		end
 
@@ -73,6 +73,10 @@ module IB
 						""
 					end
 				"<#{print_type} #{account}#{a}>"
+		end
+
+		def name  #nodoc#
+			self.alias.present? ? self.alias : account
 		end
 
 #		alias :id :account
