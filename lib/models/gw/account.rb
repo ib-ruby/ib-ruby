@@ -122,8 +122,8 @@ Example
 				order.auto_adjust # if auto_adjust  /defined in lib/order_handling
 			end
 			if convert_size 
-			 	order.update_attribute :action ,   order.total_quantity.to_i > 0  ? 	:buy  : :sell 
-				order.update_attribute :total_quantity,  order.total_quantity.to_i.abs
+			 	order.action = order.total_quantity.to_i > 0  ? 	:buy : :sell 
+				order.total_quantity  = order.total_quantity.to_i.abs
 			end
 				# apply non_guarenteed and other stuff bound to the contract to order.
 			order.attributes.merge! order.contract.order_requirements unless order.contract.order_requirements.blank?
@@ -190,13 +190,13 @@ This has to be done manualy in the provided block
 	def preview order:, contract: nil, **args_which_are_ignored
 		# to_do:  use a copy of order instead of temporary setting order.what_if
 		result = ->(l){ orders.detect{|x| x.local_id == l  && x.submitted? } }
-		order.update_attribute :what_if , true
+		order.what_if = true
 		the_local_id = place_order order: order, contract: contract
 		Timeout::timeout(1, IB::TransmissionError,"(Preview-)Order is not transmitted properly" ) do
 			loop{  sleep 0.1;  break if  result[the_local_id] }  
 		end
-		order.update_attribute :what_if,  false # reset what_if flag
-		order.update_attribute :local_id,  nil  # reset local_id to enable reusage of the order-object for placing
+		order.what_if = false # reset what_if flag
+		order.local_id = nil  # reset local_id to enable reusage of the order-object for placing
 		result[the_local_id].order_state.forcast  #  return_value
 	end 
 
@@ -236,9 +236,9 @@ This has to be done manualy in the provided block
 		if the_quantity.zero?
 			logger.info{ "Cannot close #{order.contract.to_human} - no position detected"}
 		else
-			order.update_attribute :total_quantity, the_quantity
-			order.update_attribute :action,  nil
-			order.update_attribute :local_id,  nil  # in any case, close is a new order
+			order.total_quantity = the_quantity
+			order.action =  nil
+			order.local_id =  nil  # in any case, close is a new order
 			logger.info { "Order modified to close, reduce or revese position: #{order.to_human}" }
 			place order: order, convert_size: true
 		end
