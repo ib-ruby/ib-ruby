@@ -343,45 +343,10 @@ Its always active.
 		man_id = tws.subscribe( :ManagedAccounts ) do |msg| 
 			logger.progname =  'Gateway#InitializeManagedAccounts' 
 			if @accounts.empty?
-				unless IB.db_backed?
 					# just validate the message and put all together into an array
 					@accounts =  msg.accounts_list.split(',').map do |a| 
 						account = IB::Account.new( account: a.upcase ,  connected: true )
-						if account.save 
-							logger.debug {"new #{account.print_type} detected => #{account.account}"}
-							account
-						else
-							logger.fatal {"invalid Account #{account.print_type} => #{account.account}"}
-							nil
-						end
-					end.compact
-				else ## Sort into a DB
-					# an advisor-user-hierachie ist build.
-					# the database can distingush between several Advisor-Accounts.
-					advisor_id , *user_id =  msg.accounts_list.split(',')
-					Account.update_all :connected => false
-
-					# alle Konten auf disconnected setzen
-					advisor =  if (a= Advisor.of_ib_user_id(advisor_id)).empty?
-											 logger.info {"creating a new advisor #{advisor_id}"}
-											 Advisor.create( :account => advisor_id.upcase, :connected => true, :name => 'advisor' )
-										 else
-											 logger.info {"updating active-Advisor-Flag #{advisor_id}"}
-											 a.first.update_attribute :connected , true
-											 a.first # return-value
-										 end
-					user_id.each do | this_user_id |
-						if (a= advisor.users.of_ib_user_id(this_user_id)).empty?
-							logger.info {"creating a new user #{this_user_id}"}
-							advisor.users << User.new( :account => this_user_id.upcase, :connected => true , :name =>    "user#{this_user_id[-2 ..-1]}")
-						else
-							a.first.update_attribute :connected, true
-							logger.info {"updating active-User-Flag #{this_user_id}"}
-						end
 					end
-					@accounts = [advisor] | advisor.users 
-				end
-
       else
 				logger.info {"already #{@accounts.size} accounts initialized "}
 				@accounts.each{|x| x.update_attribute :connected ,  true }
