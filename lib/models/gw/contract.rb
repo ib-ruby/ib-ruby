@@ -151,16 +151,16 @@ class Contract
 #		   
 #
 #   Symbols::Index::stoxx.verify!.eod( duration: '10 d',  to: Date.today){|y| y.each{|z| puts z.to_human}}
-#   <Bar: 1970-08-22 16:26:41 +0000 wap 0.0 OHLC 3353.67 3390.98 3353.67 3385.38 trades 1750 vol 0>
-#   <Bar: 1970-08-22 16:26:42 +0000 wap 0.0 OHLC 3386.18 3402.77 3382.84 3395.7 trades 1729 vol 0>
-#   <Bar: 1970-08-22 16:26:43 +0000 wap 0.0 OHLC 3399.93 3435.9 3399.93 3435.56 trades 1733 vol 0>
-#   <Bar: 1970-08-22 16:26:44 +0000 wap 0.0 OHLC 3434.34 3449.44 3425.19 3441.93 trades 1680 vol 0>
-#   <Bar: 1970-08-22 16:26:45 +0000 wap 0.0 OHLC 3445.05 3453.01 3437.92 3447.47 trades 1677 vol 0>
-#   <Bar: 1970-08-22 16:26:48 +0000 wap 0.0 OHLC 3446.15 3447.08 3433.47 3438.06 trades 1648 vol 0>
-#   <Bar: 1970-08-22 16:26:49 +0000 wap 0.0 OHLC 3437.07 3450.69 3416.67 3417.22 trades 1710 vol 0>
-#   <Bar: 1970-08-22 16:26:50 +0000 wap 0.0 OHLC 3418.36 3435.32 3418.36 3424.65 trades 1670 vol 0>
-#   <Bar: 1970-08-22 16:26:51 +0000 wap 0.0 OHLC 3430.73 3442.25 3412.15 3435.34 trades 1773 vol 0>
-#   <Bar: 1970-08-22 16:26:52 +0000 wap 0.0 OHLC 3432.16 3454.77 3425.84 3447.83 trades 1715 vol 0>
+#   <Bar: 2019-04-01 wap 0.0 OHLC 3353.67 3390.98 3353.67 3385.38 trades 1750 vol 0>
+#   <Bar: 2019-04-02 wap 0.0 OHLC 3386.18 3402.77 3382.84 3395.7 trades 1729 vol 0>
+#   <Bar: 2019-04-03 wap 0.0 OHLC 3399.93 3435.9 3399.93 3435.56 trades 1733 vol 0>
+#   <Bar: 2019-04-04 wap 0.0 OHLC 3434.34 3449.44 3425.19 3441.93 trades 1680 vol 0>
+#   <Bar: 2019-04-05 wap 0.0 OHLC 3445.05 3453.01 3437.92 3447.47 trades 1677 vol 0>
+#   <Bar: 2019-04-08 wap 0.0 OHLC 3446.15 3447.08 3433.47 3438.06 trades 1648 vol 0>
+#   <Bar: 2019-04-09 wap 0.0 OHLC 3437.07 3450.69 3416.67 3417.22 trades 1710 vol 0>
+#   <Bar: 2019-04-10 wap 0.0 OHLC 3418.36 3435.32 3418.36 3424.65 trades 1670 vol 0>
+#   <Bar: 2019-04-11 wap 0.0 OHLC 3430.73 3442.25 3412.15 3435.34 trades 1773 vol 0>
+#   <Bar: 2019-04-12 wap 0.0 OHLC 3432.16 3454.77 3425.84 3447.83 trades 1715 vol 0>
 	def eod start:nil, to: Date.today, duration: nil , what: :trades 
 
 			tws = IB::Connection.current
@@ -181,7 +181,7 @@ class Contract
 									else
 										"1 D"
 										end
- 
+
 			tws.send_message IB::Messages::Outgoing::RequestHistoricalData.new(
 				:request_id => con_id,
 				:contract =>  self,
@@ -190,6 +190,7 @@ class Contract
 				:bar_size => :day1, #  IB::BAR_SIZES.key(:hour)?
 				:what_to_show => what,
 				:use_rth => 0,
+				:format_date => 2,
 				:keep_up_todate => 0)
 
 			Timeout::timeout(5) do   # max 5 sec.
