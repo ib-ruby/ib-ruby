@@ -9,7 +9,7 @@ require 'ib-ruby'
 # connect to IB TWS.
 
 
-ib = IB::Connection.new( :client_id => 1112) do | gw | #, :port => 7496 # TWS) 
+ib = IB::Connection.new( :client_id => 1110) do | gw | #, :port => 7496 # TWS) 
 ## Subcribe to forseable events before the connection is completed
 ## Subscribe to TWS alerts/errors
   gw.subscribe(:Alert, :PositionData){ |msg| puts msg.to_human }
