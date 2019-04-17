@@ -43,7 +43,7 @@ For Financial Advisors, you need to add the managed account you want info for:
 
     $ ruby example/flex_query 12345 # Flex query id pre-defined in Account Management
 
-*fundamental_data* - Request and print fundamental data report for a specific stock. 
+*fundamental_data* - Request and print fundamental data report for a specific stock.
 
 *historic_data* - Receive 5 days of 1-hour trade data for Stock, Forex and Future symbols.
 
