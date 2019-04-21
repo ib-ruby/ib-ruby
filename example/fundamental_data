@@ -2,16 +2,17 @@
 #
 # This script downloads Fundamental data for specific symbols from IB
 # This only works IF you have Reuters data subscription!
+#
 
 require 'bundler/setup'
-
 require 'ib-ruby'
-request_id, snapshot_data  =  nil
-ib = IB::Connection.new port: 7496, host: '10.222.148.177', :client_id => 1112 do  | gw | #, :port => 7496 # TWS
- gw.subscribe(:Alert) { |msg| puts msg.to_human }
+require_relative 'config_ib'
 
- # Fundamental Data will arrive in XML format, we need to parse it
- gw.subscribe(:FundamentalData) { |msg| snapshot_data = msg.xml  if msg.request_id == request_id }
+request_id, snapshot_data = nil
+ib = IB::Connection.new client_id: 1141, host: $host, port: $port do |gw|
+	gw.subscribe(:Alert) { |msg| puts msg.to_human }
+	# Fundamental Data will arrive in XML format, we need to parse it
+	gw.subscribe(:FundamentalData) { |msg| snapshot_data = msg.xml if msg.request_id == request_id }
 end
 
 # Request Fundamental Data for IBM. Possible report types:
@@ -20,14 +21,13 @@ end
 #     'snapshot' - Summary
 wfc = IB::Symbols::Stocks.wfc.verify!
 request_id = ib.send_message :RequestFundamentalData,
-                :contract => wfc,
-                :report_type => 'snapshot'
+										contract: wfc, report_type: 'snapshot'
 
 # Needs some time to receive and parse XML. Standard timeout of 1 sec is just too low.
-ib.wait_for  :FundamentalData 
+ib.wait_for :FundamentalData
 
 # Now just extract and use all the fundamental data you needed
- puts snapshot_data[:ReportSnapshot][:TextInfo][:Text]
- 
- pp snapshot_data[:ReportSnapshot][:Ratios]
+puts snapshot_data[:ReportSnapshot][:TextInfo][:Text]
+
+pp snapshot_data[:ReportSnapshot][:Ratios]
 STDIN.gets

@@ -1,18 +1,19 @@
 #!/usr/bin/env ruby
 #
 # Subscribe to real time data for specific symbol from IB
+#
 
 require 'rubygems'
 require 'bundler/setup'
 require 'ib-ruby'
+require_relative 'config_ib'
 
-contracts = {1 => IB::Symbols::Stocks[:vxx], 
-              9 => IB::Symbols::Forex[:gbpusd] 
-	     }
+contracts = {1 => IB::Symbols::Stocks[:vxxb],
+             9 => IB::Symbols::Forex[:gbpusd]
+            }
 
 # Connect to IB TWS.
-ib = IB::Connection.new :client_id => 1112 do | gw | #, :port => 7497 # TWS
-
+ib = IB::Connection.new client_id: 1132, host: $host, port: $port do |gw|
 	# Subscribe to TWS alerts/errors
 	gw.subscribe(:Alert) { |msg| puts msg.to_human }
 
@@ -23,12 +24,12 @@ ib = IB::Connection.new :client_id => 1112 do | gw | #, :port => 7497 # TWS
 	end
 end
 contracts.each_pair do |request_id, contract|
-  ib.send_message IB::Messages::Outgoing::RequestRealTimeBars.new(
-                        :request_id => request_id,
-                        :contract => contract,
-                  #      :bar_size => 5, # Only 5 secs bars supported  (hard coded in messages/outgoing/bar_requests)
-                        :data_type => :trades,	# possible values: :trades, :bid, :ask , :midpoint
-                        :use_rth => false)
+	ib.send_message IB::Messages::Outgoing::RequestRealTimeBars.new(
+                        request_id: request_id,
+                        contract: contract,
+                  #     bar_size: 5, # Only 5 secs bars supported (hard coded in messages/outgoing/bar_requests)
+                        data_type: :trades, # possible values: :trades, :bid, :ask , :midpoint
+                        use_rth: false)
 end
 
 # So we need to interrupt manually when we do not want any more quotes.

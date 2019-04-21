@@ -2,9 +2,11 @@
 #
 # This script places a combo order:  Buy Microsoft, sell WellsFarge for 32$
 # (Marketprice : 40$ (Mar 2018))
+#
 
 require 'bundler/setup'
 require 'ib-ruby'
+require_relative 'config_ib'
 
 # Utility method that helps us build multi-legged (BAG) Orders
 def spread *contracts
@@ -12,7 +14,7 @@ def spread *contracts
 	ib = IB::Connection.current
 	tws_contracts =  contracts.map.with_index do |c, i|
 		ib.clear_received :ContractData, :ContractDataEnd
-		ib.send_message :RequestContractData, :id => i+1, :contract => c
+		ib.send_message :RequestContractData, id: i+1, contract: c
 		ib.wait_for :ContractDataEnd, 3
 		ib.received[:ContractData].last.contract
 	end
@@ -21,23 +23,20 @@ def spread *contracts
 	weights =  block_given? ? yield  : Array.new(contracts.size,1)
 
 	legs = con_ids.zip(weights).map do |con_id, weight|
-		IB::ComboLeg.new con_id: con_id, weight: weight  
+		IB::ComboLeg.new con_id: con_id, weight: weight
 	end
 
 	# Create and return new Combo contract
-	IB::Bag.new :symbol => bag_symbol,
-		:currency => tws_contracts.first.currency,   
-		:exchange => "SMART",
-		:legs => legs
+	IB::Bag.new symbol: bag_symbol,
+		currency: tws_contracts.first.currency,
+		exchange: "SMART",
+		legs: legs
 end
 # Only for Advisor accounts: you need to provide account_code such as U666777
 account_code = ARGV[0] || ''
 
-# 
-# First, connect to IB TWS. Arbitrary :client_id is used to identify your script
-ib = IB::Connection.new :client_id => 1112 do | gw | #, :port => 7497 # TWS
-
-# Subscribe to TWS alerts/errors and order-related messages
+ib = IB::Connection.new client_id: 1128, host: $host, port: $port do |gw|
+	# Subscribe to TWS alerts/errors and order-related messages
 	gw.subscribe(:Alert, :OpenOrder, :OrderStatus) { |msg| puts msg.to_human }
 end
 
@@ -49,13 +48,11 @@ the_bag = spread( IB::Symbols::Stocks.msft, IB::Symbols::Stocks.wfc ){ [1, -1]  
 
 puts the_bag.inspect
 # use the order-prototype to create the order
-order = IB::Combo.order total_quantity: 10, 
-                      limit_price: 32,
-                      action: :buy,
-											account: account_code 
-		
+order = IB::Combo.order total_quantity: 10,
+                      limit_price: 32, action: :buy, account: account_code
+
 # and place both
-ib.place_order order,the_bag 
+ib.place_order order,the_bag
 
 ib.wait_for [:OpenOrder, 3], [:OrderStatus, 2]
 

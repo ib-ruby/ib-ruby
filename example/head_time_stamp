@@ -1,28 +1,25 @@
 #!/usr/bin/env ruby
 #
 # The Head Time Stamp -Request returns the first available date for historical data requests
+#
 
 require 'bundler/setup'
 require 'ib-ruby'
+require_relative 'config_ib'
 
-# First, connect to IB TWS and subscribe for events. 
-ib = IB::Connection.new :client_id => 1112  do | gw | #, :port => 7497 # TWS
-
+ib = IB::Connection.new client_id: 1118, host: $host, port: $port do |gw|
 	# Subscribe to TWS alerts/errors
 	gw.subscribe(:Alert, :HeadTimeStamp) { |msg| puts msg.to_human }
 	# Set log level
-	gw.logger.level = Logger::FATAL # DEBUG  -- INFO -- WARN -- ERROR  -- FATAL
-
+	gw.logger.level = Logger::FATAL # DEBUG INFO WARN ERROR FATAL
 end
-# 
+#
 # We demonstrate it with Apple
 #
+ib.send_message :RequestHeadTimeStamp, request_id: 123, contract: IB::Symbols::Stocks.aapl
+ib.wait_for :HeadTimeStamp
 
-		ib.send_message :RequestHeadTimeStamp, request_id: 123, contract: IB::Symbols::Stocks.aapl
-    ib.wait_for :HeadTimeStamp
+ib.send_message :CancelHeadTimeStamp
 
-		ib.send_message :CancelHeadTimeStamp
-
-		puts " First datatset for  #{IB::Symbols::Stocks.aapl.description} :> #{ib.received[:HeadTimeStamp].date} "
-# ...
+puts " First datatset for  #{IB::Symbols::Stocks.aapl.description} :> #{ib.received[:HeadTimeStamp].date} "
 

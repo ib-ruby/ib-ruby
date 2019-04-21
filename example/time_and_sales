@@ -2,9 +2,11 @@
 #
 # This script connects to IB API and subscribes to market data for Forex symbols.
 # It then prints out all trades that exceed certain size.
+#
 
 require 'bundler/setup'
 require 'ib-ruby'
+require_relative 'config_ib'
 
 # Define the symbols we're interested in.
 @market = {
@@ -13,8 +15,7 @@ require 'ib-ruby'
     444 => IB::Symbols::Forex[:usdjpy]
 }
 
-# First, connect to IB TWS. Arbitrary :client_id is used to identify your script
-ib = IB::Connection.new :client_id => 1112 #, :port => 7496 # TWS
+ib = IB::Connection.new client_id: 1138, host: $host, port: $port
 
 # Subscribe to TWS alerts/errors
 ib.subscribe(:Alert) { |msg| puts msg.to_human }
@@ -23,22 +24,22 @@ ib.subscribe(:Alert) { |msg| puts msg.to_human }
 # Note that we have to look the ticker id of each incoming message
 # up in local memory to figure out what it's for.
 # (N.B. The description field is not from IB TWS. It is defined
-#  locally in symbols/futures.rb symbols/forex.rb, and is just arbitrary text.)
+# locally in symbols/futures.rb symbols/forex.rb, and is just arbitrary text.)
 def show_sales_and_size(msg)
-  #return if msg.type != :last_price || msg.data[:size] < MIN_SIZE
-  puts @market[msg.ticker_id].description + ": " +
-           (msg.is_a?(IB::Messages::Incoming::TickPrice) ?
-               "#{msg.data[:size]} at #{msg.data[:price]}" : msg.to_human)
+	#return if msg.type != :last_price || msg.data[:size] < MIN_SIZE
+	puts @market[msg.ticker_id].description + ": " +
+		(msg.is_a?(IB::Messages::Incoming::TickPrice) ?
+			"#{msg.data[:size]} at #{msg.data[:price]}" : msg.to_human)
 end
 
 # Now, subscribe to TickerPrice and TickerSize events.  The code passed in the block
-# will be executed when a message of that type is  received, with the received message
+# will be executed when a message of that type is received, with the received message
 # as its argument. In this case, we just print out the tick.
 ib.subscribe(:TickPrice, :TickSize, :TickString) { |msg| show_sales_and_size(msg) }
 
 # Now we actually request market data for the symbols we're interested in.
 @market.each_pair do |id, contract|
-  ib.send_message :RequestMarketData, :ticker_id => id, :contract => contract
+	ib.send_message :RequestMarketData, ticker_id: id, contract: contract
 end
 
 puts "\nSubscribed to TWS market data"
@@ -46,6 +47,6 @@ puts "\n******** Press <Enter> to cancel... *********\n\n"
 STDIN.gets
 puts "Unsubscribing from TWS market data.."
 
-@market.each_pair { |id, contract| ib.send_message :CancelMarketData, :ticker_id => id }
+@market.each_pair { |id, contract| ib.send_message :CancelMarketData, ticker_id: id }
 
 sleep 2

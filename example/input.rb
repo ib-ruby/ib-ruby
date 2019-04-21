@@ -4,7 +4,7 @@ require 'ib-ruby'
 require 'yaml'
 
 
-# First, connect to IB TWS and subscribe for events. 
+# First, connect to IB TWS and subscribe for events.
 
  IB::Symbols.allocate_collection :w500
  IB::Symbols::W500.purge_collection

@@ -4,17 +4,17 @@
 # Two child orders are attached:
 #   STOP order
 #   LIMIT order (profit target)
+#
 
 require 'rubygems'
 require 'bundler/setup'
 require 'ib-ruby'
+require_relative 'config_ib'
 
 # Only for Advisor accounts: you need to provide account_code such as U666777
 account_code = ARGV[0] || ''
-# First, connect to IB TWS. Arbitrary :client_id is used to identify your script
-ib = IB::Connection.new :client_id => 1112 do | gw | #, :port => 7497 # TWS
-
-# Subscribe to TWS alerts/errors and order-related messages
+ib = IB::Connection.new client_id: 1127, host: $host, port: $port do |gw|
+	# Subscribe to TWS alerts/errors and order-related messages
 	gw.subscribe(:Alert, :OpenOrder, :OrderStatus) { |msg| puts msg.to_human }
 end
 
@@ -25,26 +25,26 @@ stop_price    = order_price - 0.25
 profit_price  = order_price + 0.25
 
 #-- Parent Order --
-buy_order = IB::Limit.order :total_quantity => 100,
-                          :price => order_price,
-                          :action => :buy,
-                          :algo_strategy => '',
-                          :transmit => false,
-		      account: account_code 
+buy_order = IB::Limit.order total_quantity: 100,
+                          price: order_price,
+                          action: :buy,
+                          algo_strategy: '',
+                          transmit: false,
+                          account: account_code
 ib.wait_for :NextValidId
 
 #-- Child STOP --
-stop_order = IB::SimpleStop.order :total_quantity => 100,
-                          :price => stop_price,
-                          :action => :sell,
-                          :parent_id => buy_order.local_id,
-		      account: account_code 
+stop_order = IB::SimpleStop.order total_quantity: 100,
+                          price: stop_price,
+                          action: :sell,
+                          parent_id: buy_order.local_id,
+                          account: account_code
 #-- Profit LMT
-profit_order = IB::Limit.order  :total_quantity => 100,
-                          :price => profit_price,
-                          :action => :sell,
-                          :parent_id => buy_order.local_id,
-		      account: account_code 
+profit_order = IB::Limit.order total_quantity: 100,
+                          price: profit_price,
+                          action: :sell,
+                          parent_id: buy_order.local_id,
+                          account: account_code
 
 # place parent order
 ib.place_order buy_order, symbol

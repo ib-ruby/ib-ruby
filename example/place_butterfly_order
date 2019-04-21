@@ -1,46 +1,41 @@
 #!/usr/bin/env ruby
 #
 # This script places GOOG option butterfly combo order
+#
 
 require 'rubygems'
 require 'bundler/setup'
 require 'ib-ruby'
+require_relative 'config_ib'
 
 # Utility method that helps us build multi-legged (BAG) Orders
 def butterfly symbol, expiry, right, *strikes
-	
-  ib = IB::Connection.current
-  legs = strikes.zip([1, -2, 1]).map do |strike, weight|
-    # Create contract
-    contract = IB::Option.new :symbol => symbol,
-                              :expiry => expiry,
-                              :right => right,
-                              :strike => strike
-    # Find out contract's con_id
-    ib.clear_received :ContractData, :ContractDataEnd
-    ib.send_message :RequestContractData, :id => strike, :contract => contract
-    ib.wait_for :ContractDataEnd, 3
-    con_id = ib.received[:ContractData].last.contract.con_id
+	ib = IB::Connection.current
+	legs = strikes.zip([1, -2, 1]).map do |strike, weight|
+		# Create contract
+		contract = IB::Option.new symbol: symbol, expiry: expiry,
+                              right: right, strike: strike
+		# Find out contract's con_id
+		ib.clear_received :ContractData, :ContractDataEnd
+		ib.send_message :RequestContractData, id: strike, contract: contract
+		ib.wait_for :ContractDataEnd, 3
+		con_id = ib.received[:ContractData].last.contract.con_id
 
-    # Create Comboleg from con_id and weight
-    IB::ComboLeg.new :con_id => con_id, :weight => weight  # return_value for legs
-  end
+		# Create Comboleg from con_id and weight
+		IB::ComboLeg.new con_id: con_id, weight: weight  # return_value for legs
+	end
 
-  # Create and return new Combo contract
-  IB::Bag.new :symbol => symbol,
-              :currency => "USD", # Only US options in combo Contracts
-              :exchange => "SMART",
-              :legs => legs
+	# Create and return new Combo contract
+	IB::Bag.new symbol: symbol,
+              currency: "USD", # Only US options in combo Contracts
+              exchange: "SMART", legs: legs
 end
 
 # Only for Advisor accounts: you need to provide account_code such as U666777
 account_code = ARGV[0] || ''
 
-# 
-# First, connect to IB TWS. Arbitrary :client_id is used to identify your script
-ib = IB::Connection.new :client_id => 1112 do | gw | #, :port => 7497 # TWS
-
-# Subscribe to TWS alerts/errors and order-related messages
+ib = IB::Connection.new client_id: 1142, host: $host, port: $port do |gw|
+	# Subscribe to TWS alerts/errors and order-related messages
 	gw.subscribe(:Alert, :OpenOrder, :OrderStatus) { |msg| puts msg.to_human }
 end
 ib.wait_for :NextValidId
@@ -51,9 +46,7 @@ combo = butterfly 'GOOG', '201806', 'CALL', 1100, 1110, 1120
 # Create Order stub
 order = IB::Limit.order total_quantity: 10, # 10 butterflies
                       limit_price: 0.06, # at 0.06 x 100 USD per contract
-                      action: :buy,
-		      account: account_code 
-		
+                      action: :buy, account: account_code
 
 ib.place_order order, combo
 
@@ -78,7 +71,7 @@ STDIN.gets
 #******** Press <Enter> to cancel... *********
 #
 #
-#delta:~/workspace/ib-ruby/example$ ./list_orders 
+#delta:~/workspace/ib-ruby/example$ ./list_orders
 #20:31:26.781 Connected to server, version: 137,
 # connection time: 2018-02-27 20:31:26 +0000 local, 2018-02-27T20:31:26+00:00 remote.
 #20:31:26.782 Got message 15 (IB::Messages::Incoming::ManagedAccounts)

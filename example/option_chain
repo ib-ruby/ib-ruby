@@ -1,60 +1,57 @@
 #!/usr/bin/env ruby
 #
 # Gets the OptionChain of GE
+#
 
 require 'bundler/setup'
 require 'ib-ruby'
+require_relative 'config_ib'
 
-# First, connect to IB TWS and subscribe for events. 
-ib = IB::Connection.new :client_id => 1112  do | gw | #, :port => 7497 # TWS
-
+# First, connect to IB TWS and subscribe for events.
+ib = IB::Connection.new client_id: 1124, host: $host, port: $port do |gw|
 	# Subscribe to TWS alerts/errors
 	gw.subscribe(:Alert) { |msg| puts msg.to_human }
 	# Set log level
-	gw.logger.level = Logger::ERROR # DEBUG  # -- INFO -- WARN -- ERROR  -- FATAL
-
+	gw.logger.level = Logger::ERROR # DEBUG INFO WARN ERROR FATAL
 end
 
-TheYear =  2019
+TheYear = 2019
 TheStrike = 14
-TheRight =  :put
+TheRight = :put
 
 # get expiries (last-trading-days)
-the_contract =  IB::Option.new symbol: 'GE', currency: 'USD', exchange: 'SMART', strike: TheStrike, right: TheRight
-																
+the_contract = IB::Option.new symbol: 'GE', currency: 'USD', exchange: 'SMART', strike: TheStrike, right: TheRight
+
 provided_expiries = Array.new
 
 puts "Using #{the_contract.to_human}"
 
-the_contract.verify do | detected_contract |
+the_contract.verify do |detected_contract|
 	# last trading day: format yyyy-mm-dd
 	# expiry: format yyyymmdd
 	provided_expiries << detected_contract.last_trading_day
 end
-	puts "detected Expiries  #{provided_expiries.join(" -- ")}"
-	puts
-
-
+puts "detected Expiries  #{provided_expiries.join(" -- ")}"
+puts
 
 # get provided strikes
-option_matrix = provided_expiries.map do | last_trading_day |
-	provided_strikes =  Array.new									
+option_matrix = provided_expiries.map do |last_trading_day|
+	provided_strikes = Array.new
 
 	# becuase we used last_trading day as input to the expiry's array, it as to be assigned that way, too
-  the_contract =  IB::Option.new symbol: 'GE', currency: 'USD', exchange: 'SMART', last_trading_day: last_trading_day, right: TheRight
-																
-  the_contract.verify do | detected_contract |
+	the_contract = IB::Option.new symbol: 'GE', currency: 'USD', exchange: 'SMART', last_trading_day: last_trading_day, right: TheRight
+
+	the_contract.verify do |detected_contract|
 		provided_strikes << detected_contract.strike
 	end
 	puts "Expiry: #{the_contract.expiry}"
 	puts "Strikes: "+ provided_strikes.join(" -- ")
 	provided_strikes
-
 end
 
 puts "NOTICE: Strikes are not sorted when :RequestContractData is used"
 # print summary
-#option_matrix.zip( provided_expiries) do | strikes, expiry|
+#option_matrix.zip( provided_expiries) do |strikes, expiry|
 #	puts "expiry #{strikes}"
 #	puts "provided strikes: #{strikes.join(' ')}"
 #end

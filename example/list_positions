@@ -1,0 +1,36 @@
+#!/usr/bin/env ruby
+#
+# This script displays all contracts in all accounts.
+#
+
+require 'bundler/setup'
+require 'ib-gateway'
+require_relative 'config_ib'
+require 'yaml'
+require 'logger'
+
+logger = Logger.new STDOUT
+logger.level = Logger::INFO
+
+	begin
+	G = IB::Gateway.new get_account_data: true,
+			client_id: 1121, host: $host, port: $port, logger: logger
+	rescue IB::TransmissionError => e
+		puts "E: #{e.inspect}"
+	end
+
+	puts "List of Contracts"
+	puts '-' * 25
+	# Gateway.all_contracts is defined in lib/ib/account_infos.rb
+	# and is simply
+	# active_accounts.map(&:contracts).flat_map(&:itself).uniq(&:con_id)
+	puts G.all_contracts.map(&:to_human).join("\n")
+	puts '-' * 25
+
+	G.active_accounts.each do |user|
+		puts "\n" * 3
+		puts "Postions Account: #{user.account}"
+		puts '-' * 25
+		puts user.portfolio_values.map(&:to_human).join("\n")
+		puts '-' * 25
+	end
