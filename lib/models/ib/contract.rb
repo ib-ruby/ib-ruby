@@ -161,6 +161,12 @@ module IB
     def serialize_short *fields  # :nodoc:
       serialize :option, :trading_class, :primary_exchange, *fields
     end
+	
+		# same as :serialize_short, omitting primary_exchange
+			# used by      RequestMarketDepth 
+    def serialize_supershort *fields  # :nodoc:
+      serialize :option, :trading_class,  *fields
+    end
 
     # Serialize under_comp parameters: EClientSocket.java, line 471
     def serialize_under_comp *args   # :nodoc: 

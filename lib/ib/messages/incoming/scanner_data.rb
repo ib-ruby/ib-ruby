@@ -18,31 +18,32 @@ module IB
                                 [:count, :int]
       class ScannerData
         attr_accessor :results
+				using IBSupport  # extended Array-Class  from abstract_message
 
         def load
           super
 
           @results = Array.new(@data[:count]) do |_|
-            {:rank => socket.read_int,
+            {:rank => buffer.read_int,
              :contract =>
                  Contract.build(
-                     :con_id => socket.read_int,
-                     :symbol => socket.read_string,
-                     :sec_type => socket.read_string,
-                     :expiry => socket.read_string,
-                     :strike => socket.read_decimal,
-                     :right => socket.read_string,
-                     :exchange => socket.read_string,
-                     :currency => socket.read_string,
-                     :local_symbol => socket.read_string,
+                     :con_id => buffer.read_int,
+                     :symbol => buffer.read_string,
+                     :sec_type => buffer.read_string,
+                     :expiry => buffer.read_string,
+                     :strike => buffer.read_decimal,
+                     :right => buffer.read_string,
+                     :exchange => buffer.read_string,
+                     :currency => buffer.read_string,
+                     :local_symbol => buffer.read_string,
                      :contract_detail =>
                          IB::ContractDetail.new(
-                             :market_name => socket.read_string,
-                             :trading_class => socket.read_string)),
-             :distance => socket.read_string,
-             :benchmark => socket.read_string,
-             :projection => socket.read_string,
-             :legs => socket.read_string,
+                             :market_name => buffer.read_string,
+                             :trading_class => buffer.read_string)),
+             :distance => buffer.read_string,
+             :benchmark => buffer.read_string,
+             :projection => buffer.read_string,
+             :legs => buffer.read_string,
             }
           end
         end

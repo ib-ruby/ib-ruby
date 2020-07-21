@@ -83,6 +83,7 @@ shared_examples_for 'Valid account data request' do
     its( :data ) { should be_a Hash }
 		its( :portfolio_value ){is_expected.to be_a IB::PortfolioValue }
     its( :account ) {  is_expected.to match /\w\d/ }
+
     its( :to_human ) { is_expected.to match /PortfolioValue/ }
 		
 #    its(:position) { should be_a BigDecimal }

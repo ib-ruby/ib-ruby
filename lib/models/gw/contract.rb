@@ -7,8 +7,62 @@ module CoreExtensions
     end
   end
 end
+
 Array.include CoreExtensions::Array::DuplicatesCounter
 module IB
+
+	module BuisinesDays
+		#		https://stackoverflow.com/questions/4027768/calculate-number-of-business-days-between-two-days
+
+		# Calculates the number of business days in range (start_date, end_date]
+		#
+		# @param start_date [Date]
+		# @param end_date [Date]
+		#
+		# @return [Fixnum]
+		def self.business_days_between(start_date, end_date)
+			days_between = (end_date - start_date).to_i
+			return 0 unless days_between > 0
+
+			# Assuming we need to calculate days from 9th to 25th, 10-23 are covered
+			# by whole weeks, and 24-25 are extra days.
+			#
+			# Su Mo Tu We Th Fr Sa    # Su Mo Tu We Th Fr Sa
+			#        1  2  3  4  5    #        1  2  3  4  5
+			#  6  7  8  9 10 11 12    #  6  7  8  9 ww ww ww
+			# 13 14 15 16 17 18 19    # ww ww ww ww ww ww ww
+			# 20 21 22 23 24 25 26    # ww ww ww ww ed ed 26
+			# 27 28 29 30 31          # 27 28 29 30 31
+			whole_weeks, extra_days = days_between.divmod(7)
+
+			unless extra_days.zero?
+				# Extra days start from the week day next to start_day,
+				# and end on end_date's week date. The position of the
+				# start date in a week can be either before (the left calendar)
+				# or after (the right one) the end date.
+				#
+				# Su Mo Tu We Th Fr Sa    # Su Mo Tu We Th Fr Sa
+				#        1  2  3  4  5    #        1  2  3  4  5
+				#  6  7  8  9 10 11 12    #  6  7  8  9 10 11 12
+				# ## ## ## ## 17 18 19    # 13 14 15 16 ## ## ##
+				# 20 21 22 23 24 25 26    # ## 21 22 23 24 25 26
+				# 27 28 29 30 31          # 27 28 29 30 31
+				#
+				# If some of the extra_days fall on a weekend, they need to be subtracted.
+				# In the first case only corner days can be days off,
+				# and in the second case there are indeed two such days.
+				extra_days -= if start_date.tomorrow.wday <= end_date.wday
+												[start_date.tomorrow.sunday?, end_date.saturday?].count(true)
+											else
+												2
+											end
+			end
+
+			(whole_weeks * 5) + extra_days
+		end
+	end
+
+	
 
 # define a custom ErrorClass which can be fired if a verification fails
 class VerifyError < StandardError
@@ -177,7 +231,7 @@ class Contract
 			duration =  if duration.present?
 										duration.is_a?(String) ? duration : duration.to_s + " D"
 									elsif start.present?
-										(to - start).to_i.to_s + " D"
+	 BuisinesDays.business_days_between(start, to).to_s + " D"
 									else
 										"1 D"
 										end
@@ -193,7 +247,7 @@ class Contract
 				:format_date => 2,
 				:keep_up_todate => 0)
 
-			Timeout::timeout(5) do   # max 5 sec.
+			Timeout::timeout(50) do   # max 5 sec.
 				sleep 0.1 
 				last_time =  recieved.pop # blocks until a message is ready on the queue
 				loop do
@@ -441,6 +495,35 @@ class Contract
 			end
 		end
 
+
+	def associate_ticdata
+
+		tws=  IB::Gateway.tws 		 # get the initialized ib-ruby instance
+		the_id =  nil
+		finalize= false
+		#  switch to delayed data
+		tws.send_message :RequestMarketDataType, :market_data_type => :delayed
+
+		s_id = tws.subscribe(:TickSnapshotEnd) { |msg|	finalize = true	if msg.ticker_id == the_id }
+				
+		sub_id = tws.subscribe(:TickPrice, :TickSize,  :TickGeneric, :TickOption) do |msg|
+			    self.bars << msg.the_data if msg.ticker_id == the_id 
+			end
+
+		# initialize »the_id« that is used to identify the received tick messages
+		# by firing the market data request
+		the_id = tws.send_message :RequestMarketData,  contract: self , snapshot: true 
+
+		#keep the method-call running until the request finished
+		#and cancel subscriptions to the message handler.
+		Thread.new do 
+                  i=0; loop{ i+=1; sleep 0.1; break if finalize || i > 1000 }
+                  tws.unsubscribe sub_id 
+                  tws.unsubscribe s_id
+                  puts "#{symbol} data gathered" 
+                end  # method returns the (running) thread
+
+	end # def 
 ######################  private methods 
 
 private
