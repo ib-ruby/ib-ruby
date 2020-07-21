@@ -22,9 +22,10 @@ module IB
 				class PortfolioValue
 
 
-				#	def to_human
+					def to_human
 				#	"<PortfolioValue: #{contract.to_human} #{portfolio_value}>"
-				#	end
+						portfolio_value.to_human
+					end
 					
 					def portfolio_value
 						unless @portfolio_value.present?
@@ -39,7 +40,7 @@ module IB
 						@account_name =  @data[:account]
 					end
 
-					alias :to_human :portfolio_value 
+#					alias :to_human :portfolio_value 
 				end # PortfolioValue
 
 

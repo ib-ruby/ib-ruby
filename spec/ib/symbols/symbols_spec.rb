@@ -37,7 +37,7 @@ describe IB::Symbols   do
 		it{ is_expected.to be_an Enumerator }
 		its(:first){ is_expected.to be_a IB::Contract }
 		its(:next){ is_expected.to be_a IB::Contract }	
-		its(:size ){ is_expected.to be  > 0 }
+		its(:count ){ is_expected.to be  > 0 }  # Enumerator's size --> count
 
 	end
 

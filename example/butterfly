@@ -1,0 +1,146 @@
+#!/usr/bin/env ruby
+#
+# This script places a option butterfly combo order to the first account 
+# It requires a demo account and a running TWS/Gateway. 
+#
+# First specify Host and ClientID
+Host =  'localhost:4002'
+ClientID =  967
+
+require 'bundler/setup'
+require 'ib-gateway'
+require 'logger'
+
+# Lets omit the IB::prefix
+include IB 
+
+logger = Logger.new  STDOUT
+logger.formatter = proc do |level, time, prog, msg|
+      "#{time.strftime('%H:%M:%S')} #{msg}\n"
+end
+logger.level = Logger::INFO 
+
+# Conncet to the Gateway, don't load account_data and keep records of 
+# the traffic from the TWS in G.tws.received
+	G =  Gateway.new  get_account_data: false, 
+										serial_array: true,
+										client_id: ClientID, 
+										host: Host,
+										logger: logger
+
+# Build the Butterfly
+#
+# We want to build an Butterfly centered at the actual market-price
+# Underlying is Microsoft
+# lets get atm-options
+	atm-options =  Symbols::Stocks.msft.atm_options
+#  the result is a hash expiry => Array of Options, in this case, there is only the atm-option
+#  Usualy you get 3 to 10 different expiries. We take the second one to start building the butterfly
+	center_option = atm_options.values[2].first
+
+
+	butterfly =  Spread.new
+	butterfly.add_leg 
+	
+
+
+
+
+  butterfly_center_price =(  s= Symbols::Stocks.msft.market_price  ) - s * 0.4
+	
+
+  m_o =  Option
+  butterfly =  Spread
+
+# Utility method that helps us build multi-legged (BAG) Orders
+def butterfly symbol, expiry, right, *strikes
+	
+  ib = IB::Connection.current
+  legs = strikes.zip([1, -2, 1]).map do |strike, weight|
+    # Create contract
+    contract = IB::Option.new :symbol => symbol,
+                              :expiry => expiry,
+                              :right => right,
+                              :strike => strike
+    # Find out contract's con_id
+    ib.clear_received :ContractData, :ContractDataEnd
+    ib.send_message :RequestContractData, :id => strike, :contract => contract
+    ib.wait_for :ContractDataEnd, 3
+    con_id = ib.received[:ContractData].last.contract.con_id
+
+    # Create Comboleg from con_id and weight
+    IB::ComboLeg.new :con_id => con_id, :weight => weight  # return_value for legs
+  end
+
+  # Create and return new Combo contract
+  IB::Bag.new :symbol => symbol,
+              :currency => "USD", # Only US options in combo Contracts
+              :exchange => "SMART",
+              :legs => legs
+end
+
+# Only for Advisor accounts: you need to provide account_code such as U666777
+account_code = ARGV[0] || ''
+
+# 
+# First, connect to IB TWS. Arbitrary :client_id is used to identify your script
+ib = IB::Connection.new :client_id => 1112 do | gw | #, :port => 7497 # TWS
+
+# Subscribe to TWS alerts/errors and order-related messages
+	gw.subscribe(:Alert, :OpenOrder, :OrderStatus) { |msg| puts msg.to_human }
+end
+ib.wait_for :NextValidId
+
+# Create multi-legged option Combo using utility method above
+combo = butterfly 'GOOG', '201806', 'CALL', 1100, 1110, 1120
+
+# Create Order stub
+order = IB::Limit.order total_quantity: 10, # 10 butterflies
+                      limit_price: 0.06, # at 0.06 x 100 USD per contract
+                      action: :buy,
+		      account: account_code 
+		
+
+ib.place_order order, combo
+
+ib.wait_for [:OpenOrder, 3], [:OrderStatus, 2]
+
+puts "\n******** Press <Enter> to cancel... *********\n\n"
+STDIN.gets
+
+
+### Expected output
+#delta:~/workspace/ib-ruby/example$ ./place_combo_order DU167349
+#20:30:20.120 Connected to server, version: 137,
+#20:30:20.170 Got next valid order id: 10.
+#------sendto ---------(debugging output in outgoing/abstract_message)
+#["29", "8", "1100", "", "GOOG", "OPT", "201806", "1100.0", "C", "", "SMART", "", "", "", "", "0", "", "", "\""]
+#["29", "8", "1110", "", "GOOG", "OPT", "201806", "1110.0", "C", "", "SMART", "", "", "", "", "0", "", "", "\""]
+#["29", "8", "1120", "", "GOOG", "OPT", "201806", "1120.0", "C", "", "SMART", "", "", "", "", "0", "", "", "\""]
+#------sendto ---------(debugging output in outgoing/abstract_message)
+#["45", "10", "", "GOOG", "BAG", "", "0.0", "", "", "SMART", "", "USD", "", "", "", "", "BUY", "10", "LMT", "0.06", "", "GTC", "", "DU167349", "O", "0", "", "1", "0", "0", "0", "0", "0", "0", "0", "3", "269330045", "1", "BUY", "SMART", "0", "0", "", "-1", "301964119", "2", "SELL", "SMART", "0", "0", "", "-1", "269562569", "1", "BUY", "SMART", "0", "0", "", "-1", "3", "", "", "", "0", "", "0", "", "", "", "", "", "", "", "0", "", "-1", "0", "", "", "0", "", "", "1", "1", "", "0", "", "", "", "", "", "0", "", "", "", "", "0", "", "", "", "", "", "", "", "", "", "", "0", "", "", "0", "0", "", "", "0", "", "0", "0", "0", "0", "", "", "", "", "", "", "", "", "", "", "", "\""]
+#------sendto ---------
+#
+#******** Press <Enter> to cancel... *********
+#
+#
+#delta:~/workspace/ib-ruby/example$ ./list_orders 
+#20:31:26.781 Connected to server, version: 137,
+# connection time: 2018-02-27 20:31:26 +0000 local, 2018-02-27T20:31:26+00:00 remote.
+#20:31:26.782 Got message 15 (IB::Messages::Incoming::ManagedAccounts)
+#20:31:26.782 No subscribers for message IB::Messages::Incoming::ManagedAccounts!
+#20:31:26.825 Got message 9 (IB::Messages::Incoming::NextValidId)
+#20:31:26.825 Got next valid order id: 1.
+#20:31:26.825 Got message 4 (IB::Messages::Incoming::Alert)
+#TWS Warning 2104: Market data farm connection is OK:usopt
+#20:31:26.825 Got message 4 (IB::Messages::Incoming::Alert)
+#TWS Warning 2104: Market data farm connection is OK:usfarm
+#------sendto ---------(debugging output in outgoing/abstract_message)
+#["\\x0516", "1", "\""]
+#------sendto ---------
+#20:31:26.834 Got message 5 (IB::Messages::Incoming::OpenOrder)
+#1: <OpenOrder: <Bag: GOOG SMART USD legs: 269330045|1,269562569|1,301964119|-2 > <Order: LMT GTC buy 10.0 0.06 PendingSubmit #9/561364885 from 1112/DU167349 fee 0.0>>
+#20:31:26.836 Got message 3 (IB::Messages::Incoming::OrderStatus)
+#<OrderStatus: <OrderState: PendingSubmit #9/561364885 from 1112 filled 0.0/10.0 at 0.0/0.0 why_held >>
+#20:31:26.877 Got message 5 (IB::Messages::Incoming::OpenOrder)
+#
