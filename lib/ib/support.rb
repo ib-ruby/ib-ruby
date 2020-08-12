@@ -13,6 +13,11 @@ module IBSupport
 			i.is_a?( Integer ) ?  i : nil
 		end
 
+		def read_float
+			i= self.shift  rescue nil
+			i = i.to_f unless i.blank?
+
+		end
 		def read_decimal
 			i= self.shift  rescue nil
 			i = i.to_d unless i.blank?
