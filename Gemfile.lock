@@ -10,7 +10,7 @@ PATH
     ib-ruby (0.9.7.2)
       activemodel
       activesupport (>= 5.2)
-      bundler (>= 1.1.16)
+      bundler (>= 2.0)
       ox
 
 GEM
@@ -112,4 +112,4 @@ DEPENDENCIES
   rspec-its
 
 BUNDLED WITH
-   1.16.1
+   2.1.4
