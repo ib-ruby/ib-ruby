@@ -10,22 +10,22 @@ PATH
     ib-ruby (0.9.7.2)
       activemodel
       activesupport (>= 5.2)
-      bundler (>= 1.1.16)
+      bundler (>= 2.0)
       ox
 
 GEM
   remote: https://rubygems.org/
   specs:
-    activemodel (6.0.3.1)
-      activesupport (= 6.0.3.1)
-    activesupport (6.0.3.1)
+    activemodel (6.0.3.3)
+      activesupport (= 6.0.3.3)
+    activesupport (6.0.3.3)
       concurrent-ruby (~> 1.0, >= 1.0.2)
       i18n (>= 0.7, < 2)
       minitest (~> 5.1)
       tzinfo (~> 1.1)
       zeitwerk (~> 2.2, >= 2.2.2)
     coderay (1.1.2)
-    concurrent-ruby (1.1.6)
+    concurrent-ruby (1.1.7)
     diff-lcs (1.3)
     ffi (1.12.2)
     ffi (1.12.2-java)
@@ -45,7 +45,7 @@ GEM
       guard (~> 2.1)
       guard-compat (~> 1.1)
       rspec (>= 2.99.0, < 4.0)
-    i18n (1.8.2)
+    i18n (1.8.5)
       concurrent-ruby (~> 1.0)
     listen (3.1.5)
       rb-fsevent (~> 0.9, >= 0.9.4)
@@ -53,7 +53,7 @@ GEM
       ruby_dep (~> 1.2)
     lumberjack (1.0.12)
     method_source (0.9.0)
-    minitest (5.14.1)
+    minitest (5.14.2)
     nenv (0.3.0)
     notiffany (0.1.1)
       nenv (~> 0.1)
@@ -95,7 +95,7 @@ GEM
     thread_safe (0.3.6-java)
     tzinfo (1.2.7)
       thread_safe (~> 0.1)
-    zeitwerk (2.3.0)
+    zeitwerk (2.4.0)
 
 PLATFORMS
   java
@@ -112,4 +112,4 @@ DEPENDENCIES
   rspec-its
 
 BUNDLED WITH
-   1.16.1
+   2.1.4
