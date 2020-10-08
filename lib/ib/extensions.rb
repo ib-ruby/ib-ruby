@@ -63,6 +63,15 @@ class Object
   end
 end
 
+module Kernel
+  # we use a duration for the base from the current time and bundle it with
+  # current millisecond which gives us uniq enough (in selected time frame) Integer
+  def duration_based_rand duration
+    t=Time.now
+    "#{(t.to_i % duration).to_i}#{((t - t.to_i).to_f * 1_000).to_i}".to_i
+  end
+end
+
 ### Patching Object#error in ib/errors
 #  def error message, type=:standard
 

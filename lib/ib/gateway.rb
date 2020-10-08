@@ -1,10 +1,10 @@
 #module GWSupport
 # provide  AR4- ActiveRelation-like-methods to Array-Class
 #refine  Array do
-	class Array 
+	class Array
   # returns the item (in case of first) or the hole array (in case of create)
   def first_or_create item, *condition, &b
-    int_array = if condition.empty? 
+    int_array = if condition.empty?
 	       [ find_all{ |x| x == item } ] if !block_given?
 	     else
 	       condition.map{ |c| find_all{|x| x[ c ] == item[ c ] }}
@@ -17,12 +17,12 @@
     # reduce performs a logical "&" between the array-elements
     # we are only interested in the first entry
     r= int_array.reduce( :& )
-    r.present? ? r.first : self.push( item ) 
+    r.present? ? r.first : self.push( item )
   end
   def update_or_create item, *condition, &b
-    member = first_or_create( item, *condition, &b) 
+    member = first_or_create( item, *condition, &b)
     self[ index( member ) ] = item  unless member.is_a?(Array)
-    self  # always returns the array 
+    self  # always returns the array
   end
 
   # performs [ [ array ] & [ array ] & [..] ].first
@@ -46,7 +46,7 @@ The Default Skeleton can easily be substituted by customized actions
 The IB::Gateway can be used in three modes
 (1) IB::Gateway.new( connect:true, --other arguments-- ) do | gateway |
   ** subscribe to Messages and define the response  **
-  # This block is executed before a connect-attempt is made 
+  # This block is executed before a connect-attempt is made
     end
 (2) gw = IB:Gateway.new
     ** subscribe to Messages **
@@ -54,8 +54,8 @@ The IB::Gateway can be used in three modes
 (3) IB::Gateway.new connect:true, host: 'localhost' ....
 
 Independently IB::Alert.alert_#{nnn} should be defined for a proper response to warnings, error-
-and system-messages. 
-  
+and system-messages.
+
 
 The Connection to the TWS is realized throught IB::Connection. Additional to __IB::Connection.current__
 IB::Gateway.tws points to the active Connection.
@@ -71,11 +71,11 @@ IB::Gateway.new  serial_array: true (, ...)
 
 class Gateway
 
- require 'active_support'
+ require 'active_support/all'
 
  include LogDev   # provides default_logger
  include AccountInfos  # provides Handling of Account-Data provided by the tws
- include OrderHandling 
+ include OrderHandling
 
 # include GWSupport   # introduces update_or_create, first_or_create and intercept to the Array-Class
 
@@ -84,10 +84,10 @@ class Gateway
   # similar to the Connection-Class: current represents the active instance of Gateway
   mattr_accessor :current
   mattr_accessor :tws
-  
+
 
 =begin
-ActiveAccounts returns a list of Account-Objects 
+ActiveAccounts returns a list of Account-Objects
 Thus orders can be verified in a FA-environment.
 
 If only one Account is transmitted,  User and Advisor are identical.
@@ -97,7 +97,7 @@ If only one Account is transmitted,  User and Advisor are identical.
   def active_accounts
      @accounts.find_all{|x| x.user? && x.connected }
   end
-	
+
 =begin
 ForActiveAccounts enables a thread-safe access to account-data
 =end
@@ -106,7 +106,7 @@ ForActiveAccounts enables a thread-safe access to account-data
     active_accounts.map{|y| for_selected_account y.account,  &b }
   end
 =begin
-ForSelectAccount provides  an Account-Object-Environment 
+ForSelectAccount provides  an Account-Object-Environment
 (with AccountValues, Portfolio-Values, Contracts and Orders)
 to deal with in the specifed block.
 
@@ -127,35 +127,35 @@ The Advisor is always the first account
     @accounts.first
   end
 
-  def initialize  port: 4002, # 7497, 
+  def initialize  port: 4002, # 7497,
 		  host: '127.0.0.1',   # 'localhost:4001' is also accepted
-		  client_id:  random_id,
-		  subscribe_managed_accounts: true, 
-		  subscribe_alerts: true, 
-		  subscribe_order_messages: true, 
-		  connect: true, 
+		  client_id:  duration_based_rand(1.month),
+		  subscribe_managed_accounts: true,
+		  subscribe_alerts: true,
+		  subscribe_order_messages: true,
+		  connect: true,
 		  get_account_data: false,
-		  serial_array: false, 
+		  serial_array: false,
 		  logger: default_logger,
 			watchlists: [] ,  # array of watchlists (IB::Symbols::{watchlist}) containing descriptions for complex positions
 			&b
 
-    host, port = (host+':'+port.to_s).split(':') 
-    
+    host, port = (host+':'+port.to_s).split(':')
+
 		self.logger = logger
     logger.info { '-' * 20 +' initialize ' + '-' * 20 }
     logger.tap{|l| l.progname =  'Gateway#Initialize' }
-    
+
 		@connection_parameter = { received: serial_array, port: port, host: host, connect: false, logger: logger, client_id: client_id }
-    
+
 		@account_lock = Mutex.new
 		@watchlists = watchlists
-		@gateway_parameter = { s_m_a: subscribe_managed_accounts, 
+		@gateway_parameter = { s_m_a: subscribe_managed_accounts,
 													 s_a: subscribe_alerts,
 													 s_o_m: subscribe_order_messages,
 													 g_a_d: get_account_data }
 
-		
+
 		Thread.report_on_exception = true
 		# https://blog.bigbinary.com/2018/04/18/ruby-2-5-enables-thread-report_on_exception-by-default.html
     Gateway.current = self
@@ -167,7 +167,7 @@ The Advisor is always the first account
     if connect || get_account_data
       if connect(100)  # tries to connect for about 2h
 				get_account_data(watchlists: watchlists.map{|b| IB::Symbols.allocate_collection b})  if get_account_data
-				#    request_open_orders() if request_open_orders || get_account_data 
+				#    request_open_orders() if request_open_orders || get_account_data
       else
 				@accounts = []   # definitivley reset @accounts
       end
@@ -178,25 +178,25 @@ The Advisor is always the first account
 	def active_watchlists
 		@watchlists
 	end
-	
+
   def get_host
     "#{@connection_parameter[:host]}: #{@connection_parameter[:port] }"
   end
-  def change_host host: @connection_parameter[:host], 
+  def change_host host: @connection_parameter[:host],
 		  port: @connection_parameter[:port],
 		  client_id: @connection_parameter[:client_id]
-    host, port = (host+':'+port.to_s).split(':') 
-    @connection_parameter[:client_id] = client_id 
-    @connection_parameter[:host] = host 
-    @connection_parameter[:port] = port 
-    
+    host, port = (host+':'+port.to_s).split(':')
+    @connection_parameter[:client_id] = client_id
+    @connection_parameter[:host] = host
+    @connection_parameter[:port] = port
+
   end
 
   def update_local_order order
 		# @local_orders is initialized by #PrepareConnection
     @local_orders.update_or_create order, :local_id
   end
-  
+
 =begin
 Proxy for Connection#SendMessage
 allows reconnection if a socket_error occurs
@@ -206,7 +206,7 @@ allows reconnection if a socket_error occurs
     logger.tap{|l| l.progname =  'Gateway#SendMessage' }
     begin
     tws.send_message what, *args
-    rescue Errno::EPIPE 
+    rescue Errno::EPIPE
       logger.info 'Connection interrupted ... start again'
       prepare_connection ; connect
       retry
@@ -223,10 +223,10 @@ Cancels one or multible orders
 Argument is either an order-object or a local_id
 =end
 
-  def cancel_order *orders 
+  def cancel_order *orders
 
     logger.tap{|l| l.progname =  'Gateway#CancelOrder' }
-	
+
      orders.compact.each do |o|
 			 local_id = if o.is_a? (IB::Order)
 										logger.info{ "Cancelling #{o.to_human}" }
@@ -243,7 +243,7 @@ Argument is either an order-object or a local_id
   def prepare_connection &b
     tws.disconnect if tws.is_a? IB::Connection
     self.tws = IB::Connection.new  @connection_parameter do |c|
-    # the accounts-array keeps any account tranmitted first after connecting 
+    # the accounts-array keeps any account tranmitted first after connecting
     # the local_orders-Array keeps any recent order, that has a positive local_id
 	#		c.subscribe(:NextValidId) do |msg|
 	#			logger.progname = "Gateway#connect"
@@ -256,23 +256,23 @@ Argument is either an order-object or a local_id
     # prepare Advisor-User hierachie
     initialize_managed_accounts if @gateway_parameter[:s_m_a]
     initialize_alerts if @gateway_parameter[:s_a]
-    initialize_order_handling if @gateway_parameter[:s_o_m] || @gateway_parameter[:g_a_d] 
+    initialize_order_handling if @gateway_parameter[:s_o_m] || @gateway_parameter[:g_a_d]
     ## apply other initialisations which should apper before the connection as block
     ## i.e. after connection order-state events are fired if an open-order is pending
     ## a possible response is best defined before the connect-attempt is done
 		# ##  Attention
 		# ##  @accounts are not initialized yet
-    if block_given? 
-      yield self 
-    
+    if block_given?
+      yield self
+
     end
   end
 
   ## ------------------------------------- connect ---------------------------------------------##
 =begin
-Zentrale Methode 
+Zentrale Methode
 Es wird ein Connection-Objekt (IB::Connection.current) angelegt, dass mit den Daten aus config/connect.yml initialisiert wird.
-Sollte keine TWS vorhanden sein, wird eine entsprechende Meldung ausgegeben und der Verbindungsversuch 
+Sollte keine TWS vorhanden sein, wird eine entsprechende Meldung ausgegeben und der Verbindungsversuch
 wiederholt.
 Weiterhin meldet sich die Anwendung zur Auswertung von Messages der TWS an.
 
@@ -282,10 +282,10 @@ Weiterhin meldet sich die Anwendung zur Auswertung von Messages der TWS an.
 
 
 		i= -1
-		logger.progname =  'Gateway#connect' 
+		logger.progname =  'Gateway#connect'
 		begin
 			tws_ready =  false
-			tws.connect# { tws_ready =  true } 
+			tws.connect# { tws_ready =  true }
 		rescue  Errno::ECONNREFUSED => e
 			i+=1
 			if i < maximal_count_of_retry
@@ -325,9 +325,9 @@ Weiterhin meldet sich die Anwendung zur Auswertung von Messages der TWS an.
 
 
 =begin
-InitializeManagedAccounts 
+InitializeManagedAccounts
 defines the Message-Handler for :ManagedAccounts
-Its always active. 
+Its always active.
 =end
 
   def initialize_managed_accounts
@@ -340,11 +340,11 @@ Its always active.
 			end
 		end
 
-		man_id = tws.subscribe( :ManagedAccounts ) do |msg| 
-			logger.progname =  'Gateway#InitializeManagedAccounts' 
+		man_id = tws.subscribe( :ManagedAccounts ) do |msg|
+			logger.progname =  'Gateway#InitializeManagedAccounts'
 			if @accounts.empty?
 					# just validate the message and put all together into an array
-					@accounts =  msg.accounts_list.split(',').map do |a| 
+					@accounts =  msg.accounts_list.split(',').map do |a|
 						account = IB::Account.new( account: a.upcase ,  connected: true )
 					end
       else
@@ -359,7 +359,7 @@ Its always active.
   def initialize_alerts
 
 		tws.subscribe(  :AccountUpdateTime  ){| msg | logger.debug{ msg.to_human }}
-    tws.subscribe(:Alert) do |msg| 
+    tws.subscribe(:Alert) do |msg|
       logger.progname = 'Gateway#Alerts'
       logger.debug " ----------------#{msg.code}-----"
       # delegate anything to IB::Alert
@@ -382,21 +382,21 @@ Its always active.
 
 		tws.disconnect if tws.present?
 		@accounts = [] # each{|y| y.update_attribute :connected,  false }
-		logger.info "Connection closed" 
+		logger.info "Connection closed"
 	end
 
 # Handy method to ensure that a connection is established and active.
 #
-# The connection is resetted on the IB-side at least once a day. Then the 
-# IB-Ruby-Connection has to be reestablished, too. 
-# 
-# check_connection reconnects if nesessary and returns false if the connection is lost. 
-# 
+# The connection is resetted on the IB-side at least once a day. Then the
+# IB-Ruby-Connection has to be reestablished, too.
+#
+# check_connection reconnects if nesessary and returns false if the connection is lost.
+#
 # It delays the process by 6 ms (150 MBit Cable connection)
 #
 #  a =  Time.now; G.check_connection; b= Time.now ;b-a
 #   => 0.00066005
-# 
+#
 	def check_connection
 				answer = nil; count=0
 				z= tws.subscribe( :CurrentTime ) { answer = true }
@@ -407,7 +407,7 @@ Its always active.
 					rescue IOError, Errno::ECONNREFUSED   # connection lost
 						count = 6
 					rescue IB::Error # not connected
-						reconnect 
+						reconnect
 						count +=1
 						sleep 1
 						retry if count <= 5
@@ -418,13 +418,6 @@ Its always active.
 				tws.unsubscribe z
 			count < 5  && answer #  return value
 	end
-
-private
-
-  def random_id
-    rand 99999
-  end
-
 end  # class
 
 end # module
