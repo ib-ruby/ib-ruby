@@ -1,5 +1,5 @@
 require 'thread'
-require 'active_support'
+require 'active_support/all'
 require 'ib/socket'
 require 'ib/logger'
 require 'ib/messages'
@@ -8,7 +8,7 @@ module IB
   # Encapsulates API connection to TWS or Gateway
   class Connection
 
-  
+
   ## -------------------------------------------- Interface ---------------------------------
   ## public attributes: socket, next_local_id ( alias next_order_id)
   ## public methods:  connect (alias open), disconnect, connected?
@@ -16,7 +16,7 @@ module IB
   ##		      send_message (alias dispatch)
   ##		      place_order, modify_order, cancel_order
   ## public data-queue: received,  received?, wait_for, clear_received
-  ## misc:	      reader_running? 
+  ## misc:	      reader_running?
 
   include LogDev   # provides default_logger
 
@@ -27,13 +27,13 @@ module IB
     # Older protocol versions support can be found in older gem versions.
 
     attr_accessor  :socket #   Socket to IB server (TWS or Gateway)
-    attr_accessor  :next_local_id # Next valid order id 
-    attr_accessor  :client_id 
+    attr_accessor  :next_local_id # Next valid order id
+    attr_accessor  :client_id
     attr_accessor  :server_version
     attr_accessor  :client_version
     alias next_order_id next_local_id
     alias next_order_id= next_local_id=
-    
+
     def initialize host: '127.0.0.1',
                    port: '4002', # IB Gateway connection (default --> demo) 4001:  production
                        #:port => '7497', # TWS connection  --> demo				  7496:  production
@@ -41,9 +41,9 @@ module IB
                    received:  true, # Keep all received messages in a @received Hash
 #									 redis: false,    # future plans
                    logger: default_logger,
-                   client_id: random_id, 
+                   client_id: duration_based_rand(1.month),
                    client_version: IB::Messages::CLIENT_VERSION,	# lib/ib/server_versions.rb
-									 optional_capacities: "", # TWS-Version 974: "+PACEAPI" 
+									 optional_capacities: "", # TWS-Version 974: "+PACEAPI"
                    #server_version: IB::Messages::SERVER_VERSION, # lib/messages.rb
 		   **any_other_parameters_which_are_ignored
 			 # V 974 release motes
@@ -55,7 +55,7 @@ module IB
 			next unless type == :key
 			case k
 			when :logger
-				self.logger = logger  
+				self.logger = logger
 			else
 				v = eval(k.to_s)
 				instance_variable_set("@#{k}", v) unless v.nil?
@@ -110,7 +110,7 @@ module IB
 		### Working with connection
 
 		def connect
-			logger.progname='IB::Connection#connect' 
+			logger.progname='IB::Connection#connect'
 			if connected?
 				error  "Already connected!"
 				return
@@ -135,8 +135,8 @@ module IB
 			# Parameters borrowed from the python client
 			start_api = 71
 			version = 2
-			#			optcap = @optional_capacities.empty? ? "" : " "+ @optional_capacities 
-			socket.send_messages start_api, version, @client_id  , @optional_capacities 
+			#			optcap = @optional_capacities.empty? ? "" : " "+ @optional_capacities
+			socket.send_messages start_api, version, @client_id  , @optional_capacities
 			@connected = true
 			logger.info { "Connected to server, version: #{@server_version},\n connection time: " +
 								 "#{@local_connect_time} local, " +
@@ -146,7 +146,7 @@ module IB
 			# get the first message and proceed if something reasonable is recieved
 			the_message = process_message   # recieve next_order_id
 			error "Check Port/Client_id ", :reader if the_message == " "
-			start_reader  
+			start_reader
 		end
 
     alias open connect # Legacy alias
@@ -176,7 +176,7 @@ module IB
     def subscribe *args, &block
       @subscribe_lock.synchronize do
         subscriber = args.last.respond_to?(:call) ? args.pop : block
-        id = random_id
+        id = duration_based_rand(1.month)
 
         error  "Need subscriber proc or block ", :args  unless subscriber.is_a? Proc
 
@@ -190,7 +190,7 @@ module IB
           when what.is_a?(Regexp)
             Messages::Incoming::Classes.values.find_all { |klass| klass.to_s =~ what }
           else
-            error  "#{what} must represent incoming IB message class", :args 
+            error  "#{what} must represent incoming IB message class", :args
           end
      # @subscribers_lock.synchronize do
           message_classes.flatten.each do |message_class|
@@ -229,10 +229,10 @@ module IB
 
     # Hash of received messages, keyed by message type
     def received
-      @received_hash ||= Hash.new do |hash, message_type| 
-				# enable access to the hash via 
-				# ib.received[:MessageType].attribute  
-				the_array = Array.new 
+      @received_hash ||= Hash.new do |hash, message_type|
+				# enable access to the hash via
+				# ib.received[:MessageType].attribute
+				the_array = Array.new
 				def the_array.method_missing(method, *key)
 					unless method == :to_hash || method == :to_str #|| method == :to_int
 						return self.map{|x| x.public_send(method, *key)}
@@ -285,7 +285,7 @@ module IB
 				#process_message if select [socket], nil, nil, time_left
 				# the following  checks for shutdown of TWS side; ensures we don't run in a spin loop.
 				# unfortunately, it raises Errors in windows environment
-				# disabled for now 
+				# disabled for now
         if select [socket], nil, nil, time_left
         #  # Peek at the message from the socket; if it's blank then the
         #  # server side of connection (TWS) has likely shut down.
@@ -293,7 +293,7 @@ module IB
 				#
         #  # We go ahead process messages regardless (a no-op if socket_likely_shutdown).
           process_message
-        #  
+        #
         #  # After processing, if socket has shut down we sleep for 100ms
         #  # to avoid spinning in a tight loop. If the server side somehow
         #  # comes back up (gets reconnedted), normal processing
@@ -329,7 +329,7 @@ module IB
 				disconnect
 				connect
 				retry
-			end 
+			end
 			## return the transmitted message
 		  message.data[:request_id].presence || true
     end
@@ -339,7 +339,7 @@ module IB
     # Place Order (convenience wrapper for send_message :PlaceOrder).
     # Assigns client_id and order_id fields to placed order. Returns assigned order_id.
     def place_order order, contract
-      order.place contract, self  
+      order.place contract, self
     end
 
     # Modify Order (convenience wrapper for send_message :PlaceOrder). Returns order_id.
@@ -397,8 +397,8 @@ module IB
 				msg = Messages::Incoming::Classes[msg_id].new(the_decoded_message)
 
 				# Deliver message to all registered subscribers, alert if no subscribers
-				# Ruby 2.0 and above: Hashes are ordered. 
-				# Thus first declared subscribers of  a class are executed first 
+				# Ruby 2.0 and above: Hashes are ordered.
+				# Thus first declared subscribers of  a class are executed first
 				@subscribe_lock.synchronize do
 					subscribers[msg.class].each { |_, subscriber| subscriber.call(msg) }
 				end
@@ -411,10 +411,6 @@ module IB
 					end
 				end
 			end
-		end
-
-		def random_id
-			rand 999999999
 		end
 
 		# Check if all given conditions are satisfied
