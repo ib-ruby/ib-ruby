@@ -1,4 +1,10 @@
-# IB-Ruby
+# ib-ruby is no longer maintained 
+
+#  use [ib-api](/../../../ib-api) instead 
+
+---
+
+## IB-Ruby
 
 Ruby Implementation of the Interactive Brokers Trader Workstation (TWS) API.
 
