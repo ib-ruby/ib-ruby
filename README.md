@@ -1,7 +1,7 @@
+
+# use [ib-api](/../../../ib-api)
+
 # ib-ruby is no longer maintained 
-
-#  use [ib-api](/../../../ib-api) instead 
-
 ---
 
 ## IB-Ruby
