@@ -2,16 +2,18 @@
 #
 # This script exports your IB portfolio in a CSV format. Usage:
 # $ example/portfolio_csv [account] > portfolio.csv
+#
 
 require 'bundler/setup'
 require 'ib-ruby'
+require_relative 'config_ib'
 
 # Only for Advisors: you need to provide account id such as U666777
 account = ARGV[0] || ''
 accounts = []
 
 # Connect to IB TWS and subscribe to events
-ib = IB::Connection.new( :client_id => 1112 , port: 4002 ) do |gw| # , :port => 7496 # TWS
+ib = IB::Connection.new client_id: 1131, host: $host, port: $port do |gw|
 
 	# Redirect TWS alerts/errors to STDERR to keep output file clean
 	#gw.subscribe(:Alert) { |msg| STDERR.puts msg.to_human }
@@ -19,9 +21,9 @@ ib = IB::Connection.new( :client_id => 1112 , port: 4002 ) do |gw| # , :port => 
 	# Subscribe to TWS alerts/errors and account-related messages
 	# that TWS sends in response to account data request
 	gw.subscribe(:Alert) do |msg|
-			## if an account is not given. but required, (Error 321 indicates this) 
+			## if an account is not given. but required, (Error 321 indicates this)
 			## fetch data from the last account detected. (The first is most probably the Advisor-Account)
-											if  msg.code == 321
+											if msg.code == 321
 												account = accounts.last
 												gw.send_message :RequestAccountData, :subscribe => true, :account_code => account
 											else
@@ -31,10 +33,10 @@ ib = IB::Connection.new( :client_id => 1112 , port: 4002 ) do |gw| # , :port => 
 	# Silently ignore account-related messages other than :PortfolioValue
 	gw.subscribe(:AccountUpdateTime, :AccountValue, :ManagedAccounts, :AccountDownloadEnd) {}
 	# Get rid of logging verbosity
-	gw.logger.level =  Logger::FATAL
+	gw.logger.level = Logger::FATAL
 
 	## Just in case: put account-names into accounts-array
-	gw.subscribe(:ManagedAccounts){  |msg| accounts = msg.accounts_list.split ',' }
+	gw.subscribe(:ManagedAccounts) { |msg| accounts = msg.accounts_list.split ',' }
 end
 
 # Output CSV headers
@@ -55,8 +57,8 @@ puts %w[Symbol
 
 # Output each portfolio position as a single line in CSV format
 ib.subscribe(:PortfolioValue) do |msg|
-  contract = msg.contract
-  csv = [ contract.symbol,
+	contract = msg.contract
+	csv = [ contract.symbol,
           IB::CODES[:sec_type][contract.sec_type],
           contract.expiry,
           contract.strike == 0 ? "" : contract.strike,
@@ -71,11 +73,11 @@ ib.subscribe(:PortfolioValue) do |msg|
           msg.realized_pnl,
           msg.account_name
         ].map {|val| "\"#{val}\""}.join(",")
-   puts csv
+	puts csv
 end
 
 # Request account data, wait for its end, unsubscribe
-ib.send_message :RequestAccountData, :subscribe => true, :account_code => account
+ib.send_message :RequestAccountData, subscribe: true, account_code: account
 ib.wait_for :AccountDownloadEnd, 30
-ib.send_message :RequestAccountData, :subscribe => false, :account_code => account
+ib.send_message :RequestAccountData, subscribe: false, account_code: account
 sleep 0.5

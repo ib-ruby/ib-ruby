@@ -1,10 +1,12 @@
 #!/usr/bin/env ruby
 #
 # This script subscribes to market data for a list of Options
+#
 
 require 'bundler/setup'
 require 'ib-ruby'
-COUNT_OF_EVENTS =  20
+require_relative 'config_ib'
+
 # Definition of what we want market data for.  We have to keep track of what ticker id
 # corresponds to what symbol ourselves, because the ticks don't include any other
 # identifying information. The choice of ticker ids is, as far as I can tell, arbitrary.
@@ -12,53 +14,52 @@ contracts = [ IB::Symbols::Options.ge20, IB::Symbols::Options.z750, IB::Symbols:
 							IB::Symbols::Options.aapl200 ]
 list_of_ids =[]
 
+COUNT_OF_EVENTS = 20
 counter = 0
 
 contracts = [ IB::Option.new( symbol: 'ESTX50', exchange:'DTB', multiplier: 10, currency: 'EUR', strike: 3200, expiry: '20180518', right: :put) ,IB::Symbols::Options.ge20 ]
-# First, connect to IB TWS. Arbitrary :client_id is used to identify your script
-ib = IB::Connection.new( client_id: 1116)  do | gw| #, :port => 7496 # TWS
-
-  ## Subscribe to TWS alerts/errors
-  gw.subscribe(:Alert) { |msg| puts msg.to_human }
-	#  set the log level
+ib = IB::Connection.new client_id: 1125, host: $host, port: $port do |gw|
+	## Subscribe to TWS alerts/errors
+	gw.subscribe(:Alert) { |msg| puts msg.to_human }
+	# set the log level
 	gw.logger.level = Logger::FATAL
-  # Subscribe to Ticker... events.  The code passed in the block will be executed when
-  # any message of that type is received, with the received message as its argument.
-  # In this case, we just print out the tick.
-  #
-  # (N.B. The description field is not from IB TWS. It is defined
-  #  locally in forex.rb, and is just arbitrary text.)
-  gw.subscribe(:TickPrice, :TickSize, :TickOption, :TickString, :TickRequestParameters) do |msg|
-    what = contracts[msg.ticker_id].description || contracts[msg.ticker_id].osi
-    puts "#{msg.ticker_id}: #{what}: #{msg.to_human}"
-    counter =  counter + 1
-    if counter == COUNT_OF_EVENTS
-      puts "Cancelling market data subscription.."
-      list_of_ids.each { |id| ib.send_message :CancelMarketData, :id => id }  
-      puts "Generally, the TWS sends additional TickEvents after the subscription is cancelled ... \n\n"
-      Thread.new do 
+	# Subscribe to Ticker... events.  The code passed in the block will be executed when
+	# any message of that type is received, with the received message as its argument.
+	# In this case, we just print out the tick.
+	#
+	# (N.B. The description field is not from IB TWS. It is defined
+	# locally in forex.rb, and is just arbitrary text.)
+	gw.subscribe(:TickPrice, :TickSize, :TickOption, :TickString, :TickRequestParameters) do |msg|
+		what = contracts[msg.ticker_id].description || contracts[msg.ticker_id].osi
+		puts "#{msg.ticker_id}: #{what}: #{msg.to_human}"
+		counter = counter + 1
+		if counter == COUNT_OF_EVENTS
+			puts "Cancelling market data subscription.."
+			list_of_ids.each { |id| ib.send_message :CancelMarketData, id: id }
+			puts "Generally, the TWS sends additional TickEvents after the subscription is cancelled ... \n\n"
+			Thread.new do
 				sleep 1
 				puts "\n******** Press <Enter> to quit *********\n\n"
 			end
-    end
-  end
+		end
+	end
 end
 
 # Now we actually request market data for the symbols we're interested in.
 #
-# ### ticklist-values :  lib/ib/messages/outgoing/request_marketdata.rb 
-ib.send_message :RequestMarketDataType, :market_data_type => :delayed
+# ### ticklist-values :  lib/ib/messages/outgoing/request_marketdata.rb
+ib.send_message :RequestMarketDataType, market_data_type: :delayed
 list_of_ids = contracts.map do |contract|
-  ib.send_message :RequestMarketData, :contract => contract ,  tick_list: [100,101,106]
+	ib.send_message :RequestMarketData, contract: contract, tick_list: [100,101,106]
 end
 # we modify contracts: { ticker_id => Contract } ( Will be used in the subscrption thread )
-contracts =  list_of_ids.zip( contracts ).to_h
+contracts = list_of_ids.zip( contracts ).to_h
 puts "\nSubscribed to market data"
 puts "\n******** Press <Enter> to cancel subscriptions  *********\n\n"
 STDIN.gets
 puts "Cancelling market data subscription.."
 
-contracts.each_with_index { | contract, i| ib.send_message :CancelMarketData, :id => i+1 }
+contracts.each_with_index { | contract, i| ib.send_message :CancelMarketData, id: i+1 }
 
 puts "\n******** Press <Enter> to quit.. *********\n\n"
 STDIN.gets

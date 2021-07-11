@@ -1,18 +1,20 @@
 #!/usr/bin/env ruby
 #
 # This script receives Financial Adviser and Managed Accounts info
+#
 
 require 'bundler/setup'
 require 'ib-ruby'
+require_relative 'config_ib'
 
 # First, connect to IB TWS.
-ib = IB::Connection.new client_id: 1114,  port: 4002 #, :port => 7496 # TWS
+ib = IB::Connection.new client_id: 1117, host: $host, port: $port
 
 # Subscribe to TWS alerts/errors and FA/managed account info
 ib.subscribe(:Alert, :ManagedAccounts, :ReceiveFA) { |msg| puts msg.to_human }
 
 ##
-ib.send_message :RequestFA, fa_data_type: 3  
+ib.send_message :RequestFA, fa_data_type: 3
 ib.send_message :RequestManagedAccounts
 
 ib.wait_for :Alert
@@ -20,11 +22,8 @@ ib.wait_for :Alert
 puts "\n******** Press <Enter> to cancel... *********\n\n"
 STDIN.gets
 
-
 #
 # Expected Output
-#<ReceiveFA: type 3, xml {:ListOfAccountAliases=>{:AccountAlias=>[{:account=>"DF167347", :alias=>"DF167347"}, {:account=>"DU167348", :alias=>"DU167348"}, {:account=>"DU167349", :alias=>"DU167349"}]}} 
+#<ReceiveFA: type 3, xml {:ListOfAccountAliases=>{:AccountAlias=>[{:account=>"DF167347", :alias=>"DF167347"}, {:account=>"DU167348", :alias=>"DU167348"}, {:account=>"DU167349", :alias=>"DU167349"}]}}
 #<ManagedAccounts: accounts_list DF167347,DU167348,DU167349, >
 #
-
-# 

@@ -1,9 +1,12 @@
 #!/usr/bin/env ruby
 #
 # This script gets details for specific contract from IB
+#
 
 require 'bundler/setup'
 require 'ib-ruby'
+require_relative 'config_ib'
+
 include IB
 # Definition of what we want market data for.  We have to keep track of what ticker id
 # corresponds to what symbol ourselves, because the ticks don't include any other
@@ -15,53 +18,49 @@ contracts = [ IB::Symbols::Stocks.wfc,
               IB::Symbols::Futures.vix,
               IB::Symbols::Futures.ym,
               IB::Symbols::Options.ge20,
-	   ### OSI-Notation is broken
-#            IB::Symbols::Options[:vix20],
-#            IB::Symbols::Options[:spy270],
-#            IB::Symbols::Options[:vxx40],
-	       IB::Symbols::Forex.eurusd,
-	   ### Bonds are not actually not supported 
-           # 8 => IB::Symbols::Bonds[:wag],
-	       IB::Symbols::Stocks.wrong ]
+### OSI-Notation is broken
+#             IB::Symbols::Options[:vix20],
+#             IB::Symbols::Options[:spy270],
+#             IB::Symbols::Options[:vxx40],
+              IB::Symbols::Forex.eurusd,
+### Bonds are not actually not supported
+              # 8 => IB::Symbols::Bonds[:wag],
+              IB::Symbols::Stocks.wrong ]
 # or
 # II. Use predefined Contracts
-stock_contracts =  Symbols::Stocks.all.map{|x|  Symbols::Stocks.send x }
-future_contracts =  Symbols::Futures.all.map{|x|  Symbols::Futures.send x }
-option_contracts =  Symbols::Options.all.map{|x|  Symbols::Options.send x }
-cfd_contracts =  Symbols::CFD.all.map{|x|  Symbols::CFD.send x }
-index_contracts =  Symbols::Index.all.map{|x|  Symbols::Index.send x }
+stock_contracts = Symbols::Stocks.all.map{|x| Symbols::Stocks.send x }
+future_contracts = Symbols::Futures.all.map{|x| Symbols::Futures.send x }
+option_contracts = Symbols::Options.all.map{|x| Symbols::Options.send x }
+cfd_contracts = Symbols::CFD.all.map{|x| Symbols::CFD.send x }
+index_contracts = Symbols::Index.all.map{|x| Symbols::Index.send x }
 
 ## comment if you want to display selected contracts ( I. )
-contracts =  stock_contracts + future_contracts + option_contracts +  cfd_contracts + index_contracts
+contracts = stock_contracts + future_contracts + option_contracts + cfd_contracts + index_contracts
 
-
-# Connect to IB TWS.
-ib = Connection.new :client_id => 11912  do | gw|  # , port: 7497 do | gw | # TWS
+ib = Connection.new client_id: 1114, host: $host, port: $port do |gw|
   # Subscribe to TWS alerts/errors and contract data end marker
   gw.subscribe(:Alert, :ContractDataEnd) { |msg| puts msg.to_human }
 
-  # Now, subscribe to ContractData incoming events.  The code passed in the block
+  # Now, subscribe to ContractData incoming events. The code passed in the block
   # will be executed when a message of that type is received, with the received
   # message as its argument. In this case, we just print out the data.
-  gw.subscribe(:ContractData, :BondContractData) do |msg| 
+  gw.subscribe(:ContractData, :BondContractData) do |msg|
     puts msg.contract.to_human + "\n"
     puts "Attributes: "
     puts "\t"+ msg.contract.attributes.map{ |k,v|  "#{k} : #{v}" unless v.blank?  }.join("\n\t")
   end
-
-# Set log level
+  # Set log level
   gw.logger.level = Logger::FATAL
 end
 
 ib.wait_for :NextValidOrderId
-
 
 contracts.each do |contract|
   puts "\nRequesting contract data for #{contract.description}"
 
   # Request Contract details for the symbols we're interested in. TWS will
   # respond with ContractData messages, which will be processed by the code above.
-  ib.send_message :RequestContractData,  :contract => contract
+  ib.send_message :RequestContractData, contract: contract
 
   # Wait for IB to respond to our request
   ib.wait_for :ContractDataEnd, 5 #sec

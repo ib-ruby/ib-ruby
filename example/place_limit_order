@@ -1,23 +1,21 @@
 #!/usr/bin/env ruby
 #
-## This script places WFC buy order for 100 lots
+# This script places WFC buy order for 100 lots
+# RUN ONLY ON A DEMO ACCOUNT
 #
-## RUN ONLY ON A DEMO ACCOUNT
+
 require 'bundler/setup'
 require 'ib-ruby'
+require_relative 'config_ib'
 
 # Only for Advisor accounts: you need to provide account_code such as U666777
 account_code = ARGV[0] || ''
-#
-# First, connect to IB TWS. Arbitrary :client_id is used to identify your script
-ib = IB::Connection.new client_id: 1112  do | gw | #, :port => 7496 # TWS
-
-# Subscribe to TWS alerts/errors and order-related messages prior to the connection of the client
-  gw.subscribe(:Alert, :OpenOrder, :OrderStatus,  :ContractDataEnd ) { |msg| puts msg.to_human }
-  gw.subscribe(:ContractData ) do |msg| 
-    puts msg.contract.to_human + "\n"
-  end
-
+ib = IB::Connection.new client_id: 1129, host: $host, port: $port do |gw|
+	# Subscribe to TWS alerts/errors and order-related messages prior to the connection of the client
+	gw.subscribe(:Alert, :OpenOrder, :OrderStatus,  :ContractDataEnd) { |msg| puts msg.to_human }
+	gw.subscribe(:ContractData) do |msg|
+		puts msg.contract.to_human + "\n"
+	end
 end
 wfc = IB::Symbols::Stocks[:wfc]
 ib.send_message :RequestContractData, id: 56, contract: wfc
@@ -27,8 +25,8 @@ puts "Supported Parameter \n -------------------------- "
 puts IB::Limit.parameters
 buy_order = IB::Limit.order size: 100,
                           price: 1 + rand().round(2),
-                          action:  :buy,
-													account: account_code
+                          action: :buy,
+                          account: account_code
 puts buy_order.to_human
 ib.wait_for :NextValidId
 ib.place_order buy_order,  wfc
@@ -52,18 +50,18 @@ STDIN.gets
 #------sendto ---------(debugging output in outgoing/abstract_message)
 #["'9", "8", "56", "", "WFC", "STK", "", "0.0", "", "", "NYSE", "", "USD", "", "", "0", "", "", "\""]
 #------sendto ---------
-#	A Limit order is an order to buy or sell at a specified price or better. 
-#	The Limit order ensures that if the order fills, it will not fill at a price less favorable than 
-#	your limit price, but it does not guarantee a fill. 
+#	A Limit order is an order to buy or sell at a specified price or better.
+#	The Limit order ensures that if the order fills, it will not fill at a price less favorable than
+#	your limit price, but it does not guarantee a fill.
 #	It appears in the orderbook.
-#Supported Parameter 
-# -------------------------- 
+#Supported Parameter
+# --------------------------
 #Required : action --> {"B"=>:buy, "S"=>:sell, "T"=>:short, "X"=>:short_exempt}
 #	: total_quantity --> also aliased as :size
 #	: limit_price --> decimal
-# --------------- 
+# ---------------
 #Optional : account --> Account(number) to trade on
-# --------------- 
+# ---------------
 #<Order: LMT GTC buy 100 1.13 New #/ from /DU167348>
 #------sendto ---------(debugging output in outgoing/abstract_message)
 #["\\xB03", "45", "1", "", "WFC", "STK", "", "0.0", "", "", "NYSE", "", "USD", "", "", "", "", "BUY", "100", "LMT", "1.13", "", "GTC", "", "DU167348", "O", "0", "", "1", "0", "0", "0", "0", "0", "0", "0", "", "0", "", "", "", "", "", "", "", "0", "", "-1", "0", "", "", "0", "", "", "1", "1", "", "0", "", "", "", "", "", "0", "", "", "", "", "0", "", "", "", "", "", "", "", "", "", "", "0", "", "", "0", "0", "", "", "0", "", "0", "0", "0", "0", "", "", "", "", "", "", "", "", "", "", "", "\""]

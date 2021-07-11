@@ -1,19 +1,20 @@
 #!/usr/bin/env ruby
 #
 # Your script description here...
+#
 
 require 'bundler/setup'
 require 'ib-ruby'
+require_relative 'config_ib'
 
-# First, connect to IB TWS and subscribe for events. 
-ib = IB::Connection.new :client_id => 1112  do | gw | #, :port => 7497 # TWS
-
+# First, connect to IB TWS and subscribe for events.
+ib = IB::Connection.new client_id: 1135, host: $host, port: $port do |gw|
 	# Subscribe to TWS alerts/errors
 	gw.subscribe(:Alert) { |msg| puts msg.to_human }
 	# Set log level
-	gw.logger.level = Logger::FATAL # DEBUG  -- INFO -- WARN -- ERROR  -- FATAL
-
+	gw.logger.level = Logger::FATAL # DEBUG INFO WARN ERROR FATAL
 end
+
 # Put your code here
 # ...
 

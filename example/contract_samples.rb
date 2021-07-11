@@ -2,28 +2,28 @@
 # ---------------------------------------------------------------------------------- #
 #                     C O N T R A C T  S A M P L E S                                 #
 #
-# Sample Contracts for ib-ruby with 1:1 comparism to python code         
+# Sample Contracts for ib-ruby with 1:1 comparism to python code
 #
 # based on »ContractSamples.py« (python-implementation of the tws-api)
 # which is protected by the following copyright
 #
-#Copyright (C) 2016 Interactive Brokers LLC. All rights reserved.  This code is
-#subject to the terms and conditions of the IB API Non-Commercial License or the
-# IB API Commercial License, as applicable. 
-#
+# Copyright (C) 2016 Interactive Brokers LLC. All rights reserved.  This code is
+# subject to the terms and conditions of the IB API Non-Commercial License or the
+# IB API Commercial License, as applicable.
 #
 
-# This script just generates contracts 
+# This script just generates contracts
 # If called from the command line, it prints a list
 
 require 'bundler/setup'
 require 'yaml'
 require 'ib-ruby'
+
 include IB
 
 module ContractSamples
 
-    """ Usually, the easiest way to define a Stock/CASH contract is through 
+    """ Usually, the easiest way to define a Stock/CASH contract is through
     these four attributes.  """
 
     def rEurGbpFx
@@ -48,7 +48,7 @@ module ContractSamples
         contract.secType = "IND"
         contract.currency = "EUR"
         contract.exchange = "DTB"
-=end 
+=end
 
 
     def rCFD
@@ -97,7 +97,7 @@ module ContractSamples
 =end
 
     def rBondWithCusip
-	Contract.new symbol: '912828C57', sec_type: :bond, currency: 'USD' 
+        Contract.new symbol: '912828C57', sec_type: :bond, currency: 'USD'
     end
 =begin
 #! [bondwithcusip]
@@ -143,7 +143,7 @@ module ContractSamples
             contract.exchange = "SMART"
             contract.currency = "USD"
 =end
-    
+
 
     def rUSStock
         #In the API side, NASDAQ is always defined as ISLAND in the exchange field
@@ -159,8 +159,8 @@ module ContractSamples
 =end
 
     def rUSStockWithPrimaryExch
-        #Specify the Primary Exchange attribute to avoid contract ambiguity 
-		#(there is an ambiguity because there is also a MSFT contract with primary exchange = "AEB")
+        #Specify the Primary Exchange attribute to avoid contract ambiguity
+        #(there is an ambiguity because there is also a MSFT contract with primary exchange = "AEB")
       Stock.new symbol: 'MSFT', primary_exchange: 'ISLAND'
     end
 =begin
@@ -172,7 +172,7 @@ module ContractSamples
         contract.exchange = "SMART"
         contract.primaryExchange = "ISLAND"
 =end
-            
+
     def rUSStockAtSmart
       Stock.new symbol: 'IBKR'
     end
@@ -227,16 +227,16 @@ module ContractSamples
 =end
 
 =begin
-    """ Option contracts require far more information since there are many 
-    contracts having the exact same attributes such as symbol, currency, 
-    strike, etc. This can be overcome by adding more details such as the 
+    """ Option contracts require far more information since there are many
+    contracts having the exact same attributes such as symbol, currency,
+    strike, etc. This can be overcome by adding more details such as the
     trading class"""
 =end
     def rOptionWithTradingClass
         Option.new  symbol: 'SANT',
         exchange: "MEFFRV",
         currency: "EUR",
-	expiry:  Symbols::Futures.next_expiry,
+        expiry: Symbols::Futures.next_expiry,
         strike: 7.5,
         right: :call,
         multiplier: 100,
@@ -277,9 +277,9 @@ module ContractSamples
 =end
 
 =begin
-     Dutch Warrants (IOPTs) can be defined using the local symbol or conid 
+     Dutch Warrants (IOPTs) can be defined using the local symbol or conid
 =end
-	
+
     def rDutchWarrant
 	Contract.new sec_type: :dutch_option,
 		     exchange: 'SBF',
@@ -303,7 +303,7 @@ module ContractSamples
 =end
 
     def rSimpleFuture
-      Future.new symbol: 'ES', exchange: 'GLOBEX', 
+      Future.new symbol: 'ES', exchange: 'GLOBEX',
 		 expiry:  Symbols::Futures.next_expiry,
 		 currency: 'USD'
     end
@@ -319,11 +319,11 @@ module ContractSamples
 
 =begin
     Rather than giving expiration dates we can also provide the local symbol
-    attributes such as symbol, currency, strike, etc. 
+    attributes such as symbol, currency, strike, etc.
 =end
 
     def rFutureWithLocalSymbol
-      Future.new symbol: 'ES', exchange: 'GLOBEX', 
+      Future.new symbol: 'ES', exchange: 'GLOBEX',
 		 currency: 'USD',
 		 local_symbol: 'ESU8'
     end
@@ -338,7 +338,7 @@ module ContractSamples
 
 
     def rFutureWithMultiplier
-	Future.new symbol: 'DAX', exchange: 'DTB', 
+	Future.new symbol: 'DAX', exchange: 'DTB',
 		 expiry:  Symbols::Futures.next_expiry,
 		 currency: 'EUR',
 		 multiplier: 5
@@ -379,7 +379,7 @@ module ContractSamples
 =end
 
 =begin
-     It is also possible to define contracts based on their ISIN (IBKR STK sample). 
+     It is also possible to define contracts based on their ISIN (IBKR STK sample).
 =end
     def rByISIN
       Stock.new sec_id_type: 'ISIN', sec_id: "US45841N1072"
@@ -395,9 +395,9 @@ module ContractSamples
 
 =begin
     Or their conId (EUR.uSD sample).
-    Note: passing a contract containing the conId can cause problems if one of 
-    the other provided attributes does not match 100% with what is in IB's 
-    database. This is particularly important for contracts such as Bonds which 
+    Note: passing a contract containing the conId can cause problems if one of
+    the other provided attributes does not match 100% with what is in IB's
+    database. This is particularly important for contracts such as Bonds which
     may change their description from one day to another.
     If the conId is provided, it is best not to give too much information as
     in the example below.
@@ -417,7 +417,7 @@ module ContractSamples
     Ambiguous contracts are great to use with reqContractDetails. This way
     you can query the whole option chain for an underlying. Bear in mind that
     there are pacing mechanisms in place which will delay any further responses
-    from the TWS to prevent abuse. 
+    from the TWS to prevent abuse.
 =end
 
     def rOptionForQuery
@@ -434,8 +434,8 @@ module ContractSamples
     def rOptionComboContract
 
        Bag.new symbol: 'DBK', currency: 'EUR', exchange: 'DTB', legs:
-	[  ComboLeg.new( con_id: 197397509 , action: :buy, exchange: 'DTB', ratio: 1),   #DBK JUN 15 2018 C 
-           ComboLeg.new( con_id: 197397584,  action: :sell, exchange: 'DTB', ratio: 1 ) ] #DBK JUN 15 2018 P
+       [  ComboLeg.new( con_id: 197397509 , action: :buy, exchange: 'DTB', ratio: 1),   #DBK JUN 15 2018 C
+          ComboLeg.new( con_id: 197397584,  action: :sell, exchange: 'DTB', ratio: 1 ) ] #DBK JUN 15 2018 P
     end
 
 =begin
@@ -472,7 +472,7 @@ module ContractSamples
     def rStockComboContract
        Bag.new symbol: 'IBKR,MCD', currency: 'USD', legs:
 	[  ComboLeg.new( con_id: 43645865, action: :buy, ratio: 1), # IKBR STK
-           ComboLeg.new( con_id: 9408,	  action: :sell,ratio: 1 ) ] # MCD STK
+           ComboLeg.new( con_id: 9408, action: :sell,ratio: 1 ) ] # MCD STK
     end
 =begin
         #! [bagstkcontract]
@@ -508,8 +508,8 @@ module ContractSamples
 =end
     def rFutureComboContract
        Bag.new symbol: 'VIX', currency: 'USD', exchange: 'CFE', legs:
-	[  ComboLeg.new( con_id: 256038899, action: :buy, exchange: 'CFE', ratio: 1), #  VIX FUT 201708
-           ComboLeg.new( con_id: 260564703,  action: :sell, exchange: 'CFE', ratio: 1 ) ] # VIX FUT 201709
+	[ ComboLeg.new( con_id: 256038899, action: :buy, exchange: 'CFE', ratio: 1), # VIX FUT 201708
+          ComboLeg.new( con_id: 260564703,  action: :sell, exchange: 'CFE', ratio: 1 ) ] # VIX FUT 201709
     end
 =begin
         #! [bagfutcontract]
@@ -540,7 +540,7 @@ module ContractSamples
 =end
     def rSmartFutureComboContract()
        Bag.new symbol: 'WTI', currency: 'USD', exchange: 'SMART', legs:
-	[  ComboLeg.new( con_id: 55928698, action: :buy, exchange: 'IPE', ratio: 1), #  WTI future June 2017 
+	[  ComboLeg.new( con_id: 55928698, action: :buy, exchange: 'IPE', ratio: 1), #  WTI future June 2017
            ComboLeg.new( con_id: 55850663,  action: :sell, exchange: 'IPE', ratio: 1 ) ] # COIL future June 2017
     end
 =begin
@@ -578,7 +578,7 @@ module ContractSamples
         #! [intcmdfutcontract]
 	#
         contract = Contract()
-        contract.symbol = "CL.BZ" #symbol is 'local symbol' of intercommodity spread. 
+        contract.symbol = "CL.BZ" #symbol is 'local symbol' of intercommodity spread.
         contract.secType = "BAG"
         contract.currency = "USD"
         contract.exchange = "NYMEX"
@@ -703,14 +703,13 @@ module ContractSamples
 ## execute if called from OS
 if $0 == __FILE__
 
-mod_methods=  ContractSamples.public_instance_methods 
+mod_methods = ContractSamples.public_instance_methods
 include ContractSamples
-any_contracts =  mod_methods.map do | method |
-     self.send( method )
+any_contracts = mod_methods.map do |method|
+    self.send( method )
 end
 puts "Defined Contracts:"
 puts "------------------"
 puts any_contracts.map.with_index{|x,i| i.to_s + ": " + mod_methods[i][1..-1] + "\t->" + x.to_human }.join( "\n" )
-
 
 end

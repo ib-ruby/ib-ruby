@@ -1,22 +1,22 @@
 #!/usr/bin/env ruby
-
+#
 # This script reproduces https://github.com/ib-ruby/ib-ruby/issues/12
+#
 
 require 'bundler/setup'
 require 'ib-ruby'
+require_relative 'config_ib'
 
-contract = IB::Stock.new :symbol=> 'AAPL'
+contract = IB::Stock.new symbol: 'AAPL'
 
-# First, connect to IB Gateway.
-ib = IB::Connection.new :client_id => 1112 # id to identify your script
-#                       :port => 7497     # TWS connection (instead of default Gateway)
-#                        :received => false  # Do not keep all received messages in memory
+ib = IB::Connection.new client_id: 1137, host: $host, port: $port
+#                        received: false  # Do not keep all received messages in memory
 
 ib.subscribe(:Alert) { |msg| puts msg.to_human }
 ib.subscribe(:MarketDataType) { |msg| puts msg.to_human }
 ib.subscribe(:TickGeneric, :TickString, :TickPrice, :TickSize) { |msg| puts msg.inspect }
-ib.send_message :RequestMarketDataType, :market_data_type => :delayed
-ib.send_message :RequestMarketData, id: 123, contract:  contract
+ib.send_message :RequestMarketDataType, market_data_type: :delayed
+ib.send_message :RequestMarketData, id: 123, contract: contract
 
 puts "\nSubscribed to market data"
 puts "\n******** Press <Enter> to cancel... *********\n\n"

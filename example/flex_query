@@ -11,10 +11,13 @@
 # Create new Flex query and make sure to set its output format to XML.
 #
 # This script runs your pre-defined FLEX query and prints the resulting report.
+#
 
 require 'bundler/setup'
 require 'ib-ruby'
-require 'yaml'
+#require_relative 'config_ib'
+
+#require 'yaml'
 #### deactivated for now
 #if File.exists? "config/flex.yml"
 #  # You may want to put your favorite FLEX queries info into a separate yaml file, such as:
@@ -34,9 +37,8 @@ require 'yaml'
 
 # Initiate FLEX request at a known FLEX Web Service URI
 pp IB::Flex.new( token: , # 1111111111111111111111111111111111, # CHANGE to your actual token!
-						    query_id: ARGV[0] || 328761, # CHANGE to actual query id!
-							  verbose: true,
-								return_hash: 1,
-						    format: :xml ).run
-
+						query_id: ARGV[0] || 328761, # CHANGE to actual query id!
+						verbose: true,
+						return_hash: 1,
+						format: :xml ).run
 

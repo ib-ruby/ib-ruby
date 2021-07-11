@@ -4,46 +4,34 @@
 # or ALL Orders opened via IB API at once. The latter is useful when your
 # robot goes crazy and opens gazillions of wrong limit orders.
 #
-# Accepts the port to connect to as  first command-parameter,  T)ws or G)ateway, which is the default
-#	
-#	Numeric Parameter are interpreted as keys for specific orders to kill
 
 require 'bundler/setup'
 require 'ib-ruby'
-  specified_port = ARGV[0] || 'Gateway'
-	port =  case specified_port
-					when /^[gG]/ 
-						ARGV.shift  # consume the first argument
-						4002
-					when /^[Tt]/
-						ARGV.shift # consume the first argument
-						7497
-					end
+require_relative 'config_ib'
 
 # First, connect to IB TWS.
-ib = IB::Connection.new client_id: 1111, port: port  do | gw |  
-
+ib = IB::Connection.new client_id: 1113, host: $host, port: $port do |gw|
 	# Subscribe to TWS alerts/errors and order-related messages
 	gw.subscribe(:Alert, :OpenOrder, :OrderStatus, :OpenOrderEnd) { |msg| puts msg.to_human }
 	# Set log level
-	gw.logger.level = Logger::FATAL # DEBUG -- INFO -- WARN -- ERROR -- FATAL
+	gw.logger.level = Logger::FATAL # DEBUG INFO WARN ERROR FATAL
 end
 
 if ARGV.empty?
-  ib.send_message :RequestGlobalCancel
+	ib.send_message :RequestGlobalCancel
 else
 	puts "ARGV:  #{ARGV}"
-  # Will only work for Orders placed under the same :client_id
-  ib.cancel_order *ARGV
-	puts '-'*55
+	# Will only work for Orders placed under the same :client_id
+	ib.cancel_order *ARGV
+	puts '-' * 55
 	puts "Remaining Orders"
-	puts '-'*55
+	puts '-' * 55
 end
 
-puts '-'*55
+puts '-' * 55
 puts "Remaining Orders"
 ib.send_message :RequestAllOpenOrders
-puts '-'*55
+puts '-' * 55
 
 sleep 3
 

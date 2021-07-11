@@ -1,11 +1,14 @@
 #!/usr/bin/env ruby
+#
 # This script connects to IB API, and downloads historic data
+#
 
 require 'rubygems'
 require 'time'
 require 'getopt/long'
 require 'bundler/setup'
 require 'ib-ruby'
+require_relative 'config_ib'
 
 include Getopt
 
@@ -126,12 +129,10 @@ REGULAR_HOURS_ONLY = opt["nonregularhours"] ? 0 : 1
 
 DATE_FORMAT = (opt["dateformat"] && opt["dateformat"].to_i) || 1
 
-PORT = (opt["port"] && opt["port"]) || '4002'
-
 lastMessageTime = Queue.new # for communicating with the reader thread.
 
 # First, connect to IB TWS.
-ib = IB::Connection.new( :client_id => 1112, :port => PORT) do | gw|
+ib = IB::Connection.new client_id: 1120, host: $host, port: $port do |gw|
 
 	# Subscribe to TWS alerts/errors
 	gw.subscribe(:Alert) { |msg| puts msg.to_human }
@@ -159,28 +160,28 @@ ib = IB::Connection.new( :client_id => 1112, :port => PORT) do | gw|
 		end
 		lastMessageTime.push(Time.now)
 	end
-end 
+end
 # Now we actually request historical data for the symbols we're
 # interested in.  TWS will respond with a HistoricalData message,
 # which will be received by the code above.
 ib.send_message :RequestHistoricalData,
-                :request_id => 123,
-                :contract => opt["security"],
-                :end_date_time => END_DATE_TIME,
-                :duration => DURATION, # seconds == 1 hour
-                :bar_size => BAR_SIZE, # 1 minute bars
-                :what_to_show => WHAT,
-                :use_RTH => REGULAR_HOURS_ONLY,
-		:keep_up_todate => 0,
-                :format_date => DATE_FORMAT
+                request_id: 123,
+                contract: opt["security"],
+                end_date_time: END_DATE_TIME,
+                duration: DURATION, # seconds == 1 hour
+                bar_size: BAR_SIZE, # 1 minute bars
+                what_to_show: WHAT,
+                use_RTH: REGULAR_HOURS_ONLY,
+                keep_up_todate: 0,
+                format_date: DATE_FORMAT
 
 # A complication here is that IB does not send any indication when all historic data
 # is done being delivered. So we have to guess - when there is no more new data for
 # some period, we interpret that as "end of data" and exit.
 sleep 2
 while true
-  lastTime = lastMessageTime.pop # blocks until a message is ready on the queue
-  sleep 0.1 # .. wait ..
-  exit if lastMessageTime.empty? # if still no more messages after 2 more seconds, exit.
+	lastTime = lastMessageTime.pop # blocks until a message is ready on the queue
+	sleep 0.1 # .. wait ..
+	exit if lastMessageTime.empty? # if still no more messages after 2 more seconds, exit.
 end
 
